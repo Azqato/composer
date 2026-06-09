@@ -20,7 +20,7 @@
         <p class="hero-desc">Backtested performance data, strategy breakdowns, and concept explanations for Composer.trade investment symphonies.</p>
         <div class="hero-actions">
           <a href="#strategies" class="btn btn-green btn-lg">Browse Strategies</a>
-          <a id="hero-glossary-link" href="glossary/" class="btn btn-outline btn-lg">Glossary</a>
+          <a id="hero-glossary-link" href="#" class="btn btn-outline btn-lg">Glossary</a>
         </div>
       </div>
     </section>
@@ -70,6 +70,8 @@
   <script src="js/app.js"></script>
   <script>
     (async function () {
+      document.getElementById('hero-glossary-link').href = u('/glossary/');
+
       const strategies = await loadStrategies();
 
       // Stats
