@@ -6,6 +6,23 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.1.3] - 2026-06-08
+
+### Design — Footer simplified to match azqato.github.io
+
+Replaced the multi-column footer (logo, tagline, nav links, disclaimer block) with a clean centered layout matching the spacing and approach of azqato.github.io.
+
+**Before:** Two-column flex layout with logo/tagline on the left, nav links on the right, a divider, and a stacked disclaimer block below. `padding: 40px 0`.
+
+**After:** Single centered column. `padding: 2rem`, `text-align: center`. Three elements stacked:
+1. Nav links row (centered, `gap: 16px`)
+2. One-line legal disclaimer (`max-width: 560px`, `color: --color-disabled`)
+3. Copyright + "Built by Azqato" attribution
+
+**Files changed:** `css/main.css`, `js/app.js`
+
+---
+
 ## [1.1.2] - 2026-06-08
 
 ### Fix — All internal links broken on GitHub Pages (case-sensitive BASE detection)

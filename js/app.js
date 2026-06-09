@@ -205,32 +205,15 @@ function renderFooter() {
   if (!footer) return;
   const year = new Date().getFullYear();
   footer.innerHTML = `
-    <div class="container">
-      <div class="footer-top">
-        <div>
-          <a href="${u('/')}" class="footer-logo">
-            <span class="footer-logo-mark">CA</span>
-            <span>ComposerAtlas</span>
-          </a>
-          <p class="footer-tagline">A Composer.trade strategy reference.</p>
-        </div>
-        <nav class="footer-links">
-          <a href="${u('/strategies/')}">Strategies</a>
-          <a href="${u('/glossary/')}">Glossary</a>
-          <a href="${u('/about.html')}">About</a>
-          <a href="https://azqato.github.io/support.html" target="_blank" rel="noopener noreferrer">Support</a>
-          <a href="https://composer.trade" target="_blank" rel="noopener noreferrer">Composer.trade ↗</a>
-        </nav>
-      </div>
-      <div class="footer-bottom">
-        <div class="footer-disclaimer">
-          <p>Not affiliated with, endorsed by, or associated with Composer Technologies, Inc.</p>
-          <p>All strategy metrics are backtested historical data and do not guarantee future results. Not financial advice.</p>
-          <p style="margin-top:8px;color:var(--color-disabled)">&copy; ${year} ComposerAtlas. Content provided for informational purposes only.</p>
-          <p style="margin-top:12px;text-align:center"><a href="https://azqato.github.io/" target="_blank" rel="noopener noreferrer" style="color:var(--color-secondary);text-decoration:none">Made by <span style="color:var(--color-blue)">Azqato</span>.</a></p>
-        </div>
-      </div>
-    </div>
+    <nav class="footer-links">
+      <a href="${u('/strategies/')}">Strategies</a>
+      <a href="${u('/glossary/')}">Glossary</a>
+      <a href="${u('/about.html')}">About</a>
+      <a href="https://azqato.github.io/support.html" target="_blank" rel="noopener noreferrer">Support</a>
+      <a href="https://composer.trade" target="_blank" rel="noopener noreferrer">Composer.trade ↗</a>
+    </nav>
+    <p class="footer-legal">Not affiliated with Composer Technologies, Inc. All metrics are backtested historical data and do not guarantee future results. Not financial advice.</p>
+    <p class="footer-copy">&copy; ${year} ComposerAtlas &middot; Built by <a href="https://azqato.github.io/" target="_blank" rel="noopener noreferrer">Azqato</a></p>
   `;
 }
 
