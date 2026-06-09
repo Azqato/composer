@@ -6,6 +6,28 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.1.2] - 2026-06-08
+
+### Fix — Nav links broken on GitHub Pages (case-sensitive BASE detection)
+
+All navigation links (Strategies, Glossary, About) were broken on the live GitHub Pages deployment. The homepage CTAs worked because they used hardcoded relative URLs; the nav used `u()` which prepends `BASE`.
+
+**Root cause:** `BASE` was computed as:
+```js
+const BASE = window.location.pathname.startsWith('/composeratlas') ? '/composeratlas' : '';
+```
+The GitHub repository is named `ComposerAtlas` (capital C), so the live URL path is `/ComposerAtlas/...`. The case-sensitive `startsWith` check failed, `BASE` became `''`, and every nav link became an absolute path from the server root (e.g. `/glossary/`) instead of `/ComposerAtlas/glossary/`.
+
+**Fix:** Extract the first URL path segment and compare case-insensitively, preserving actual casing:
+```js
+const _seg = window.location.pathname.split('/')[1];
+const BASE = (_seg && _seg.toLowerCase() === 'composeratlas') ? '/' + _seg : '';
+```
+
+**Files changed:** `js/app.js`
+
+---
+
 ## [1.1.1] - 2026-06-08
 
 ### Cleanup — Pre-Launch Optimization

@@ -10,8 +10,10 @@
 'use strict';
 
 // ---- Base URL ----
-// Detects /composeratlas prefix on GitHub Pages; empty string for local dev.
-const BASE = window.location.pathname.startsWith('/composeratlas') ? '/composeratlas' : '';
+// Extracts the first path segment and checks case-insensitively for 'composeratlas',
+// preserving the actual casing from the live URL (e.g. /ComposerAtlas on GitHub Pages).
+const _seg = window.location.pathname.split('/')[1];
+const BASE = (_seg && _seg.toLowerCase() === 'composeratlas') ? '/' + _seg : '';
 
 // ---- URL helper ----
 // On HTTP/HTTPS: prepends BASE for absolute paths (works on both localhost and GitHub Pages).
