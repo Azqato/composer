@@ -166,10 +166,9 @@ p { color: var(--color-secondary); }
 .nav-logo:hover { color: var(--color-green); }
 
 .nav-logo-mark {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--color-green);
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .nav-logo-text {

@@ -166,7 +166,7 @@ function renderNav() {
   nav.innerHTML = `
     <div class="nav-inner">
       <a href="${u('/')}" class="nav-logo">
-        <span class="nav-logo-mark">CA</span>
+        <span class="nav-logo-mark">🗺️</span>
         <span class="nav-logo-text">ComposerAtlas</span>
       </a>
       <div class="nav-links">

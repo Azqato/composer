@@ -6,6 +6,30 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.1.6] - 2026-06-13
+
+### Design — 🗺️ emoji replaces "CA" monogram as site logo and favicon
+
+Replaced the green "CA" monogram with the 🗺️ map emoji across all logo touchpoints.
+
+**favicon.svg** — Replaced the dark-background rectangle + "CA" JetBrains Mono text with a plain 32×32 SVG that renders the emoji. All 7 HTML pages already reference `favicon.svg` via `<link rel="icon">` so no HTML changes were needed.
+
+**Nav logo mark** (`js/app.js`) — Changed `<span class="nav-logo-mark">CA</span>` to `<span class="nav-logo-mark">🗺️</span>`.
+
+**`.nav-logo-mark` CSS** (`css/main.css`) — Removed `font-family: var(--font-mono)`, `font-weight: 700`, and `color: var(--color-green)` (irrelevant to emoji rendering). Replaced with an emoji-safe font stack (`'Segoe UI Emoji'`, `'Apple Color Emoji'`, `'Noto Color Emoji'`) and bumped `font-size` to `1.25rem` for visual balance.
+
+**Files changed:** `favicon.svg`, `js/app.js`, `css/main.css`
+
+---
+
+### Docs — Strategy building best practice added to PRD
+
+Added a "Content Notes (Pending Placement)" section to `docs/PRD.MD` to stage content destined for the website. First entry: avoid lookback periods shorter than 10 days to prevent overfitting and OOS drift.
+
+**Files changed:** `docs/PRD.MD`
+
+---
+
 ## [1.1.5] - 2026-06-08
 
 ### Fix — Stats bar values now use primary white color

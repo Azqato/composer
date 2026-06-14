@@ -130,3 +130,13 @@ Retail investors interested in rules-based, systematic investing lack a central,
 - Composer.trade (external platform; strategy links depend on their availability)
 - GitHub Pages (hosting)
 - Vanilla HTML/CSS/JavaScript — zero build dependencies; no npm/Node.js required
+
+---
+
+## Content Notes (Pending Placement)
+
+The following items are queued for inclusion in the site as best practices, FAQ entries, or educational callouts. Exact placement TBD.
+
+### Strategy Building Best Practices
+
+- **Avoid short lookback periods to prevent overfitting:** Do not use checks shorter than 10 days (e.g., `1d`). Very short windows cause the algorithm to be extremely twitchy and will not match the backtest in out-of-sample (OOS) performance.
