@@ -25,7 +25,8 @@ window.STRATEGIES_DATA = [
       "leveraged-etfs",
       "momentum",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -84,7 +85,8 @@ window.STRATEGIES_DATA = [
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -148,7 +150,8 @@ window.STRATEGIES_DATA = [
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -212,7 +215,8 @@ window.STRATEGIES_DATA = [
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -276,7 +280,8 @@ window.STRATEGIES_DATA = [
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -345,7 +350,8 @@ window.STRATEGIES_DATA = [
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -409,7 +415,8 @@ window.STRATEGIES_DATA = [
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -478,7 +485,8 @@ window.STRATEGIES_DATA = [
       "momentum",
       "vix-tiers",
       "managed-futures",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -542,7 +550,8 @@ window.STRATEGIES_DATA = [
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -606,7 +615,8 @@ window.STRATEGIES_DATA = [
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -675,7 +685,8 @@ window.STRATEGIES_DATA = [
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [

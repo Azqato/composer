@@ -442,6 +442,7 @@ p { color: var(--color-secondary); }
 .tag-vix-tiers { background: rgba(245, 197, 24, 0.08); color: var(--color-yellow); border-color: rgba(245, 197, 24, 0.25); }
 .tag-leveraged-etfs { background: rgba(255, 77, 141, 0.08); color: var(--color-pink); border-color: rgba(255, 77, 141, 0.25); }
 .tag-sharpe-ratio, .tag-calmar-ratio, .tag-max-drawdown { background: rgba(0, 230, 118, 0.08); color: var(--color-green); border-color: rgba(0, 230, 118, 0.25); }
+.tag-zoop { background: rgba(255, 149, 0, 0.08); color: #ff9500; border-color: rgba(255, 149, 0, 0.25); }
 .tag-default { background: var(--color-surface-raised); color: var(--color-secondary); border-color: var(--color-border-hover); }
 
 /* Category badge (ConceptCard) */

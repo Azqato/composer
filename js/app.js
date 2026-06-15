@@ -85,6 +85,7 @@ const TAG_CLASSES = {
   'sharpe-ratio': 'tag-sharpe-ratio',
   'calmar-ratio': 'tag-calmar-ratio',
   'max-drawdown': 'tag-max-drawdown',
+  'zoop': 'tag-zoop',
 };
 
 function tagClass(slug) {
@@ -106,6 +107,7 @@ function tagLabel(slug) {
     'standard-deviation': 'Std Deviation',
     'managed-futures': 'Managed Futures',
     'inverse-etfs': 'Inverse ETFs',
+    'zoop': "Zoop's Strategies",
   };
   return labels[slug] || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }

@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.5.3] - 2026-06-15
+
+### Added — "Zoop's Strategies" glossary concept and tag
+
+Added a glossary entry for `zoop` covering who Zoop (Azqato) is, the design philosophy behind his strategy suite, and an overview of all 11 zoops-* strategies with their headline metrics. Added the `zoop` tag (orange) to all 11 zoops-* strategies, with a label and CSS class so it renders distinctively on strategy cards.
+
+**Files changed:** `data/glossary.json`, `data/glossary.js`, `data/strategies.json`, `data/strategies.js`, `js/app.js`, `css/main.css`
+
+---
+
 ## [1.5.2] - 2026-06-15
 
 ### Added — 9 new glossary concepts (17 total)

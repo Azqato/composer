@@ -24,7 +24,8 @@
       "leveraged-etfs",
       "momentum",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -83,7 +84,8 @@
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -147,7 +149,8 @@
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -211,7 +214,8 @@
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -275,7 +279,8 @@
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -344,7 +349,8 @@
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -408,7 +414,8 @@
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -477,7 +484,8 @@
       "momentum",
       "vix-tiers",
       "managed-futures",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -541,7 +549,8 @@
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -605,7 +614,8 @@
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -674,7 +684,8 @@
       "momentum",
       "200d-ma",
       "vix-tiers",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
