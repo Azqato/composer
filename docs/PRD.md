@@ -1,6 +1,6 @@
 # ComposerAtlas — Master Reference Document
 
-**Version:** 1.3
+**Version:** 1.5
 **Status:** Active
 **Last Updated:** 2026-06-14
 
@@ -223,7 +223,7 @@ ComposerAtlas/
 ├── css/
 │   └── main.css                # Full design system: tokens, layout, components
 ├── data/
-│   ├── strategies.json         # 13 strategy entries — source of truth
+│   ├── strategies.json         # 24 strategy entries — source of truth
 │   ├── strategies.js           # Same data as window.STRATEGIES_DATA — for file:// compat
 │   ├── glossary.json           # 8 glossary concept entries — source of truth
 │   ├── glossary.js             # Same data as window.GLOSSARY_DATA — for file:// compat
@@ -554,8 +554,8 @@ python scripts/update_metrics.py
 ```
 
 This script:
-1. Hits `POST /api/v0.1/symphonies/{id}/backtest` for all 13 strategies → rewrites `data/strategies.json` and `data/strategies.js`
-2. Hits `GET /api/v0.1/symphonies/{id}/score` for all 13 strategies → rewrites `data/symphony_scores.json`
+1. Hits `POST /api/v0.1/symphonies/{id}/backtest` for all 24 strategies → rewrites `data/strategies.json` and `data/strategies.js`
+2. Hits `GET /api/v0.1/symphonies/{id}/score` for all 24 strategies → rewrites `data/symphony_scores.json`
 
 No API key required. After running:
 
@@ -675,12 +675,13 @@ python scripts/update_metrics.py
 3. Compare findings to existing `how_it_works`, `signals`, and `tags`
 4. Flag discrepancies
 
-**Structural pattern (2026 library):** All 13 symphonies share this structure:
+**Structural pattern (original 13 zoop 2026 symphonies):** The first 13 strategies all share this structure:
 ```
 [EqualWeight]
   ├── zoop's 2026 Frontrunner (50%)    ← shared base component
   └── [Strategy-specific component] (50%)
 ```
+Strategies added in v1.4.0 and v1.5.0 (11 entries) are standalone symphonies and do not use this shared Frontrunner pattern.
 
 The Frontrunner always contributes: RSI(10) oversold dip-buys (SMH <23 → SOXL; QQQ <28 → TQQQ; SPY <28 → UPRO), XLY RSI >79 → VXX, UVXY RSI >65 → SPXU or TQQQ, default → BIL. Therefore every strategy automatically inherits `rsi` and `vix-tiers` tags.
 
@@ -1067,6 +1068,28 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 - [x] URL patterns: `?slug=X` replaces `/detail/?slug=X` (v1.2.0)
 - [x] `u()` helper simplified — depth-agnostic (v1.2.0)
 - [ ] Validation: script checks required fields before writing
+
+### V1.3 — Documentation Consolidation
+
+**Status:** Complete (at v1.3.0)
+
+- [x] 12 scattered documentation files consolidated into 4 canonical docs: `README.md`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
+- [x] All operational, technical, API, schema, roadmap, security, and tenet content moved into `docs/PRD.md`
+- [x] File naming standardized from `.MD` to `.md`
+
+### V1.4 — Strategy Library Expansion + Infra
+
+**Status:** Complete (at v1.4.2)
+
+- [x] 5 new strategies added: Holy Grail (Original), TQQQ For The Long Term, Wooden ARKK Machine 2.2, Super Semiconductors, The Four Horsemen of the Apocalypse — library grows to 18 (v1.4.0)
+- [x] GitHub repository renamed from `Azqato/ComposerAtlas` to `Azqato/composer`; GitHub Pages URL updated (v1.4.1)
+- [x] BASE URL detection made repo-rename-proof: hostname-based (`*.github.io`) instead of hardcoded string match (v1.4.2)
+
+### V1.5 — Strategy Library Expansion
+
+**Status:** Complete (at v1.5.0)
+
+- [x] 6 new strategies added: SOXX Group, SOXL Growth v2.4.5 RL, Inside Nancy Pelosi's Chips V3, Top Cap by MA + RSI ETF Hedge, Mean Reversion Comparison to Python Code, SPY Energy Chips Commodities — library grows to 24 (v1.5.0)
 
 ### V2.0 — Scale + Discovery
 
