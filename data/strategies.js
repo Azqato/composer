@@ -766,5 +766,67 @@ window.STRATEGIES_DATA = [
     ],
     "risk_profile": "Extremely Aggressive. The highest-risk strategy in the library with ~65.7% max drawdown and 68.7% standard deviation. SOXL's 3x semiconductor leverage produces the most extreme price swings of any instrument in this suite. The MaxDD and standard deviation signals help time entries and exits, but semiconductor sector concentration means major sector drawdowns can produce 60-80% peak-to-trough losses even with protective routing. Only appropriate as a small satellite allocation within a diversified portfolio.",
     "author_note": "Metrics are accurate as of the last_updated date. Update quarterly via RUNBOOK.MD."
+  },
+  {
+    "slug": "s90-half-low-catch",
+    "name": "Half Low Catch s90 50/40 maxDD",
+    "symphony_url": "https://app.composer.trade/symphony/K8ql2SKFd4VDBemIstEr/details",
+    "symphony_id": "K8ql2SKFd4VDBemIstEr",
+    "annualized_rate_of_return": 7.35042518506566,
+    "max_drawdown": -0.29629341433851586,
+    "cumulative_return": 103.467384,
+    "calmar_ratio": 24.8079262965588,
+    "sharpe_ratio": 3.0375887179332737,
+    "standard_deviation": 0.7974475286785684,
+    "min": -0.1400939559893225,
+    "mean": 0.009612371493086469,
+    "median": 0.004293722588756044,
+    "max": 0.5462788092451374,
+    "trailing_one_month_return": 0.5933654062266869,
+    "trailing_three_month_return": 2.029829823245447,
+    "trailing_one_year_return": 8.56041524740928,
+    "backtest_days": 551,
+    "description": "A multi-asset extreme dip-buying strategy that catches catastrophic 3x ETF crashes across semiconductors, biotech, China, financials, small caps, and global markets — only entering at RSI thresholds far below typical oversold levels.",
+    "tags": [
+      "rsi",
+      "leveraged-etfs",
+      "momentum",
+      "vix-tiers"
+    ],
+    "last_updated": "2026-06-14",
+    "how_it_works": [
+      "Low Catchers is a 50/50 combination of the 2026 Frontrunner and a dedicated low-catching component. The low-catchers half works as a waterfall of extreme oversold conditions across a diversified basket of 3x leveraged ETFs — defaulting to cash (BIL via the Frontrunner) and only deploying capital when market conditions reach truly catastrophic thresholds. Unlike the other strategies in this library that use RSI extremes in the 22–31 range, Low Catchers pushes entry thresholds far lower — as tight as RSI 14 for some ETFs.",
+      "The low-catchers component opens with two initial gates: if QQQ's 10-day moving-average return falls below -2.4% (broad Nasdaq deterioration), the strategy buys SOXL. If QQQ is not yet weak, it checks for catastrophic SOXL crashes directly — a 1-day return below -31%, 2-day cumulative return below -37%, or 5-day cumulative return below -57% each trigger a SOXL entry. These are flash-crash and multi-day collapse conditions, not routine corrections. When UVXY's 10-period RSI exceeds 88 — far above the 65 threshold used elsewhere in this library — the strategy also buys SOXL, treating extreme volatility panic as a contrarian semiconductor buy signal.",
+      "After the SOXL-specific triggers, the component cascades through individual 3x ETF RSI checks in strict priority order: LABU (3x biotech) RSI < 22, YINN (3x China) RSI < 14, UDOW (3x Dow) RSI < 18, FAS (3x financials) RSI < 15, TNA (3x small cap) RSI < 16, URTY (3x Russell 2000) RSI < 16, KORU (3x South Korea) RSI < 17, NAIL (3x homebuilders), and additional ETFs further down the tree. Each asset independently catches its own sector's extreme bottom. If no condition triggers, the Frontrunner's BIL default preserves capital until the next opportunity."
+    ],
+    "signals": [
+      {
+        "name": "Extreme Multi-ETF RSI Waterfall",
+        "tag": "rsi",
+        "description": "10-period RSI thresholds of 14–22 across LABU, YINN, UDOW, FAS, TNA, URTY, KORU, NAIL, and others — the tightest RSI entry gates in the library."
+      },
+      {
+        "name": "SOXL Multi-Window Crash Detection",
+        "tag": "momentum",
+        "description": "1-day (<-31%), 2-day (<-37%), and 5-day (<-57%) cumulative return checks on SOXL trigger semiconductor entries at catastrophic crash levels."
+      },
+      {
+        "name": "QQQ Trend Gate",
+        "tag": "momentum",
+        "description": "QQQ 10-day moving-average return < -2.4% triggers SOXL as a broad Nasdaq deterioration entry."
+      },
+      {
+        "name": "UVXY Extreme Fear Signal",
+        "tag": "vix-tiers",
+        "description": "UVXY RSI(10) > 88 — far above the library standard of 65 — triggers SOXL as a contrarian panic-buy at extreme volatility spikes."
+      },
+      {
+        "name": "Diversified 3x Leveraged Basket",
+        "tag": "leveraged-etfs",
+        "description": "SOXL, LABU, YINN, UDOW, FAS, TNA, URTY, KORU, NAIL — nine or more 3x leveraged ETFs across sectors and geographies, each caught at their own extreme RSI bottom."
+      }
+    ],
+    "risk_profile": "Extremely Aggressive with a short backtest. At 79.7% standard deviation, this is the most volatile strategy in the library — exceeding even SOXL Growth's 68.7%. The 29.6% max drawdown is low relative to the volatility because the strategy spends most of its time in BIL (via the Frontrunner) and only deploys at extreme market conditions. However, with only 551 days of backtest history (~1.5 years, from early 2024), the extraordinary metrics — 735% ARR, Calmar 24.8, Sharpe 3.04 — reflect a predominantly bull market with the specific volatility spikes this strategy is optimized to catch. These figures should be interpreted with significant caution; a longer out-of-sample record is required before they can be taken at face value.",
+    "author_note": "Note: Backtest covers approximately 1.5 years (≈551 days from early 2024). All metrics reflect this short window. Interpret with caution. Metrics are accurate as of the last_updated date."
   }
 ];

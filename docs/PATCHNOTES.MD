@@ -6,6 +6,35 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.1.7] - 2026-06-14
+
+### Content — Added Low Catchers strategy (13th symphony)
+
+Added **Half Low Catch s90 50/40 maxDD** (`s90-half-low-catch`) — a multi-asset extreme dip-buying strategy that pairs the 2026 Frontrunner with a dedicated low-catching component.
+
+**Strategy summary:**
+
+The low-catchers component is a waterfall of extreme oversold conditions across 9+ 3x leveraged ETFs. Entry thresholds are the tightest in the library (RSI 14–22). The strategy only deploys in catastrophic conditions: QQQ 10-day MA return < -2.4%, SOXL 1/2/5-day crash thresholds (-31%/-37%/-57%), UVXY RSI > 88 (extreme fear), or individual ETF RSI bottoms across LABU, YINN, UDOW, FAS, TNA, URTY, KORU, NAIL, and others.
+
+**Key metrics (as of 2026-06-14, backtest 551 days):**
+
+| Metric | Value |
+|---|---|
+| Annualized Return | 735% |
+| Max Drawdown | -29.6% |
+| Sharpe Ratio | 3.04 |
+| Calmar Ratio | 24.8 |
+| Standard Deviation | 79.7% |
+| Backtest Days | 551 (~1.5 yrs) |
+
+**Important:** Backtest covers ~1.5 years only (from early 2024). Metrics reflect a predominantly bull market and should be interpreted with caution.
+
+Metrics fetched via Composer API (`POST /api/v0.1/symphonies/K8ql2SKFd4VDBemIstEr/backtest`).
+
+**Files changed:** `data/strategies.json`, `data/strategies.js`, `docs/PATCHNOTES.MD`
+
+---
+
 ## [1.1.6] - 2026-06-13
 
 ### Design — 🗺️ emoji replaces "CA" monogram as site logo and favicon
