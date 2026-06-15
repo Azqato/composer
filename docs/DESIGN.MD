@@ -1,13 +1,14 @@
-# DESIGN.MD - Design System
-# ComposerAtlas
+# ComposerAtlas — Design System
 
-**Version:** 1.2
+**Version:** 1.3
 **Status:** Active
-**Last Updated:** 2026-06-08
+**Last Updated:** 2026-06-14
+
+All values in this document are derived from `css/main.css` and `js/app.js` — the source files are the ground truth.
 
 ---
 
-## Philosophy
+## 1. Design Philosophy
 
 ComposerAtlas uses a dark, editorial visual language inspired by Composer.trade's interface. It pairs the energy and color vocabulary of Composer with the structured, wiki-style readability of a reference document. The result is a site that feels authoritative and trustworthy without being sterile.
 
@@ -15,592 +16,672 @@ Every visual decision serves the user's ability to understand information. Color
 
 ---
 
-## Color Palette
+## 2. Color Palette
 
-Inspired directly by Composer.trade's design system.
+All colors are defined as CSS custom properties in the `:root` block of `css/main.css`.
+
+### CSS Custom Properties
 
 | Token | Hex | Usage |
 |---|---|---|
-| `--color-bg` | `#0d0d0d` | Page background |
-| `--color-surface` | `#141414` | Card / panel background |
-| `--color-surface-raised` | `#1a1a1a` | Elevated surface, hover state |
-| `--color-border` | `#1f1f1f` | Default borders, dividers |
-| `--color-border-hover` | `#2e2e2e` | Border on hover |
-| `--color-primary` | `#f0f0f0` | Body text, headings |
-| `--color-secondary` | `#b0b0b0` | Labels, captions, metadata, muted text |
-| `--color-disabled` | `#444444` | Disabled states, truly muted/inactive elements |
-| `--color-green` | `#00e676` | Positive returns, CTAs, active nav, highlights |
-| `--color-pink` | `#ff4d8d` | Negative returns, max drawdown, warnings |
-| `--color-pink-muted` | `#ff4d8d20` | Pink at 12% opacity — warning backgrounds |
-| `--color-blue` | `#4d9fff` | Links, interactive element hover borders |
-| `--color-yellow` | `#f5c518` | Caution indicators, median values |
-| `--color-purple` | `#a78bfa` | Glossary tags, secondary accents |
-| `--color-purple-muted` | `#a78bfa20` | Purple at 12% opacity — tag backgrounds |
-| `--color-black` | `#000000` | Deep backgrounds, CTA button text |
+| `--color-bg` | `#0d0d0d` | Page background (`body` background) |
+| `--color-surface` | `#141414` | Card and panel background |
+| `--color-surface-raised` | `#1a1a1a` | Elevated surface; hover state background; nav active state |
+| `--color-border` | `#1f1f1f` | Default borders and dividers |
+| `--color-border-hover` | `#2e2e2e` | Border color on hover |
+| `--color-primary` | `#f0f0f0` | Body text, headings, primary content |
+| `--color-secondary` | `#b0b0b0` | Labels, captions, metadata, muted text, `<p>` elements |
+| `--color-disabled` | `#444444` | Disabled states, breadcrumb separators, metric labels |
+| `--color-green` | `#00e676` | Positive returns, CTAs, active nav, highlights, "View Strategy" links |
+| `--color-pink` | `#ff4d8d` | Negative returns, max drawdown, warning states |
+| `--color-blue` | `#4d9fff` | Links, interactive element hover borders, focus rings, "Built by" link |
+| `--color-yellow` | `#f5c518` | Neutral caution indicators, mean/median return values |
+| `--color-purple` | `#a78bfa` | Momentum tag, strategy-concept badge |
+
+### Inline rgba() Values (Not Named Properties)
+
+The following color variants appear as inline `rgba()` values in `css/main.css` and are not defined as named CSS custom properties:
+
+| Usage | Value |
+|---|---|
+| Tag background — RSI, 200d-MA | `rgba(77, 159, 255, 0.08)` |
+| Tag border — RSI, 200d-MA | `rgba(77, 159, 255, 0.25)` |
+| Tag background — momentum | `rgba(167, 139, 250, 0.08)` |
+| Tag border — momentum | `rgba(167, 139, 250, 0.25)` |
+| Tag background — vix-tiers | `rgba(245, 197, 24, 0.08)` |
+| Tag border — vix-tiers | `rgba(245, 197, 24, 0.25)` |
+| Tag background — leveraged-etfs | `rgba(255, 77, 141, 0.08)` |
+| Tag border — leveraged-etfs | `rgba(255, 77, 141, 0.25)` |
+| Tag background — sharpe/calmar/max-drawdown | `rgba(0, 230, 118, 0.08)` |
+| Tag border — sharpe/calmar/max-drawdown | `rgba(0, 230, 118, 0.25)` |
+| Badge background — indicator | `rgba(77, 159, 255, 0.1)` |
+| Badge border — indicator | `rgba(77, 159, 255, 0.2)` |
+| Badge background — risk-metric | `rgba(255, 77, 141, 0.1)` |
+| Badge border — risk-metric | `rgba(255, 77, 141, 0.2)` |
+| Badge background — asset-class | `rgba(245, 197, 24, 0.1)` |
+| Badge border — asset-class | `rgba(245, 197, 24, 0.2)` |
+| Badge background — strategy-concept | `rgba(167, 139, 250, 0.1)` |
+| Badge border — strategy-concept | `rgba(167, 139, 250, 0.2)` |
+| Inline code background | `rgba(0, 230, 118, 0.08)` |
+| Nav background | `rgba(13, 13, 13, 0.95)` |
 
 ### Semantic Color Rules
 
 - **Green** — used exclusively for positive values and primary CTAs. Never decorative.
 - **Pink** — used exclusively for negative values (drawdown, losses). Never decorative.
-- **Purple** — reserved for glossary / concept vocabulary only.
-- **Blue** — reserved for interactive states (links, hover borders). Not used for data values.
-- **Yellow** — used for neutral caution signals (data freshness warnings, median indicators).
+- **Purple** — reserved for momentum tags and strategy-concept glossary badges.
+- **Blue** — reserved for interactive states (links, focus rings, hover borders). Not used for data values.
+- **Yellow** — used for neutral/caution indicators (mean period return, median period return).
+
+### Contrast Ratios (WCAG AA)
+
+| Foreground | Background | Ratio |
+|---|---|---|
+| `#f0f0f0` (primary) | `#0d0d0d` (bg) | ~15:1 |
+| `#b0b0b0` (secondary) | `#0d0d0d` (bg) | ~9.4:1 |
+| `#00e676` (green) | `#0d0d0d` (bg) | ~8.4:1 |
+| `#ff4d8d` (pink) | `#0d0d0d` (bg) | ~4.6:1 (minimum) |
+| `#0d0d0d` (bg) | `#00e676` (CTA button) | ~15:1 |
 
 ---
 
-## Typography
+## 3. Typography
 
-- **Primary Font:** Inter (Google Fonts) — body text, UI labels, headings
-- **Monospace Font:** JetBrains Mono (Google Fonts, fallback: Fira Code) — metric values, strategy IDs, code
+### Font Families
 
-### Type Scale
+Defined in `:root` in `css/main.css` and loaded via Google Fonts:
 
-| Element | Size | Weight | Line Height |
-|---|---|---|---|
-| H1 (page title) | 2.25rem / 36px | 700 | 1.2 |
-| H2 (section heading) | 1.75rem / 28px | 600 | 1.3 |
-| H3 (subsection) | 1.375rem / 22px | 600 | 1.35 |
-| H4 (label heading) | 1.125rem / 18px | 500 | 1.4 |
-| Body | 1rem / 16px | 400 | 1.6 |
-| Small / Caption | 0.875rem / 14px | 400 | 1.5 |
-| Metric value | 1rem / 16px | 500 | 1.4 (mono) |
-| Tag / Badge | 0.75rem / 12px | 500 | 1 |
-
-### Font Loading
-
-```html
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+```css
+--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+--font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 ```
 
+Google Fonts import (in `css/main.css`):
+```css
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+```
+
+- **Inter** — body text, UI labels, headings, nav links
+- **JetBrains Mono** — metric values, strategy IDs, code blocks, `font-mono` utility class
+
+### Type Scale (from css/main.css)
+
+| Element | CSS Rule | Size | Weight | Line Height |
+|---|---|---|---|---|
+| `h1` | `h1` | `2rem` (32px) | `700` | `1.2` |
+| `h2` | `h2` | `1.375rem` (22px) | `700` | `1.3` |
+| `h3` | `h3` | `1.125rem` (18px) | `600` | `1.4` |
+| `h4` | `h4` | `0.9375rem` (15px) | `600` | — |
+| Body | `body` | `0.9375rem` (15px) | `400` | `1.6` |
+| Hero title | `.hero-title` | `clamp(1.75rem, 4vw, 3rem)` | `700` | `1.15` |
+| Hero description | `.hero-desc` | `1.0625rem` (17px) | `400` | `1.7` |
+| Card title | `.card-title` | `0.9375rem` (15px) | `600` | `1.4` |
+| Card description | `.card-desc` | `0.875rem` (14px) | `400` | `1.6` |
+| Metric value (card) | `.card-metric-value` | `0.875rem` (14px) | `500` | — |
+| Metrics row label | `.metrics-row dt` | `0.875rem` (14px) | — (inherited) | — |
+| Metrics row value | `.metrics-row dd` | `0.875rem` (14px) | `500` (mono) | — |
+| Label / eyebrow | `.label`, `.card-metric-label` | `0.6875rem` (11px) | `500` | — |
+| Tag / badge | `.tag`, `.badge` | `0.75rem` (12px) | `500` | — |
+| Nav link | `.nav-link` | `0.875rem` (14px) | — (inherited) | — |
+| Mobile nav link | `.mobile-nav-link` | `0.9375rem` (15px) | — (inherited) | — |
+| Footer link | `.footer-links a` | `0.8rem` (12.8px) | — (inherited) | — |
+| Footer legal | `.footer-legal` | `0.75rem` (12px) | — (inherited) | `1.6` |
+| Footer copy | `.footer-copy` | `0.75rem` (12px) | — (inherited) | — |
+| Prose body | `.prose p` | `0.9375rem` (15px) | — (inherited) | `1.7` |
+| Prose heading | `.prose h2` | `1.125rem` (18px) | `700` | — |
+| Stat value | `.stat-value` | `1.5rem` (24px) | `700` (mono) | `1` |
+| Stat label | `.stat-label` | `0.75rem` (12px) | — (inherited) | — |
+
+### Color of Text by Context
+
+- Default `<p>` elements: `color: var(--color-secondary)` (set globally in CSS)
+- Headings (`h1`–`h4`): inherit `--color-primary` from body, or set explicitly
+- `.text-primary` class: `--color-primary`
+- `.text-secondary` class: `--color-secondary`
+- `.text-disabled` class: `--color-disabled`
+
 ---
 
-## Responsive Breakpoints
+## 4. Spacing System
 
-Mobile-first. All base styles target the smallest viewport; utilities add complexity at larger sizes.
+**Base unit: 4px.** All spacing values in the codebase are multiples of 4.
 
-| Name | Min Width | Description |
-|---|---|---|
-| (base) | 0px | Single-column, mobile layout |
-| `sm` | 640px | Large mobile / small tablet |
-| `md` | 768px | Tablet |
-| `lg` | 1024px | Small desktop |
-| `xl` | 1280px | Standard desktop |
-| `2xl` | 1536px | Wide desktop (content still capped at 1200px) |
-
-Max content width: **1200px**, centered with `mx-auto px-4 md:px-6 lg:px-8`.
-
----
-
-## Spacing Scale
-
-4px base unit. All spacing values are multiples of 4.
+### Named CSS Custom Properties
 
 | Token | Value | Usage |
 |---|---|---|
-| `space-1` | 4px | Inline icon gap, tight padding |
-| `space-2` | 8px | Tag padding, tight element gap |
-| `space-3` | 12px | Card padding (mobile) |
-| `space-4` | 16px | Card padding (desktop), section gaps |
-| `space-6` | 24px | Component separation |
-| `space-8` | 32px | Section padding |
-| `space-12` | 48px | Major section gaps |
-| `space-16` | 64px | Page-level vertical rhythm |
-| `space-24` | 96px | Hero section padding |
+| `--nav-height` | `56px` | Fixed nav bar height; `padding-top` on `.page` |
+| `--page-px` | `24px` | Horizontal page padding in `.container` and `.nav-inner` |
+| `--max-width` | `1280px` | Maximum content width |
 
----
+### Utility Classes (from css/main.css)
 
-## Border Radius
-
-| Context | Value |
+| Class | Value |
 |---|---|
-| Cards, panels | 8px |
-| Buttons | 6px |
-| Tags / badges | 4px |
-| Inputs | 6px |
-| Tooltips | 4px |
+| `.py-12` | `padding-top: 48px; padding-bottom: 48px` |
+| `.mt-8` | `margin-top: 32px` |
+| `.mb-4` | `margin-bottom: 16px` |
+| `.mb-6` | `margin-bottom: 24px` |
+| `.mb-8` | `margin-bottom: 32px` |
+| `.mb-10` | `margin-bottom: 40px` |
+
+### Common Spacing Values in Use
+
+| Value | Context |
+|---|---|
+| `2px` | Tag padding vertical |
+| `4px` | Icon-text gap, breadcrumb gap |
+| `5px` | Nav hamburger bar gap, `.btn-sm` vertical padding |
+| `6px` | Tag padding horizontal, card-tags gap, breadcrumb gap |
+| `8px` | Card tags gap, nav logo gap, metrics section label margin |
+| `10px` | Metrics row padding vertical |
+| `12px` | Card footer gap, signal header gap, `.btn-sm` horizontal padding |
+| `16px` | Card padding, metrics row padding horizontal, section header margin, footer link gap |
+| `20px` | Card padding (`.card { padding: 20px }`), metrics section margin |
+| `24px` | Page horizontal padding (`--page-px`), section header margin, breadcrumb margin |
+| `28px` | Prose h2 margin-top |
+| `32px` | Sidebar gap, `.mt-8` |
+| `40px` | Grid-2 gap, about-content h2 margin-top |
+| `48px` | Hero bottom padding, `.py-12` |
+| `56px` | Nav height (`--nav-height`) |
+| `64px` | Hero top padding |
 
 ---
 
-## Elevation / Depth
+## 5. Border Radius
 
-Elevation is expressed through border color changes, not traditional box-shadows, to stay consistent with the dark theme.
+Defined as CSS custom properties in `css/main.css`:
 
-| Level | Description | Implementation |
+| Token | Value | Used On |
 |---|---|---|
-| 0 (flat) | Default page background | `bg-bg` |
-| 1 (surface) | Card, panel | `bg-surface` + `border border-border` |
-| 2 (raised) | Hover state, active dropdown | `bg-surface-raised` + `border border-border-hover` |
-
-Subtle `box-shadow` is acceptable on hover states: `0 4px 24px rgba(0,0,0,0.4)`.
+| `--radius-sm` | `4px` | Tags, badges, tooltip-style elements, hamburger bar border-radius |
+| `--radius-md` | `8px` | Buttons, nav links, mobile nav links, metrics table, signal cards, risk box, formula box, compact list |
+| `--radius-lg` | `12px` | Cards (`.card`) |
 
 ---
 
-## Layout
+## 6. Breakpoints
 
-### Page Shell
+Mobile-first. Base styles target the smallest viewport; media queries add complexity at larger sizes.
 
-```
-┌──────────────────────────────────────────────────────┐
-│  [Nav — fixed, full width, dark surface]             │
-├──────────────────────────────────────────────────────┤
-│                                                      │
-│   [Main content — max-w-content, centered]           │
-│                                                      │
-│                                                      │
-├──────────────────────────────────────────────────────┤
-│  [Footer]                                            │
-└──────────────────────────────────────────────────────┘
-```
+| Min Width | Applied To | What Changes |
+|---|---|---|
+| `0px` (base) | All elements | Single-column layout; mobile nav visible; hamburger shown |
+| `480px` | `.nav-logo-text` | Site name text appears next to 🗺️ emoji in nav |
+| `640px` | `.grid-3` | Strategy/glossary card grid changes from 1-column to 2-column |
+| `768px` | `.nav-links`, `.nav-cta`, `.nav-hamburger` | Desktop nav links appear; hamburger hides; nav CTA appears |
+| `1024px` | `.grid-3`, `.grid-2`, `.detail-sidebar-sticky` | Grid-3 goes to 3-column; Grid-2 (detail layout) goes to `2fr 1fr`; sidebar becomes sticky |
 
-Main content area has `pt-16` (64px) top padding to clear the fixed nav.
+**Max content width:** `1280px` (`--max-width`), centered via `.container { max-width: var(--max-width); margin: 0 auto; padding: 0 var(--page-px); }`.
 
 ---
 
-## Page Layouts
+## 7. Component Patterns
 
-### Home Page (`/`)
+### Navigation
 
-```
-Nav
-────────────────────────────────────────────────────
-Hero Section
-  H1: "ComposerAtlas"
-  Subtitle: 1-2 sentence description of the site
-  Stats Bar: "12 Strategies  ·  8 Concepts  ·  Updated Jun 8, 2026"
-────────────────────────────────────────────────────
-Strategy Grid (3-col desktop / 2-col tablet / 1-col mobile)
-  [ StrategyCard ] [ StrategyCard ] [ StrategyCard ]
-  [ StrategyCard ] [ StrategyCard ] [ StrategyCard ]
-  ...
-────────────────────────────────────────────────────
-Footer
-```
+**Desktop nav (768px+):**
 
-- Hero: `py-16` vertical padding, text centered on mobile / left-aligned on lg+
-- Stats bar: secondary text color, monospaced numbers, `·` separators
-- Grid: `gap-6`, cards equal height within rows
+- Fixed to top of viewport; `z-index: 100`; height: `56px` (`--nav-height`)
+- Background: `rgba(13, 13, 13, 0.95)` with `backdrop-filter: blur(8px)` and `border-bottom: 1px solid var(--color-border)`
+- Logo: 🗺️ emoji (`font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji'`, `font-size: 1.25rem`) + "ComposerAtlas" text (hidden below 480px)
+- Logo hover: transitions to `--color-green` in 150ms
+- Nav links: `--color-secondary` default; `--color-primary` + `bg-surface` on active/hover; 150ms transition
+- "Open Composer ↗" button: `.btn-outline-green` — green border, green text; switches to green bg on hover
+- Active route detection: `isActive()` function in `renderNav()` in `js/app.js`
 
----
+**Mobile nav (< 768px):**
 
-### Strategy Detail Page (`/strategies/[slug]`)
+- Hamburger button: `36x36px`, `border-radius: --radius-md`; three `1.5px` bars
+- Hamburger animates to X when open: bar 1 → `translateY(6.5px) rotate(45deg)`, bar 2 → `opacity: 0`, bar 3 → `translateY(-6.5px) rotate(-45deg)`
+- `aria-expanded` attribute drives animation via CSS
+- Mobile menu: `.nav-mobile` with class `.open` toggled by JS event listener on `#nav-toggle`
+- Mobile menu panel: `background: --color-bg`, `border-top: 1px solid --color-border`, `padding: 12px 16px 16px`, `flex-direction: column`, `gap: 2px`
+- Mobile nav links: `0.9375rem`, `padding: 10px 12px`, full-width tap targets
 
-```
-Nav
-────────────────────────────────────────────────────
-Breadcrumb
-  Home › Strategies › [Strategy Name]
-────────────────────────────────────────────────────
-Strategy Header
-  H1: Strategy Name
-  [tag] [tag] [tag]   ← glossary tag chips
-  Short description (1-3 sentences)
-  [Open in Composer →]  ← CTA button
-────────────────────────────────────────────────────
-Two-Column Body (desktop: 8/4 col split; mobile: stacked)
-┌──────────────────────────┐  ┌────────────────────┐
-│ H2: How It Works         │  │ Metrics            │
-│ Long-form logic content  │  │ ─────────────────  │
-│                          │  │ Ann. Return  31.2% │
-│ H3: Signals Used         │  │ Max Drawdown -18.7%│
-│ [RSI] [VIX Tiers]        │  │ Sharpe Ratio  1.43 │
-│                          │  │ ...               │
-│ H3: Risk Profile         │  │                   │
-│ Risk summary box         │  │ Last updated:     │
-│                          │  │ Jun 8, 2026       │
-└──────────────────────────┘  └────────────────────┘
-  (metrics sidebar is sticky on desktop scroll)
-────────────────────────────────────────────────────
-Footer
-```
-
-**Mobile behavior:** Metrics table renders above the logic section (stacks vertically: header → metrics → logic).
+**Nav rendered by:** `renderNav()` in `js/app.js` into `<nav id="nav-root">`.
 
 ---
 
-### Glossary Index (`/glossary/`)
+### Buttons
 
-```
-Nav
-────────────────────────────────────────────────────
-Page Header
-  H1: "Glossary"
-  Subtitle: "Reference definitions for concepts used in ComposerAtlas strategies."
-────────────────────────────────────────────────────
-Category Filter Bar (MVP: static; V2: interactive filter)
-  [All] [Indicators] [Risk Metrics] [Asset Classes] [Strategy Concepts]
-────────────────────────────────────────────────────
-Concept Card Grid (3-col desktop / 2-col tablet / 1-col mobile)
-  [ ConceptCard ] [ ConceptCard ] [ ConceptCard ]
-  [ ConceptCard ] [ ConceptCard ] [ ConceptCard ]
-  ...
-────────────────────────────────────────────────────
-Footer
-```
+All buttons use `.btn` base class.
 
----
+| Variant | Class | Background | Text | Border | Hover |
+|---|---|---|---|---|---|
+| Green filled | `.btn-green` | `--color-green` | `--color-bg` | Transparent | `opacity: 0.9` |
+| Outline (default) | `.btn-outline` | Transparent | `--color-primary` | `--color-border` | Border → `--color-border-hover`, bg → surface |
+| Outline green | `.btn-outline-green` | Transparent | `--color-green` | `--color-green` | bg → green, text → bg |
 
-### Glossary Detail Page (`/glossary/[slug]`)
+| Size | Class | Padding | Font Size |
+|---|---|---|---|
+| Default | `.btn` | `8px 16px` | `0.875rem` (14px) |
+| Small | `.btn-sm` | `5px 12px` | `0.8125rem` (13px) |
+| Large | `.btn-lg` | `11px 22px` | `0.9375rem` (15px) |
+| Nav CTA | `.btn-outline-green` (override) | `5px 12px` | `0.8125rem` (13px) |
 
-```
-Nav
-────────────────────────────────────────────────────
-Breadcrumb
-  Home › Glossary › [Concept Name]
-────────────────────────────────────────────────────
-Concept Header
-  H1: Concept Name
-  [Category tag]  e.g. [Indicator]
-────────────────────────────────────────────────────
-Two-Column Body (desktop: 8/4 col split; mobile: stacked)
-┌──────────────────────────┐  ┌────────────────────┐
-│ Definition               │  │ Strategies Using   │
-│ Body text                │  │ This Concept       │
-│                          │  │ ─────────────────  │
-│ H3: How It Works         │  │ [CompactCard]      │
-│ Body text                │  │ [CompactCard]      │
-│                          │  │ [CompactCard]      │
-│ H3: In Practice          │  │                   │
-│ Body text                │  │                   │
-│                          │  │                   │
-│ H3: Formula (if any)     │  │                   │
-│ Code block               │  │                   │
-│                          │  │                   │
-│ H3: Limitations          │  │                   │
-│ Body text                │  │                   │
-└──────────────────────────┘  └────────────────────┘
-────────────────────────────────────────────────────
-Footer
-```
+Transition: `opacity 0.15s, background 0.15s, color 0.15s, border-color 0.15s`
+
+All external links use `target="_blank" rel="noopener noreferrer"`.
 
 ---
 
-### About Page (`/about/`)
+### Strategy Card
 
-Single-column, centered, max-width 768px. Sections:
-1. What is ComposerAtlas?
-2. Who curates it?
-3. Independence and integrity statement
-4. How to support
-5. Disclaimer (not financial advice)
+Used on the home page strategy grid (`renderStrategyCard()` in `js/app.js`).
 
----
-
-## Navigation
-
-### Desktop Nav (lg+)
-
-```
-┌────────────────────────────────────────────────────────┐
-│ [◈ ComposerAtlas]    Strategies  Glossary  About    [Support ↗] │
-└────────────────────────────────────────────────────────┘
-```
-
-- Fixed to top of viewport; `z-50`
-- Background: `--color-surface` with `border-b border-border`
-- Height: 56px
-- Logo: white text, bold, no icon at MVP
-- Nav links: `--color-secondary` default; `--color-primary` + green underline on active route
-- Support button: bg `--color-green`, text `--color-black`, bold, 6px border-radius, opens in new tab
-- Hover transition on links: 150ms color change
-
-### Mobile Nav (< lg)
-
-```
-┌────────────────────────────────────────────────────────┐
-│ [◈ ComposerAtlas]                              [☰]    │
-└────────────────────────────────────────────────────────┘
-```
-
-Hamburger (☰) opens a full-height slide-in drawer from the right:
-```
-┌──────────────────────┐
-│              [✕]     │
-├──────────────────────┤
-│ Strategies           │
-│ Glossary             │
-│ About                │
-├──────────────────────┤
-│ [Support ↗]          │
-└──────────────────────┘
-```
-
-- Drawer: `bg-surface`, full viewport height, `w-72` (288px), slides in 200ms ease-out
-- Overlay: semi-transparent black backdrop, click-to-close
-- Nav links: large text (18px), `py-4` padding, full-width tap targets
-- Toggle handled by a vanilla JS event listener on `#nav-toggle` — no framework required
-
----
-
-## Components
-
-### StrategyCard
-
-Used on the home page strategy grid.
-
-```
-┌──────────────────────────────────────────┐
-│ Strategy Name                     H3     │
-│ Short description, 1-2 lines      body   │
-│                                          │
-│ Ann. Return    Max Drawdown  Sharpe      │
-│  +31.2%         -18.7%       1.43        │
-│  (green)        (pink)       (primary)   │
-│                                          │
-│ [vix] [leveraged-etf]    [View Strategy →]│
-└──────────────────────────────────────────┘
+```html
+<article class="card">
+  <h2 class="card-title"><a href="...">Strategy Name</a></h2>
+  <p class="card-desc">Short description (3-line clamp)</p>
+  <div class="card-metrics">  <!-- 3-column grid -->
+    ARR / Max DD / Sharpe
+  </div>
+  <div class="card-tags"><!-- tag pills --></div>
+  <div class="card-footer">
+    <a href="..." class="btn btn-sm" style="color:var(--color-green)">View Strategy →</a>
+  </div>
+</article>
 ```
 
 **States:**
-- Default: `bg-surface`, `border border-border`, 8px radius
-- Hover: `border-color` transitions to `--color-blue`, `box-shadow: 0 4px 24px rgba(0,0,0,0.4)`, `bg-surface-raised`
-- Focus (keyboard): same as hover + 2px `outline` in `--color-blue`
-- Transition: `border-color 150ms ease, box-shadow 150ms ease, background 150ms ease`
-- The entire card is a clickable link wrapping the content
+- Default: `background: --color-surface`, `border: 1px solid --color-border`, `border-radius: --radius-lg (12px)`, `padding: 20px`
+- Hover: `border-color: --color-border-hover`; card title color → `--color-green`
+- Transition: `border-color 0.15s`
 
-**"View Strategy →" link:** text in `--color-green`, no button styling — subtle inline link
-**Metric values:** monospace font; positive in green, negative in pink, neutral (Sharpe) in primary
+**Card metrics grid:** `grid-template-columns: repeat(3, 1fr)`, `gap: 12px`
+- Metric label: `0.6875rem`, `500`, uppercase, `letter-spacing: 0.08em`, `--color-disabled`
+- Metric value: `--font-mono`, `0.875rem`, `500`, color-coded (see Section 12 display guidelines)
+
+**Card description:** `-webkit-line-clamp: 3`
 
 ---
 
 ### StrategyCardCompact
 
-Slim variant used in glossary page sidebars. Single row.
+Slim variant used in glossary page sidebars (`renderStrategyListItem()` in `js/app.js`). Single row: strategy name + ARR.
 
-```
-┌──────────────────────────────────────────┐
-│ Strategy Name              +31.2% ARR    │
-└──────────────────────────────────────────┘
+```html
+<a href="..." class="strategy-list-item">
+  <span>Strategy Name</span>
+  <span class="arr text-green">+31.20%</span>
+</a>
 ```
 
-- No description, no tags, just name + key metric + arrow link
-- Same hover behavior as StrategyCard
+Container: `.strategy-list-compact` — `border: 1px solid --color-border`, `border-radius: --radius-md`, `overflow: hidden`
+
+Row: `.strategy-list-item` — `display: flex`, `justify-content: space-between`, `padding: 10px 12px`, `font-size: 0.875rem`, `--color-secondary`
+
+Hover: `background: --color-surface-raised`, color → `--color-primary`; transition: `background 0.15s`
 
 ---
 
-### MetricsTable
+### Concept Card (Glossary)
 
-Used on strategy detail pages.
+Used on the glossary index (`renderConceptCard()` in `js/app.js`).
 
-```
-┌──────────────────────────────────────────┐
-│  Ann. Return          +31.2%             │
-│  Max Drawdown         -18.7%             │
-│  Cumulative Return    +184.2%            │
-│  Calmar Ratio          1.67              │
-│  Sharpe Ratio          1.43              │
-│  Std. Deviation        21.4%             │
-│  ──────────────────────────────          │
-│  1-Month Return        +4.2%             │
-│  3-Month Return        +8.9%             │
-│  1-Year Return         +27.4%            │
-│  ──────────────────────────────          │
-│  Min Period Return     -9.4%             │
-│  Mean Period Return    +2.6%             │
-│  Median Period Return  +3.1%             │
-│  Max Period Return     +11.8%            │
-│  ──────────────────────────────          │
-│  Last Updated          Jun 8, 2026       │
-└──────────────────────────────────────────┘
-```
+Same `.card` base structure. Contains: category badge + strategy count row, card title (concept name), description (2-line clamp), "Learn more →" link.
 
-- Metric labels: `--color-secondary`, 14px
-- Values: monospace, 16px, color-coded (see METRICS.MD display guidelines)
-- Two-column layout: label left, value right-aligned
-- Horizontal rule dividers between logical groups
-- No table borders — clean dividers only
+Category badge colors: blue (indicator), pink (risk-metric), yellow (asset-class), purple (strategy-concept). See Section 2 for rgba values.
 
 ---
 
-### GlossaryTag
+### Metrics Table
 
-Pill badge linking to a glossary concept page. Used on strategy pages.
+Used on strategy detail pages (`renderMetricsTable()` in `js/app.js`).
 
-```
- ┌──────────────┐
- │  vix-tiers   │
- └──────────────┘
-```
+Structure: grouped `<div class="metrics-section">` blocks, each with a section label and a `<dl class="metrics-table">` containing `<div class="metrics-row">` items.
 
-- `border border-purple`, `text-purple`, `bg-transparent`, 4px radius
-- Padding: `px-2 py-0.5` (8px / 2px)
-- Font: 12px, 500 weight
-- Hover: `bg-purple-muted` (purple at 12% opacity)
-- Transition: `background 100ms ease`
-- Renders as `<a href="/glossary/[tag]">` — always a link
-
----
-
-### CTAButton — "Open in Composer"
-
-```
- ┌─────────────────────────────────┐
- │  Open in Composer  ↗            │
- └─────────────────────────────────┘
-```
-
-- Background: `--color-green`; text: `--color-black`; 700 weight; 16px
-- Padding: `px-6 py-3` (24px / 12px)
-- Border radius: 6px
-- Width: `w-full` on mobile; `w-auto` inline on sm+
-- Hover: `brightness-110` filter (slightly lighter green)
-- Active: `brightness-90` (slightly darker)
-- `target="_blank" rel="noopener noreferrer"` (required)
-- Transition: `filter 100ms ease`
-
----
-
-### ConceptCard
-
-Used on the glossary index.
-
-```
-┌──────────────────────────────────────────┐
-│ [Indicator]                              │
-│ RSI                               H3     │
-│ Relative Strength Index. A momentum     │
-│ oscillator measuring speed of price...  │
-│                                          │
-│ Used in 4 strategies    [Learn More →]   │
-└──────────────────────────────────────────┘
-```
-
-- Category tag: color by category — Indicator: blue, Risk Metric: pink, Asset Class: yellow, Strategy Concept: purple
-- "Used in X strategies" — count computed at runtime from strategies.json tags
-- Same hover behavior as StrategyCard (blue border lift)
-
----
-
-### Footer
-
-Full-width centered bar at the bottom of every page. Rendered by `renderFooter()` in `js/app.js` into `<footer id="footer-root">`.
-
-```
-────────────────────────────────────────────────────
-Strategies  Glossary  About  Support  Composer.trade ↗
-Not affiliated with Composer Technologies, Inc. All metrics are backtested...
-© 2026 ComposerAtlas · Built by Azqato
-────────────────────────────────────────────────────
-```
-
-- **CSS selector:** `footer` element (not a class) — matches `<footer id="footer-root">`
-- `padding: 2rem`, `text-align: center`, `border-top: 1px solid --color-border`
-- `.footer-links`: `display:flex; flex-wrap:wrap; justify-content:center; gap:16px`
-- Link font size: 0.8rem, `--color-secondary`, hover transitions to `--color-primary`
-- `.footer-legal`: 0.75rem, `--color-secondary`, `max-width:560px`, centered
-- `.footer-copy`: 0.75rem, `--color-secondary`; "Built by" link uses `--color-blue`
-
----
-
-### Breadcrumb
-
-Single-line navigation trail, rendered above page headers on all sub-pages.
-
-```
-Home › Strategies › VIX Tier Rotator
-```
-
-- Font: 14px, `--color-secondary`
-- Separators: `›` in secondary text
-- All items except the current page are links in `--color-blue`
-- Current page item: `--color-primary`, not a link
-
----
-
-## Iconography
-
-- Icon set: **Lucide** (outline style, tree-shakeable)
-- Icon size: 16px inline with text, 20px standalone
-- Icons never used as the sole affordance — always paired with text or a tooltip
-
----
-
-## Loading States
-
-All data is loaded asynchronously at runtime via `window.STRATEGIES_DATA` globals (for `file://`) or `fetch()` (for HTTP). Pages show a spinner while data loads:
-
-- **Spinner:** animated CSS border spinner rendered inside the grid container before data arrives
-- **Skeleton card (future):** animated shimmer using `--color-border` as base, `--color-surface-raised` as highlight
-- Shimmer animation: `background: linear-gradient(90deg, ...)` swept left-to-right, 1.5s infinite
-- Skeleton dimensions should match the real component to prevent layout shift (CLS = 0)
-
----
-
-## Error States
-
-- **JSON parse failure at runtime:** If `strategies.json` or `glossary.json` is malformed, `loadStrategies()` / `loadGlossary()` will throw. Pages catch this and render an error message in place of the grid.
-- **Broken Composer link (external):** No in-page error state for external links. A periodic manual audit process handles broken URLs (see RUNBOOK.MD).
-- **404 page:** A custom `404.html` exists with the site nav intact and a link back to the strategy index. GitHub Pages serves it automatically for unmatched routes.
-
----
-
-## Motion and Transitions
-
-Keep motion minimal and purposeful. No page transitions at MVP.
-
-| Element | Property | Duration | Easing |
-|---|---|---|---|
-| Cards (hover) | `border-color`, `background`, `box-shadow` | 150ms | ease |
-| CTA button | `filter` (brightness) | 100ms | ease |
-| Tags (hover) | `background` | 100ms | ease |
-| Mobile nav drawer | `transform` (slide in) | 200ms | ease-out |
-| Mobile nav overlay | `opacity` | 150ms | ease |
-| Nav links | `color` | 150ms | ease |
-
-All transitions respect `prefers-reduced-motion`:
 ```css
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition: none !important; }
+.metrics-table {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.metrics-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+```
+
+- `<dt>` (label): `0.875rem`, `--color-secondary`
+- `<dd>` (value): `--font-mono`, `0.875rem`, `500`, color-coded
+
+Groups: Returns, Risk, Risk-Adjusted, Monthly Distribution, Trailing Returns, Metadata.
+
+---
+
+### Tags (GlossaryTag Pills)
+
+Rendered by `renderTag(slug)` in `js/app.js` as `<a href="/glossary.html?slug=...">` links.
+
+```css
+.tag {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 4px;  /* --radius-sm */
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid;
+  transition: opacity 0.15s;
+}
+.tag:hover { opacity: 0.8; }
+```
+
+Tag color assignments (from `TAG_CLASSES` in `js/app.js`):
+
+| Slug | CSS Class | Color |
+|---|---|---|
+| `rsi`, `200d-ma` | `.tag-rsi`, `.tag-200d-ma` | Blue |
+| `momentum` | `.tag-momentum` | Purple |
+| `vix-tiers` | `.tag-vix-tiers` | Yellow |
+| `leveraged-etfs` | `.tag-leveraged-etfs` | Pink |
+| `sharpe-ratio`, `calmar-ratio`, `max-drawdown` | `.tag-sharpe-ratio`, etc. | Green |
+| Unknown | `.tag-default` | Surface-raised + secondary |
+
+---
+
+### Category Badges (ConceptCard)
+
+Used on glossary index and detail pages.
+
+```css
+.badge {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid;
+}
+```
+
+| Category | Class | Color |
+|---|---|---|
+| `indicator` | `.badge-indicator` | Blue |
+| `risk-metric` | `.badge-risk-metric` | Pink |
+| `asset-class` | `.badge-asset-class` | Yellow |
+| `strategy-concept` | `.badge-strategy-concept` | Purple |
+
+---
+
+### Signal Cards
+
+Used on strategy detail pages to list signals used by the strategy.
+
+```css
+.signal-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 8px;
+}
+.signal-name { font-family: var(--font-mono); font-size: 0.875rem; font-weight: 600; }
+.signal-desc { font-size: 0.875rem; color: var(--color-secondary); line-height: 1.6; }
+```
+
+Header row: `.signal-header` — `display: flex`, `align-items: center`, `gap: 10px`, `margin-bottom: 8px`. Contains: signal name + a tag pill linking to the related glossary concept.
+
+---
+
+### Risk Profile Box
+
+```css
+.risk-box {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  font-size: 0.875rem;
+  color: var(--color-secondary);
+  line-height: 1.7;
 }
 ```
 
 ---
 
-## Accessibility
+### Formula Box
 
-Target: **WCAG 2.1 Level AA**
+Used on glossary detail pages when a concept has a formula.
 
-### Contrast Requirements
-- Body text on background: minimum 4.5:1 (WCAG AA)
-  - `#f0f0f0` on `#0d0d0d` = ~15:1 ✓
-  - `#b0b0b0` on `#0d0d0d` = ~9.4:1 ✓
-  - `#00e676` on `#0d0d0d` = ~8.4:1 ✓
-  - `#ff4d8d` on `#0d0d0d` = ~4.6:1 ✓ (minimum; verify with production values)
-  - `#000000` on `#00e676` (CTA button) = ~15:1 ✓
+```css
+.formula-box {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-top: 16px;
+}
+.formula-label { font-size: 0.6875rem; font-weight: 500; text-transform: uppercase; color: var(--color-disabled); margin-bottom: 6px; }
+.formula-value { font-family: var(--font-mono); font-size: 0.875rem; color: var(--color-green); }
+```
+
+---
+
+### Breadcrumb
+
+```css
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: var(--color-secondary);
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.breadcrumb-sep { color: var(--color-disabled); }
+.breadcrumb a { color: var(--color-secondary); transition: color 0.15s; }
+.breadcrumb a:hover { color: var(--color-primary); }
+.breadcrumb .current { color: var(--color-primary); }
+```
+
+Rendered by `renderBreadcrumb(containerId, crumbs)` in `js/app.js`. Wrapped in `<nav aria-label="Breadcrumb">`.
+
+---
+
+### Footer
+
+Rendered by `renderFooter()` in `js/app.js` into `<footer id="footer-root">`.
+
+```css
+footer {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+  padding: 2rem;
+  text-align: center;
+}
+.footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-bottom: 1rem; }
+.footer-links a { font-size: 0.8rem; color: var(--color-secondary); transition: color 0.15s; }
+.footer-links a:hover { color: var(--color-primary); }
+.footer-legal { font-size: 0.75rem; color: var(--color-secondary); line-height: 1.6; max-width: 560px; margin: 0 auto 0.5rem; }
+.footer-copy { font-size: 0.75rem; color: var(--color-secondary); }
+.footer-copy a { color: var(--color-blue); }
+.footer-copy a:hover { color: var(--color-primary); }
+```
+
+Three stacked elements: links row, legal disclaimer, copyright + "Built by Azqato".
+
+---
+
+### Stats Bar (Homepage)
+
+```css
+.stats-bar {
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: 16px 0;
+}
+.stats-inner { display: flex; flex-wrap: wrap; gap: 32px; }
+.stat-value { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--color-primary); line-height: 1; }
+.stat-label { font-size: 0.75rem; color: var(--color-disabled); margin-top: 4px; }
+```
+
+Stat values use `--color-primary` (not `--color-green`) — consistent white for all four stats.
+
+---
+
+### Hero Section (Homepage)
+
+```css
+.hero { padding: 64px 0 48px; }
+.hero-eyebrow { font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-green); margin-bottom: 12px; }
+.hero-title { font-size: clamp(1.75rem, 4vw, 3rem); font-weight: 700; line-height: 1.15; color: var(--color-primary); margin-bottom: 16px; max-width: 600px; }
+.hero-desc { font-size: 1.0625rem; color: var(--color-secondary); line-height: 1.7; max-width: 540px; margin-bottom: 32px; }
+```
+
+---
+
+### Grid Layouts
+
+`.grid-3` — strategy/glossary index cards:
+- Base: `grid-template-columns: 1fr`
+- 640px+: `repeat(2, 1fr)`
+- 1024px+: `repeat(3, 1fr)`
+- `gap: 16px`
+
+`.grid-2` — strategy/glossary detail two-column layout:
+- Base: `grid-template-columns: 1fr`, `gap: 40px`
+- 1024px+: `grid-template-columns: 2fr 1fr`
+
+`.detail-sidebar` — `display: flex; flex-direction: column; gap: 32px`
+
+`.detail-sidebar-sticky` (1024px+) — `position: sticky; top: calc(var(--nav-height) + 20px)`
+
+---
+
+### Prose (Glossary Content)
+
+Long-form text sections use `.prose` wrapper.
+
+```css
+.prose h2 { font-size: 1.125rem; font-weight: 700; color: var(--color-primary); margin: 28px 0 12px; }
+.prose p { font-size: 0.9375rem; color: var(--color-secondary); line-height: 1.7; margin-bottom: 14px; }
+.prose strong { color: var(--color-primary); font-weight: 600; }
+.prose code { font-family: var(--font-mono); font-size: 0.875em; color: var(--color-green); background: rgba(0,230,118,0.08); padding: 1px 5px; border-radius: 3px; }
+.prose pre { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px; font-family: var(--font-mono); font-size: 0.8125rem; color: var(--color-primary); line-height: 1.6; }
+.prose table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.prose th { padding: 8px 12px; background: var(--color-surface-raised); color: var(--color-primary); font-weight: 600; border-bottom: 1px solid var(--color-border); }
+.prose td { padding: 8px 12px; color: var(--color-secondary); border-bottom: 1px solid var(--color-border); }
+.prose ul { list-style: disc; padding-left: 20px; margin-bottom: 14px; }
+.prose li { color: var(--color-secondary); font-size: 0.9375rem; line-height: 1.7; margin-bottom: 6px; }
+```
+
+---
+
+### Loading State
+
+Shown while data loads from JSON (before `loadStrategies()` / `loadGlossary()` resolve):
+
+```css
+.loading { display: flex; align-items: center; justify-content: center; min-height: 400px; }
+.spinner { width: 32px; height: 32px; border: 2px solid var(--color-border); border-top-color: var(--color-green); border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+```
+
+---
+
+### Error State
+
+Shown when JSON parse fails:
+
+```css
+.error-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; text-align: center; gap: 12px; }
+.error-state h2 { color: var(--color-primary); }
+.error-state p { color: var(--color-secondary); }
+```
+
+---
+
+### Empty / 404 State
+
+```css
+.empty-state { display: flex; flex-direction: column; align-items: center; min-height: 50vh; text-align: center; gap: 16px; padding: 48px 24px; }
+.empty-eyebrow { font-family: var(--font-mono); font-size: 0.875rem; font-weight: 700; color: var(--color-green); text-transform: uppercase; letter-spacing: 0.1em; }
+.empty-title { font-size: 2rem; font-weight: 700; color: var(--color-primary); }
+.empty-desc { max-width: 380px; }
+```
+
+The custom `404.html` uses this pattern. GitHub Pages serves it automatically for unmatched routes.
+
+---
+
+## 8. Accessibility Standards
+
+**Target: WCAG 2.1 Level AA**
 
 ### Focus Management
-- All interactive elements have visible focus rings: `outline: 2px solid #4d9fff; outline-offset: 2px`
-- Tab order follows visual reading order
-- Mobile nav drawer traps focus while open; returns focus to hamburger on close
+
+All interactive elements have visible focus rings:
+
+```css
+/* Implemented via browser defaults + no focus suppression */
+/* Target: outline: 2px solid #4d9fff; outline-offset: 2px */
+```
+
+Tab order follows visual reading order. Mobile nav hamburger: `aria-expanded` attribute updates on open/close; `aria-controls="mobile-menu"`.
 
 ### Semantic HTML
+
 - One `<h1>` per page
 - Proper heading hierarchy (no skipping levels)
 - Strategy cards use `<article>` elements
-- Nav uses `<nav aria-label="Main navigation">`
-- Breadcrumb uses `<nav aria-label="Breadcrumb">` with `aria-current="page"` on current item
-- Metrics table uses `<dl>` (definition list) with `<dt>` / `<dd>` pairs, not a `<table>`
+- Nav uses `<nav id="nav-root">` (with `aria-label="Mobile navigation"` on the mobile menu)
+- Breadcrumb uses `<nav aria-label="Breadcrumb">` with `.current` class on current item
+- Metrics table uses `<dl>` with `<dt>` / `<dd>` pairs (not `<table>`)
+- Footer links use `<nav class="footer-links">`
 
 ### Screen Reader Support
-- Icons that convey meaning have `aria-label` or are accompanied by visible text
-- External links have `aria-label` indicating they open in a new tab
-- Metric color coding is never the sole means of conveying meaning — values include their sign (`+` / `-`)
+
+- External links rendered with descriptive context (link text includes destination)
+- Metric color coding is never the sole means of conveying meaning — values include sign (`+` / `-`)
+- Strategy card metric labels are visible text above each value
+
+### Reduced Motion
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+```
 
 ---
 
-## Tone and Voice
+## 9. Animation and Motion
 
-- **Educational but not condescending** — assume intermediate financial literacy
-- **Plain English first** — jargon is always followed by a brief definition on first use
-- **Precise** — metrics are never rounded misleadingly; display exactly two decimal places
-- **Neutral** — no hype language; let strategy data speak for itself
-- **Not financial advice** — all strategy pages carry a brief disclaimer
+Keep motion minimal and purposeful. No page transitions at MVP.
 
----
+### Transition Table (from css/main.css)
 
-## Design References
+| Element | Property | Duration | Easing |
+|---|---|---|---|
+| Cards (hover) | `border-color` | `0.15s` | `ease` (default) |
+| Nav links | `color`, `background` | `0.15s` | `ease` |
+| Nav logo | `color` | `0.15s` | `ease` |
+| Nav hamburger background | `background` | `0.15s` | `ease` |
+| Hamburger bars (open/close) | `transform`, `opacity` | `0.2s` | `ease` |
+| Mobile nav links | `color`, `background` | `0.15s` | `ease` |
+| Buttons | `opacity`, `background`, `color`, `border-color` | `0.15s` | `ease` |
+| Tags (hover) | `opacity` | `0.15s` | `ease` |
+| Compact strategy list items | `background` | `0.15s` | `ease` |
+| Breadcrumb links | `color` | `0.15s` | `ease` |
+| Footer links | `color` | `0.15s` | `ease` |
+| About content links | `opacity` | `0.15s` | `ease` |
+| Loading spinner | `transform` (rotate) | `0.6s` | `linear` (infinite) |
 
-- **Primary:** Composer.trade (color language, dark mode, data-forward layout)
-- **Secondary:** Wikipedia / wiki-style layout (structured, scannable, cross-linked)
-- **Tertiary:** Criterion Collection (editorial credibility, intentional whitespace)
+### Rules
+
+- All transitions use `ease` timing unless continuity demands `linear` (spinner)
+- Duration ceiling: `0.2s` for most interactions; spinner at `0.6s` is a persistent animation, not a transition
+- `prefers-reduced-motion` sets all transition and animation durations to `0.01ms` (effectively instant)
+- No decorative animations; no entrance animations; no scroll-triggered effects at MVP

@@ -1,8 +1,74 @@
-# PATCHNOTES.MD - Changelog
-# ComposerAtlas
+# ComposerAtlas — Changelog
 
 All notable changes to ComposerAtlas are documented in this file.
 Format: `[VERSION] - YYYY-MM-DD`
+
+---
+
+## [1.3.0] - 2026-06-14
+
+### Changed
+- Consolidated 12 documentation files into 4 canonical documents: README.md, docs/PRD.md, docs/DESIGN.md, docs/PATCHNOTES.md
+- Moved all operational, technical, API, schema, roadmap, security, and tenet content into docs/PRD.md as consolidated sections
+- README.md rewritten as developer-facing quick-start (no marketing language)
+- docs/DESIGN.md expanded to include all required sections: philosophy, full color palette, typography, spacing, breakpoints, component patterns, accessibility, animation
+- File naming standardized from .MD to .md
+
+### Removed
+- docs/ComposerAPI.MD (content moved to PRD.md § Composer API Reference)
+- docs/GLOSSARY-SCHEMA.MD (content moved to PRD.md § Data Schemas)
+- docs/METRICS.MD (content moved to PRD.md § Data Schemas)
+- docs/PRFAQ.MD (content moved to PRD.md § FAQ)
+- docs/ROADMAP.MD (content moved to PRD.md § Roadmap)
+- docs/RUNBOOK.MD (content moved to PRD.md § Operational Runbook)
+- docs/SECURITY.MD (content moved to PRD.md § Security)
+- docs/TENETS.MD (content moved to PRD.md § Tenets)
+- docs/TRD.MD (content moved to PRD.md § Architecture & Technical Reference)
+- README.MD (root, uppercase) replaced by README.md (lowercase)
+
+---
+
+## [1.2.1] - 2026-06-14
+
+### Docs — Documented URL-based strategy addition workflow
+
+Added "Adding a Strategy from a Composer URL (Streamlined)" section to `docs/RUNBOOK.MD` — the preferred method for adding new strategies. Documents the full automated workflow: extract symphony ID from URL, fetch backtest metrics and logic tree from the Composer API (no auth required), AI analysis of IF/ELSE logic tree to draft all content fields, name/slug proposal with user confirmation, and dual-file insertion into `data/strategies.json` + `data/strategies.js`.
+
+The prior "Adding a New Strategy" workflow is retained and renamed "Manual" for cases where the API is unavailable.
+
+**Files changed:** `docs/RUNBOOK.MD` (v1.7 → v1.8), `docs/PATCHNOTES.MD`
+
+---
+
+## [1.2.0] - 2026-06-14
+
+### Refactor — Consolidated folder structure: flat root .html files
+
+Eliminated the `strategies/` and `glossary/` subdirectories entirely. Each section's listing and detail views are now served from a single root-level `.html` file.
+
+| Before | After |
+|---|---|
+| `strategies/index.html` (listing) | `strategies.html` (listing + detail) |
+| `strategies/detail/index.html` (detail) | ↑ same file, `?slug=X` triggers detail view |
+| `glossary/index.html` (listing) | `glossary.html` (listing + detail) |
+| `glossary/detail/index.html` (detail) | ↑ same file, `?slug=X` triggers detail view |
+
+**How it works:** Each combined page checks `new URLSearchParams(window.location.search).get('slug')` on load. `null` → render listing into `#content`; non-null → render detail view for that slug. Same file, same assets, different render path.
+
+**URL changes:**
+
+| Old URL | New URL |
+|---|---|
+| `/ComposerAtlas/strategies/` | `/ComposerAtlas/strategies.html` |
+| `/ComposerAtlas/strategies/detail/?slug=X` | `/ComposerAtlas/strategies.html?slug=X` |
+| `/ComposerAtlas/glossary/` | `/ComposerAtlas/glossary.html` |
+| `/ComposerAtlas/glossary/detail/?slug=X` | `/ComposerAtlas/glossary.html?slug=X` |
+
+**`u()` simplified** (`js/app.js`): Removed depth-detection logic (no longer needed — all pages are at root depth 0). `file://` path now just strips the leading `/` and maps `'/'` → `'index.html'`. Function shrank from 12 lines to 5.
+
+**Files changed:** `strategies.html` (new), `glossary.html` (new), `js/app.js`, `index.html`, `404.html`, `docs/RUNBOOK.MD` (v1.6 → v1.7), `docs/PATCHNOTES.MD`
+
+**Deleted:** `strategies/index.html`, `strategies/detail/index.html`, `glossary/index.html`, `glossary/detail/index.html`
 
 ---
 

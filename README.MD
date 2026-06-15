@@ -1,122 +1,102 @@
 # ComposerAtlas
 
-> A curated strategy library and education hub that maps out Composer.trade investing strategies alongside the signals, concepts, and logic that power them.
-
-## What Is This?
-
-ComposerAtlas is a browser-only, static website hosted on GitHub Pages. It showcases curated Composer.trade symphonies with deep breakdowns of their logic, metrics, and underlying investing concepts. It also serves as a reference glossary for signals and indicators like RSI, 200-day moving averages, VIX tiers, momentum, and leveraged ETFs.
-
-No server. No backend. No build step. No cost to run.
+A curated strategy library and educational reference for Composer.trade users. Covers 13 symphonies with plain-English logic breakdowns, backtested metrics, and a concept glossary.
 
 ## Live Site
 
-[https://azqato.github.io/composeratlas](https://azqato.github.io/composeratlas)
-
-## Features
-
-- 12 strategy pages with full logic breakdowns, signals, and risk profiles
-- Live metrics rendered from a static JSON database (updated via GitHub commits)
-- Concept glossary covering RSI, VIX tiers, momentum, 200d MA, leveraged ETFs, and more
-- Cross-linked strategies and concepts — every strategy links to relevant glossary terms
-- Direct links to open strategies on Composer.trade
-- Dark mode UI inspired by Composer.trade's design language
+https://azqato.github.io/ComposerAtlas
 
 ## Tech Stack
 
-| Layer | Technology |
+| Layer | Choice |
 |---|---|
 | HTML | Vanilla `.html` files — no framework, no build step |
-| CSS | CSS custom properties for design tokens, vanilla CSS for layout and components |
+| CSS | CSS custom properties for design tokens; no preprocessor |
 | JavaScript | Vanilla ES2020 — `fetch()` for data, DOM manipulation for rendering |
-| Data | `/data/strategies.json` + `.js` and `/data/glossary.json` + `.js` — flat-file databases with dual-mode loading (globals for `file://`, fetch for HTTP) |
+| Data | `data/strategies.json` + `data/glossary.json` (source of truth); `.js` mirror files for `file://` compatibility |
 | Hosting | GitHub Pages — serves the repository root directly |
-| CI/CD | GitHub Actions — deploys on every push to `main` (no build step, <2 min) |
+| CI/CD | GitHub Actions — rsync to `_site/`, then upload; no build step |
+| Scripts | Python 3 (stdlib only) — no pip dependencies |
 
-No Node.js required. Open in any static file server or deploy directly to GitHub Pages.
+## Prerequisites
 
-## Repo Structure
+- **Python** — any version; used for local HTTP server and `scripts/update_metrics.py`
+- **Git**
+- **No Node.js required.** There is no `package.json`, no `node_modules`, and no build step.
 
-```
-composeratlas/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml          # GitHub Actions → GitHub Pages (no build step)
-├── css/
-│   └── main.css                # Complete design system: tokens, layout, components
-├── data/
-│   ├── strategies.json         # 12 strategy entries — source of truth
-│   ├── strategies.js           # Same data as window global — enables file:// loading
-│   ├── glossary.json           # 8 glossary concept entries — source of truth
-│   └── glossary.js             # Same data as window global — enables file:// loading
-├── js/
-│   └── app.js                  # Shared utilities: formats, nav, footer, render helpers
-├── strategies/
-│   ├── index.html              # Strategy listing page
-│   └── detail/
-│       └── index.html          # Strategy detail page (reads ?slug= from URL)
-├── glossary/
-│   ├── index.html              # Glossary listing page
-│   └── detail/
-│       └── index.html          # Concept detail page (reads ?slug= from URL)
-├── index.html                  # Home page: hero + strategy grid
-├── about.html                  # About page
-├── 404.html                    # Custom 404 page
-├── favicon.svg
-├── robots.txt
-├── .gitignore
-└── docs/                       # Project documentation
-    ├── PRD.MD
-    ├── TRD.MD
-    ├── DESIGN.MD
-    ├── METRICS.MD
-    ├── GLOSSARY-SCHEMA.MD
-    ├── ROADMAP.MD
-    ├── PATCHNOTES.MD
-    ├── RUNBOOK.MD
-    ├── SECURITY.MD
-    ├── TENETS.MD
-    └── PRFAQ.MD
-```
-
-## Local Development
-
-No installation required. Open any HTML file directly in a browser — just double-click it:
-
-```
-index.html → home page
-strategies/index.html → strategy listing
-glossary/index.html → glossary
-```
-
-Or use a static file server for a more production-like experience:
+## Installation
 
 ```bash
-# Python (usually pre-installed on macOS/Linux/Windows)
-python -m http.server 8000
-# → http://localhost:8000/
-
-# Or use VS Code's Live Server extension
+git clone https://github.com/Azqato/ComposerAtlas.git
 ```
 
-## Updating Strategies
+No further install step.
 
-Edit `/data/strategies.json` and commit to `main`. GitHub Pages will deploy automatically within 1-2 minutes. See [RUNBOOK.MD](docs/RUNBOOK.MD) for the full process.
+## Running Locally
+
+**Option 1 — Python HTTP server (recommended for testing fetch behavior):**
+
+```bash
+python -m http.server 8000
+# Site at http://localhost:8000/
+```
+
+**Option 2 — Open directly in browser:**
+
+Double-click any `.html` file (e.g. `index.html`). This works because data is loaded via `window.STRATEGIES_DATA` / `window.GLOSSARY_DATA` globals set by `data/strategies.js` and `data/glossary.js` before `app.js` runs.
+
+## Environment Variables
+
+None. The Composer API endpoints used by `scripts/update_metrics.py` require no authentication.
+
+## Scripts
+
+### `scripts/update_metrics.py`
+
+Fetches fresh data from the Composer API and rewrites three files:
+
+- `data/strategies.json` — backtest metrics for all 13 strategies (ARR, max drawdown, Sharpe, Calmar, standard deviation, trailing returns, backtest days)
+- `data/strategies.js` — same data assigned to `window.STRATEGIES_DATA`
+- `data/symphony_scores.json` — full IF/ELSE logic trees for all 13 symphonies (for AI analysis only; not served publicly)
+
+```bash
+python scripts/update_metrics.py
+```
+
+Run from the project root. No API key required. Run monthly or after any symphony logic changes.
+
+After running, commit the updated data files:
+
+```bash
+git add data/strategies.json data/strategies.js data/symphony_scores.json
+git commit -m "data: refresh metrics and symphony scores - YYYY-MM-DD"
+git push origin main
+```
+
+## Build and Deploy
+
+There is no build step. Push to `main` and GitHub Actions deploys automatically within 1-2 minutes.
+
+The workflow (`/.github/workflows/deploy.yml`) uses `rsync` to copy the repository to a `_site/` staging folder, excluding internal files that are not user-facing, then uploads `_site/` to GitHub Pages.
+
+**Excluded from public deployment:**
+- `data/symphony_scores.json` (14MB AI analysis file)
+- `docs/`
+- `scripts/`
+- `strategies.xlsx`
+- `.gitignore`, `.github/`
+
+Monitor deploy status at: `https://github.com/Azqato/ComposerAtlas/actions`
 
 ## Documentation
 
-| File | Purpose |
+Full documentation is in [`/docs`](docs/):
+
+| File | Contents |
 |---|---|
-| [PRD.MD](docs/PRD.MD) | Product Requirements — goals, features, target users |
-| [TRD.MD](docs/TRD.MD) | Technical Requirements — architecture, data layer, deploy pipeline |
-| [DESIGN.MD](docs/DESIGN.MD) | Design System — colors, typography, components, page layouts |
-| [METRICS.MD](docs/METRICS.MD) | Strategy data schema — all fields, display rules, tag vocabulary |
-| [GLOSSARY-SCHEMA.MD](docs/GLOSSARY-SCHEMA.MD) | Glossary content structure — field spec, section requirements |
-| [ROADMAP.MD](docs/ROADMAP.MD) | Development roadmap — MVP and post-MVP milestones |
-| [RUNBOOK.MD](docs/RUNBOOK.MD) | Operational runbook — how to add strategies, deploy, debug |
-| [PATCHNOTES.MD](docs/PATCHNOTES.MD) | Changelog |
-| [SECURITY.MD](docs/SECURITY.MD) | Security posture and responsible disclosure |
-| [TENETS.MD](docs/TENETS.MD) | Core principles guiding every decision |
-| [PRFAQ.MD](docs/PRFAQ.MD) | Press release and FAQ |
+| [`docs/PRD.md`](docs/PRD.md) | Master reference: product requirements, architecture, runbook, data schemas, API reference, roadmap, security, tenets, FAQ |
+| [`docs/DESIGN.md`](docs/DESIGN.md) | Design system: color palette, typography, spacing, breakpoints, component specs, accessibility |
+| [`docs/PATCHNOTES.md`](docs/PATCHNOTES.md) | Changelog |
 
 ## Disclaimer
 
