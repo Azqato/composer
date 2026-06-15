@@ -1,6 +1,6 @@
 # ComposerAtlas
 
-A curated strategy library and educational reference for Composer.trade users. Covers 18 symphonies with plain-English logic breakdowns, backtested metrics, and a concept glossary.
+A curated strategy library and educational reference for Composer.trade users. Covers 24 symphonies with plain-English logic breakdowns, backtested metrics, and a concept glossary.
 
 ## Live Site
 
@@ -55,9 +55,9 @@ None. The Composer API endpoints used by `scripts/update_metrics.py` require no 
 
 Fetches fresh data from the Composer API and rewrites three files:
 
-- `data/strategies.json` — backtest metrics for all 18 strategies (ARR, max drawdown, Sharpe, Calmar, standard deviation, trailing returns, backtest days)
+- `data/strategies.json` — backtest metrics for all 24 strategies (ARR, max drawdown, Sharpe, Calmar, standard deviation, trailing returns, backtest days)
 - `data/strategies.js` — same data assigned to `window.STRATEGIES_DATA`
-- `data/symphony_scores.json` — full IF/ELSE logic trees for all 18 symphonies (for AI analysis only; not served publicly)
+- `data/symphony_scores.json` — full IF/ELSE logic trees for all 24 symphonies (for AI analysis only; not served publicly)
 
 ```bash
 python scripts/update_metrics.py

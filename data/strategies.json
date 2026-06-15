@@ -1126,5 +1126,309 @@
       }
     ],
     "risk_profile": "Aggressive, but the most structurally diversified strategy in this library's leveraged ETF tier. Running multiple parallel components with different time horizons (SPY 200d MA vs. TQQQ 20d MA) and a deep bear-market protocol with QQQ cumulative-return detection produces a notably better risk-adjusted profile: Sharpe 2.18, Calmar 3.68, and standard deviation of 50.6% — meaningfully lower than Holy Grail (62.3%) or TQQQ Long Term (62.8%) at comparable ARR. The 45.4% max drawdown reflects the 2022 bear market, when all components were simultaneously in bear mode. The SVXY position in bull mode adds tail risk: SVXY can lose 80-90% in a single VIX spike event. The deep bear protocol with QQQ 252d detection provides more nuanced protection than simple RSI dip-buys, but the strategy's logic tree is the largest and most complex in the library, making manual verification difficult."
+  },
+  {
+    "slug": "soxx-group",
+    "name": "SOXX Group",
+    "symphony_url": "https://app.composer.trade/symphony/7PBSP926Mp40r6bPnP0j/details",
+    "symphony_id": "7PBSP926Mp40r6bPnP0j",
+    "annualized_rate_of_return": 1.1119713291957578,
+    "max_drawdown": -0.6917426268640035,
+    "cumulative_return": 44799.690225,
+    "calmar_ratio": 1.6074928535730837,
+    "sharpe_ratio": 1.4581596596950388,
+    "standard_deviation": 0.6618017598312709,
+    "min": -0.2982779711335207,
+    "mean": 0.003829415194052158,
+    "median": 9.335206032234922e-05,
+    "max": 0.5470889727824029,
+    "trailing_one_month_return": 0.057920056354314076,
+    "trailing_three_month_return": -0.29486464383512756,
+    "trailing_one_year_return": 1.4785812912014533,
+    "backtest_days": 3609,
+    "description": "A semiconductor-specialist strategy by Garen/DN that uses UVXY's 30-day RSI to detect high-volatility regimes and then trades SOXL or SOXS based on the magnitude of single-day moves in SMH, applying a tiered multi-timeframe RSI cascade called the '30-20-10 Double Pop' to catch mean-reversion after extreme semiconductor swings.",
+    "tags": [
+      "rsi",
+      "momentum",
+      "leveraged-etfs"
+    ],
+    "last_updated": "2026-06-14",
+    "how_it_works": [
+      "SOXX Group — full name 'K Wave V6 (w/ SOXX Double Pops) Pure SOXX l Garen/DN' — is built on a single thesis: semiconductor ETFs (SOXX/SMH/SOXL) tend to experience outsized single-day moves followed by mean-reversions, and these moves are more predictable during periods of elevated market volatility. The outer gate checks RSI(UVXY,30d) > 63. When UVXY's 30-day RSI is this elevated, the strategy enters 'high volatility' mode where daily magnitude triggers become active. The specific thresholds (-3%, -5.5%, -7% for down days; +3.5%, +4.5%, +5.5% for up days) represent different tiers of 'pop' severity, each carrying a different expected reversal profile.",
+      "The '30-20-10 Double Pop' is the strategy's core signal system. After a significant single-day move, it evaluates SMH's RSI across three decreasing windows: 30-day, 20-day, and 10-day. Thresholds escalate tighter at shorter windows (RSI > 70 at 30d, > 75 at 20d, > 80 at 10d). If any threshold is breached, the strategy holds SOXS — betting that a recent extreme pop is about to fade. RSI(SMH,10d) < 30 inverts the logic and triggers a SOXL buy for extreme oversold conditions. If no RSI threshold fires, the strategy uses SPY RSI(60d) > 50 and a bond-market check (RSI(IEF,200d) vs TLT) to route into either the 'Double Pop Bot' component or the 'SOXL FTLT' component.",
+      "The 'SOXL FTLT' (For The Long Term) sub-component is an embedded longer-term fallback that runs when no short-term mean-reversion signal is active. It checks MaxDD(SPY,10d) > 6 (recent drawdown exceeding 6%) to classify the immediate market environment as bear or bull, then uses CumRet(SVXY,5d) > 0 and RSI(TQQQ,60d) > 50 to select between SOXL and BSV via a momentum filter. In plain terms: when the semiconductor pop system gives no strong signal, the strategy defaults to a SPY/SVXY/TQQQ-based momentum classifier. The 69.2% max drawdown (highest among strategies not using pure inverse ETFs) reflects SOXL's inherent volatility and the strategy's willingness to maintain long semiconductor exposure even through major semiconductor bear markets."
+    ],
+    "signals": [
+      {
+        "name": "UVXY RSI(30d) Volatility Gate",
+        "tag": "rsi",
+        "description": "Primary regime gate: RSI(UVXY,30d) > 63. UVXY's 30-day RSI measures sustained volatility elevation, not just daily spikes. Above 63 activates high-volatility mode where single-day magnitude triggers become relevant. Below 63 routes to the baseline 30-20-10 Double Pop checks."
+      },
+      {
+        "name": "30-20-10 Double Pop RSI Cascade",
+        "tag": "rsi",
+        "description": "Multi-timeframe RSI cascade on SMH: RSI(30d) > 70 OR RSI(20d) > 75 OR RSI(10d) > 80 -> SOXS (fade the pop). RSI(10d) < 30 -> SOXL (buy the oversold). Three separate RSI windows create a tiered mean-reversion signal — longer windows trigger at lower thresholds."
+      },
+      {
+        "name": "Daily Magnitude Gates (SMH CumRet 1d)",
+        "tag": "momentum",
+        "description": "In high-volatility mode, the strategy grades single-day SMH moves: < -7% -> immediate SOXL (capitulation). -5.5% to -7% -> 50% SOXL + 50% Double Pop. -3% to -5.5% -> same split. > +5.5% -> SOXS (fade the rip). +4.5% to +5.5% -> 50% SOXS + Double Pop. Tiered responses match position size to move severity."
+      },
+      {
+        "name": "SOXL FTLT Fallback (SVXY + TQQQ Momentum)",
+        "tag": "momentum",
+        "description": "When no pop signal fires: CumRet(SVXY,5d) > 0 and RSI(TQQQ,60d) > 50 classify the environment as bull or bear. Bull -> BSV/SOXL momentum filter. Bear (MaxDD(SPY,10d) > 6) -> SOXL/BSV bear selector. Functions as the strategy's long-term momentum baseline when short-term signals are quiet."
+      }
+    ],
+    "risk_profile": "Extremely Aggressive. The 69.2% max drawdown is among the highest in this library, explained by the strategy's willingness to stay in SOXL (3x semiconductors) through extended bear markets. The 66.2% annualized standard deviation reflects both SOXL's inherent volatility amplification and the frequent switching between SOXL and SOXS. The 14.3-year backtest (3,609 days) covers multiple semiconductor cycles. The Calmar ratio of 1.61 and Sharpe of 1.46 are the weakest in the leveraged semiconductor tier, suggesting the 'Double Pop' logic does not dramatically improve raw buy-and-hold SOXL risk-adjusted returns despite its complexity. Attribution: created by Garen/DN.",
+    "author_note": "Created by Garen and DN, as credited in the strategy group name 'K Wave V6 (w/ SOXX Double Pops) Pure SOXX l Garen/DN'. The 'K Wave' name references Kondratiev waves — long-term (40-60 year) economic cycles that Garen likely uses as a macro framework. This is version 6 of the K Wave series."
+  },
+  {
+    "slug": "soxl-growth-rl",
+    "name": "SOXL Growth v2.4.5 RL",
+    "symphony_url": "https://app.composer.trade/symphony/CW8oWU12S6vEvn2Hh7jD/details",
+    "symphony_id": "CW8oWU12S6vEvn2Hh7jD",
+    "annualized_rate_of_return": 1.4313121236926323,
+    "max_drawdown": -0.8249196791996796,
+    "cumulative_return": 760340.484479,
+    "calmar_ratio": 1.7350927123974815,
+    "sharpe_ratio": 1.4727525728590476,
+    "standard_deviation": 0.8460154455924853,
+    "min": -0.38592975236132754,
+    "mean": 0.004944331048312803,
+    "median": 0.004217782827300676,
+    "max": 0.5462993663756655,
+    "trailing_one_month_return": -0.47262569832437495,
+    "trailing_three_month_return": -0.7310948064981583,
+    "trailing_one_year_return": 1.2994265373424825,
+    "backtest_days": 3840,
+    "description": "A machine-learning optimized SOXL strategy (the 'RL' stands for Reinforcement Learning) that uses standard deviation of returns alongside RSI and drawdown thresholds to navigate between long semiconductor exposure, inverse ETFs, and diversified leveraged baskets — with hyper-precise numeric thresholds that reveal its algorithmic origin.",
+    "tags": [
+      "rsi",
+      "momentum",
+      "leveraged-etfs"
+    ],
+    "last_updated": "2026-06-14",
+    "how_it_works": [
+      "SOXL Growth v2.4.5 RL takes its name from its generation method: 'RL' indicates Reinforcement Learning, a machine-learning technique where an agent learns optimal decisions through trial and reward signals on historical data. The tell is in the thresholds — human-designed strategies use round numbers (RSI > 50, drawdown > 50%), while RL-optimized strategies produce values like RSI(SOXL,32d) <= 62.1995, StdDev(SOXL,105d) <= 4.9226, and RSI(SOXL,30d) >= 57.49. These precise decimals are the fingerprints of an optimizer that tested thousands of parameter combinations. The strategy integrates two categories of signals most strategies ignore: standard deviation of returns (volatility-of-volatility) and maximum drawdown thresholds on the instruments themselves.",
+      "The outer gate uses MaxDD(SOXL,60d) >= 50 — if SOXL has experienced a 50% or greater drawdown within the last 60 trading days, the strategy enters its 'major drawdown' branch. In this branch, the primary reference switches from SOXL to TQQQ: it checks StdDev(TQQQ,14d) and StdDev(TQQQ,100d) to classify short-term and long-term volatility. Low volatility on both timeframes suggests a potential recovery, routing into [SOXL, TQQQ, SPXL] momentum filter. High short-term volatility but positive RSI(TQQQ,30d) routes to SPXL or SOXS depending on recent vol. A CumRet(TQQQ,8d) <= -20 check catches 8-day crash scenarios and re-enters SOXL as a dip-buy. MaxDD(TQQQ,200d) <= 65 triggers the inverse basket [TMV, SQQQ, SPXS].",
+      "When SOXL has NOT experienced a 50%+ drawdown in 60 days (normal regime), the strategy routes through RSI(SOXL,32d) <= 62.2 as a secondary gate. In the RSI-below-threshold path, it checks long-term volatility (StdDev(SOXL,105d) <= 4.92) — low long-term vol just holds SOXL outright. Higher long-term vol activates RSI(SOXL,30d) >= 57.49 and StdDev(SOXL,30d) >= 5.41 for current-month assessment: a combination of elevated 30d RSI and high 30d volatility leads to SOXS, otherwise to [SOXL, SPXL, TQQQ] filter. The deep drawdown check CumRet(SOXL,32d) <= -12 re-enters SOXL on a 32-day crash. The 82.5% max drawdown — the highest in this library — reflects the strategy's commitment to SOXL even in bear markets, with inverse ETF positions providing only periodic protection."
+    ],
+    "signals": [
+      {
+        "name": "MaxDD(SOXL,60d) >= 50 Primary Gate",
+        "tag": "momentum",
+        "description": "Outer regime gate: has SOXL lost 50%+ at any point in the last 60 trading days? Yes -> major-drawdown branch (references TQQQ volatility). No -> normal-regime branch (references SOXL RSI and vol directly). Unusual for using the instrument's own drawdown as its primary signal."
+      },
+      {
+        "name": "Standard Deviation of Returns Gates",
+        "tag": "momentum",
+        "description": "Multiple StdDev conditions: StdDev(TQQQ,14d) <= 18, StdDev(TQQQ,100d) <= 3.8, StdDev(TQQQ,30d) >= 5.8, StdDev(SOXL,105d) <= 4.92, StdDev(SOXL,30d) >= 5.41. Volatility-of-volatility is used as a regime signal — the only strategy in this library to do so extensively."
+      },
+      {
+        "name": "RL-Optimized RSI Thresholds",
+        "tag": "rsi",
+        "description": "RSI thresholds with machine-learning precision: RSI(SOXL,32d) <= 62.1995, RSI(SOXL,30d) >= 57.49, RSI(TQQQ,30d) >= 50. The 32-day RSI window (not 30 or 14) and the 62.1995 threshold are characteristic of reinforcement-learning optimization rather than human design."
+      },
+      {
+        "name": "Inverse ETF Basket: TMV, SQQQ, SPXS",
+        "tag": "leveraged-etfs",
+        "description": "Bear-mode short basket: Filter top-? of [TMV, SQQQ, SPXS]. TMV (3x inverse long-duration bonds), SQQQ (3x inverse QQQ), SPXS (3x inverse S&P500). Activates when TQQQ 30-day trend is negative or TQQQ 200-day MaxDD exceeds 65%."
+      }
+    ],
+    "risk_profile": "Extremely Aggressive — the highest max drawdown (82.5%) and highest standard deviation (84.6%) in this library. Both figures reflect SOXL's 3x leverage on semiconductors combined with a strategy that stays long through most downturns, relying on RL-optimized thresholds to exit at precise points rather than using broad regime filters like the 200d MA. The 15.3-year backtest (3,840 days) is the longest in the library, giving the RL-optimized parameters more historical basis. However, the precise thresholds may be overfit to historical SOXL/TQQQ behavior and could perform differently in new market regimes. The Calmar ratio of 1.74 and Sharpe of 1.47 are modest for the risk taken. The -47.3% trailing 1-month return recorded at the time of data fetch illustrates the strategy's capacity for catastrophic short-term losses."
+  },
+  {
+    "slug": "nancy-pelosi-chips",
+    "name": "Inside Nancy Pelosi's Chips - V3",
+    "symphony_url": "https://app.composer.trade/symphony/HgK8mCeBnH4fQFNcfZ7q/details",
+    "symphony_id": "HgK8mCeBnH4fQFNcfZ7q",
+    "annualized_rate_of_return": 0.7311620367426761,
+    "max_drawdown": -0.8624672545892057,
+    "cumulative_return": 1959.090844,
+    "calmar_ratio": 0.8477562862266922,
+    "sharpe_ratio": 1.1018644466247058,
+    "standard_deviation": 0.7488249201306968,
+    "min": -0.3051388651629334,
+    "mean": 0.0032742204612642846,
+    "median": 0.002045297833683679,
+    "max": 0.5462985567494574,
+    "trailing_one_month_return": -0.18483056391438413,
+    "trailing_three_month_return": -0.5513892884746832,
+    "trailing_one_year_return": -0.049390128540761635,
+    "backtest_days": 3480,
+    "description": "A semiconductor mean-reversion strategy named after Nancy Pelosi's famous chip stock trading, using 5-day SOXX cumulative returns to detect weekly momentum extremes and then trading SOXL or SOXS at the reversal point, while applying individual RSI checks on NVDA and AMD to catch extreme overbought and oversold conditions in the key stocks.",
+    "tags": [
+      "rsi",
+      "momentum",
+      "leveraged-etfs"
+    ],
+    "last_updated": "2026-06-14",
+    "how_it_works": [
+      "Inside Nancy Pelosi's Chips - V3 is named after U.S. House Speaker Nancy Pelosi, whose family made large and well-timed trades in semiconductor stocks including NVDA and AVGO during the period when the CHIPS and Science Act (2022) was being debated and signed into law. The strategy's name is an editorial comment on the information advantage that public officials might have in chip-sector legislative timing. The strategy itself uses purely technical signals — no news or legislative calendars — but focuses exclusively on the same semiconductor universe that made Pelosi's trades famous.",
+      "The primary logic is a 5-day return mean-reversion framework on SOXX. When SOXX has gained more than 5% in the past five trading days (a strong week), the strategy checks whether today's 1-day return is negative (CumRet(SOXX,1d) < -2): if yes, it buys SOXL on the intraday dip within the strong week, betting the uptrend continues. If the day is not down, it holds SOXS — betting the strong week has already over-extended. The mirror logic applies in the bearish case: CumRet(SOXX,5d) < -5 (weak week) with a positive day (> 2%) triggers SOXS (fading the dead-cat bounce), while a flat or down day triggers SOXL as a continuation dip-buy.",
+      "In the normal regime (no extreme 5-day SOXX move), the strategy uses NVDA and AMD's individual RSI at very tight thresholds. RSI(NVDA,8d) > 90 and RSI(AMD,8d) > 90 are extreme overbought signals (only fire when a stock has gained unusually sharply in 8 days) and trigger SOXS. RSI(NVDA,3d) < 15 and RSI(AMD,3d) < 15 are extreme oversold (3-day RSI below 15 is a severe short-term crash) and trigger SOXL. When neither extreme fires, the strategy uses SOXX's 10-day EMA vs current price as the sector trend: if SOXX is below its EMA (near-term weakness), it holds the chip momentum basket [SOXX, NVDA, AMD, XLE, ENPH]; if SOXX is above EMA (trending up), it rotates to the commodity/energy basket [SPY, DBC, XLE]."
+    ],
+    "signals": [
+      {
+        "name": "SOXX 5-Day Momentum Extremes",
+        "tag": "momentum",
+        "description": "Primary mean-reversion gate: CumRet(SOXX,5d) > 5 (strong week) or CumRet(SOXX,5d) < -5 (weak week). Within each extreme, the 1-day return determines direction: down-day during a strong week = dip-buy (SOXL); up-day during a strong week = fade the rally (SOXS). Mirrors in the bearish case."
+      },
+      {
+        "name": "NVDA RSI(8d) and RSI(3d) Extremes",
+        "tag": "rsi",
+        "description": "In normal regime: RSI(NVDA,8d) > 90 -> SOXS (extreme 8-day overbought in NVDA). RSI(NVDA,3d) < 15 -> SOXL (3-day extreme oversold). Thresholds are far tighter than the 79-80 / 30-31 used by most strategies — 90 and 15 fire only in true extremes."
+      },
+      {
+        "name": "AMD RSI(8d) and RSI(3d) Extremes",
+        "tag": "rsi",
+        "description": "Parallel to NVDA: RSI(AMD,8d) > 90 -> SOXS. RSI(AMD,3d) < 15 -> SOXL. Using AMD as a separate co-equal component to NVDA means each chip leader independently signals overbought/oversold — firing either condition is enough to trigger the positioning."
+      },
+      {
+        "name": "SOXX EMA(10d) vs Price Regime",
+        "tag": "momentum",
+        "description": "When no extreme fires: EMA(SOXX,10d) > current SOXX price (SOXX below its 10d EMA, near-term weak) -> Filter [SOXX, NVDA, AMD, XLE, ENPH]. EMA < price (SOXX trending up above EMA) -> Filter [SPY, DBC, XLE]. Counterintuitively, weakness routes to chips while strength routes to broad/commodities — a mild contrarian tilt."
+      }
+    ],
+    "risk_profile": "Extremely Aggressive, with the highest max drawdown in this library at 86.2% and a Calmar ratio of only 0.85 (the only strategy below 1.0). The -4.9% trailing 1-year return recorded at data fetch confirms the strategy has struggled in recent semiconductor cycles. The 74.9% standard deviation reflects constant switching between SOXL (3x long) and SOXS (3x short) without a broader market filter like the SPY 200d MA that most other strategies use to prevent being long during secular bear markets. V3 implies prior versions were revised — V3's structure suggests the author updated the stock-specific RSI thresholds and added the EMA regime filter after earlier versions underperformed."
+  },
+  {
+    "slug": "top-cap-ma-rsi",
+    "name": "Top Cap by MA + RSI ETF Hedge",
+    "symphony_url": "https://app.composer.trade/symphony/wadbe3IfwvSES5vk6yiu/details",
+    "symphony_id": "wadbe3IfwvSES5vk6yiu",
+    "annualized_rate_of_return": 1.3327713824835148,
+    "max_drawdown": -0.5776215914473763,
+    "cumulative_return": 11169.015566,
+    "calmar_ratio": 2.3073434272841506,
+    "sharpe_ratio": 1.6396312573641836,
+    "standard_deviation": 0.6392338051686691,
+    "min": -0.23446508724754167,
+    "mean": 0.004159157649676177,
+    "median": 0.0010119089716787988,
+    "max": 0.35106207843683457,
+    "trailing_one_month_return": 0.047560234006559954,
+    "trailing_three_month_return": 0.5286708305068422,
+    "trailing_one_year_return": 0.38000808568219524,
+    "backtest_days": 2772,
+    "description": "A three-branch strategy using SPY's extreme short-term RSI to toggle between UVXY volatility hedge (extreme overbought), leveraged ETF attack (extreme oversold), and momentum selection from a curated mega-cap stock basket spanning value, growth, and crypto-proxy names.",
+    "tags": [
+      "rsi",
+      "momentum"
+    ],
+    "last_updated": "2026-06-14",
+    "how_it_works": [
+      "Top Cap by MA + RSI ETF Hedge uses SPY's 6-day RSI as a binary traffic light that routes 100% of the portfolio into one of three distinct modes. The RSI window is unusually short — most strategies in this library use 10-day RSI. A 6-day RSI is more sensitive and therefore more selective: it reaches extreme readings (above 90 or below 28) only during very sharp short-term moves, not routine trending action. The 90 and 28 thresholds are also more extreme than the 79-80 / 30-31 used by most comparable strategies, meaning the hedge and leveraged-attack modes fire infrequently. The vast majority of trading days fall into the normal regime and route to the mega-cap stock basket.",
+      "When SPY RSI(6d) >= 90, the portfolio rotates entirely to UVXY. This is an extreme overbought hedge: a 6-day RSI of 90 in SPY indicates SPY has moved almost continuously upward for 6 days — a condition historically followed by short-term pullbacks. UVXY (2x long VIX futures) benefits from both the volatility spike and the reversal momentum. When SPY RSI(6d) <= 28, the strategy swings to its most aggressive allocation: the leveraged attack basket of [TQQQ, LABU, SPXL]. A 6-day RSI of 28 in SPY means the market has fallen almost uninterrupted for 6 days, which often precedes a sharp relief bounce — precisely when holding 3x leveraged long positions offers the highest risk/reward.",
+      "The default regime holds a momentum filter from the mega-cap stock universe: WMT (Walmart), MSTR (MicroStrategy, a Bitcoin treasury company), AMZN (Amazon), KO (Coca-Cola), BRK/B (Berkshire Hathaway Class B), AAPL (Apple), and TSLA (Tesla). This basket spans defensive value names (WMT, KO, BRK/B), mega-cap growth (AMZN, AAPL, TSLA), and a crypto proxy (MSTR). The filter selects the top performer by recent momentum, concentrating the position in whichever of these names is currently leading. This creates an unusual hybrid strategy: highly speculative leveraged ETFs at extremes, conservative mega-caps as the baseline."
+    ],
+    "signals": [
+      {
+        "name": "SPY RSI(6d) >= 90: UVXY Overbought Hedge",
+        "tag": "rsi",
+        "description": "When SPY's 6-day RSI reaches 90+, 100% of portfolio goes to UVXY (2x long VIX). The 6-day window and 90 threshold create an extremely selective trigger — firing only during sustained near-vertical SPY rallies, not routine momentum. Much more extreme than the 79-80 thresholds used by most strategies in this library."
+      },
+      {
+        "name": "SPY RSI(6d) <= 28: Leveraged Attack",
+        "tag": "rsi",
+        "description": "When SPY's 6-day RSI hits 28 or below (extreme oversold), rotates to momentum filter of [TQQQ, LABU, SPXL]. LABU (3x biotech) is an unusual choice rarely seen in other strategies here — adds biotech sector exposure as a potential recovery leader alongside QQQ (TQQQ) and S&P500 (SPXL) leveraged ETFs."
+      },
+      {
+        "name": "Mega-Cap Stock Momentum Filter",
+        "tag": "momentum",
+        "description": "Default regime: momentum filter over [WMT, MSTR, AMZN, KO, BRK/B, AAPL, TSLA]. Selects the top recent performer. Unique in combining defensive value (WMT, KO, BRK/B), mega-cap tech growth (AMZN, AAPL, TSLA), and a Bitcoin proxy (MSTR). No sector concentration — each name represents a different macro theme."
+      }
+    ],
+    "risk_profile": "Aggressive with meaningfully better risk-adjusted metrics than the pure semiconductor leveraged strategies. The 57.8% max drawdown is the lowest in this sub-category, the Calmar ratio of 2.31 is solid, and Sharpe of 1.64 puts it above most leveraged ETF strategies. The 11-year backtest (2,772 days) is shorter than peers. The MSTR position in the mega-cap basket introduces significant Bitcoin correlation risk that was not present for most of the backtest period (MSTR began its Bitcoin treasury strategy in 2020). The UVXY allocation during extreme overbought conditions carries VIX futures roll decay risk if the hedge fires early before an actual pullback. The LABU (3x biotech) exposure in the leveraged attack basket adds sector volatility beyond the typical TQQQ/SPXL combination."
+  },
+  {
+    "slug": "mean-reversion-py",
+    "name": "Mean Reversion Comparison to Python Code",
+    "symphony_url": "https://app.composer.trade/symphony/KJqNBGxYyyKuCcEfdHhq/details",
+    "symphony_id": "KJqNBGxYyyKuCcEfdHhq",
+    "annualized_rate_of_return": 0.8181698592680706,
+    "max_drawdown": -0.8165989379333195,
+    "cumulative_return": 6395.04338,
+    "calmar_ratio": 1.0019237366861227,
+    "sharpe_ratio": 1.2481680820503191,
+    "standard_deviation": 0.6449865548841536,
+    "min": -0.3446515172240706,
+    "mean": 0.0031946493299920514,
+    "median": 0.0037771655821303707,
+    "max": 0.5001155835602586,
+    "trailing_one_month_return": -0.007292561749442372,
+    "trailing_three_month_return": 0.30630252075465303,
+    "trailing_one_year_return": 0.6811540965113314,
+    "backtest_days": 3693,
+    "description": "A minimalist SPY trend-following strategy with a TQQQ core and a UVXY overbought hedge, originally built to cross-validate a Python backtesting implementation. Uses SPY's moving average as the primary regime gate and TQQQ RSI(10d) as the only secondary signal, choosing between TQQQ, UVXY, or SPY across four simple branches.",
+    "tags": [
+      "rsi",
+      "200d-ma",
+      "momentum"
+    ],
+    "last_updated": "2026-06-14",
+    "how_it_works": [
+      "Mean Reversion Comparison to Python Code was built as a validation tool — its name documents that the Composer symphony was constructed to replicate and compare against a separately coded Python backtesting implementation of the same strategy logic. This makes it structurally one of the simplest strategies in the library, as simplicity is necessary for accurate replication across two environments. The entire decision tree consists of four leaves: UVXY, TQQQ, SPY, or TQQQ (repeated in bear mode). The SPY primary gate checks whether SPY's current price is above its moving average — when true, the market is in an uptrend and the strategy is bullish; when false, the market is in a downtrend.",
+      "In bull mode (SPY above its moving average), the strategy then checks RSI(TQQQ,10d) > 79. If TQQQ's 10-day RSI has reached or exceeded 79, the market is considered short-term overbought and the strategy rotates 100% to UVXY as a volatility hedge. This is identical to the logic used by Holy Grail, TQQQ For The Long Term, and The Four Horsemen — the 79 threshold on TQQQ 10d RSI is a standard overbought trigger used across multiple strategies. If RSI is not elevated, the strategy holds TQQQ for the leveraged bull-market upside.",
+      "Bear mode (SPY below its moving average) is where this strategy diverges from its relatives. Rather than activating dip-buying on TECL or SOXL, or running a momentum filter between SQQQ and TLT, this strategy simply checks whether TQQQ RSI(10d) > 79. If overbought even in a bear market, it holds SPY outright (not UVXY — the bear-mode overbought response is a downgrade to unlevered equity, not a volatility bet). If RSI is not elevated in bear mode, the strategy holds TQQQ. Holding TQQQ in a sustained bear market explains the 81.7% max drawdown — there is no bear-market exit strategy when RSI is not yet overbought."
+    ],
+    "signals": [
+      {
+        "name": "SPY Moving Average Trend Gate",
+        "tag": "200d-ma",
+        "description": "Primary regime filter: SPY current price vs its moving average. Above = bull mode (TQQQ with UVXY hedge). Below = bear mode (TQQQ default with SPY as the overbought defensive). The simplest form of trend-following regime detection, with no secondary trend filters or duration requirements."
+      },
+      {
+        "name": "TQQQ RSI(10d) > 79 Overbought Signal",
+        "tag": "rsi",
+        "description": "Shared by bull AND bear mode: RSI(TQQQ,10d) > 79 -> UVXY (bull) or SPY (bear). The same threshold triggers different responses depending on regime. Bull-mode RSI fires into UVXY for active hedging; bear-mode RSI fires into SPY as a passive defensive downgrade rather than a volatility bet."
+      }
+    ],
+    "risk_profile": "Aggressive. The 81.7% max drawdown is explained by one design choice: the strategy holds TQQQ as the default in BOTH bull and bear regimes (when RSI is not elevated), with no time-based exit from bear mode and no alternative long-term bear strategy. In a sustained bear market like 2022 or 2008, TQQQ can fall 80-90%+ and the strategy would hold it throughout if RSI remained below 79. The 14.7-year backtest (3,693 days) matches Holy Grail and TQQQ For The Long Term exactly, allowing direct metric comparison. Compared to Holy Grail (ARR 153.9%, MaxDD -47.4%), this strategy achieves only 81.8% ARR at nearly double the max drawdown — illustrating that the Holy Grail's bear-mode dip-buy and defensive rotation logic substantially improves both return AND risk management over this bare-bones implementation. The Calmar ratio of 1.00 is barely above break-even on a risk-adjusted basis."
+  },
+  {
+    "slug": "spy-energy-chips",
+    "name": "SPY, Energy, Chips, Commodities",
+    "symphony_url": "https://app.composer.trade/symphony/rtyBIBOKEY2cPSbJSQX8/details",
+    "symphony_id": "rtyBIBOKEY2cPSbJSQX8",
+    "annualized_rate_of_return": 0.7391678638296502,
+    "max_drawdown": -0.6533919268236806,
+    "cumulative_return": 2088.081725,
+    "calmar_ratio": 1.131277925980736,
+    "sharpe_ratio": 1.1918370785375731,
+    "standard_deviation": 0.6284518869405427,
+    "min": -0.26080373484183006,
+    "mean": 0.002972270876716832,
+    "median": 0.002074817624282854,
+    "max": 0.32888898187941296,
+    "trailing_one_month_return": 0.1411586011671413,
+    "trailing_three_month_return": 0.3392615906272307,
+    "trailing_one_year_return": 0.35607821167811915,
+    "backtest_days": 3480,
+    "description": "A two-component strategy combining a VIXM Black Swan Catcher (holding mid-term VIX when volatility has been persistently elevated) with a multi-sector momentum rotator that selects the best performer from a diversified pool spanning semiconductor leaders, broad market, energy, commodities, and clean energy.",
+    "tags": [
+      "rsi",
+      "momentum"
+    ],
+    "last_updated": "2026-06-14",
+    "how_it_works": [
+      "SPY, Energy, Chips, Commodities (originally named with a black swan emoji '🦢' to signal its tail-risk awareness) runs two parallel components. The first is a 'Black Swan Catcher' that watches RSI(VIXM,40d) > 69. VIXM (ProShares VIX Mid-Term Futures ETF) tracks 4-7 month VIX futures rather than the 1-month futures tracked by VXX or the 2x daily version tracked by UVXY. Mid-term VIX moves more slowly and decays less aggressively from contango, making it a more sustainable fear hedge. A 40-day RSI of 69 in VIXM means volatility has been persistently elevated for over a month — this is not a daily spike signal but a sustained-fear detector.",
+      "When the Black Swan Catcher is not triggered (RSI(VIXM,40d) <= 69), the entire portfolio falls to the second component: a momentum rotator across [SOXX, NVDA, AMD, SPY, DBC, XLE, ENPH]. This universe deliberately diversifies across uncorrelated sectors: SOXX (semiconductor ETF), NVDA and AMD (individual chip leaders), SPY (broad US equities), DBC (diversified commodity index), XLE (energy sector), and ENPH (Enphase Energy, solar/clean energy). The rotator selects the top performer by recent momentum — whichever asset has shown the strongest trend — and concentrates the full portfolio there. The strategy never holds multiple assets simultaneously in the rotation mode.",
+      "The logic encodes a macro view: semiconductors and AI-adjacent companies (SOXX, NVDA, AMD), commodities and energy (DBC, XLE), and clean energy (ENPH) represent the three major secular growth themes of the 2010s-2020s. SPY serves as the benchmark safety net when no sector theme is outperforming. The Black Swan Catcher layer provides protection that the rotation cannot offer — when markets are in a sustained panic (not a single-day spike), VIXM will have persistently elevated RSI and the strategy parks there rather than chasing a collapsing sector. This differs from strategies that use instantaneous RSI(10d) spikes: the 40-day RSI of VIXM measures weeks of sustained fear, not a single day."
+    ],
+    "signals": [
+      {
+        "name": "VIXM RSI(40d) > 69 Black Swan Gate",
+        "tag": "rsi",
+        "description": "RSI(VIXM,40d) > 69 -> HOLD VIXM. Uses the ProShares VIX Mid-Term Futures ETF (not UVXY/VXX) and a 40-day window, producing a slow-burning signal that only triggers after weeks of sustained volatility elevation. Designed to capture multi-week panic periods rather than single-day spikes."
+      },
+      {
+        "name": "Multi-Sector Momentum Rotator",
+        "tag": "momentum",
+        "description": "Default mode: Filter top-1 of [SOXX, NVDA, AMD, SPY, DBC, XLE, ENPH] by recent return. Spans semiconductors (SOXX, NVDA, AMD), broad market (SPY), commodities (DBC), energy (XLE), and clean energy (ENPH). No leveraged ETFs in the rotation pool — concentrates in the strongest non-leveraged asset."
+      }
+    ],
+    "risk_profile": "Aggressive but unleveraged in the rotation component. The 65.3% max drawdown comes not from 3x ETFs but from holding concentrated positions in volatile sectors (NVDA, AMD, ENPH) during sector-specific crashes. The 13.8-year backtest (3,480 days) begins around 2012, which means ENPH and AMD's earlier history may be underrepresented. Sharpe of 1.19 and Calmar of 1.13 are the lowest in the library, reflecting the strategy's lack of leverage (in the rotation mode) alongside a still-significant drawdown. The VIXM component carries moderate roll decay versus UVXY but adds meaningful long-duration protection. The strategy does not use a SPY trend gate — it can remain fully in semiconductor stocks during bear markets unless VIXM RSI triggers, which requires sustained (40-day) volatility elevation rather than an immediate response to the market turning negative."
   }
 ]

@@ -5,6 +5,33 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.5.0] - 2026-06-14
+
+### Added — 6 new strategies (24 total)
+
+Added six new Composer symphonies to the strategy library, expanding the catalog from 18 to 24 strategies. Each entry was analyzed from the Composer API backtest metrics and logic tree, with full `how_it_works` narrative, `signals` breakdown, and `risk_profile` section.
+
+| Strategy | Symphony ID | ARR | Max DD |
+|---|---|---|---|
+| SOXX Group | `7PBSP926Mp40r6bPnP0j` | 111.2% | -69.2% |
+| SOXL Growth v2.4.5 RL | `CW8oWU12S6vEvn2Hh7jD` | 143.1% | -82.5% |
+| Inside Nancy Pelosi's Chips - V3 | `HgK8mCeBnH4fQFNcfZ7q` | 73.1% | -86.2% |
+| Top Cap by MA + RSI ETF Hedge | `wadbe3IfwvSES5vk6yiu` | 133.3% | -57.8% |
+| Mean Reversion Comparison to Python Code | `KJqNBGxYyyKuCcEfdHhq` | 81.8% | -81.7% |
+| SPY, Energy, Chips, Commodities | `rtyBIBOKEY2cPSbJSQX8` | 73.9% | -65.3% |
+
+**Notable additions:**
+- **SOXX Group** — Garen/DN's K Wave V6 system with the '30-20-10 Double Pop' multi-timeframe RSI cascade for semiconductor mean-reversion
+- **SOXL Growth v2.4.5 RL** — Reinforcement-learning-optimized SOXL strategy; identified by ML-precision decimal thresholds (RSI <= 62.1995, StdDev <= 4.9226) and highest drawdown in the library (82.5%)
+- **Inside Nancy Pelosi's Chips - V3** — Semiconductor mean-reversion using SOXX 5-day momentum extremes and individual NVDA/AMD RSI signals at extreme thresholds (RSI > 90 and < 15)
+- **Top Cap by MA + RSI ETF Hedge** — Minimalist 3-branch strategy: SPY RSI(6d) >= 90 → UVXY; RSI(6d) <= 28 → leveraged attack [TQQQ,LABU,SPXL]; normal → mega-cap momentum filter [WMT,MSTR,AMZN,KO,BRK/B,AAPL,TSLA]
+- **Mean Reversion Comparison to Python Code** — Built to cross-validate a Python backtest; minimal SPY MA + TQQQ RSI(10d) logic that serves as a performance baseline vs Holy Grail
+- **SPY, Energy, Chips, Commodities** — VIXM RSI(40d) Black Swan Catcher paired with a multi-sector rotator spanning [SOXX,NVDA,AMD,SPY,DBC,XLE,ENPH]
+
+**Files changed:** `data/strategies.json`, `data/strategies.js`, `docs/PATCHNOTES.md`, `docs/PRD.md`, `README.md`
+
+---
+
 ## [1.4.2] - 2026-06-14
 
 ### Fix — Repo-rename-proof BASE URL detection

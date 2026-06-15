@@ -993,7 +993,7 @@ Used by `update_metrics.py` to refresh `data/symphony_scores.json`.
 
 ### Symphony ID Reference
 
-All 18 ComposerAtlas strategies with their Composer symphony IDs:
+All 24 ComposerAtlas strategies with their Composer symphony IDs:
 
 | Strategy | Symphony ID |
 |---|---|
@@ -1015,6 +1015,12 @@ All 18 ComposerAtlas strategies with their Composer symphony IDs:
 | Wooden ARKK Machine 2.2 | `kl2dR0Rlp4RgZUHAJY2k` |
 | Super Semiconductors | `zTV33nu3o0h5fKpT6IqL` |
 | The Four Horsemen of the Apocalypse | `vkJ5YCvzJLBu2KKF6Oy0` |
+| SOXX Group | `7PBSP926Mp40r6bPnP0j` |
+| SOXL Growth v2.4.5 RL | `CW8oWU12S6vEvn2Hh7jD` |
+| Inside Nancy Pelosi's Chips - V3 | `HgK8mCeBnH4fQFNcfZ7q` |
+| Top Cap by MA + RSI ETF Hedge | `wadbe3IfwvSES5vk6yiu` |
+| Mean Reversion Comparison to Python Code | `KJqNBGxYyyKuCcEfdHhq` |
+| SPY, Energy, Chips, Commodities | `rtyBIBOKEY2cPSbJSQX8` |
 
 Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 
@@ -1204,7 +1210,7 @@ The codebase is public, readable, and maintainable by a single developer. We do 
 ### User FAQ
 
 **Q: What is ComposerAtlas?**
-A: ComposerAtlas is a free reference website that showcases 18 curated Composer.trade strategies, explains how they work in plain language, and educates visitors on the investing concepts behind them.
+A: ComposerAtlas is a free reference website that showcases 24 curated Composer.trade strategies, explains how they work in plain language, and educates visitors on the investing concepts behind them.
 
 **Q: Who is this for?**
 A: Self-directed retail investors who use Composer.trade, are curious about systematic investing, or want to learn about concepts like RSI, VIX strategies, momentum, or leveraged ETFs.
