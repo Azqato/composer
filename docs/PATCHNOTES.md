@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.5.4] - 2026-06-15
+
+### Fix — Improve disabled text legibility
+
+Updated `--color-disabled` from `#444444` to `#c0c0c0` globally. This affects all secondary UI text: stat bar labels ("Strategies", "Best Sharpe", "Top ARR", "Concepts"), breadcrumb separators, section counts, and strategy card metadata. The previous value was near-invisible against the dark background.
+
+**File changed:** `css/main.css`
+
+---
+
 ## [1.5.3] - 2026-06-15
 
 ### Added — "Zoop's Strategies" glossary concept and tag
