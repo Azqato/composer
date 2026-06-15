@@ -17,20 +17,12 @@ const BASE = (_seg && _seg.toLowerCase() === 'composeratlas') ? '/' + _seg : '';
 
 // ---- URL helper ----
 // On HTTP/HTTPS: prepends BASE for absolute paths (works on both localhost and GitHub Pages).
-// On file:// protocol: builds a relative path based on the current page's depth in the tree,
-// because absolute paths like /strategies/ resolve to the filesystem root on file://.
+// On file://: strips the leading slash since all pages are at root depth.
 function u(path) {
   if (window.location.protocol !== 'file:') return BASE + path;
-  const p = window.location.pathname;
-  const depth =
-    (p.includes('/strategies/detail/') || p.includes('/glossary/detail/')) ? 2 :
-    (p.match(/\/(strategies|glossary)\//) ? 1 : 0);
-  const up = depth === 0 ? '.' : Array(depth).fill('..').join('/');
-  // On file://, browsers show a directory listing for trailing-slash URLs instead of
-  // serving index.html automatically — append it explicitly.
   const [pathPart, qs] = path.split('?');
-  const filePart = pathPart.endsWith('/') ? pathPart + 'index.html' : pathPart;
-  return up + filePart + (qs ? '?' + qs : '');
+  const rel = pathPart === '/' ? 'index.html' : pathPart.replace(/^\//, '');
+  return rel + (qs ? '?' + qs : '');
 }
 
 // ---- Data loading ----
@@ -114,7 +106,7 @@ function tagLabel(slug) {
 }
 
 function renderTag(slug) {
-  return `<a href="${u('/glossary/detail/?slug=' + slug)}" class="tag ${tagClass(slug)}">${tagLabel(slug)}</a>`;
+  return `<a href="${u('/glossary.html?slug=' + slug)}" class="tag ${tagClass(slug)}">${tagLabel(slug)}</a>`;
 }
 
 // ---- Category helpers ----
@@ -143,8 +135,8 @@ function renderNav() {
   }
 
   const links = [
-    { href: u('/strategies/'), label: 'Strategies' },
-    { href: u('/glossary/'), label: 'Glossary' },
+    { href: u('/strategies.html'), label: 'Strategies' },
+    { href: u('/glossary.html'), label: 'Glossary' },
     { href: u('/about.html'), label: 'About' },
     { href: 'https://azqato.github.io/support.html', label: 'Support', external: true },
   ];
@@ -206,8 +198,8 @@ function renderFooter() {
   const year = new Date().getFullYear();
   footer.innerHTML = `
     <nav class="footer-links">
-      <a href="${u('/strategies/')}">Strategies</a>
-      <a href="${u('/glossary/')}">Glossary</a>
+      <a href="${u('/strategies.html')}">Strategies</a>
+      <a href="${u('/glossary.html')}">Glossary</a>
       <a href="${u('/about.html')}">About</a>
       <a href="https://azqato.github.io/support.html" target="_blank" rel="noopener noreferrer">Support</a>
       <a href="https://composer.trade" target="_blank" rel="noopener noreferrer">Composer.trade ↗</a>
@@ -235,7 +227,7 @@ function renderStrategyCard(s) {
   const tags = (s.tags || []).slice(0, 4).map(renderTag).join('');
   return `
     <article class="card">
-      <h2 class="card-title"><a href="${u('/strategies/detail/?slug=' + s.slug)}">${s.name}</a></h2>
+      <h2 class="card-title"><a href="${u('/strategies.html?slug=' + s.slug)}">${s.name}</a></h2>
       <p class="card-desc">${s.description}</p>
       <div class="card-metrics">
         <div>
@@ -253,7 +245,7 @@ function renderStrategyCard(s) {
       </div>
       ${tags ? `<div class="card-tags">${tags}</div>` : ''}
       <div class="card-footer">
-        <a href="${u('/strategies/detail/?slug=' + s.slug)}" class="btn btn-sm" style="color:var(--color-green)">
+        <a href="${u('/strategies.html?slug=' + s.slug)}" class="btn btn-sm" style="color:var(--color-green)">
           View Strategy →
         </a>
       </div>
@@ -277,7 +269,7 @@ function renderConceptCard(concept, strategyCount) {
       <h2 class="card-title">${concept.name}</h2>
       <p class="card-desc" style="-webkit-line-clamp:2">${concept.description}</p>
       <div class="card-footer">
-        <a href="${u('/glossary/detail/?slug=' + concept.slug)}" class="btn btn-sm" style="color:var(--color-green)">
+        <a href="${u('/glossary.html?slug=' + concept.slug)}" class="btn btn-sm" style="color:var(--color-green)">
           Learn more →
         </a>
       </div>
@@ -350,7 +342,7 @@ function renderMetricsTable(s) {
 // ---- Compact strategy list item ----
 function renderStrategyListItem(s) {
   return `
-    <a href="${u('/strategies/detail/?slug=' + s.slug)}" class="strategy-list-item">
+    <a href="${u('/strategies.html?slug=' + s.slug)}" class="strategy-list-item">
       <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</span>
       <span class="arr ${colorClass(s.annualized_rate_of_return)}">${formatPct(s.annualized_rate_of_return)}</span>
     </a>
