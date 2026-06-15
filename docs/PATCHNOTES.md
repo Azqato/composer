@@ -5,6 +5,25 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.5.6] - 2026-06-15
+
+### Added — "Backtesting" glossary concept (19th entry)
+
+Added a comprehensive glossary entry for `backtesting` covering the full lifecycle of how backtests work — both in general and specific to Composer.trade's engine.
+
+**Sections included:**
+- **Definition** — what backtesting is and its role as an evaluation tool vs. a prediction tool
+- **How It Works** — simulation mechanics, cost accounting, importance of data range and market regime coverage
+- **Common Backtesting Pitfalls** — survivorship bias, look-ahead bias, overfitting (data dredging), curve fitting
+- **Backtesting vs. Forward Testing** — paper trading as the live-environment complement
+- **How Composer.trade Runs Backtests** — daily rebalance lag, adjusted price data, what costs ARE and are NOT modeled (expense ratios embedded in NAV; commissions/spreads not modeled)
+- **Reading a Composer Backtest** — CAGR, max drawdown, Sharpe, benchmark comparison, ETF launch date constraints; includes summary table of the four core metrics
+- **Limitations of Backtesting** — regime change risk, short leveraged ETF history (TQQQ ~15 years), overfitting risk in Composer's condition-rich environment
+
+**Files changed:** `data/glossary.json`, `data/glossary.js`, `docs/PATCHNOTES.md`, `docs/PRD.md`
+
+---
+
 ## [1.5.5] - 2026-06-15
 
 ### Infra — Move ad-hoc scripts to `scripts/` folder

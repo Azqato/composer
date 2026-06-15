@@ -1470,5 +1470,102 @@ window.GLOSSARY_DATA = [
         ]
       }
     ]
+  },
+  {
+    "slug": "backtesting",
+    "name": "Backtesting",
+    "category": "strategy-concept",
+    "description": "The process of simulating a trading strategy against historical data to evaluate how it would have performed — without risking real capital.",
+    "formula": null,
+    "related_tags": [
+      "backtesting"
+    ],
+    "last_updated": "2026-06-15",
+    "sections": [
+      {
+        "title": "Definition",
+        "paragraphs": [
+          "Backtesting is the process of applying a trading strategy to historical price data to see how it would have performed in the past. Instead of risking real money to test whether an idea works, a backtest simulates every trade the strategy would have made — logging entries, exits, position sizes, and resulting returns — across years of historical data.",
+          "The output is a performance record: total return, annualized return, maximum drawdown, Sharpe ratio, and similar metrics. A strong backtest suggests the strategy has historically earned returns commensurate with its risk. A weak one suggests the opposite — or reveals conditions where the strategy would have suffered deeply.",
+          "Backtesting does not guarantee future performance. It is an evaluation tool, not a prediction. Its value is in filtering out ideas that fail on historical data before they can fail in real markets with real money."
+        ]
+      },
+      {
+        "title": "How It Works",
+        "paragraphs": [
+          "At each point in the historical data, the strategy's logic is evaluated exactly as it would be in a live account — using only information available on that date. The strategy's signals fire (or don't), positions are entered or exited, and the resulting portfolio value is tracked day by day.",
+          "A rigorous backtest accounts for all relevant costs and mechanics: transaction fees, bid-ask spreads, and in leveraged ETF strategies, the daily compounding effect that creates volatility decay. Ignoring these costs can make a mediocre strategy look exceptional on paper.",
+          "The quality of a backtest depends heavily on the data range. A backtest covering only a bull market will overstate returns for long-biased strategies. The best backtests span multiple market regimes — bull markets, bear markets, and sideways chop — so results reflect a range of conditions rather than a single favorable environment."
+        ]
+      },
+      {
+        "title": "Common Backtesting Pitfalls",
+        "paragraphs": [
+          "Survivorship bias: If the backtest dataset only includes assets that still exist today, it artificially inflates returns. Companies that went bankrupt or were delisted are excluded, leaving only the winners. This distorts the simulation because in real markets, investors held those failed assets too.",
+          "Look-ahead bias: Using information that would not have been available on the date of a historical trade. For example, using end-of-day closing prices to decide trades that would have needed to be placed mid-day, or using revised economic data rather than the data as originally reported. Look-ahead bias is often subtle and can invisibly inflate backtest performance.",
+          "Overfitting (data dredging): Testing hundreds of parameter combinations against the same dataset until one looks exceptional — then claiming that combination is the optimal strategy. A strategy tuned to fit one dataset will often collapse when exposed to new data it was never trained on. The fix is to validate on separate out-of-sample data: run the strategy on a dataset it was never optimized against and see if the results hold.",
+          "Curve fitting: A variant of overfitting where the strategy is made so complex, with so many conditions, that it perfectly explains past data but has no predictive power. Simple strategies with few parameters backtest less impressively but tend to be more robust in live trading."
+        ]
+      },
+      {
+        "title": "Backtesting vs. Forward Testing",
+        "paragraphs": [
+          "Forward testing (also called paper trading) is the complement to backtesting. After a strategy passes backtesting, it is run in a live market environment using hypothetical funds — recording every trade and outcome in real time without actual capital at risk. Forward testing validates whether the backtest results hold in a live environment with real fills, real spreads, and real market conditions.",
+          "The two processes test different things. Backtesting answers whether the strategy would have worked historically. Forward testing answers whether it works now — catching issues like execution lag, data feed differences, or regime changes that post-date the backtest window.",
+          "A strategy that backtests well but fails in forward testing is a signal that the backtest was overfitted to historical conditions or that the market has changed in a way the historical data did not capture. Strong strategies show consistency across both tests."
+        ]
+      },
+      {
+        "title": "How Composer.trade Runs Backtests",
+        "paragraphs": [
+          "Composer.trade's built-in backtest engine simulates every rebalance a symphony would have triggered across the available historical data for its assets. On each rebalance date, the engine evaluates the symphony's conditional logic using the same price and indicator data available on that historical date — then calculates what the portfolio would have looked like the following day after the simulated trade executed.",
+          "Rebalance frequency matters significantly. Composer symphonies typically rebalance daily: the signal is evaluated at the close of each trading day, and the position change is assumed to execute at the next day's open. This means there is a one-day lag between a signal firing and the position reflecting it. In a sharp market move, that lag can be the difference between catching a signal and missing a swing.",
+          "Composer's backtests use adjusted price data — accounting for stock splits, dividends, and ETF distributions — so the historical return series is comparable across different time periods. This is standard for backtesting tools and ensures a stock split doesn't look like a price crash in the simulation.",
+          "One critical limitation: Composer's backtest does not deduct transaction costs, expense ratios, or tax drag by default. The expense ratios on leveraged ETFs (0.75%–0.95% annually for TQQQ, UPRO, etc.) are embedded in the price data through daily NAV adjustments, so they do appear in the simulation — but brokerage commissions and bid-ask spreads are not modeled. For long-term hold strategies this is a minor issue; for high-turnover symphonies that rotate frequently, unmodeled spreads can meaningfully flatter backtest performance."
+        ]
+      },
+      {
+        "title": "Reading a Composer Backtest",
+        "paragraphs": [
+          "Composer displays the backtest output as a performance chart, alongside summary metrics: total return, annualized return (CAGR), maximum drawdown, and Sharpe ratio. Each of these tells a different part of the story. Total return and CAGR describe how much the strategy made; maximum drawdown describes the worst-case loss a real investor would have experienced; Sharpe ratio summarizes the return per unit of risk taken.",
+          "The benchmark comparison is essential. Composer defaults to comparing against SPY (S&P 500). A symphony that returned 40% annualized over 5 years sounds impressive — until you see SPY returned 38% over the same period. Outperformance matters more than absolute return, and on a risk-adjusted basis, many strategies that look good in absolute terms do not justify the additional drawdown they impose.",
+          "The time range of the backtest matters as much as the results. TQQQ was launched in February 2010, so any strategy holding TQQQ cannot backtest before that date. Many leveraged ETFs have shorter histories — LABU (Biotech Bull 3x) launched in 2015, NAIL (Homebuilders Bull 3x) in 2015, FAS (Financials Bull 3x) in 2008 but with limited reliable data before 2010. A short backtest window that happened to overlap with a bull market run will make almost any long-biased strategy look strong.",
+          "Strong backtests share several characteristics: they span at least one full market cycle (bull and bear), they show the strategy surviving a significant drawdown event (2020 COVID crash, 2022 rate hike selloff, or 2008 financial crisis for older strategies), and they demonstrate that the Sharpe ratio is above 1.0 — meaning the strategy earned more than one unit of return for each unit of risk."
+        ],
+        "table": {
+          "headers": [
+            "Metric",
+            "What It Tells You"
+          ],
+          "rows": [
+            [
+              "CAGR",
+              "Annualized return — how much the strategy grew per year on average"
+            ],
+            [
+              "Max Drawdown",
+              "Worst peak-to-trough loss — the pain a real investor would have endured"
+            ],
+            [
+              "Sharpe Ratio",
+              "Return per unit of risk — above 1.0 is generally considered strong"
+            ],
+            [
+              "Calmar Ratio",
+              "CAGR divided by max drawdown — higher means better return per unit of drawdown risk"
+            ]
+          ]
+        }
+      },
+      {
+        "title": "Limitations of Backtesting",
+        "paragraphs": [
+          "The fundamental limitation of backtesting is that past performance does not equal future performance. Markets change. Correlations break down. Strategies that worked because of a specific macro regime (persistent low interest rates, for instance) may perform very differently when that regime ends.",
+          "In Composer specifically, the available backtest history for leveraged ETFs is relatively short. TQQQ has roughly 15 years of history as of 2026 — enough to cover a few cycles, but not enough to make definitive claims about multi-decade robustness. A strategy's backtest starts on the date its most recently launched asset began trading, which can make a strategy appear untested under conditions that occurred before its components existed.",
+          "Overfitting is the most persistent risk. Composer makes it easy to add conditions — RSI thresholds, moving average filters, multi-asset ranking logic — and each added condition offers more knobs to turn during optimization. A symphony tuned until its backtest looks perfect is a symphony fit to historical noise, not a strategy with genuine forward-looking edge.",
+          "The most honest interpretation of a Composer backtest: it shows you what would have happened if you had run this exact logic on this exact data. That's valuable information. It tells you how the strategy handles stress, what kind of drawdowns it tolerates, and whether its return profile matches your risk appetite. But it is the beginning of strategy evaluation, not the end of it."
+        ]
+      }
+    ]
   }
 ];

@@ -1,6 +1,6 @@
 # ComposerAtlas — Master Reference Document
 
-**Version:** 1.5.5
+**Version:** 1.5.6
 **Status:** Active
 **Last Updated:** 2026-06-15
 
@@ -112,7 +112,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - Strategy card titles are clickable links
 
 **Concept Glossary**
-- Index page listing all 8 glossary concepts with category badges and strategy-use counts
+- Index page listing all 19 glossary concepts with category badges and strategy-use counts
 - Each concept has a dedicated page with: definition, how it works, in practice examples, limitations, formula (when applicable), and a "Building with..." essay section
 - Concepts cross-link back to strategies that use them
 
@@ -899,18 +899,29 @@ All fields in `data/glossary.json`. Both `glossary.json` and `glossary.js` must 
 
 **Optional sections:** Additional sections with any title. All 8 MVP entries include a "Building with [Concept] in Composer.trade" essay section.
 
-**Canonical glossary entries (MVP):**
+**Canonical glossary entries (current — 19 total):**
 
 | Slug | Name | Category |
 |---|---|---|
 | `rsi` | RSI | indicator |
 | `200d-ma` | 200-Day Moving Average | indicator |
+| `sma` | Simple Moving Average | indicator |
+| `ema` | Exponential Moving Average | indicator |
+| `macd` | MACD | indicator |
 | `momentum` | Momentum Investing | strategy-concept |
 | `vix-tiers` | VIX Tiers | strategy-concept |
+| `mean-reversion` | Mean Reversion | strategy-concept |
+| `volatility-decay` | Volatility Decay | strategy-concept |
+| `zoop` | Zoop's Strategies | strategy-concept |
+| `backtesting` | Backtesting | strategy-concept |
 | `leveraged-etfs` | Leveraged ETFs | asset-class |
+| `managed-futures` | Managed Futures | asset-class |
+| `inverse-etfs` | Inverse ETFs | asset-class |
 | `sharpe-ratio` | Sharpe Ratio | risk-metric |
 | `calmar-ratio` | Calmar Ratio | risk-metric |
 | `max-drawdown` | Max Drawdown | risk-metric |
+| `standard-deviation` | Standard Deviation | risk-metric |
+| `annualized-return` | Annualized Rate of Return | risk-metric |
 
 **Glossary entry checklist (before committing):**
 - [ ] `slug` is lowercase, hyphen-separated, unique
@@ -1087,11 +1098,14 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 - [x] GitHub repository renamed from `Azqato/ComposerAtlas` to `Azqato/composer`; GitHub Pages URL updated (v1.4.1)
 - [x] BASE URL detection made repo-rename-proof: hostname-based (`*.github.io`) instead of hardcoded string match (v1.4.2)
 
-### V1.5 — Strategy Library Expansion
+### V1.5 — Strategy Library Expansion + Glossary Expansion
 
-**Status:** Complete (at v1.5.0)
+**Status:** Complete (at v1.5.6)
 
 - [x] 6 new strategies added: SOXX Group, SOXL Growth v2.4.5 RL, Inside Nancy Pelosi's Chips V3, Top Cap by MA + RSI ETF Hedge, Mean Reversion Comparison to Python Code, SPY Energy Chips Commodities — library grows to 24 (v1.5.0)
+- [x] 9 new glossary concepts added: SMA, EMA, MACD, Mean Reversion, Volatility Decay, Standard Deviation, Annualized Return, Managed Futures, Inverse ETFs — glossary grows to 17 (v1.5.2)
+- [x] Zoop's Strategies glossary entry added with overview of all 11 zoops-* symphonies and headline metrics (v1.5.3)
+- [x] Backtesting glossary entry added covering general backtest mechanics and Composer-specific behavior — glossary grows to 19 (v1.5.6)
 
 ### V2.0 — Scale + Discovery
 
