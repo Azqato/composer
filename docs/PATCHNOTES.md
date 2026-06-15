@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.5.1] - 2026-06-15
+
+### Fix — Glossary card titles are now clickable links
+
+Made the concept name in each glossary card a clickable anchor link pointing to the detail page (`glossary.html?slug=…`), matching the existing behavior on strategy cards.
+
+**File changed:** `js/app.js`
+
+---
+
 ## [1.5.0] - 2026-06-14
 
 ### Added — 6 new strategies (24 total)

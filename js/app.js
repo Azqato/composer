@@ -266,7 +266,7 @@ function renderConceptCard(concept, strategyCount) {
         <span class="badge ${badgeCls}">${categoryLabel}</span>
         ${countText}
       </div>
-      <h2 class="card-title">${concept.name}</h2>
+      <h2 class="card-title"><a href="${u('/glossary.html?slug=' + concept.slug)}">${concept.name}</a></h2>
       <p class="card-desc" style="-webkit-line-clamp:2">${concept.description}</p>
       <div class="card-footer">
         <a href="${u('/glossary.html?slug=' + concept.slug)}" class="btn btn-sm" style="color:var(--color-green)">
