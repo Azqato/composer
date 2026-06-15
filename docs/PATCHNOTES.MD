@@ -6,6 +6,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.1.9] - 2026-06-14
+
+### Fix — s90 50/40 maxDD: remove incorrect 2026 Frontrunner reference
+
+The `how_it_works` and `risk_profile` content incorrectly stated the strategy paired with "the 2026 Frontrunner." It uses a different frontrunner component. Updated all three occurrences to "a frontrunner component" / "the frontrunner component" — neutral phrasing that doesn't assert which frontrunner is used.
+
+**Files changed:** `data/strategies.json`, `data/strategies.js`, `docs/PATCHNOTES.MD`
+
+---
+
 ## [1.1.8] - 2026-06-14
 
 ### Feature — Strategy card titles are now clickable links
