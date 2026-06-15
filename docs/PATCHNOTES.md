@@ -5,6 +5,26 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.4.2] - 2026-06-14
+
+### Fix — Repo-rename-proof BASE URL detection
+
+Replaced hardcoded string matching in the `BASE` detection with a hostname check:
+
+```js
+// Before — breaks whenever the repo is renamed
+const BASE = (_seg && _seg.toLowerCase() === 'composer') ? '/' + _seg : '';
+
+// After — detects GitHub Pages by host; works regardless of repo name
+const BASE = (window.location.hostname.endsWith('.github.io') && _seg) ? '/' + _seg : '';
+```
+
+The previous approach required updating the string literal every time the GitHub repository was renamed (from `ComposerAtlas` → `composer` in v1.4.1). The new approach detects GitHub Pages environments by their `*.github.io` hostname and automatically uses whatever the first path segment is as the base. Behaviour is identical on all environments: GitHub Pages gets `/composer`, localhost gets `''`, `file://` is handled separately in `u()`.
+
+**Files changed:** `js/app.js`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.4.1] - 2026-06-14
 
 ### Infra — GitHub repository renamed from `ComposerAtlas` to `composer`

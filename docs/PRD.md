@@ -305,10 +305,10 @@ The same pattern applies to `loadGlossary()`. This ensures the site works in all
 ### BASE URL and `u()` Helper
 
 ```javascript
-// Extracts first path segment; compares case-insensitively to handle
-// both http://localhost:8000/ and https://azqato.github.io/composer/
+// On GitHub Pages (*.github.io) the first path segment is the repo name (e.g. /composer).
+// On localhost or a custom domain the site is served at root, so BASE is empty.
 const _seg = window.location.pathname.split('/')[1];
-const BASE = (_seg && _seg.toLowerCase() === 'composer') ? '/' + _seg : '';
+const BASE = (window.location.hostname.endsWith('.github.io') && _seg) ? '/' + _seg : '';
 
 // All internal links use u() instead of BASE + path directly
 function u(path) {
@@ -321,7 +321,7 @@ function u(path) {
 }
 ```
 
-The case-insensitive check handles GitHub Pages hosting under the `/composer` path.
+Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo name — repo-rename-proof and works on any custom domain without changes.
 
 ### JS Utility Functions (js/app.js)
 
