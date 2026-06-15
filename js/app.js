@@ -10,10 +10,10 @@
 'use strict';
 
 // ---- Base URL ----
-// Extracts the first path segment and checks case-insensitively for 'composer',
-// preserving the actual casing from the live URL (e.g. /composer on GitHub Pages).
+// On GitHub Pages (*.github.io), the first path segment is the repo name (e.g. /composer).
+// On localhost or a custom domain the site is served at root, so BASE is empty.
 const _seg = window.location.pathname.split('/')[1];
-const BASE = (_seg && _seg.toLowerCase() === 'composer') ? '/' + _seg : '';
+const BASE = (window.location.hostname.endsWith('.github.io') && _seg) ? '/' + _seg : '';
 
 // ---- URL helper ----
 // On HTTP/HTTPS: prepends BASE for absolute paths (works on both localhost and GitHub Pages).
