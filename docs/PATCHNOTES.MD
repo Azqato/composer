@@ -10,7 +10,7 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ### Content — Added Low Catchers strategy (13th symphony)
 
-Added **Half Low Catch s90 50/40 maxDD** (`s90-half-low-catch`) — a multi-asset extreme dip-buying strategy that pairs the 2026 Frontrunner with a dedicated low-catching component.
+Added **s90 50/40 maxDD (Half Low Catch)** (`s90-half-low-catch`) — a multi-asset extreme dip-buying strategy that pairs the 2026 Frontrunner with a dedicated low-catching component.
 
 **Strategy summary:**
 

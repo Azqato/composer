@@ -769,7 +769,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "s90-half-low-catch",
-    "name": "Half Low Catch s90 50/40 maxDD",
+    "name": "s90 50/40 maxDD (Half Low Catch)",
     "symphony_url": "https://app.composer.trade/symphony/K8ql2SKFd4VDBemIstEr/details",
     "symphony_id": "K8ql2SKFd4VDBemIstEr",
     "annualized_rate_of_return": 7.35042518506566,
