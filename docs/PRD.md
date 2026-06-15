@@ -1,6 +1,6 @@
 # ComposerAtlas — Master Reference Document
 
-**Version:** 1.5.4
+**Version:** 1.5.5
 **Status:** Active
 **Last Updated:** 2026-06-15
 
@@ -209,7 +209,7 @@ ComposerAtlas is a fully static, browser-only application. There is no server, n
 | Fonts | Google Fonts CDN | No local build needed |
 | Hosting | GitHub Pages | Serves static files directly from repository root |
 | CI/CD | GitHub Actions | rsync to `_site/`, upload artifact, deploy |
-| Scripts | Python 3 (stdlib only) | Data refresh; no pip dependencies |
+| Scripts | Python 3 (stdlib only) | Data refresh; no pip dependencies. All `.py` files must live in `scripts/` |
 
 **V2 upgrade path:** Astro 5.x is the preferred migration target if the site grows beyond ~20 pages or content management complexity increases. The data schema, design system, and directory conventions are compatible with an Astro migration.
 
@@ -230,8 +230,10 @@ ComposerAtlas/
 │   └── symphony_scores.json    # Full logic trees — AI analysis only, not served publicly
 ├── js/
 │   └── app.js                  # Shared utilities: format, nav, footer, render helpers
-├── scripts/
-│   └── update_metrics.py       # Fetches backtest metrics + logic trees from Composer API
+├── scripts/                    # All Python scripts live here — never in the project root
+│   ├── update_metrics.py       # Fetches backtest metrics + logic trees from Composer API
+│   ├── add_glossary.py         # One-time: added 9 glossary entries (v1.5.2) — safe to re-run
+│   └── add_zoop.py             # One-time: added Zoop glossary entry + zoop tags (v1.5.3)
 ├── index.html                  # Home page (hero + strategy grid)
 ├── strategies.html             # Strategy listing + detail (?slug=X) — single file
 ├── glossary.html               # Glossary listing + concept detail (?slug=X) — single file

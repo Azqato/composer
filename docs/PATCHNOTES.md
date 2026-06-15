@@ -5,6 +5,19 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.5.5] - 2026-06-15
+
+### Infra — Move ad-hoc scripts to `scripts/` folder
+
+Moved `_add_glossary.py` and `_add_zoop.py` from the project root into `scripts/` (renamed to `add_glossary.py` and `add_zoop.py`, dropping the underscore prefix). Updated all internal file paths from hardcoded absolute Windows paths to the portable `Path(__file__).resolve().parent.parent` pattern used by `update_metrics.py`. Deleted the originals from the project root.
+
+Documented the convention in `docs/PRD.md`: all Python scripts must live in the `scripts/` folder. Directory structure updated to list all three scripts. Tech stack table updated to note the `scripts/` convention.
+
+**Files changed:** `scripts/add_glossary.py` (new), `scripts/add_zoop.py` (new), `docs/PRD.md`
+**Deleted:** `_add_glossary.py`, `_add_zoop.py` (project root)
+
+---
+
 ## [1.5.4] - 2026-06-15
 
 ### Fix — Improve disabled text legibility
