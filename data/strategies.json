@@ -824,5 +824,307 @@
     ],
     "risk_profile": "Extremely Aggressive with a short backtest. At 79.7% standard deviation, this is the most volatile strategy in the library — exceeding even SOXL Growth's 68.7%. The 29.6% max drawdown is low relative to the volatility because the strategy spends most of its time in BIL (via the frontrunner component) and only deploys at extreme market conditions. However, with only 551 days of backtest history (~1.5 years, from early 2024), the extraordinary metrics — 735% ARR, Calmar 24.8, Sharpe 3.04 — reflect a predominantly bull market with the specific volatility spikes this strategy is optimized to catch. These figures should be interpreted with significant caution; a longer out-of-sample record is required before they can be taken at face value.",
     "author_note": "Note: Backtest covers approximately 1.5 years (≈551 days from early 2024). All metrics reflect this short window. Interpret with caution. Metrics are accurate as of the last_updated date."
+  },
+  {
+    "slug": "holy-grail",
+    "name": "The Holy Grail (Original)",
+    "symphony_url": "https://app.composer.trade/symphony/MmQbpf2U5TMQFmr9Nt2e/details",
+    "symphony_id": "MmQbpf2U5TMQFmr9Nt2e",
+    "annualized_rate_of_return": 1.5385674955964586,
+    "max_drawdown": -0.47420094826644466,
+    "cumulative_return": 852621.51668,
+    "calmar_ratio": 3.2445474881926346,
+    "sharpe_ratio": 1.7997086112420677,
+    "standard_deviation": 0.6232573548231095,
+    "min": -0.22093816838076508,
+    "mean": 0.004451117573393266,
+    "median": 0.003310312402996507,
+    "max": 0.5001155899204515,
+    "trailing_one_month_return": -0.007292085249505309,
+    "trailing_three_month_return": 0.6543631051412626,
+    "trailing_one_year_return": 0.7916784336538136,
+    "backtest_days": 3693,
+    "description": "A TQQQ-centric trend-following strategy that stays long leveraged tech in bull markets, hedges to UVXY when overbought, and rotates into dip-buying or short positions when TQQQ breaks below its 200-day moving average.",
+    "tags": [
+      "rsi",
+      "200d-ma",
+      "leveraged-etfs",
+      "momentum"
+    ],
+    "last_updated": "2026-06-14",
+    "how_it_works": [
+      "The Holy Grail uses TQQQ's own 200-day moving average as the primary regime gate. When TQQQ is trading above its 200d MA, the strategy enters bull mode and allocates 80% of the portfolio to an RSI-gated TQQQ position. Within that allocation, if TQQQ's RSI(10) exceeds 79 — signaling short-term overbought conditions — the position pivots to UVXY (2x long VIX futures) as a defensive hedge. Otherwise, the strategy holds TQQQ directly. A 5% rebalance corridor means positions are only adjusted when drift exceeds that threshold, reducing unnecessary churn compared to daily-rebalancing strategies.",
+      "When TQQQ falls below its 200-day moving average (bear mode), the strategy shifts to opportunistic dip-buying. The first gate checks if TQQQ RSI(10) is below 31; if so, it buys TECL (3x Technology) as the most beaten-up leveraged tech proxy. If TQQQ RSI isn't that extreme, it checks SOXL RSI(10) below 30 and buys SOXL (3x Semiconductors) as an alternative crash entry. These two sequential checks are designed to capture violent capitulation bounces in tech and semiconductor markets during corrections.",
+      "If neither dip-buy condition triggers in bear mode, the strategy evaluates TQQQ relative to its 20-day moving average. If TQQQ is also below the 20d MA, it runs a relative RSI filter between SQQQ (3x inverse QQQ) and BSV (short-term bonds), selecting whichever shows higher RSI(10) — either profiting from continued Nasdaq decline or rotating to capital preservation. If TQQQ is below its 200d MA but above the 20d MA, the strategy holds TQQQ outright, trusting the shorter-term uptrend to continue within the longer-term downtrend context."
+    ],
+    "signals": [
+      {
+        "name": "TQQQ 200-Day MA Trend Gate",
+        "tag": "200d-ma",
+        "description": "Primary regime filter: TQQQ's own price vs. its 200d MA. Above = bull mode (80% TQQQ allocation with RSI guard). Below = bear mode (dip-buying and defensive logic). Distinct from strategies using SPY as the trend reference."
+      },
+      {
+        "name": "TQQQ RSI(10) Overbought Guard",
+        "tag": "rsi",
+        "description": "In bull mode: TQQQ RSI(10) > 79 -> rotate to UVXY. Prevents holding a massively extended leveraged position. The 79 threshold is tighter than the 80 commonly used, catching overbought conditions slightly earlier."
+      },
+      {
+        "name": "Bear Dip-Buy: TECL & SOXL",
+        "tag": "rsi",
+        "description": "In bear mode: TQQQ RSI(10) < 31 -> buy TECL (3x Technology). SOXL RSI(10) < 30 -> buy SOXL (3x Semiconductors). Sequential checks catch tech and semiconductor capitulation events."
+      },
+      {
+        "name": "Bear Momentum Filter: SQQQ vs BSV",
+        "tag": "momentum",
+        "description": "When in bear mode and no dip-buy triggers: RSI(10) filter between SQQQ and BSV. Selects the higher-RSI asset — either pressing the short-QQQ trade or rotating to short-term bonds for capital preservation."
+      }
+    ],
+    "risk_profile": "Aggressive. A 47.4% max drawdown over ~14.7 years (3,693 trading days) reflects both the strategy's risk management guardrails and the unavoidable severity of 3x leveraged ETF drawdowns. The 62.3% annualized standard deviation is high. Using TQQQ's own 200d MA (rather than SPY's) as the primary gate means the strategy can flip to bear mode purely from leveraged-instrument volatility — TQQQ can cross below its 200d MA while QQQ remains in uptrend. The 5% rebalance corridor reduces friction costs but allows the portfolio to drift significantly between rebalance events. UVXY decays rapidly from VIX futures roll costs and is not suitable as a long-term hold; it functions here only as a short-term hedge during overbought extremes."
+  },
+  {
+    "slug": "tqqq-long-term",
+    "name": "TQQQ For The Long Term",
+    "symphony_url": "https://app.composer.trade/symphony/HukRwDJLlYPLMbrQbua5/details",
+    "symphony_id": "HukRwDJLlYPLMbrQbua5",
+    "annualized_rate_of_return": 1.6538963064017933,
+    "max_drawdown": -0.5362580440905442,
+    "cumulative_return": 1635310.315587,
+    "calmar_ratio": 3.0841426522686195,
+    "sharpe_ratio": 1.8606260185568562,
+    "standard_deviation": 0.6284374819012642,
+    "min": -0.22093821468165675,
+    "mean": 0.004640028293102562,
+    "median": 0.004010131170800735,
+    "max": 0.5001157165826453,
+    "trailing_one_month_return": -0.00729207342010485,
+    "trailing_three_month_return": 0.40665362137441874,
+    "trailing_one_year_return": 0.8103022104532676,
+    "backtest_days": 3693,
+    "description": "A TQQQ buy-and-hold strategy with systematic risk management: uses SPY's 200-day moving average to switch between bull-market momentum and bear-market defense, with dual overbought guards on TQQQ and SPXL, RSI-triggered dip-buying on TECL and UPRO, and bear-market RSI filtering between SQQQ and TLT.",
+    "tags": [
+      "rsi",
+      "200d-ma",
+      "leveraged-etfs",
+      "momentum"
+    ],
+    "last_updated": "2026-06-14",
+    "how_it_works": [
+      "TQQQ For The Long Term aims to capture TQQQ's long-run compounding potential while systematically managing the deepest drawdowns. The primary trend gate is SPY's 200-day moving average — when the broad market is in an established uptrend, the strategy runs in bull mode and holds TQQQ. In bull mode it applies two sequential overbought guards: if TQQQ RSI(10) exceeds 79, exit to UVXY; if SPXL (3x S&P500) RSI(10) exceeds 80, also exit to UVXY. These dual checks — one on the QQQ proxy, one on the SPY proxy — catch overbought conditions from two angles. The strategy rebalances daily, unlike the 5% corridor approach used by its cousin Holy Grail.",
+      "When SPY falls below its 200-day moving average, the strategy enters bear mode and shifts to selective dip-buying. The first dip-buy check triggers on TQQQ RSI(10) below 31, buying TECL (3x Technology) as a crashed-tech bouncer. The second triggers on SPY RSI(10) below 30, buying UPRO (3x S&P500) on broad-market capitulation. These entries are designed to capture violent mean-reversion bounces at extreme fear levels — the strategy intentionally buys into falling markets at RSI extremes.",
+      "If no dip-buy fires, the strategy evaluates TQQQ against its 20-day moving average. When TQQQ is below the 20d MA, it runs a relative RSI filter between SQQQ (3x inverse QQQ) and TLT (20+ Year Treasury Bond ETF), selecting the higher-RSI asset — either pressing the short-Nasdaq trade or taking refuge in long-duration bonds. A secondary check also looks for SQQQ RSI(10) below 31: an unusual signal that buys into the inverse ETF when it itself has become oversold, betting on a mean-reversion bounce in the short position after an extreme market bounce has crushed SQQQ. When TQQQ is above the 20d MA but still in a bear regime, the strategy holds TQQQ outright."
+    ],
+    "signals": [
+      {
+        "name": "SPY 200-Day MA Trend Gate",
+        "tag": "200d-ma",
+        "description": "Primary regime filter using the S&P 500 (not TQQQ) as the trend reference. SPY above 200d MA = bull mode (hold TQQQ). Below = bear mode. Key difference from Holy Grail: SPY 200d is a slower, more stable signal than TQQQ's own 200d MA."
+      },
+      {
+        "name": "Dual Overbought Guard: TQQQ + SPXL RSI",
+        "tag": "rsi",
+        "description": "Two-layer overbought detection: TQQQ RSI(10) > 79 OR SPXL RSI(10) > 80 -> rotate to UVXY. Checking both the QQQ and SPY leveraged proxies adds redundancy and catches different overbought conditions."
+      },
+      {
+        "name": "Bear Dip-Buy: TECL & UPRO",
+        "tag": "rsi",
+        "description": "Bear mode: TQQQ RSI(10) < 31 -> TECL (3x Tech dip-buy). SPY RSI(10) < 30 -> UPRO (3x SPY dip-buy). Two distinct dip-buy catches across tech and broad market, using different RSI reference tickers."
+      },
+      {
+        "name": "Bear RSI Filter: SQQQ vs TLT",
+        "tag": "momentum",
+        "description": "When in bear mode below TQQQ 20d MA: RSI(10) filter between SQQQ and TLT. Selects the stronger momentum asset — either the inverse-QQQ short trade or long-duration treasury bonds as a safe haven."
+      },
+      {
+        "name": "SQQQ Oversold Re-Entry",
+        "tag": "rsi",
+        "description": "Unusual signal: SQQQ RSI(10) < 31 -> buy SQQQ. Fires when the 3x inverse ETF has itself become oversold (meaning the market bounced hard enough to crush the short). Re-enters the short position at a more favorable level after mean-reversion."
+      }
+    ],
+    "risk_profile": "Aggressive with a deeper max drawdown than its structure would suggest. The 165.4% ARR is marginally higher than Holy Grail (153.9%) over the same 14.7-year backtest, but the 53.6% max drawdown is significantly worse than Holy Grail's 47.4%. Using SPY's 200d MA as the gate means the strategy can remain in bull mode while TQQQ is already declining — creating a lag between macro trend breaks and the strategy's defensive pivot. The daily rebalance reduces drift but increases transaction friction. The SQQQ dip-buy signal is counterintuitive and adds complexity. Standard deviation of 62.8% matches Holy Grail closely, confirming both strategies spend similar time in high-volatility leveraged positions."
+  },
+  {
+    "slug": "wooden-arkk",
+    "name": "Wooden ARKK Machine 2.2",
+    "symphony_url": "https://app.composer.trade/symphony/kl2dR0Rlp4RgZUHAJY2k/details",
+    "symphony_id": "kl2dR0Rlp4RgZUHAJY2k",
+    "annualized_rate_of_return": 2.442014200619989,
+    "max_drawdown": -0.44526998496687753,
+    "cumulative_return": 154.591196,
+    "calmar_ratio": 5.4843449661257635,
+    "sharpe_ratio": 2.2484646283441325,
+    "standard_deviation": 0.6414790067498165,
+    "min": -0.19963103883525757,
+    "mean": 0.005723582763897973,
+    "median": 0.0021118023752928483,
+    "max": 0.28322472035969715,
+    "trailing_one_month_return": 0.06228402828743884,
+    "trailing_three_month_return": 0.25277030886174834,
+    "trailing_one_year_return": 1.3244753163653966,
+    "backtest_days": 1028,
+    "description": "A bi-directional mean-reversion strategy built around ARKK's leveraged siblings. Compares IEI and SPHB RSI to determine the market regime, then buys the single worst recent performer from either a long leveraged pool (risk-off) or an inverse ETF pool (risk-on).",
+    "tags": [
+      "rsi",
+      "momentum",
+      "leveraged-etfs"
+    ],
+    "last_updated": "2026-06-14",
+    "how_it_works": [
+      "Wooden ARKK Machine 2.2 — named after Cathie Wood's ARKK Innovation ETF — operates on a single regime signal: the relative 7-period RSI of IEI (iShares 3-7 Year Treasury Bond ETF) versus SPHB (Invesco S&P 500 High Beta ETF). When bonds show stronger short-term RSI than high-beta equities, the market is in a risk-off or stressed state. When high-beta equities show stronger RSI than bonds, the market is in risk-on mode. This single comparison routes the entire 90% allocated portfolio into one of two diametrically opposed asset pools.",
+      "In risk-off regime (IEI RSI(7) > SPHB RSI(7)), the strategy picks from a long leveraged pool: TARK (2x ARKK Innovation), TECL (3x Technology), UPRO (3x S&P500), TMF (3x Long-Duration Treasuries), YINN (3x China equities), EDC (3x Emerging Markets), and SOXX (semiconductor index). Crucially, it selects the BOTTOM performer by 4-day moving average of returns — the single asset that has fallen the most recently. This is a mean-reversion bet: in a risk-off environment, oversold leveraged longs tend to produce the sharpest bounces when sentiment stabilizes.",
+      "In risk-on regime (SPHB RSI(7) > IEI RSI(7)), the strategy switches to the bear pool: SARK (short ARKK), PSQ (1x inverse QQQ), TMV (3x inverse long treasury), DRV (3x inverse real estate), and TYO (3x inverse 7-10yr treasury). Again it selects the BOTTOM 4-day performer. The counterintuitive logic: even during risk-on bull markets, inverse ETFs experience sharp drawdowns followed by violent mean-reversion bounces when markets pause or correct briefly. Picking the most beaten-up inverse ETF when stocks are running hot is a bet on short-term mean reversion within a broader trend. Version 2.2 implies prior iterations with different thresholds or pools exist."
+    ],
+    "signals": [
+      {
+        "name": "IEI vs SPHB RSI(7) Regime Gate",
+        "tag": "rsi",
+        "description": "Single regime signal: IEI (intermediate bonds) RSI(7) vs SPHB (high-beta equities) RSI(7). IEI stronger -> risk-off -> buy worst-performing long leveraged ETF. SPHB stronger -> risk-on -> buy worst-performing inverse ETF. Unique in the library for using relative RSI of two non-target assets."
+      },
+      {
+        "name": "Bottom-1 Mean-Reversion Sort",
+        "tag": "momentum",
+        "description": "Within each pool, selects the single asset with the lowest 4-day moving average of returns — the most beaten-up recent performer. Pure mean-reversion signal expecting a bounce from maximum distress."
+      },
+      {
+        "name": "Long Pool: TARK/TECL/UPRO/TMF/YINN/EDC/SOXX",
+        "tag": "leveraged-etfs",
+        "description": "Active in risk-off regime: 7 leveraged long ETFs spanning US tech (TARK 2x ARKK, TECL 3x tech, UPRO 3x SPY), bonds (TMF 3x LT), and international (YINN 3x China, EDC 3x EM), plus SOXX (semis)."
+      },
+      {
+        "name": "Bear Pool: SARK/PSQ/TMV/DRV/TYO",
+        "tag": "leveraged-etfs",
+        "description": "Active in risk-on regime: 5 inverse and short ETFs. SARK (inverse ARKK), PSQ (1x inverse QQQ), TMV (3x inverse LT bonds), DRV (3x inverse real estate), TYO (3x inverse 7-10yr treasury)."
+      }
+    ],
+    "risk_profile": "Extremely Aggressive with a short backtest. The 244% ARR and 5.48 Calmar ratio are the highest in this category across ~4.1 years (1,028 trading days from approximately August 2022). This covers only one partial market cycle including the tail end of the 2022 bear and the 2023-2025 bull run — an unusually favorable environment for mean-reversion in both leveraged long and inverse ETFs. Standard deviation of 64.1% is the second-highest in the library. The counterintuitive design — buying beaten-up inverse ETFs in bull markets — works in mean-reverting environments but could face extended losses in strongly trending markets where the worst-performing inverse ETF continues to decline. The 44.5% max drawdown indicates the strategy is not immune to trending crashes. Short backtest makes all metrics provisional.",
+    "author_note": "Named after Cathie Wood, founder of ARK Invest and the ARKK ETF. TARK (2x long ARKK) and SARK (inverse ARKK) are the anchors of the two pools. Version 2.2 implies prior iterations exist."
+  },
+  {
+    "slug": "super-semiconductors",
+    "name": "Super Semiconductors",
+    "symphony_url": "https://app.composer.trade/symphony/zTV33nu3o0h5fKpT6IqL/details",
+    "symphony_id": "zTV33nu3o0h5fKpT6IqL",
+    "annualized_rate_of_return": 1.0264527799455831,
+    "max_drawdown": -0.42881858663127703,
+    "cumulative_return": 25129.895121999998,
+    "calmar_ratio": 2.3936760484409376,
+    "sharpe_ratio": 1.711811620171,
+    "standard_deviation": 0.47629444486560674,
+    "min": -0.23488168393532838,
+    "mean": 0.003235422084697783,
+    "median": 0.0014098489520275592,
+    "max": 0.5462989485614804,
+    "trailing_one_month_return": 0.25892625764848565,
+    "trailing_three_month_return": 1.7957072319786866,
+    "trailing_one_year_return": 2.981898659336264,
+    "backtest_days": 3614,
+    "description": "A semiconductor-sector specialist by Dereck Nielsen that selects the top 3 performing semiconductor stocks from a 19-company universe during MACD-bullish bull markets, uses tactical dip-buying and partial bond hedges when MACD turns bearish, and actively shorts semiconductors via SOXS or SSG in bear market conditions.",
+    "tags": [
+      "rsi",
+      "200d-ma",
+      "momentum",
+      "leveraged-etfs"
+    ],
+    "last_updated": "2026-06-14",
+    "how_it_works": [
+      "Super Semiconductors, designed by Dereck Nielsen, is built around the thesis that semiconductor leadership can be captured systematically while managing sector-specific risk. The outer gate uses an 8-day exponential moving average of SPY versus SPY's 200-day simple moving average — a more sensitive version of the classic 200d MA filter that reacts faster to trend changes. When SPY EMA(8) is above SPY SMA(200), the strategy enters bull mode with two sequential overbought guards: SPY RSI(10) above 80 triggers a rotation to UVXY, and SPY RSI(60) above 60 triggers rotation into the best-performing asset from [TMF, UUP, VIXY, XLP, SPLV] by 15-day return — a defensive basket covering bonds, dollar, volatility hedges, consumer staples, and low-volatility equities.",
+      "When neither overbought guard fires in bull mode, the strategy evaluates SMH using a MACD-style signal: comparing SMH's 12-day EMA against its 26-day EMA. A bearish crossover (EMA12 below EMA26) signals deteriorating semiconductor momentum within an otherwise bullish broader market. In this state, the strategy checks SMH against its 25-day moving average: if SMH is below the 25d MA and RSI(10) is below 30, it buys SOXL (3x semiconductors) as an extreme dip-buy. If RSI is not that oversold but SMH is still below the 25d MA, it holds SMH. If SMH is above the 25d MA despite the bearish MACD crossover, it holds 50% SHY (short-term treasuries) and 50% SMH as a partial defensive hedge.",
+      "When SMH's MACD is bullish (EMA12 above EMA26) and the broader market is in an uptrend, the strategy enters its most aggressive mode: a momentum filter selects the top 3 performers by 90-day moving average of returns from a hand-curated universe of 19 major semiconductor companies — NVDA, TSM, AVGO, ASML, TXN, QCOM, AMD, INTC, ADI, AMAT, MU, LRCX, SNPS, KLAC, NXPI, MRVL, MCHP, ON, and STM — and equal-weights the three winners. In bear mode (SPY EMA8 below SMA200), the strategy uses SMH RSI(10) below 31 for a SOXL dip-buy, a relative RSI filter between SSG (2x short semis) and BSV (short bonds) when SMH is below its 25d MA, SOXS (3x short semiconductors) when SMH RSI exceeds 70 in a downtrend, or plain SMH as the default hold."
+    ],
+    "signals": [
+      {
+        "name": "SPY EMA(8) vs SMA(200) Trend Gate",
+        "tag": "200d-ma",
+        "description": "Primary regime filter: SPY 8-day EMA vs 200-day SMA. More responsive than a simple price vs. SMA(200) check — the short EMA smooths recent price action. Bull above, bear below."
+      },
+      {
+        "name": "Dual SPY Overbought Guard",
+        "tag": "rsi",
+        "description": "In bull mode: SPY RSI(10) > 80 -> UVXY (extreme overbought). SPY RSI(60) > 60 -> best of [TMF, UUP, VIXY, XLP, SPLV] by 15d return (elevated medium-term momentum). Two-tier defense from short and medium time-frame overbought signals."
+      },
+      {
+        "name": "SMH MACD Signal (EMA 12/26)",
+        "tag": "momentum",
+        "description": "SMH EMA(12) vs EMA(26) — a MACD crossover applied to the semiconductor ETF. Bearish cross triggers partial hedging (SHY/SMH split or SOXL dip-buy). Bullish cross enables individual stock selection mode."
+      },
+      {
+        "name": "Top-3 Semiconductor Stock Selection",
+        "tag": "momentum",
+        "description": "Most aggressive mode: selects top 3 of 19 semiconductor stocks (NVDA, TSM, AVGO, ASML, TXN, QCOM, AMD, INTC, ADI, AMAT, MU, LRCX, SNPS, KLAC, NXPI, MRVL, MCHP, ON, STM) by 90-day moving average return. Equal-weights the three winners."
+      },
+      {
+        "name": "SOXL Dip-Buy / SOXS Short",
+        "tag": "leveraged-etfs",
+        "description": "Leveraged extremes: SMH RSI(10) < 31 -> SOXL (3x semi long) for dip-buying in bear regime. SMH RSI(10) > 70 in bear mode -> SOXS (3x semi short) for pressing an overbought semi rebound within an overall downtrend."
+      }
+    ],
+    "risk_profile": "Aggressive and sector-concentrated. The 102.6% ARR is lower than pure leveraged-ETF strategies in this library because the primary bull-mode holding is individual semiconductor equities (not 3x ETFs), which contributes to the lower 47.6% standard deviation. The strategy benefits enormously from semiconductor cycle leadership: NVDA's dominance during the AI bull run of 2023-2025 would naturally dominate the top-3 selection. This creates significant single-name concentration risk within an already cyclical sector. The 42.9% max drawdown reflects both the 2022 semiconductor bear market and SOXL dip-buy losses during extended declines. Bear-mode short exposure via SOXS and SSG distinguishes this strategy as the only one in the library that systematically profits from both semiconductor bull AND bear cycles. Attribution: created by Dereck Nielsen.",
+    "author_note": "Created by Dereck Nielsen. Strategy description in Composer reads: 'The goal of this strategy is to invest in the semiconductor sector of the market under normal market conditions. Added a MACD feature to this strategy when the semiconductor ETF SMH is trading above the 200 day moving average of SPY.'"
+  },
+  {
+    "slug": "four-horsemen",
+    "name": "The Four Horsemen of the Apocalypse",
+    "symphony_url": "https://app.composer.trade/symphony/vkJ5YCvzJLBu2KKF6Oy0/details",
+    "symphony_id": "vkJ5YCvzJLBu2KKF6Oy0",
+    "annualized_rate_of_return": 1.6684442319225847,
+    "max_drawdown": -0.45347839645979604,
+    "cumulative_return": 1380850.211069,
+    "calmar_ratio": 3.6792143681986924,
+    "sharpe_ratio": 2.1811285220315737,
+    "standard_deviation": 0.5063185243412975,
+    "min": -0.21726534886618476,
+    "mean": 0.004382324502673578,
+    "median": 0.0017706610564043324,
+    "max": 0.5001156309488988,
+    "trailing_one_month_return": 0.0289919812531243,
+    "trailing_three_month_return": 0.9841026197021072,
+    "trailing_one_year_return": 1.1108253094646705,
+    "backtest_days": 3629,
+    "description": "A multi-component equal-weight strategy combining parallel market-cycle systems: a SPY 200-day trend engine with 5-ETF momentum selection, a shorter-term TQQQ 20-day component, and a secondary SPY regime component — all sharing dual UVXY overbought guards and a cascading bear-market protocol with dip-buying, deep-bear routing, and QQQ cumulative-return detection.",
+    "tags": [
+      "rsi",
+      "200d-ma",
+      "momentum",
+      "leveraged-etfs",
+      "vix-tiers"
+    ],
+    "last_updated": "2026-06-14",
+    "how_it_works": [
+      "The Four Horsemen of the Apocalypse is an equal-weight portfolio of multiple parallel components, each running its own full market-cycle logic simultaneously. The dominant components use SPY's 200-day moving average as the primary regime gate. In bull mode, each shares the same overbought stack: QQQ RSI(10) above 81 OR SPY RSI(10) above 80 triggers UVXY; SPY RSI(60) above 60 triggers rotation into the best-performing defensive asset from [TMF, UUP, VIXY, XLP, VTI/SPLV, IWM, SCO] by 15-day return. When neither overbought condition is met, the bull-mode primary bet is a 21-day momentum filter selecting the top 3 of [TQQQ, SOXL, TECL, UDOW, UPRO] combined with a position in SVXY (short VIX futures, profiting from volatility premium decay in calm markets).",
+      "A second parallel component tracks TQQQ's 20-day moving average rather than SPY's 200d MA, adding shorter-term regime sensitivity. When TQQQ is above its 20d MA, this component holds TQQQ outright (with the same dual UVXY overbought guards applied). When TQQQ drops below the 20d MA, it pivots: TQQQ RSI(10) below 31 selects the more oversold of TECL or SOXL by RSI(7) for a short-term tech panic dip-buy. If RSI is not extreme, it runs a relative RSI filter between TLT, PSQ, and BSV to select either a long-bond refuge or an inverse-QQQ position based on which shows stronger recent momentum.",
+      "The bear-mode logic within the SPY 200d MA components is the most sophisticated element of the strategy. Beyond standard dip-buys (TQQQ RSI(10) < 31 -> TECL, SMH RSI(10) < 30 -> SOXL, SPY RSI(10) < 30 -> UPRO), the strategy activates a deep bear protocol when QQQ's 252-day cumulative return falls below -20% — confirming a major bear market rather than a correction. Within this state, it routes through QQQ vs. 20d MA position and QQQ 60-day cumulative return thresholds: a 60d loss below -12% triggers a choice between SPY (if SPY is above its 20d MA) or a TLT vs. SQQQ RSI filter for further decline; a 60d loss above -12% routes through TLT vs. SQQQ RSI for TQQQ or SQQQ. Additionally, when QQQ's 10-day cumulative return exceeds +5.5% in a bear market, the strategy positions in PSQ rather than chasing the bounce — recognizing bear market rallies as traps."
+    ],
+    "signals": [
+      {
+        "name": "SPY 200-Day MA Primary Regime Gate",
+        "tag": "200d-ma",
+        "description": "Primary gate across the dominant components: SPY above 200d MA = bull mode (momentum ETF selection + defensive basket). Below = bear mode (dip-buy cascade + deep bear routing). Multiple components run this gate in parallel."
+      },
+      {
+        "name": "Dual UVXY Guard: QQQ + SPY RSI",
+        "tag": "vix-tiers",
+        "description": "Most aggressive UVXY trigger in the library: QQQ RSI(10) > 81 OR SPY RSI(10) > 80 -> UVXY. Uses QQQ (not TQQQ) for the first check. Plus SPY RSI(60) > 60 -> defensive basket. Three-tier overbought system."
+      },
+      {
+        "name": "Bull Momentum Filter: Top 3 of 5 Leveraged ETFs",
+        "tag": "momentum",
+        "description": "Primary bull-mode allocation: selects top 3 of [TQQQ, SOXL, TECL, UDOW, UPRO] by 21-day moving average of returns. Concentrates in the strongest recent performers across QQQ, semis, tech, Dow30, and S&P500 3x ETFs. Also holds SVXY for volatility premium."
+      },
+      {
+        "name": "TQQQ 20-Day MA Component",
+        "tag": "200d-ma",
+        "description": "Parallel component using TQQQ 20d MA (not SPY 200d) as its gate. Adds shorter-term regime sensitivity. Holds TQQQ above the MA; shifts to TECL/SOXL dip-buy or TLT/PSQ/BSV RSI filter below it."
+      },
+      {
+        "name": "Bear Dip-Buy Cascade: TECL, SOXL, UPRO",
+        "tag": "rsi",
+        "description": "Three-tier bear-mode dip-buying: TQQQ RSI(10) < 31 -> TECL; SMH RSI(10) < 30 -> SOXL; SPY RSI(10) < 30 -> UPRO. Sequential checks covering tech, semiconductors, and broad market capitulation."
+      },
+      {
+        "name": "Deep Bear Protocol: QQQ 252-Day Return",
+        "tag": "momentum",
+        "description": "Activates when QQQ 252-day cumulative return < -20% (confirmed major bear). Routes through QQQ 20d MA position, QQQ 60d loss thresholds, and TLT vs SQQQ RSI comparison to select from SPY, QQQ, TQQQ, SQQQ, PSQ. Also detects bear-market rallies via QQQ 10d return > +5.5%."
+      }
+    ],
+    "risk_profile": "Aggressive, but the most structurally diversified strategy in this library's leveraged ETF tier. Running multiple parallel components with different time horizons (SPY 200d MA vs. TQQQ 20d MA) and a deep bear-market protocol with QQQ cumulative-return detection produces a notably better risk-adjusted profile: Sharpe 2.18, Calmar 3.68, and standard deviation of 50.6% — meaningfully lower than Holy Grail (62.3%) or TQQQ Long Term (62.8%) at comparable ARR. The 45.4% max drawdown reflects the 2022 bear market, when all components were simultaneously in bear mode. The SVXY position in bull mode adds tail risk: SVXY can lose 80-90% in a single VIX spike event. The deep bear protocol with QQQ 252d detection provides more nuanced protection than simple RSI dip-buys, but the strategy's logic tree is the largest and most complex in the library, making manual verification difficult."
   }
 ]

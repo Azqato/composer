@@ -5,6 +5,31 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.4.0] - 2026-06-14
+
+### Added — 5 new strategies (18 total)
+
+Added five new Composer symphonies to the strategy library, expanding the catalog from 13 to 18 strategies. Each entry was analyzed from the Composer API logic tree and includes full `how_it_works` narrative, `signals` breakdown, and `risk_profile` section.
+
+| Slug | Name | ARR | Max DD | Sharpe | Calmar | Days |
+|---|---|---|---|---|---|---|
+| `holy-grail` | The Holy Grail (Original) | 153.9% | -47.4% | 1.80 | 3.24 | 3,693 |
+| `tqqq-long-term` | TQQQ For The Long Term | 165.4% | -53.6% | 1.86 | 3.08 | 3,693 |
+| `wooden-arkk` | Wooden ARKK Machine 2.2 | 244.2% | -44.5% | 2.25 | 5.48 | 1,028 |
+| `super-semiconductors` | Super Semiconductors | 102.6% | -42.9% | 1.71 | 2.39 | 3,614 |
+| `four-horsemen` | The Four Horsemen of the Apocalypse | 166.8% | -45.3% | 2.18 | 3.68 | 3,629 |
+
+**Strategy highlights:**
+- **Holy Grail** uses TQQQ's own 200d MA as the trend gate (not SPY), with a 5% rebalance corridor rather than daily rebalancing; bear mode uses sequential dip-buys on TECL/SOXL and a SQQQ/BSV RSI filter.
+- **TQQQ For The Long Term** gates on SPY's 200d MA with dual overbought checks (TQQQ RSI + SPXL RSI); bear mode adds SQQQ dip-buy as an unusual re-entry into the inverse position after market bounces.
+- **Wooden ARKK Machine 2.2** is a pure mean-reversion system: IEI vs SPHB RSI(7) selects the regime, then buys the single worst-performing asset from a 7-ETF long pool (risk-off) or 5-ETF inverse pool (risk-on) using 4-day MA sort.
+- **Super Semiconductors** (Dereck Nielsen) uses SPY EMA(8)/SMA(200) gate + MACD on SMH to switch between top-3 stock selection from a 19-stock universe, partial SHY/SMH hedge, SOXL dip-buy, or bear-mode SOXS short.
+- **Four Horsemen** runs multiple parallel components with different time horizons, the most complex logic tree in the library: QQQ 252d return < -20% activates a deep bear routing protocol with tiered thresholds and bear-rally detection.
+
+**Files changed:** `data/strategies.json`, `data/strategies.js`, `README.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.3.0] - 2026-06-14
 
 ### Changed
