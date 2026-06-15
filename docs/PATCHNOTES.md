@@ -5,6 +5,33 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.4.1] - 2026-06-14
+
+### Infra — GitHub repository renamed from `ComposerAtlas` to `composer`
+
+The GitHub repository was renamed from `Azqato/ComposerAtlas` to `Azqato/composer`. The GitHub Pages URL changed accordingly.
+
+| | Before | After |
+|---|---|---|
+| Repository | `https://github.com/Azqato/ComposerAtlas` | `https://github.com/Azqato/composer` |
+| Live site | `https://azqato.github.io/ComposerAtlas/` | `https://azqato.github.io/composer/` |
+
+**Critical fix — `js/app.js` BASE detection:** The `BASE` constant is derived from the first URL path segment and used to prefix all internal links. Before: checked for `'composeratlas'` (case-insensitive). After: checks for `'composer'`. Without this fix all navigation and deep links would resolve to the server root.
+
+```js
+// Before
+const BASE = (_seg && _seg.toLowerCase() === 'composeratlas') ? '/' + _seg : '';
+
+// After
+const BASE = (_seg && _seg.toLowerCase() === 'composer') ? '/' + _seg : '';
+```
+
+**Also updated:** `robots.txt` sitemap URL, `README.md` clone/live/actions URLs, `docs/PRD.md` live URL, repository URL, route table, and BASE detection code example.
+
+**Files changed:** `js/app.js`, `robots.txt`, `README.md`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.4.0] - 2026-06-14
 
 ### Added — 5 new strategies (18 total)

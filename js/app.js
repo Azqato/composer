@@ -10,10 +10,10 @@
 'use strict';
 
 // ---- Base URL ----
-// Extracts the first path segment and checks case-insensitively for 'composeratlas',
-// preserving the actual casing from the live URL (e.g. /ComposerAtlas on GitHub Pages).
+// Extracts the first path segment and checks case-insensitively for 'composer',
+// preserving the actual casing from the live URL (e.g. /composer on GitHub Pages).
 const _seg = window.location.pathname.split('/')[1];
-const BASE = (_seg && _seg.toLowerCase() === 'composeratlas') ? '/' + _seg : '';
+const BASE = (_seg && _seg.toLowerCase() === 'composer') ? '/' + _seg : '';
 
 // ---- URL helper ----
 // On HTTP/HTTPS: prepends BASE for absolute paths (works on both localhost and GitHub Pages).

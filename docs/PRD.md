@@ -306,9 +306,9 @@ The same pattern applies to `loadGlossary()`. This ensures the site works in all
 
 ```javascript
 // Extracts first path segment; compares case-insensitively to handle
-// both http://localhost:8000/ and https://azqato.github.io/ComposerAtlas/
+// both http://localhost:8000/ and https://azqato.github.io/composer/
 const _seg = window.location.pathname.split('/')[1];
-const BASE = (_seg && _seg.toLowerCase() === 'composeratlas') ? '/' + _seg : '';
+const BASE = (_seg && _seg.toLowerCase() === 'composer') ? '/' + _seg : '';
 
 // All internal links use u() instead of BASE + path directly
 function u(path) {
@@ -321,7 +321,7 @@ function u(path) {
 }
 ```
 
-The case-insensitive check is required because the GitHub repository is named `ComposerAtlas` (capital C) and GitHub Pages preserves that casing in the URL.
+The case-insensitive check handles GitHub Pages hosting under the `/composer` path.
 
 ### JS Utility Functions (js/app.js)
 
@@ -351,13 +351,13 @@ The case-insensitive check is required because the GitHub repository is named `C
 
 | URL (GitHub Pages) | File | Rendering |
 |---|---|---|
-| `/ComposerAtlas/` | `index.html` | JS renders strategy grid |
-| `/ComposerAtlas/strategies.html` | `strategies.html` | Listing view (no slug) |
-| `/ComposerAtlas/strategies.html?slug=foo` | `strategies.html` | Detail view for `foo` |
-| `/ComposerAtlas/glossary.html` | `glossary.html` | Listing view (no slug) |
-| `/ComposerAtlas/glossary.html?slug=foo` | `glossary.html` | Detail view for `foo` |
-| `/ComposerAtlas/about.html` | `about.html` | Static HTML |
-| `/ComposerAtlas/404.html` | `404.html` | GitHub Pages error page |
+| `/composer/` | `index.html` | JS renders strategy grid |
+| `/composer/strategies.html` | `strategies.html` | Listing view (no slug) |
+| `/composer/strategies.html?slug=foo` | `strategies.html` | Detail view for `foo` |
+| `/composer/glossary.html` | `glossary.html` | Listing view (no slug) |
+| `/composer/glossary.html?slug=foo` | `glossary.html` | Detail view for `foo` |
+| `/composer/about.html` | `about.html` | Static HTML |
+| `/composer/404.html` | `404.html` | GitHub Pages error page |
 
 **Listing/detail routing:** Each combined page checks `new URLSearchParams(window.location.search).get('slug')` on load. `null` → listing view; non-null → detail view for that slug.
 
@@ -639,8 +639,8 @@ git push origin main
 
 ComposerAtlas deploys automatically via GitHub Actions on every push to `main`. No manual steps required.
 
-- **Live URL:** https://azqato.github.io/ComposerAtlas
-- **Repository:** https://github.com/Azqato/ComposerAtlas
+- **Live URL:** https://azqato.github.io/composer
+- **Repository:** https://github.com/Azqato/composer
 - **Deploy time:** Typically 1-2 minutes after push
 
 To monitor: go to GitHub → Actions tab → find "Deploy to GitHub Pages" run. Green = deployed; red = failed (check logs).
@@ -993,7 +993,7 @@ Used by `update_metrics.py` to refresh `data/symphony_scores.json`.
 
 ### Symphony ID Reference
 
-All 13 ComposerAtlas strategies with their Composer symphony IDs:
+All 18 ComposerAtlas strategies with their Composer symphony IDs:
 
 | Strategy | Symphony ID |
 |---|---|
@@ -1010,6 +1010,11 @@ All 13 ComposerAtlas strategies with their Composer symphony IDs:
 | zoop's TQQQ 200d MA 3x Leverage (2026 Edition) | `ZBpjzxS9RkLzft9NNWhO` |
 | zoop's SOXL Growth (2026 Edition) | `wcEUcb13v7M8bEluRc1h` |
 | s90 50/40 maxDD (Half Low Catch) | `K8ql2SKFd4VDBemIstEr` |
+| The Holy Grail (Original) | `MmQbpf2U5TMQFmr9Nt2e` |
+| TQQQ For The Long Term | `HukRwDJLlYPLMbrQbua5` |
+| Wooden ARKK Machine 2.2 | `kl2dR0Rlp4RgZUHAJY2k` |
+| Super Semiconductors | `zTV33nu3o0h5fKpT6IqL` |
+| The Four Horsemen of the Apocalypse | `vkJ5YCvzJLBu2KKF6Oy0` |
 
 Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 
@@ -1020,7 +1025,7 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 ### V1.0 — MVP
 
 **Launched:** 2026-06-08 | **Status:** Complete
-**Live URL:** https://azqato.github.io/ComposerAtlas/
+**Live URL:** https://azqato.github.io/composer/
 
 - [x] Vanilla HTML/CSS/JS scaffolded (zero build dependencies)
 - [x] GitHub Pages deployment configured (rsync workflow; docs/scripts excluded)
@@ -1199,7 +1204,7 @@ The codebase is public, readable, and maintainable by a single developer. We do 
 ### User FAQ
 
 **Q: What is ComposerAtlas?**
-A: ComposerAtlas is a free reference website that showcases 13 curated Composer.trade strategies, explains how they work in plain language, and educates visitors on the investing concepts behind them.
+A: ComposerAtlas is a free reference website that showcases 18 curated Composer.trade strategies, explains how they work in plain language, and educates visitors on the investing concepts behind them.
 
 **Q: Who is this for?**
 A: Self-directed retail investors who use Composer.trade, are curious about systematic investing, or want to learn about concepts like RSI, VIX strategies, momentum, or leveraged ETFs.

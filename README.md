@@ -4,7 +4,7 @@ A curated strategy library and educational reference for Composer.trade users. C
 
 ## Live Site
 
-https://azqato.github.io/ComposerAtlas
+https://azqato.github.io/composer
 
 ## Tech Stack
 
@@ -27,7 +27,7 @@ https://azqato.github.io/ComposerAtlas
 ## Installation
 
 ```bash
-git clone https://github.com/Azqato/ComposerAtlas.git
+git clone https://github.com/Azqato/composer.git
 ```
 
 No further install step.
@@ -86,7 +86,7 @@ The workflow (`/.github/workflows/deploy.yml`) uses `rsync` to copy the reposito
 - `strategies.xlsx`
 - `.gitignore`, `.github/`
 
-Monitor deploy status at: `https://github.com/Azqato/ComposerAtlas/actions`
+Monitor deploy status at: `https://github.com/Azqato/composer/actions`
 
 ## Documentation
 
