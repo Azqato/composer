@@ -235,7 +235,7 @@ function renderStrategyCard(s) {
   const tags = (s.tags || []).slice(0, 4).map(renderTag).join('');
   return `
     <article class="card">
-      <h2 class="card-title">${s.name}</h2>
+      <h2 class="card-title"><a href="${u('/strategies/detail/?slug=' + s.slug)}">${s.name}</a></h2>
       <p class="card-desc">${s.description}</p>
       <div class="card-metrics">
         <div>

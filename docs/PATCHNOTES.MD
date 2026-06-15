@@ -6,6 +6,18 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.1.8] - 2026-06-14
+
+### Feature — Strategy card titles are now clickable links
+
+Strategy card titles (`<h2 class="card-title">`) now link to the strategy detail page, identical to the "View Strategy →" button on each card. Clicking the title navigates to `/strategies/detail/?slug=...`.
+
+**Implementation:** Wrapped `s.name` in an `<a>` tag inside `renderStrategyCard()`. Added `.card-title a { color: inherit; text-decoration: none; }` so the link inherits the heading color and the existing `.card:hover .card-title { color: var(--color-green); }` rule applies naturally — hovering the card turns both the title text and the link green with no additional CSS required.
+
+**Files changed:** `js/app.js`, `css/main.css`, `docs/PATCHNOTES.MD`
+
+---
+
 ## [1.1.7] - 2026-06-14
 
 ### Content — Added Low Catchers strategy (13th symphony)
