@@ -101,6 +101,11 @@ function tagLabel(slug) {
     'sharpe-ratio': 'Sharpe Ratio',
     'calmar-ratio': 'Calmar Ratio',
     'max-drawdown': 'Max Drawdown',
+    'macd': 'MACD',
+    'mean-reversion': 'Mean Reversion',
+    'standard-deviation': 'Std Deviation',
+    'managed-futures': 'Managed Futures',
+    'inverse-etfs': 'Inverse ETFs',
   };
   return labels[slug] || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }

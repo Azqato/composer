@@ -5,6 +5,26 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.5.2] - 2026-06-15
+
+### Added — 9 new glossary concepts (17 total)
+
+Added rich multi-section entries for nine new concepts referenced throughout the site:
+
+**Indicators:** Simple Moving Average (SMA), Exponential Moving Average (EMA), MACD
+
+**Strategy Concepts:** Mean Reversion, Volatility Decay
+
+**Risk Metrics:** Standard Deviation, Annualized Rate of Return (ARR)
+
+**Asset Classes:** Managed Futures, Inverse ETFs
+
+Each entry includes Definition, How It Works, In Practice, Limitations, and an extended "Building in Composer.trade" section with strategy-specific examples from the library. Added new tags to relevant strategies (`macd`, `mean-reversion`, `standard-deviation`, `managed-futures`, `inverse-etfs`) so related strategy counts are populated on glossary cards. Updated tag label display in `js/app.js`.
+
+**Files changed:** `data/glossary.json`, `data/glossary.js`, `data/strategies.json`, `data/strategies.js`, `js/app.js`
+
+---
+
 ## [1.5.1] - 2026-06-15
 
 ### Fix — Glossary card titles are now clickable links

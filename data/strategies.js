@@ -1,5 +1,4 @@
 // Strategies data -- loaded as a script tag so the site works with file:// protocol.
-// To update metrics: run scripts/update_metrics.py
 window.STRATEGIES_DATA = [
   {
     "slug": "zoops-2026-frontrunner",
@@ -25,7 +24,8 @@ window.STRATEGIES_DATA = [
       "rsi",
       "leveraged-etfs",
       "momentum",
-      "vix-tiers"
+      "vix-tiers",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -83,7 +83,8 @@ window.STRATEGIES_DATA = [
       "leveraged-etfs",
       "momentum",
       "200d-ma",
-      "vix-tiers"
+      "vix-tiers",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -146,7 +147,8 @@ window.STRATEGIES_DATA = [
       "leveraged-etfs",
       "momentum",
       "200d-ma",
-      "vix-tiers"
+      "vix-tiers",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -209,7 +211,8 @@ window.STRATEGIES_DATA = [
       "leveraged-etfs",
       "momentum",
       "200d-ma",
-      "vix-tiers"
+      "vix-tiers",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -272,7 +275,8 @@ window.STRATEGIES_DATA = [
       "leveraged-etfs",
       "momentum",
       "200d-ma",
-      "vix-tiers"
+      "vix-tiers",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -340,7 +344,8 @@ window.STRATEGIES_DATA = [
       "leveraged-etfs",
       "momentum",
       "200d-ma",
-      "vix-tiers"
+      "vix-tiers",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -403,7 +408,8 @@ window.STRATEGIES_DATA = [
       "leveraged-etfs",
       "momentum",
       "200d-ma",
-      "vix-tiers"
+      "vix-tiers",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -470,7 +476,9 @@ window.STRATEGIES_DATA = [
       "rsi",
       "leveraged-etfs",
       "momentum",
-      "vix-tiers"
+      "vix-tiers",
+      "managed-futures",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -533,7 +541,8 @@ window.STRATEGIES_DATA = [
       "leveraged-etfs",
       "momentum",
       "200d-ma",
-      "vix-tiers"
+      "vix-tiers",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -596,7 +605,8 @@ window.STRATEGIES_DATA = [
       "leveraged-etfs",
       "momentum",
       "200d-ma",
-      "vix-tiers"
+      "vix-tiers",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -664,7 +674,8 @@ window.STRATEGIES_DATA = [
       "leveraged-etfs",
       "momentum",
       "200d-ma",
-      "vix-tiers"
+      "vix-tiers",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -727,7 +738,9 @@ window.STRATEGIES_DATA = [
       "leveraged-etfs",
       "momentum",
       "max-drawdown",
-      "vix-tiers"
+      "vix-tiers",
+      "standard-deviation",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-08",
     "how_it_works": [
@@ -789,7 +802,8 @@ window.STRATEGIES_DATA = [
       "rsi",
       "leveraged-etfs",
       "momentum",
-      "vix-tiers"
+      "vix-tiers",
+      "mean-reversion"
     ],
     "last_updated": "2026-06-14",
     "how_it_works": [
@@ -851,7 +865,8 @@ window.STRATEGIES_DATA = [
       "rsi",
       "200d-ma",
       "leveraged-etfs",
-      "momentum"
+      "momentum",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-14",
     "how_it_works": [
@@ -907,7 +922,8 @@ window.STRATEGIES_DATA = [
       "rsi",
       "200d-ma",
       "leveraged-etfs",
-      "momentum"
+      "momentum",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-14",
     "how_it_works": [
@@ -967,7 +983,9 @@ window.STRATEGIES_DATA = [
     "tags": [
       "rsi",
       "momentum",
-      "leveraged-etfs"
+      "leveraged-etfs",
+      "mean-reversion",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-14",
     "how_it_works": [
@@ -1024,7 +1042,9 @@ window.STRATEGIES_DATA = [
       "rsi",
       "200d-ma",
       "momentum",
-      "leveraged-etfs"
+      "leveraged-etfs",
+      "macd",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-14",
     "how_it_works": [
@@ -1087,7 +1107,8 @@ window.STRATEGIES_DATA = [
       "200d-ma",
       "momentum",
       "leveraged-etfs",
-      "vix-tiers"
+      "vix-tiers",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-14",
     "how_it_works": [
@@ -1152,7 +1173,10 @@ window.STRATEGIES_DATA = [
     "tags": [
       "rsi",
       "momentum",
-      "leveraged-etfs"
+      "leveraged-etfs",
+      "mean-reversion",
+      "standard-deviation",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-14",
     "how_it_works": [
@@ -1208,7 +1232,9 @@ window.STRATEGIES_DATA = [
     "tags": [
       "rsi",
       "momentum",
-      "leveraged-etfs"
+      "leveraged-etfs",
+      "standard-deviation",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-14",
     "how_it_works": [
@@ -1263,7 +1289,9 @@ window.STRATEGIES_DATA = [
     "tags": [
       "rsi",
       "momentum",
-      "leveraged-etfs"
+      "leveraged-etfs",
+      "mean-reversion",
+      "inverse-etfs"
     ],
     "last_updated": "2026-06-14",
     "how_it_works": [
@@ -1367,7 +1395,8 @@ window.STRATEGIES_DATA = [
     "tags": [
       "rsi",
       "200d-ma",
-      "momentum"
+      "momentum",
+      "mean-reversion"
     ],
     "last_updated": "2026-06-14",
     "how_it_works": [
