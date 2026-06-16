@@ -1,4 +1,4 @@
-# ComposerAtlas
+# Composer Atlas
 
 A curated strategy library and educational reference for Composer.trade users. Covers 24 symphonies with plain-English logic breakdowns, backtested metrics, and a concept glossary.
 
@@ -100,7 +100,7 @@ Full documentation is in [`/docs`](docs/):
 
 ## Disclaimer
 
-ComposerAtlas is an independent educational resource. It is not affiliated with Composer Technologies, Inc. or any strategy authors. All featured strategies are presented for informational purposes only. Past performance does not guarantee future results. Nothing on this site constitutes financial advice.
+Composer Atlas is an independent educational resource. It is not affiliated with Composer Technologies, Inc. or any strategy authors. All featured strategies are presented for informational purposes only. Past performance does not guarantee future results. Nothing on this site constitutes financial advice.
 
 ## License
 

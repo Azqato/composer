@@ -1,7 +1,24 @@
-# ComposerAtlas — Changelog
+# Composer Atlas — Changelog
 
-All notable changes to ComposerAtlas are documented in this file.
+All notable changes to Composer Atlas are documented in this file.
 Format: `[VERSION] - YYYY-MM-DD`
+
+---
+
+## [1.5.8] - 2026-06-15
+
+### Changed — Brand name displayed as "Composer Atlas" (with a space)
+
+The site's display name is now rendered as **Composer Atlas** (two words) instead of the previous one-word **ComposerAtlas**. This applies everywhere the name appears as a brand/product label: page `<title>` tags, the nav logo text, the footer copyright, the hero eyebrow, the About page, and all body/glossary prose that references the library by name. Documentation (PRD, DESIGN, README, this changelog) was updated to match.
+
+Literal technical identifiers were intentionally left unchanged because they are real strings, not display text:
+
+- The GitHub repository (`Azqato/composer`) and its prior name (`Azqato/ComposerAtlas`)
+- Historical GitHub Pages URLs and route-table paths (`/ComposerAtlas/...`)
+
+No functional or routing behaviour changed — this is a presentation-only rename.
+
+**Files changed:** `index.html`, `about.html`, `glossary.html`, `strategies.html`, `404.html`, `js/app.js`, `css/main.css`, `data/glossary.js`, `data/glossary.json`, `scripts/add_glossary.py`, `scripts/add_zoop.py`, `README.md`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
 
 ---
 

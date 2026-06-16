@@ -1,4 +1,4 @@
-# ComposerAtlas — Design System
+# Composer Atlas — Design System
 
 **Version:** 1.3
 **Status:** Active
@@ -10,7 +10,7 @@ All values in this document are derived from `css/main.css` and `js/app.js` — 
 
 ## 1. Design Philosophy
 
-ComposerAtlas uses a dark, editorial visual language inspired by Composer.trade's interface. It pairs the energy and color vocabulary of Composer with the structured, wiki-style readability of a reference document. The result is a site that feels authoritative and trustworthy without being sterile.
+Composer Atlas uses a dark, editorial visual language inspired by Composer.trade's interface. It pairs the energy and color vocabulary of Composer with the structured, wiki-style readability of a reference document. The result is a site that feels authoritative and trustworthy without being sterile.
 
 Every visual decision serves the user's ability to understand information. Color is used semantically. Typography is used for hierarchy. Whitespace is not wasted. Nothing is decorative for its own sake.
 
@@ -224,7 +224,7 @@ Mobile-first. Base styles target the smallest viewport; media queries add comple
 
 - Fixed to top of viewport; `z-index: 100`; height: `56px` (`--nav-height`)
 - Background: `rgba(13, 13, 13, 0.95)` with `backdrop-filter: blur(8px)` and `border-bottom: 1px solid var(--color-border)`
-- Logo: 🗺️ emoji (`font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji'`, `font-size: 1.25rem`) + "ComposerAtlas" text (hidden below 480px)
+- Logo: 🗺️ emoji (`font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji'`, `font-size: 1.25rem`) + "Composer Atlas" text (hidden below 480px)
 - Logo hover: transitions to `--color-green` in 150ms
 - Nav links: `--color-secondary` default; `--color-primary` + `bg-surface` on active/hover; 150ms transition
 - "Open Composer ↗" button: `.btn-outline-green` — green border, green text; switches to green bg on hover

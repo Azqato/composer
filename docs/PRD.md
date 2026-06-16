@@ -1,10 +1,10 @@
-# ComposerAtlas — Master Reference Document
+# Composer Atlas — Master Reference Document
 
-**Version:** 1.5.7
+**Version:** 1.5.8
 **Status:** Active
 **Last Updated:** 2026-06-15
 
-This is the single authoritative reference for ComposerAtlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
+This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
 ---
 
@@ -56,7 +56,7 @@ There is no dedicated site for Composer.trade strategy discovery and education. 
 Self-directed retail investors who already use Composer.trade. They want to understand strategies before cloning them, or want to see how other authors have approached a problem they are solving.
 
 **Secondary — Systematic investing learners**
-Intermediate traders learning RSI, momentum, VIX strategies, and leveraged ETF mechanics. They know what a moving average is but have not yet built a systematic strategy. ComposerAtlas explains concepts in the context of real strategies.
+Intermediate traders learning RSI, momentum, VIX strategies, and leveraged ETF mechanics. They know what a moving average is but have not yet built a systematic strategy. Composer Atlas explains concepts in the context of real strategies.
 
 **Tertiary — Quant-curious beginners**
 Investors curious about algorithmic or rules-based investing who do not yet know the terminology. The glossary serves as their entry point; strategy pages show them real examples.
@@ -197,7 +197,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 
 ### Overview
 
-ComposerAtlas is a fully static, browser-only application. There is no server, no API backend, no database service, and no authentication layer. All data is stored in flat JSON files and served via GitHub Pages. All page rendering is done in the browser via vanilla JavaScript — no build step is required.
+Composer Atlas is a fully static, browser-only application. There is no server, no API backend, no database service, and no authentication layer. All data is stored in flat JSON files and served via GitHub Pages. All page rendering is done in the browser via vanilla JavaScript — no build step is required.
 
 ### Tech Stack
 
@@ -639,7 +639,7 @@ git push origin main
 
 ### Deployment Workflow
 
-ComposerAtlas deploys automatically via GitHub Actions on every push to `main`. No manual steps required.
+Composer Atlas deploys automatically via GitHub Actions on every push to `main`. No manual steps required.
 
 - **Live URL:** https://azqato.github.io/composer
 - **Repository:** https://github.com/Azqato/composer
@@ -951,7 +951,7 @@ authorization: Bearer <key-secret>
 
 Get credentials: Composer.trade → Settings → API Access → Generate New API Key.
 
-ComposerAtlas uses only the two unauthenticated endpoints listed below. No credentials are stored or required.
+Composer Atlas uses only the two unauthenticated endpoints listed below. No credentials are stored or required.
 
 ### Rate Limits
 
@@ -1007,7 +1007,7 @@ Used by `update_metrics.py` to refresh `data/symphony_scores.json`.
 
 ### Symphony ID Reference
 
-All 24 ComposerAtlas strategies with their Composer symphony IDs:
+All 24 Composer Atlas strategies with their Composer symphony IDs:
 
 | Strategy | Symphony ID |
 |---|---|
@@ -1145,7 +1145,7 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 
 ## 15. Security
 
-ComposerAtlas is a fully static, browser-only website with no server infrastructure, no user accounts, no authentication, and no database service. This architecture significantly limits the attack surface.
+Composer Atlas is a fully static, browser-only website with no server infrastructure, no user accounts, no authentication, and no database service. This architecture significantly limits the attack surface.
 
 ### Architecture Security Posture
 
@@ -1168,7 +1168,7 @@ ComposerAtlas is a fully static, browser-only website with no server infrastruct
 
 **XSS prevention.** All dynamic content rendered from JSON must be escaped before DOM insertion. Do not use `innerHTML` with unsanitized JSON values. Strategy descriptions and names in JSON must not contain HTML tags. The `app.js` render functions use template literals with escaped data.
 
-**Dependency management.** ComposerAtlas has zero npm/Node.js dependencies. External resources are limited to Google Fonts CDN (fonts only; no JS). If a CDN dependency is ever added, it must be from an official source with SRI (Subresource Integrity) hash verification.
+**Dependency management.** Composer Atlas has zero npm/Node.js dependencies. External resources are limited to Google Fonts CDN (fonts only; no JS). If a CDN dependency is ever added, it must be from an official source with SRI (Subresource Integrity) hash verification.
 
 **External links.** All links to external sites must use `target="_blank"` with `rel="noopener noreferrer"` to prevent tab-napping.
 
@@ -1202,7 +1202,7 @@ Every strategy is presented with its full metrics, including drawdowns and risk 
 
 ### 2. Education Before Promotion
 
-ComposerAtlas exists to teach first. Strategy pages explain the logic, signals, and reasoning behind every symphony. A visitor who understands why a strategy works is more valuable than one who blindly clones it.
+Composer Atlas exists to teach first. Strategy pages explain the logic, signals, and reasoning behind every symphony. A visitor who understands why a strategy works is more valuable than one who blindly clones it.
 
 *If we cannot explain a strategy in plain English, we do not feature it yet.*
 
@@ -1214,13 +1214,13 @@ Every feature should reduce friction, not add it. The site should feel like a we
 
 ### 4. Zero Cost to Operate
 
-ComposerAtlas runs on GitHub Pages with no server, no database service, and no paid infrastructure. Every technical decision must be evaluated against this constraint. Complexity that introduces operational cost is rejected at MVP.
+Composer Atlas runs on GitHub Pages with no server, no database service, and no paid infrastructure. Every technical decision must be evaluated against this constraint. Complexity that introduces operational cost is rejected at MVP.
 
 *If it requires a server, find a static alternative.*
 
 ### 5. Data Is the Product
 
-The strategy database is the most valuable asset of ComposerAtlas. Metrics must be accurate, schema must be consistent, and updates must be logged. A strategy with stale or incorrect data should be flagged or removed.
+The strategy database is the most valuable asset of Composer Atlas. Metrics must be accurate, schema must be consistent, and updates must be logged. A strategy with stale or incorrect data should be flagged or removed.
 
 *If the data is wrong, the site is wrong.*
 
@@ -1232,7 +1232,7 @@ Every visual decision should serve the user's ability to understand information.
 
 ### 7. Independence and Integrity
 
-ComposerAtlas is not affiliated with Composer.trade. We do not receive compensation for featuring any strategy. Our editorial choices are not for sale. If we ever establish a formal partnership or receive compensation, it will be disclosed prominently.
+Composer Atlas is not affiliated with Composer.trade. We do not receive compensation for featuring any strategy. Our editorial choices are not for sale. If we ever establish a formal partnership or receive compensation, it will be disclosed prominently.
 
 *If it creates a conflict of interest, disclose it or avoid it.*
 
@@ -1248,19 +1248,19 @@ The codebase is public, readable, and maintainable by a single developer. We do 
 
 ### User FAQ
 
-**Q: What is ComposerAtlas?**
-A: ComposerAtlas is a free reference website that showcases 24 curated Composer.trade strategies, explains how they work in plain language, and educates visitors on the investing concepts behind them.
+**Q: What is Composer Atlas?**
+A: Composer Atlas is a free reference website that showcases 24 curated Composer.trade strategies, explains how they work in plain language, and educates visitors on the investing concepts behind them.
 
 **Q: Who is this for?**
 A: Self-directed retail investors who use Composer.trade, are curious about systematic investing, or want to learn about concepts like RSI, VIX strategies, momentum, or leveraged ETFs.
 
 **Q: Are these strategies financial advice?**
-A: No. ComposerAtlas is an educational resource. All strategies are presented for informational purposes only. Past performance does not guarantee future results. Always do your own research before investing.
+A: No. Composer Atlas is an educational resource. All strategies are presented for informational purposes only. Past performance does not guarantee future results. Always do your own research before investing.
 
 **Q: Can I clone these strategies on Composer.trade?**
 A: Yes. Each strategy page includes a direct link to clone the symphony on Composer.trade.
 
-**Q: Is ComposerAtlas free?**
+**Q: Is Composer Atlas free?**
 A: Yes. The site is free to access. If you find it valuable, you can support development via a donation at https://azqato.github.io/support.html.
 
 **Q: Who curates the strategies?**
@@ -1269,8 +1269,8 @@ A: Strategies are selected and maintained by the site owner. All featured strate
 **Q: How often are metrics updated?**
 A: Metrics are updated manually via GitHub commits. Each strategy page displays a last updated date.
 
-**Q: Is ComposerAtlas affiliated with Composer.trade?**
-A: No. ComposerAtlas is an independent, community-built resource. Composer.trade is a separate company and platform.
+**Q: Is Composer Atlas affiliated with Composer.trade?**
+A: No. Composer Atlas is an independent, community-built resource. Composer.trade is a separate company and platform.
 
 ### Operational FAQ
 
@@ -1303,7 +1303,7 @@ Do not use RSI or return checks shorter than 10 days (e.g., `1d`). Very short wi
 
 ### 4-File Structure
 
-As of v1.3.0 (2026-06-14), ComposerAtlas documentation lives in exactly 4 files:
+As of v1.3.0 (2026-06-14), Composer Atlas documentation lives in exactly 4 files:
 
 | File | Purpose | Who Updates It |
 |---|---|---|

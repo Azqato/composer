@@ -72,7 +72,7 @@ ZOOP_ENTRY = {
     {
       "title": "Community and Transparency",
       "paragraphs": [
-        "Zoop publishes and discusses his strategies publicly, sharing the signal logic, backtest methodology, and performance tracking openly with his community on Twitch and YouTube. ComposerAtlas was built to document this library in one organized, searchable place — providing the in-depth explanations, signal breakdowns, and risk metric comparisons that aren't possible within Composer.trade's interface alone.",
+        "Zoop publishes and discusses his strategies publicly, sharing the signal logic, backtest methodology, and performance tracking openly with his community on Twitch and YouTube. Composer Atlas was built to document this library in one organized, searchable place — providing the in-depth explanations, signal breakdowns, and risk metric comparisons that aren't possible within Composer.trade's interface alone.",
         "The strategies are identified in Composer.trade with the 'zoops-' prefix, making them discoverable and attributable. The '2026' suffix in each strategy name reflects the year these versions were refined and published — Zoop iterates on his strategy suite over time, and the year suffix helps track which version a given backtest represents.",
         "To follow Zoop's strategy updates, community discussions, and live performance tracking, visit https://azqato.github.io or find him as Azqato on Twitch and YouTube."
       ]

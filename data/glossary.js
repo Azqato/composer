@@ -33,7 +33,7 @@ window.GLOSSARY_DATA = [
           "RSI is one of the most commonly used signals in Composer.trade symphonies. Strategy authors use it to filter entries and exits.",
           "If RSI(14) < 30, buy — the asset is considered oversold; potential recovery opportunity. If RSI(14) > 70, sell or reduce — the asset is considered overbought; reduce risk exposure.",
           "Some strategies use RSI as a confirmation signal alongside trend indicators. For example, a strategy might only buy TQQQ when the price is above its 200-day moving average AND the RSI is below 70 (not overbought). This combination reduces the chance of entering at the peak of a short-term surge.",
-          "In the zoop's strategy library on ComposerAtlas, RSI is used by the Holy Grail, Sometimes TQQQ, Manhattan Project, and Leveraged TQQQ Symphony strategies as a precision timing tool."
+          "In the zoop's strategy library on Composer Atlas, RSI is used by the Holy Grail, Sometimes TQQQ, Manhattan Project, and Leveraged TQQQ Symphony strategies as a precision timing tool."
         ],
         "table": {
           "headers": [
@@ -140,7 +140,7 @@ window.GLOSSARY_DATA = [
         "paragraphs": [
           "The 200d MA is used in Composer.trade symphonies as a regime filter — deciding whether to hold risky assets at all. A common pattern: If QQQ price > QQQ 200d MA → hold TQQQ (leveraged upside exposure). If QQQ price < QQQ 200d MA → hold BIL or cash (defensive posture).",
           "This single rule has historically been one of the most effective ways to avoid holding leveraged ETFs through major bear markets (2000–2002, 2008–2009, early 2020). The strategy accepts being whipsawed during choppy markets in exchange for avoiding the devastating compounding losses of 3x leverage in a sustained downtrend.",
-          "The TQQQ 200d MA 3x Leverage strategy on ComposerAtlas is the most transparent example of this approach — it uses this single signal with no additional filters."
+          "The TQQQ 200d MA 3x Leverage strategy on Composer Atlas is the most transparent example of this approach — it uses this single signal with no additional filters."
         ]
       },
       {
@@ -196,7 +196,7 @@ window.GLOSSARY_DATA = [
         "paragraphs": [
           "In the context of leveraged ETF strategies, momentum typically manifests as: holding TQQQ when QQQ is trending up (the Nasdaq is in momentum and the leveraged ETF amplifies it), and rotating away when momentum weakens — exiting to a defensive asset when recent returns fall below a threshold or when a faster-moving asset takes the lead.",
           "The simplest momentum signal is comparing recent price to a moving average (e.g., the 200d MA). More sophisticated approaches use rate-of-change calculations over a fixed lookback window, normalized by volatility.",
-          "Every strategy in the ComposerAtlas library is fundamentally a momentum strategy — they all seek to hold leveraged equity when equity momentum is positive and rotate to defensive assets when it isn't."
+          "Every strategy in the Composer Atlas library is fundamentally a momentum strategy — they all seek to hold leveraged equity when equity momentum is positive and rotate to defensive assets when it isn't."
         ]
       },
       {
@@ -284,7 +284,7 @@ window.GLOSSARY_DATA = [
         "paragraphs": [
           "In Composer.trade symphonies, VIX tier rules often appear as nested conditional logic: If VIX < 20, hold TQQQ. Else if VIX < 30, hold SPY (unlevered). Else, hold BIL (cash equivalent).",
           "This structure allows a strategy to be aggressive in benign conditions while systematically reducing risk as volatility rises. Critically, this happens automatically — the strategy doesn't require a judgment call when markets are most stressful.",
-          "The Safety Checks and Manhattan Project strategies in ComposerAtlas incorporate VIX tier logic as one of their multi-signal confirmation gates."
+          "The Safety Checks and Manhattan Project strategies in Composer Atlas incorporate VIX tier logic as one of their multi-signal confirmation gates."
         ]
       },
       {
@@ -323,7 +323,7 @@ window.GLOSSARY_DATA = [
         "title": "Definition",
         "paragraphs": [
           "Leveraged ETFs are exchange-traded funds engineered to deliver a multiple of the daily return of an underlying benchmark index. A 3x leveraged ETF targeting the Nasdaq 100 will aim to return +3% when the index returns +1%, and −3% when the index returns −1%, before fees.",
-          "The most prominent examples in the ComposerAtlas library are TQQQ (3x QQQ/Nasdaq 100), UPRO (3x S&P 500/SPY), and SOXL (3x SOXX/Semiconductors)."
+          "The most prominent examples in the Composer Atlas library are TQQQ (3x QQQ/Nasdaq 100), UPRO (3x S&P 500/SPY), and SOXL (3x SOXX/Semiconductors)."
         ]
       },
       {
@@ -365,7 +365,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "Every strategy in the ComposerAtlas library uses leveraged ETFs as its primary risk-on instrument. The common pattern: monitor signals (200d MA, RSI, VIX, momentum). When signals are favorable: hold TQQQ, UPRO, or SOXL for amplified gains. When signals deteriorate: exit to a defensive asset (BIL, cash, bonds) to avoid amplified losses.",
+          "Every strategy in the Composer Atlas library uses leveraged ETFs as its primary risk-on instrument. The common pattern: monitor signals (200d MA, RSI, VIX, momentum). When signals are favorable: hold TQQQ, UPRO, or SOXL for amplified gains. When signals deteriorate: exit to a defensive asset (BIL, cash, bonds) to avoid amplified losses.",
           "The key insight all these strategies share: holding a 3x leveraged ETF through a 50% drawdown in the underlying index produces approximately an 80–90% loss in the leveraged fund, depending on the path. Systematic exits protect against this compounding catastrophe."
         ]
       },
@@ -384,7 +384,7 @@ window.GLOSSARY_DATA = [
         "paragraphs": [
           "Leveraged ETFs are the engine of the highest-returning strategies in Composer.trade, but they are an engine that destroys itself if left running unsupervised. The daily-rebalancing mechanism that makes 3x leverage possible also creates an inevitable erosion of value during volatile, sideways markets — a phenomenon called volatility decay. A symphony builder who understands this mechanism stops thinking of TQQQ as QQQ but better, and starts thinking of it as a precision instrument that performs brilliantly in specific conditions (sustained, low-volatility uptrends) and catastrophically in others (volatile bear markets). The entire architecture of every successful leveraged ETF symphony in Composer.trade is a system for being in the instrument when conditions are favorable and out of it when they are not.",
           "The first design decision for a leveraged ETF symphony is the exit rule — and it deserves more thought than the entry rule. This is counterintuitive: most investors obsess over when to buy and barely think about when to sell. But for 3x instruments, the exit rule is existential. A 50% drawdown in QQQ produces roughly an 80–90% drawdown in TQQQ; recovery from such a loss would take years even at TQQQ's exceptional compounding rate. The exit rule must be objective (no interpretation required), systematic (it fires every time conditions are met), and fast enough to catch trend breaks before they become catastrophic losses. The 200d MA is the most widely-used exit trigger; VIX tiers provide a faster secondary exit; RSI can prevent re-entry after a trend break until conditions stabilize.",
-          "Choosing between TQQQ, UPRO, and SOXL for a Composer.trade symphony is a fundamental risk/return tradeoff decision. TQQQ tracks the Nasdaq 100, which is heavily concentrated in mega-cap technology — this concentration drives exceptional bull market returns but creates deeper drawdowns during tech sector corrections. UPRO tracks the S&P 500, which is more diversified across sectors — it produces lower absolute returns but also lower drawdowns and standard deviation. SOXL tracks the semiconductor sector specifically, which has produced extraordinary gains over the past decade due to AI and data center buildout, but its 65%+ max drawdown in the ComposerAtlas library reflects the sector's extreme volatility. Symphony builders should match the instrument to their drawdown tolerance.",
+          "Choosing between TQQQ, UPRO, and SOXL for a Composer.trade symphony is a fundamental risk/return tradeoff decision. TQQQ tracks the Nasdaq 100, which is heavily concentrated in mega-cap technology — this concentration drives exceptional bull market returns but creates deeper drawdowns during tech sector corrections. UPRO tracks the S&P 500, which is more diversified across sectors — it produces lower absolute returns but also lower drawdowns and standard deviation. SOXL tracks the semiconductor sector specifically, which has produced extraordinary gains over the past decade due to AI and data center buildout, but its 65%+ max drawdown in the Composer Atlas library reflects the sector's extreme volatility. Symphony builders should match the instrument to their drawdown tolerance.",
           "Symphony architecture for leveraged ETFs follows a consistent three-stage pattern that can be adapted to any signal combination. Stage one is the regime filter: a slow-moving, reliable signal that answers whether this is a safe environment for leveraged equity — the 200d MA is the standard choice. Stage two is the confirmation signal: a faster signal that answers whether this is a good specific moment to enter or maintain exposure — RSI, short-term momentum, or a VIX check. Stage three is the defensive asset: when stage one or two fails, what does the symphony hold? The best defensive choices are BIL (near-zero risk), SHY (short-term bonds), or KMLM (managed futures, may profit during the conditions that triggered the exit). The sophistication of the symphony lies in the logic connecting these three stages.",
           "An advanced Composer.trade symphony using a leveraged ETF might incorporate regime-adjusted position sizing rather than a binary in/out signal. Consider a symphony that evaluates three conditions: the 200d MA trend status of QQQ, the current VIX level, and the 3-month momentum rank of TQQQ versus BIL. When all three are favorable, the symphony holds 100% TQQQ. When two of three are favorable, it holds 50% TQQQ and 50% QQQ, reducing leverage while maintaining equity exposure. When one or fewer are favorable, it holds 100% BIL. This vote-based system means no single indicator can force a full leveraged position — all three must agree. It also means the symphony gradually scales out as conditions deteriorate rather than exiting all at once, reducing the impact of false signals."
         ]
@@ -454,7 +454,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "When comparing two strategies with similar return profiles, the Sharpe ratio tells you which is doing more with less risk. The strategies in ComposerAtlas range from Sharpe ratios of 1.65 to 2.70 — all comfortably above 1.0, reflecting systematic exits that reduce volatility compared to holding leveraged ETFs passively.",
+          "When comparing two strategies with similar return profiles, the Sharpe ratio tells you which is doing more with less risk. The strategies in Composer Atlas range from Sharpe ratios of 1.65 to 2.70 — all comfortably above 1.0, reflecting systematic exits that reduce volatility compared to holding leveraged ETFs passively.",
           "For portfolios where stability matters, a strategy with lower absolute returns but higher Sharpe may be preferable — it means the returns are more consistent and predictable."
         ]
       },
@@ -473,7 +473,7 @@ window.GLOSSARY_DATA = [
           "The Sharpe ratio is the most important number in Composer.trade's backtesting output, not because it is the most exciting, but because it is the most honest. Annualized return tells you how fast a strategy grew but says nothing about how terrifying the ride was. Cumulative return tells you the final destination but hides whether the strategy took one harrowing 70% drawdown or a series of small, tolerable dips. The Sharpe ratio accounts for both: it divides the return above the risk-free rate by the volatility of returns, producing a single number that answers the question every rational investor should ask — how much am I being paid for each unit of risk I'm accepting? A strategy earning 50% per year with a Sharpe of 0.8 is taking far more risk per unit of return than a strategy earning 30% per year with a Sharpe of 2.0, and the first strategy's returns will feel much worse in practice.",
           "For Composer.trade symphony builders, the Sharpe ratio is the primary tool for comparing signal variants during strategy development. When testing a new condition — such as adding an RSI filter to an existing trend-following symphony — the correct question is not whether this increases annualized return, but whether it increases the Sharpe ratio. A new condition that reduces returns by 5% but cuts volatility by 30% is a significant improvement; the Sharpe will show this clearly while a raw return comparison would suggest the change was harmful. This methodology — optimizing for risk-adjusted return rather than raw return — is what separates strategies that perform well out-of-sample from those that look good in backtests but fail in live trading.",
           "Sharpe ratio is particularly valuable for comparing leveraged ETF strategies with unlevered alternatives. Holding TQQQ passively over long periods has historically produced exceptional returns, but its Sharpe ratio is modest because the volatility is enormous. A symphony that holds TQQQ only during favorable conditions — and exits to BIL otherwise — will often have a lower total return than passive TQQQ over a long bull market, but its Sharpe ratio will be dramatically higher. This comparison reveals the core value of systematic symphonies: they are not just return-seeking machines, they are risk-adjusted return optimizers. The goal is not maximum return but maximum return per unit of volatility accepted, and Sharpe ratio is the measurement of that objective.",
-          "Understanding what constitutes a good Sharpe score for a specific strategy type matters when evaluating Composer.trade symphonies. A leveraged ETF symphony with a Sharpe of 1.7 is exceptional — typical passive holdings of TQQQ produce a Sharpe under 1.0 over most periods. A diversified multi-asset symphony with lower gross returns but a Sharpe of 2.5 represents elite risk-adjusted performance. The strategies in the ComposerAtlas library range from 1.65 to 2.70 — all significantly above 1.0, meaning each provides substantial compensation for the volatility it produces. A symphony with a Sharpe below 1.0 should be treated with skepticism; it means the strategy's volatility is not justified by the returns it generates.",
+          "Understanding what constitutes a good Sharpe score for a specific strategy type matters when evaluating Composer.trade symphonies. A leveraged ETF symphony with a Sharpe of 1.7 is exceptional — typical passive holdings of TQQQ produce a Sharpe under 1.0 over most periods. A diversified multi-asset symphony with lower gross returns but a Sharpe of 2.5 represents elite risk-adjusted performance. The strategies in the Composer Atlas library range from 1.65 to 2.70 — all significantly above 1.0, meaning each provides substantial compensation for the volatility it produces. A symphony with a Sharpe below 1.0 should be treated with skepticism; it means the strategy's volatility is not justified by the returns it generates.",
           "Building specifically to maximize Sharpe ratio in Composer.trade requires attention to three levers simultaneously. The first lever is return enhancement: adding conditions that increase the fraction of time the strategy spends in high-returning positions. The second lever is volatility reduction: adding conditions that reduce the frequency of large swings, particularly on the downside. The third lever is defensive asset quality: when the strategy exits a leveraged position, holding BIL (near risk-free yield) rather than pure cash adds a small but consistent return contribution that improves the Sharpe calculation. A symphony that earns 1–4% annualized on its defensive portion rather than 0% on cash will show a meaningfully higher Sharpe over long backtests, because the baseline earns money even during the protected periods."
         ]
       }
@@ -542,7 +542,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "The KMLM Switcher leads the ComposerAtlas library with a Calmar ratio of 10.31 — remarkable even considering its shorter backtest period. The 2026 Frontrunner (4.62) and Sometimes TQQQ (5.61) also stand out.",
+          "The KMLM Switcher leads the Composer Atlas library with a Calmar ratio of 10.31 — remarkable even considering its shorter backtest period. The 2026 Frontrunner (4.62) and Sometimes TQQQ (5.61) also stand out.",
           "Calmar ratios are especially meaningful for leveraged ETF strategies because drawdown risk is disproportionately damaging — a 50% drawdown requires a 100% gain just to recover. Strategies with higher Calmar ratios manage to avoid or minimize these deep losses while still capturing strong compounding."
         ]
       },
@@ -561,7 +561,7 @@ window.GLOSSARY_DATA = [
           "For Composer.trade symphony builders, the Calmar ratio is the most useful metric for comparing strategies that target different drawdown profiles. Consider two symphonies: Symphony A earns 120% annualized with a max drawdown of -50% (Calmar 2.4) and Symphony B earns 80% annualized with a max drawdown of -20% (Calmar 4.0). A raw return comparison favors Symphony A. But the Calmar comparison reveals that Symphony B is far more capital-efficient from a loss-recovery perspective: its worst scenario requires only 25% of the time to recover that Symphony A's worst scenario would require. For investors who may need to withdraw capital or who have limited tolerance for deep losses, the Calmar ratio is the decisive metric.",
           "The clearest way to improve a symphony's Calmar ratio is to focus the exit logic on preventing drawdowns specifically, rather than reducing overall volatility. These are related but different objectives. An exit signal triggered by broad volatility (high VIX) may cause the strategy to exit before profitable periods if VIX rises during a bull market run. But an exit signal triggered by a genuine trend break (price falling below 200d MA) is specifically correlated with the scenarios that produce large drawdowns. When building in Composer.trade, adding conditions that specifically detect trend deterioration — rather than just general volatility — tends to improve Calmar ratio more than adding conditions that respond to noise. The goal is to cut the denominator (max drawdown) as much as possible while minimally reducing the numerator (annual return).",
           "Calmar ratio also provides an intuitive framework for selecting among symphonies as portfolio building blocks. If you are constructing a multi-symphony portfolio and have limited drawdown capacity — say, you cannot tolerate a portfolio drawdown exceeding 25% — Calmar ratios allow you to select the components that maximize return within that drawdown constraint. A symphony with a Calmar of 5.0 and an expected drawdown of 30% could be sized at 83% of portfolio weight to keep the expected contribution to portfolio drawdown under 25%. Calmar thus becomes the key input to position sizing in a multi-symphony portfolio, enabling systematic risk budgeting rather than arbitrary allocation.",
-          "The KMLM Switcher in the ComposerAtlas library illustrates a deliberate Calmar-maximizing design. By rotating between TQQQ (high return, concentrated risk) and KMLM (managed futures, historically performs well during equity bear markets), the symphony seeks to maintain return potential while specifically preventing the scenario that would produce a catastrophic drawdown: holding TQQQ through a sustained equity bear market. The rotation trigger fires before the worst TQQQ drawdowns occur, because KMLM tends to start outperforming TQQQ during the early stages of equity deterioration. The result is a Calmar ratio of 10.3 in the backtest: for every 1% of max drawdown risk, the strategy earns 10.3% per year. This extraordinary efficiency is the goal of Calmar-aware symphony design."
+          "The KMLM Switcher in the Composer Atlas library illustrates a deliberate Calmar-maximizing design. By rotating between TQQQ (high return, concentrated risk) and KMLM (managed futures, historically performs well during equity bear markets), the symphony seeks to maintain return potential while specifically preventing the scenario that would produce a catastrophic drawdown: holding TQQQ through a sustained equity bear market. The rotation trigger fires before the worst TQQQ drawdowns occur, because KMLM tends to start outperforming TQQQ during the early stages of equity deterioration. The result is a Calmar ratio of 10.3 in the backtest: for every 1% of max drawdown risk, the strategy earns 10.3% per year. This extraordinary efficiency is the goal of Calmar-aware symphony design."
         ]
       }
     ]
@@ -630,7 +630,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "Max drawdown is used in ComposerAtlas to contextualize each strategy's risk level. Strategies range from -21% (2026 Frontrunner) to -65% (SOXL Growth), reflecting the spectrum from moderate-aggressive to extremely aggressive.",
+          "Max drawdown is used in Composer Atlas to contextualize each strategy's risk level. Strategies range from -21% (2026 Frontrunner) to -65% (SOXL Growth), reflecting the spectrum from moderate-aggressive to extremely aggressive.",
           "When evaluating a strategy, consider max drawdown alongside your personal capacity to stay invested: Can you psychologically hold through a -40% drawdown without selling? Does your time horizon allow for recovery? A -40% drawdown may take 1–3 years to recover."
         ]
       },
@@ -703,7 +703,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "Nearly every strategy in the ComposerAtlas library uses an SMA as its primary regime gate. The standard pattern: compare an ETF's current price to its own SMA — if above, the strategy is in bull mode and holds leveraged equity; if below, it shifts to defensive assets or inverse ETF positions.",
+          "Nearly every strategy in the Composer Atlas library uses an SMA as its primary regime gate. The standard pattern: compare an ETF's current price to its own SMA — if above, the strategy is in bull mode and holds leveraged equity; if below, it shifts to defensive assets or inverse ETF positions.",
           "Strategies differ in which asset's SMA they use as the reference. TQQQ 200d MA 3x Leverage checks TQQQ's own price vs. its SMA. Holy Grail and Sometimes TQQQ use SPY's SMA. TQQQ For The Long Term uses SPY's 200d SMA as the macro gate and TQQQ's 20d SMA for shorter-term routing in bear mode. Each reference asset creates different sensitivity and lag characteristics.",
           "Several strategies also compare two SMAs of different lengths rather than comparing price directly to an SMA. When the short-period SMA crosses above the long-period SMA, it confirms an emerging uptrend — the technique used to construct golden cross and death cross alerts."
         ]
@@ -785,7 +785,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "EMAs appear in two distinct roles in the ComposerAtlas library. First, Super Semiconductors uses an 8-day EMA of SPY compared to SPY's 200-day SMA as its primary trend gate — the short EMA smooths very recent price action and creates a faster-reacting signal than a raw price-vs-SMA comparison.",
+          "EMAs appear in two distinct roles in the Composer Atlas library. First, Super Semiconductors uses an 8-day EMA of SPY compared to SPY's 200-day SMA as its primary trend gate — the short EMA smooths very recent price action and creates a faster-reacting signal than a raw price-vs-SMA comparison.",
           "Second, EMAs are the backbone of MACD signals: Super Semiconductors uses SMH's 12-day EMA vs. 26-day EMA as a MACD crossover to classify semiconductor sector momentum. When EMA(12) is above EMA(26), sector momentum is positive; when below, it is deteriorating.",
           "The Manhattan Project uses an SPY EMA-vs-SMA acceleration signal — comparing the exponential moving average to the simple moving average to detect whether recent price momentum is accelerating (EMA above SMA) or decelerating (EMA below SMA), as a regime signal for cross-asset routing decisions."
         ]
@@ -861,7 +861,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "In the ComposerAtlas library, MACD logic appears explicitly in Super Semiconductors. The strategy compares SMH's 12-day EMA against its 26-day EMA to classify semiconductor sector momentum within the broader bull regime. A bullish crossover (EMA12 above EMA26) unlocks the most aggressive mode: selecting the top 3 semiconductor stocks by 90-day momentum from a 19-company universe. A bearish crossover (EMA12 below EMA26) triggers partial hedging — either an SMH/SHY split or a SOXL dip-buy depending on additional RSI conditions.",
+          "In the Composer Atlas library, MACD logic appears explicitly in Super Semiconductors. The strategy compares SMH's 12-day EMA against its 26-day EMA to classify semiconductor sector momentum within the broader bull regime. A bullish crossover (EMA12 above EMA26) unlocks the most aggressive mode: selecting the top 3 semiconductor stocks by 90-day momentum from a 19-company universe. A bearish crossover (EMA12 below EMA26) triggers partial hedging — either an SMH/SHY split or a SOXL dip-buy depending on additional RSI conditions.",
           "MACD is used here as a sector momentum classifier within an already-confirmed macro bull regime (SPY above its 200d SMA), not as a standalone buy/sell signal. This two-layer approach — macro trend gate plus sector MACD — creates more precise conditions for entering the aggressive stock-picking mode and avoids the false-signal problem of using MACD alone."
         ]
       },
@@ -912,7 +912,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "Several strategies in the ComposerAtlas library use mean reversion as their primary mechanism. The s90 Half Low Catch catches catastrophic drops in leveraged ETFs using RSI thresholds far below the standard oversold level: LABU below RSI 22, YINN below 14, UDOW below 18. These extreme thresholds only trigger in genuine market panics, not ordinary corrections.",
+          "Several strategies in the Composer Atlas library use mean reversion as their primary mechanism. The s90 Half Low Catch catches catastrophic drops in leveraged ETFs using RSI thresholds far below the standard oversold level: LABU below RSI 22, YINN below 14, UDOW below 18. These extreme thresholds only trigger in genuine market panics, not ordinary corrections.",
           "SOXX Group's 30-20-10 Double Pop system is a multi-timeframe mean-reversion cascade on semiconductor ETFs. After a large single-day move, the strategy evaluates SMH's RSI across three lookback windows (30d, 20d, 10d). If RSI confirms overbought at any timeframe, it holds SOXS — betting the pop will fade. If RSI is oversold, it holds SOXL — betting the drop will recover.",
           "Wooden ARKK Machine 2.2 applies cross-sectional mean reversion: within a defined universe of leveraged ETFs, it always buys the single worst recent performer. The thesis is that the most beaten-down asset in any universe tends to produce the strongest bounce when sentiment stabilizes — and in its bear pool, this extends to buying the worst-performing inverse ETF, betting even short positions mean-revert."
         ]
@@ -1033,7 +1033,7 @@ window.GLOSSARY_DATA = [
         "title": "How It Works",
         "paragraphs": [
           "To calculate: find the mean daily return over the period; subtract the mean from each day's return; square each difference; average the squared differences; take the square root to return to the original units.",
-          "Annualizing: daily standard deviation × √252 (trading days per year) = annualized standard deviation. This is how the figures on ComposerAtlas strategy cards are computed.",
+          "Annualizing: daily standard deviation × √252 (trading days per year) = annualized standard deviation. This is how the figures on Composer Atlas strategy cards are computed.",
           "The strategies in this library range from approximately 40.5% (2026 Frontrunner, which spends most of its time in BIL) to 84.6% annualized standard deviation (SOXL Growth RL, with 3x semiconductor leverage and RL-optimized thresholds). This spread reflects the spectrum from minimal-time-in-risk strategies to fully leveraged semiconductor exposure."
         ],
         "table": {
@@ -1068,7 +1068,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "Standard deviation is displayed on every strategy card in ComposerAtlas and is the denominator of the Sharpe ratio — dividing excess return by standard deviation produces the risk-adjusted return comparison.",
+          "Standard deviation is displayed on every strategy card in Composer Atlas and is the denominator of the Sharpe ratio — dividing excess return by standard deviation produces the risk-adjusted return comparison.",
           "Several strategies in this library use standard deviation as a live trading signal, not just as a post-hoc risk measurement. SOXL Growth and SOXL Growth RL evaluate the standard deviation of TQQQ and SOXL daily returns as regime classifiers: when StdDev(SOXL, 30d) exceeds a threshold, the market is in an elevated-volatility regime where leveraged ETF decay is most severe — triggering defensive routing or position reduction."
         ]
       },
@@ -1085,7 +1085,7 @@ window.GLOSSARY_DATA = [
         "paragraphs": [
           "Standard deviation is most useful in Composer.trade as a comparative tool when evaluating strategies of similar return levels. Two strategies with the same ARR but different standard deviations will feel very different to hold: the lower-std-dev strategy has smaller day-to-day swings and more predictable short-term performance. When testing whether to add a new condition to a symphony, the correct question is rarely 'does this improve return?' and more often 'does this improve return per unit of standard deviation?' — the Sharpe ratio answers this directly.",
           "Using standard deviation as a live signal within a Composer.trade symphony is an advanced technique demonstrated by SOXL Growth and SOXL Growth RL. When the standard deviation of recent returns exceeds a threshold, the market is in a high-volatility regime where leveraged ETF decay is most severe. Exiting or reducing leverage when realized volatility is high is a systematic implementation of the principle to reduce size when volatility spikes.",
-          "For investors comparing strategies on ComposerAtlas, standard deviation provides context that ARR alone cannot. SOXL Growth has a higher ARR than the 2026 Frontrunner, but its standard deviation is roughly 70% higher (68.7% vs. 40.5%). Whether the higher return justifies the higher volatility is a personal decision, but the standard deviation figure is the clearest way to quantify that tradeoff, and the Sharpe ratio converts it into a single risk-adjusted comparison."
+          "For investors comparing strategies on Composer Atlas, standard deviation provides context that ARR alone cannot. SOXL Growth has a higher ARR than the 2026 Frontrunner, but its standard deviation is roughly 70% higher (68.7% vs. 40.5%). Whether the higher return justifies the higher volatility is a personal decision, but the standard deviation figure is the clearest way to quantify that tradeoff, and the Sharpe ratio converts it into a single risk-adjusted comparison."
         ]
       }
     ]
@@ -1103,7 +1103,7 @@ window.GLOSSARY_DATA = [
         "title": "Definition",
         "paragraphs": [
           "Annualized Rate of Return (ARR), also called Compound Annual Growth Rate (CAGR), converts a strategy's total return over any time period into a standardized annual percentage. This allows strategies with different backtest lengths to be compared on equal footing: a 5-year backtest and a 14-year backtest both express performance as a per-year figure.",
-          "ARR answers the question: if this strategy's total return compounded evenly each year, what annual growth rate would produce that result? It is the primary headline metric shown on each strategy card in ComposerAtlas."
+          "ARR answers the question: if this strategy's total return compounded evenly each year, what annual growth rate would produce that result? It is the primary headline metric shown on each strategy card in Composer Atlas."
         ]
       },
       {
@@ -1145,7 +1145,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "The strategies in the ComposerAtlas library show ARRs ranging from approximately 73% (Nancy Pelosi's Chips, SPY Energy Chips) to 735% (s90 Half Low Catch — over only ~1.5 years). The core zoop strategies backtested over 14.2 years range from 92% (2026 Frontrunner) to 182% (Sometimes TQQQ).",
+          "The strategies in the Composer Atlas library show ARRs ranging from approximately 73% (Nancy Pelosi's Chips, SPY Energy Chips) to 735% (s90 Half Low Catch — over only ~1.5 years). The core zoop strategies backtested over 14.2 years range from 92% (2026 Frontrunner) to 182% (Sometimes TQQQ).",
           "These figures are extraordinary by conventional standards: the S&P 500 has historically returned approximately 10% per year, and professional hedge funds rarely sustain 20–30% annualized over multi-year periods. The strategies achieve these figures through 3x leverage on the Nasdaq 100 combined with systematic risk management that avoids the worst bear market periods."
         ]
       },
@@ -1158,7 +1158,7 @@ window.GLOSSARY_DATA = [
         ]
       },
       {
-        "title": "Interpreting ARR in the ComposerAtlas Library",
+        "title": "Interpreting ARR in the Composer Atlas Library",
         "paragraphs": [
           "The right way to read the ARR on a strategy card is as a starting point for further investigation, not a terminal conclusion. A high ARR is a necessary but insufficient condition for a strategy worth using. You must also assess whether the ARR was earned at acceptable risk levels (Sharpe ratio), whether the drawdowns were survivable (max drawdown), and whether the backtest period was long enough to include genuine bear market stress. A strategy with 200% ARR and a 50% max drawdown requires a very different investment commitment than one with 100% ARR and a 20% max drawdown.",
           "ARR figures cannot be fairly compared across strategies with very different backtest lengths. The s90 Half Low Catch's 735% ARR over 1.5 years and Sometimes TQQQ's 182% ARR over 14.2 years are not directly comparable: the short-backtest strategy has not been tested through a full market cycle, while the long-backtest strategy has survived multiple bear markets, rate cycles, and sector rotations. When allocating real capital, prioritize strategies with the longest backtests and most consistent multi-year performance.",
@@ -1182,7 +1182,7 @@ window.GLOSSARY_DATA = [
         "title": "Definition",
         "paragraphs": [
           "Managed futures is an investment strategy that uses futures contracts — standardized agreements to buy or sell an asset at a future date — to take long or short positions across a diversified set of asset classes: equity indices, government bonds, commodities (oil, gold, agricultural), and currencies. The 'managed' aspect refers to systematic, algorithmic trading rules rather than discretionary human decisions.",
-          "In the ComposerAtlas library, the primary managed futures instrument is KMLM (KFA Mount Lucas Managed Futures Index Strategy ETF), which gives retail investors daily-tradeable access to a diversified managed futures strategy through a single ETF."
+          "In the Composer Atlas library, the primary managed futures instrument is KMLM (KFA Mount Lucas Managed Futures Index Strategy ETF), which gives retail investors daily-tradeable access to a diversified managed futures strategy through a single ETF."
         ]
       },
       {
@@ -1224,7 +1224,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "In the ComposerAtlas library, KMLM appears in the KMLM Switcher strategy as the defensive alternative to a 4-ETF leveraged equity basket. The thesis: KMLM has historically performed well precisely during the periods when TQQQ performs worst — sustained equity bear markets with high volatility — because those environments produce strong, tradeable trends in bonds, commodities, and currencies.",
+          "In the Composer Atlas library, KMLM appears in the KMLM Switcher strategy as the defensive alternative to a 4-ETF leveraged equity basket. The thesis: KMLM has historically performed well precisely during the periods when TQQQ performs worst — sustained equity bear markets with high volatility — because those environments produce strong, tradeable trends in bonds, commodities, and currencies.",
           "The strategy's 2022 bear market performance illustrates the concept: KMLM returned approximately +24% while TQQQ fell approximately −80%. This negative correlation during equity stress is the core diversification argument for managed futures alongside leveraged equity — not as a replacement for equity exposure during normal conditions, but as the defensive position that potentially profits from the same conditions that cause the equity position to lose money."
         ]
       },
@@ -1464,7 +1464,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "Community and Transparency",
         "paragraphs": [
-          "Zoop publishes and discusses his strategies publicly, sharing the signal logic, backtest methodology, and performance tracking openly with his community on Twitch and YouTube. ComposerAtlas was built to document this library in one organized, searchable place — providing the in-depth explanations, signal breakdowns, and risk metric comparisons that aren't possible within Composer.trade's interface alone.",
+          "Zoop publishes and discusses his strategies publicly, sharing the signal logic, backtest methodology, and performance tracking openly with his community on Twitch and YouTube. Composer Atlas was built to document this library in one organized, searchable place — providing the in-depth explanations, signal breakdowns, and risk metric comparisons that aren't possible within Composer.trade's interface alone.",
           "The strategies are identified in Composer.trade with the 'zoops-' prefix, making them discoverable and attributable. The '2026' suffix in each strategy name reflects the year these versions were refined and published — Zoop iterates on his strategy suite over time, and the year suffix helps track which version a given backtest represents.",
           "To follow Zoop's strategy updates, community discussions, and live performance tracking, visit https://azqato.github.io or find him as Azqato on Twitch and YouTube."
         ]

@@ -1,5 +1,5 @@
 /* =============================================
-   ComposerAtlas — Shared App Utilities
+   Composer Atlas — Shared App Utilities
    Loaded on every page. Provides:
      - BASE URL detection
      - Data loading
@@ -168,7 +168,7 @@ function renderNav() {
     <div class="nav-inner">
       <a href="${u('/')}" class="nav-logo">
         <span class="nav-logo-mark">🗺️</span>
-        <span class="nav-logo-text">ComposerAtlas</span>
+        <span class="nav-logo-text">Composer Atlas</span>
       </a>
       <div class="nav-links">
         ${desktopLinks}
@@ -214,7 +214,7 @@ function renderFooter() {
       <a href="https://composer.trade" target="_blank" rel="noopener noreferrer">Composer.trade ↗</a>
     </nav>
     <p class="footer-legal">Not affiliated with Composer Technologies, Inc. All metrics are backtested historical data and do not guarantee future results. Not financial advice.</p>
-    <p class="footer-copy">&copy; ${year} ComposerAtlas &middot; Built by <a href="https://azqato.github.io/" target="_blank" rel="noopener noreferrer">Azqato</a></p>
+    <p class="footer-copy">&copy; ${year} Composer Atlas &middot; Built by <a href="https://azqato.github.io/" target="_blank" rel="noopener noreferrer">Azqato</a></p>
   `;
 }
 

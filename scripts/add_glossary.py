@@ -54,7 +54,7 @@ NEW_ENTRIES = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "Nearly every strategy in the ComposerAtlas library uses an SMA as its primary regime gate. The standard pattern: compare an ETF's current price to its own SMA — if above, the strategy is in bull mode and holds leveraged equity; if below, it shifts to defensive assets or inverse ETF positions.",
+          "Nearly every strategy in the Composer Atlas library uses an SMA as its primary regime gate. The standard pattern: compare an ETF's current price to its own SMA — if above, the strategy is in bull mode and holds leveraged equity; if below, it shifts to defensive assets or inverse ETF positions.",
           "Strategies differ in which asset's SMA they use as the reference. TQQQ 200d MA 3x Leverage checks TQQQ's own price vs. its SMA. Holy Grail and Sometimes TQQQ use SPY's SMA. TQQQ For The Long Term uses SPY's 200d SMA as the macro gate and TQQQ's 20d SMA for shorter-term routing in bear mode. Each reference asset creates different sensitivity and lag characteristics.",
           "Several strategies also compare two SMAs of different lengths rather than comparing price directly to an SMA. When the short-period SMA crosses above the long-period SMA, it confirms an emerging uptrend — the technique used to construct golden cross and death cross alerts."
         ]
@@ -114,7 +114,7 @@ NEW_ENTRIES = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "EMAs appear in two distinct roles in the ComposerAtlas library. First, Super Semiconductors uses an 8-day EMA of SPY compared to SPY's 200-day SMA as its primary trend gate — the short EMA smooths very recent price action and creates a faster-reacting signal than a raw price-vs-SMA comparison.",
+          "EMAs appear in two distinct roles in the Composer Atlas library. First, Super Semiconductors uses an 8-day EMA of SPY compared to SPY's 200-day SMA as its primary trend gate — the short EMA smooths very recent price action and creates a faster-reacting signal than a raw price-vs-SMA comparison.",
           "Second, EMAs are the backbone of MACD signals: Super Semiconductors uses SMH's 12-day EMA vs. 26-day EMA as a MACD crossover to classify semiconductor sector momentum. When EMA(12) is above EMA(26), sector momentum is positive; when below, it is deteriorating.",
           "The Manhattan Project uses an SPY EMA-vs-SMA acceleration signal — comparing the exponential moving average to the simple moving average to detect whether recent price momentum is accelerating (EMA above SMA) or decelerating (EMA below SMA), as a regime signal for cross-asset routing decisions."
         ]
@@ -173,7 +173,7 @@ NEW_ENTRIES = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "In the ComposerAtlas library, MACD logic appears explicitly in Super Semiconductors. The strategy compares SMH's 12-day EMA against its 26-day EMA to classify semiconductor sector momentum within the broader bull regime. A bullish crossover (EMA12 above EMA26) unlocks the most aggressive mode: selecting the top 3 semiconductor stocks by 90-day momentum from a 19-company universe. A bearish crossover (EMA12 below EMA26) triggers partial hedging — either an SMH/SHY split or a SOXL dip-buy depending on additional RSI conditions.",
+          "In the Composer Atlas library, MACD logic appears explicitly in Super Semiconductors. The strategy compares SMH's 12-day EMA against its 26-day EMA to classify semiconductor sector momentum within the broader bull regime. A bullish crossover (EMA12 above EMA26) unlocks the most aggressive mode: selecting the top 3 semiconductor stocks by 90-day momentum from a 19-company universe. A bearish crossover (EMA12 below EMA26) triggers partial hedging — either an SMH/SHY split or a SOXL dip-buy depending on additional RSI conditions.",
           "MACD is used here as a sector momentum classifier within an already-confirmed macro bull regime (SPY above its 200d SMA), not as a standalone buy/sell signal. This two-layer approach — macro trend gate plus sector MACD — creates more precise conditions for entering the aggressive stock-picking mode and avoids the false-signal problem of using MACD alone."
         ]
       },
@@ -222,7 +222,7 @@ NEW_ENTRIES = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "Several strategies in the ComposerAtlas library use mean reversion as their primary mechanism. The s90 Half Low Catch catches catastrophic drops in leveraged ETFs using RSI thresholds far below the standard oversold level: LABU below RSI 22, YINN below 14, UDOW below 18. These extreme thresholds only trigger in genuine market panics, not ordinary corrections.",
+          "Several strategies in the Composer Atlas library use mean reversion as their primary mechanism. The s90 Half Low Catch catches catastrophic drops in leveraged ETFs using RSI thresholds far below the standard oversold level: LABU below RSI 22, YINN below 14, UDOW below 18. These extreme thresholds only trigger in genuine market panics, not ordinary corrections.",
           "SOXX Group's 30-20-10 Double Pop system is a multi-timeframe mean-reversion cascade on semiconductor ETFs. After a large single-day move, the strategy evaluates SMH's RSI across three lookback windows (30d, 20d, 10d). If RSI confirms overbought at any timeframe, it holds SOXS — betting the pop will fade. If RSI is oversold, it holds SOXL — betting the drop will recover.",
           "Wooden ARKK Machine 2.2 applies cross-sectional mean reversion: within a defined universe of leveraged ETFs, it always buys the single worst recent performer. The thesis is that the most beaten-down asset in any universe tends to produce the strongest bounce when sentiment stabilizes — and in its bear pool, this extends to buying the worst-performing inverse ETF, betting even short positions mean-revert."
         ]
@@ -324,7 +324,7 @@ NEW_ENTRIES = [
         "title": "How It Works",
         "paragraphs": [
           "To calculate: find the mean daily return over the period; subtract the mean from each day's return; square each difference; average the squared differences; take the square root to return to the original units.",
-          "Annualizing: daily standard deviation x sqrt(252) (trading days per year) = annualized standard deviation. This is how the figures on ComposerAtlas strategy cards are computed.",
+          "Annualizing: daily standard deviation x sqrt(252) (trading days per year) = annualized standard deviation. This is how the figures on Composer Atlas strategy cards are computed.",
           "The strategies in this library range from approximately 40.5% (2026 Frontrunner, which spends most of its time in BIL) to 84.6% annualized standard deviation (SOXL Growth RL, with 3x semiconductor leverage and RL-optimized thresholds). This spread reflects the spectrum from minimal-time-in-risk strategies to fully leveraged semiconductor exposure."
         ],
         "table": {
@@ -341,7 +341,7 @@ NEW_ENTRIES = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "Standard deviation is displayed on every strategy card in ComposerAtlas and is the denominator of the Sharpe ratio — dividing excess return by standard deviation produces the risk-adjusted return comparison.",
+          "Standard deviation is displayed on every strategy card in Composer Atlas and is the denominator of the Sharpe ratio — dividing excess return by standard deviation produces the risk-adjusted return comparison.",
           "Several strategies in this library use standard deviation as a live trading signal, not just as a post-hoc risk measurement. SOXL Growth and SOXL Growth RL evaluate the standard deviation of TQQQ and SOXL daily returns as regime classifiers: when StdDev(SOXL, 30d) exceeds a threshold, the market is in an elevated-volatility regime where leveraged ETF decay is most severe — triggering defensive routing or position reduction."
         ]
       },
@@ -358,7 +358,7 @@ NEW_ENTRIES = [
         "paragraphs": [
           "Standard deviation is most useful in Composer.trade as a comparative tool when evaluating strategies of similar return levels. Two strategies with the same ARR but different standard deviations will feel very different to hold: the lower-std-dev strategy has smaller day-to-day swings and more predictable short-term performance. When testing whether to add a new condition to a symphony, the correct question is rarely 'does this improve return?' and more often 'does this improve return per unit of standard deviation?' — the Sharpe ratio answers this directly.",
           "Using standard deviation as a live signal within a Composer.trade symphony is an advanced technique demonstrated by SOXL Growth and SOXL Growth RL. When the standard deviation of recent returns exceeds a threshold, the market is in a high-volatility regime where leveraged ETF decay is most severe. Exiting or reducing leverage when realized volatility is high is a systematic implementation of the principle to reduce size when volatility spikes.",
-          "For investors comparing strategies on ComposerAtlas, standard deviation provides context that ARR alone cannot. SOXL Growth has a higher ARR than the 2026 Frontrunner, but its standard deviation is roughly 70% higher (68.7% vs. 40.5%). Whether the higher return justifies the higher volatility is a personal decision, but the standard deviation figure is the clearest way to quantify that tradeoff, and the Sharpe ratio converts it into a single risk-adjusted comparison."
+          "For investors comparing strategies on Composer Atlas, standard deviation provides context that ARR alone cannot. SOXL Growth has a higher ARR than the 2026 Frontrunner, but its standard deviation is roughly 70% higher (68.7% vs. 40.5%). Whether the higher return justifies the higher volatility is a personal decision, but the standard deviation figure is the clearest way to quantify that tradeoff, and the Sharpe ratio converts it into a single risk-adjusted comparison."
         ]
       }
     ]
@@ -376,7 +376,7 @@ NEW_ENTRIES = [
         "title": "Definition",
         "paragraphs": [
           "Annualized Rate of Return (ARR), also called Compound Annual Growth Rate (CAGR), converts a strategy's total return over any time period into a standardized annual percentage. This allows strategies with different backtest lengths to be compared on equal footing: a 5-year backtest and a 14-year backtest both express performance as a per-year figure.",
-          "ARR answers the question: if this strategy's total return compounded evenly each year, what annual growth rate would produce that result? It is the primary headline metric shown on each strategy card in ComposerAtlas."
+          "ARR answers the question: if this strategy's total return compounded evenly each year, what annual growth rate would produce that result? It is the primary headline metric shown on each strategy card in Composer Atlas."
         ]
       },
       {
@@ -400,7 +400,7 @@ NEW_ENTRIES = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "The strategies in the ComposerAtlas library show ARRs ranging from approximately 73% (Nancy Pelosi's Chips, SPY Energy Chips) to 735% (s90 Half Low Catch — over only ~1.5 years). The core zoop strategies backtested over 14.2 years range from 92% (2026 Frontrunner) to 182% (Sometimes TQQQ).",
+          "The strategies in the Composer Atlas library show ARRs ranging from approximately 73% (Nancy Pelosi's Chips, SPY Energy Chips) to 735% (s90 Half Low Catch — over only ~1.5 years). The core zoop strategies backtested over 14.2 years range from 92% (2026 Frontrunner) to 182% (Sometimes TQQQ).",
           "These figures are extraordinary by conventional standards: the S&P 500 has historically returned approximately 10% per year, and professional hedge funds rarely sustain 20-30% annualized over multi-year periods. The strategies achieve these figures through 3x leverage on the Nasdaq 100 combined with systematic risk management that avoids the worst bear market periods."
         ]
       },
@@ -413,7 +413,7 @@ NEW_ENTRIES = [
         ]
       },
       {
-        "title": "Interpreting ARR in the ComposerAtlas Library",
+        "title": "Interpreting ARR in the Composer Atlas Library",
         "paragraphs": [
           "The right way to read the ARR on a strategy card is as a starting point for further investigation, not a terminal conclusion. A high ARR is a necessary but insufficient condition for a strategy worth using. You must also assess whether the ARR was earned at acceptable risk levels (Sharpe ratio), whether the drawdowns were survivable (max drawdown), and whether the backtest period was long enough to include genuine bear market stress. A strategy with 200% ARR and a 50% max drawdown requires a very different investment commitment than one with 100% ARR and a 20% max drawdown.",
           "ARR figures cannot be fairly compared across strategies with very different backtest lengths. The s90 Half Low Catch's 735% ARR over 1.5 years and Sometimes TQQQ's 182% ARR over 14.2 years are not directly comparable: the short-backtest strategy has not been tested through a full market cycle, while the long-backtest strategy has survived multiple bear markets, rate cycles, and sector rotations. When allocating real capital, prioritize strategies with the longest backtests and most consistent multi-year performance.",
@@ -435,7 +435,7 @@ NEW_ENTRIES = [
         "title": "Definition",
         "paragraphs": [
           "Managed futures is an investment strategy that uses futures contracts — standardized agreements to buy or sell an asset at a future date — to take long or short positions across a diversified set of asset classes: equity indices, government bonds, commodities (oil, gold, agricultural), and currencies. The 'managed' aspect refers to systematic, algorithmic trading rules rather than discretionary human decisions.",
-          "In the ComposerAtlas library, the primary managed futures instrument is KMLM (KFA Mount Lucas Managed Futures Index Strategy ETF), which gives retail investors daily-tradeable access to a diversified managed futures strategy through a single ETF."
+          "In the Composer Atlas library, the primary managed futures instrument is KMLM (KFA Mount Lucas Managed Futures Index Strategy ETF), which gives retail investors daily-tradeable access to a diversified managed futures strategy through a single ETF."
         ]
       },
       {
@@ -459,7 +459,7 @@ NEW_ENTRIES = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "In the ComposerAtlas library, KMLM appears in the KMLM Switcher strategy as the defensive alternative to a 4-ETF leveraged equity basket. The thesis: KMLM has historically performed well precisely during the periods when TQQQ performs worst — sustained equity bear markets with high volatility — because those environments produce strong, tradeable trends in bonds, commodities, and currencies.",
+          "In the Composer Atlas library, KMLM appears in the KMLM Switcher strategy as the defensive alternative to a 4-ETF leveraged equity basket. The thesis: KMLM has historically performed well precisely during the periods when TQQQ performs worst — sustained equity bear markets with high volatility — because those environments produce strong, tradeable trends in bonds, commodities, and currencies.",
           "The strategy's 2022 bear market performance illustrates the concept: KMLM returned approximately +24% while TQQQ fell approximately -80%. This negative correlation during equity stress is the core diversification argument for managed futures alongside leveraged equity — not as a replacement for equity exposure during normal conditions, but as the defensive position that potentially profits from the same conditions that cause the equity position to lose money."
         ]
       },
