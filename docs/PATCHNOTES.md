@@ -5,6 +5,21 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.5.7] - 2026-06-15
+
+### Added — "Individual Stocks" and "Leveraged Strategies" nav links
+
+Added two new top navigation links between "About" and "Support", pointing to sibling Azqato sites:
+
+- **Individual Stocks** — links to `https://azqato.github.io/stocks/` (same tab)
+- **Leveraged Strategies** — links to `https://azqato.github.io/leveraged-strategies/` (same tab)
+
+Both links appear in the desktop nav, mobile nav drawer, and follow the existing nav link rendering pipeline. They open in the same tab (no `target="_blank"`) unlike the Support link.
+
+**Files changed:** `js/app.js`, `docs/PATCHNOTES.md`, `docs/PRD.md`
+
+---
+
 ## [1.5.6] - 2026-06-15
 
 ### Added — "Backtesting" glossary concept (19th entry)

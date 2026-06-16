@@ -145,6 +145,8 @@ function renderNav() {
     { href: u('/strategies.html'), label: 'Strategies' },
     { href: u('/glossary.html'), label: 'Glossary' },
     { href: u('/about.html'), label: 'About' },
+    { href: 'https://azqato.github.io/stocks/', label: 'Individual Stocks' },
+    { href: 'https://azqato.github.io/leveraged-strategies/', label: 'Leveraged Strategies' },
     { href: 'https://azqato.github.io/support.html', label: 'Support', external: true },
   ];
 

@@ -1,6 +1,6 @@
 # ComposerAtlas — Master Reference Document
 
-**Version:** 1.5.6
+**Version:** 1.5.7
 **Status:** Active
 **Last Updated:** 2026-06-15
 
@@ -123,7 +123,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - `scripts/update_metrics.py` — reusable script to refresh all metrics and logic trees from the Composer API
 
 **Navigation & Structure**
-- Fixed top nav: Strategies, Glossary, About, Support
+- Fixed top nav: Strategies, Glossary, About, Individual Stocks, Leveraged Strategies, Support
 - Mobile hamburger menu with drawer
 - Breadcrumb navigation on all sub-pages
 - Custom 404 page
@@ -1054,7 +1054,7 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 - [x] 13 strategy detail pages (logic breakdown, metrics table, Composer CTA)
 - [x] Concept glossary index and 8 detail pages
 - [x] Cross-linking: strategies and glossary
-- [x] Top navigation: Strategies, Glossary, About, Support
+- [x] Top navigation: Strategies, Glossary, About, Individual Stocks, Leveraged Strategies, Support
 - [x] About page, Support link, Custom 404 page
 - [x] Dark mode design system
 - [x] Mobile-responsive layout
