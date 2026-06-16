@@ -33,7 +33,7 @@ window.STRATEGIES_DATA = [
     "how_it_works": [
       "The 2026 Frontrunner is a dip-buying strategy that defaults to T-bills (BIL) and only rotates into leveraged ETFs when extreme short-term RSI signals an oversold entry opportunity. The strategy checks RSI(10) — a fast 10-period RSI — against tight thresholds: semiconductors (SMH) below 23, Nasdaq 100 (QQQ) below 28, or S&P 500 (SPY) below 28 each trigger a corresponding 3x leveraged buy (SOXL, TQQQ, or UPRO respectively). Priority is top-to-bottom: semiconductor oversold signals are checked first.",
       "If no oversold condition is detected, the strategy checks for high-volatility or overbought conditions. When consumer discretionary (XLY) RSI exceeds 79, it rotates into VXX (VIX futures ETN) as a volatility hedge. If UVXY RSI exceeds 65, the strategy evaluates SPY's current return vs. its moving-average return: if SPY is trending above its average, it shorts via SPXU; if SPY is underperforming its average, it holds TQQQ instead.",
-      "When none of the above conditions fire, the strategy defaults to BIL — a 1-3 month T-bill ETF that earns risk-free interest while waiting for the next actionable signal. This cash-first, extremes-only approach means the Frontrunner is often inactive, making each entry more deliberate than a buy-and-hold strategy. It is also the base component (50% weight) shared by all other symphonies in this library."
+      "When none of the above conditions fire, the strategy defaults to BIL — a 1-3 month T-bill ETF that earns risk-free interest while waiting for the next actionable signal. This cash-first, extremes-only approach means the Frontrunner is often inactive, making each entry more deliberate than a buy-and-hold strategy. It is also the base component (50% weight) shared by all other zoop symphonies in this library."
     ],
     "signals": [
       {
@@ -122,7 +122,7 @@ window.STRATEGIES_DATA = [
         "description": "TQQQ is the default risk-on hold; TECL and SOXL used for dip entries; SH for shorting."
       }
     ],
-    "risk_profile": "Aggressive. The 14-layer overbought cascade and TQQQ SMA gate provide meaningful downside protection, but ~44.7% max drawdown reflects periods where conditions deteriorate faster than the signals respond. With standard deviation of 54.4%, this is among the more volatile strategies in the library. The extraordinary cumulative return (44,142x) is real but comes with commensurate multi-year drawdown exposure.",
+    "risk_profile": "Aggressive. The 14-layer overbought cascade and TQQQ SMA gate provide meaningful downside protection, but ~44.7% max drawdown reflects periods where conditions deteriorate faster than the signals respond. With standard deviation of 54.4%, this is among the more volatile strategies in the library. The extraordinary cumulative return (44,866x) is real but comes with commensurate multi-year drawdown exposure.",
     "author_note": "Metrics are accurate as of the last_updated date. Update quarterly via RUNBOOK.MD."
   },
   {
@@ -252,7 +252,7 @@ window.STRATEGIES_DATA = [
         "description": "TQQQ is the risk-on default; TECL used for extreme dip entries; SH for defensive periods."
       }
     ],
-    "risk_profile": "Aggressive. With ~45.6% max drawdown and 50.8% standard deviation, this strategy is at the upper end of the aggressive spectrum. The IEF bond filter and 14-layer overbought cascade are real risk controls, but 3x leverage during confirmed bull phases means individual positions can experience 40-50% losses in sharp reversals. The 1-year trailing return of +190.8% illustrates both the potential and the concentration risk.",
+    "risk_profile": "Aggressive. With ~45.6% max drawdown and 50.8% standard deviation, this strategy is at the upper end of the aggressive spectrum. The IEF bond filter and 14-layer overbought cascade are real risk controls, but 3x leverage during confirmed bull phases means individual positions can experience 40-50% losses in sharp reversals. The 1-year trailing return of +170.0% illustrates both the potential and the concentration risk.",
     "author_note": "Metrics are accurate as of the last_updated date. Update quarterly via RUNBOOK.MD."
   },
   {
@@ -286,7 +286,7 @@ window.STRATEGIES_DATA = [
     ],
     "last_updated": "2026-06-15",
     "how_it_works": [
-      "Sometimes TQQQ is the most complex strategy in the library. It pairs the Frontrunner with a multi-layer decision tree that interrogates bond market conditions, multi-period momentum, and cumulative return thresholds before committing to TQQQ. The strategy truly only holds TQQQ 'sometimes' — when a very specific constellation of cross-asset conditions align. Uniquely, when UVXY RSI exceeds 65, this strategy routes to SH rather than SPXU, making it more conservative on volatility spikes than its siblings.",
+      "Sometimes TQQQ is among the most complex strategies in the library. It pairs the Frontrunner with a multi-layer decision tree that interrogates bond market conditions, multi-period momentum, and cumulative return thresholds before committing to TQQQ. The strategy truly only holds TQQQ 'sometimes' — when a very specific constellation of cross-asset conditions align. Uniquely, when UVXY RSI exceeds 65, this strategy routes to SH rather than SPXU, making it more conservative on volatility spikes than its siblings.",
       "In uptrend conditions (SPY above SMA), the strategy evaluates 60-period SPY RSI and 100-period QQQ momentum to calibrate between TQQQ and UPRO exposure, with corporate bond (CORP) 60-day cumulative return as a tiebreaker. When Treasury RSI (TLT 20-period) falls below its baseline — signaling rising long rates — the strategy adds further filters: 6-day TQQQ cumulative return thresholds to detect crash conditions, 1-day momentum checks, and multi-period RSI from BND, IEF, and AGG before allowing a re-entry.",
       "In downtrend conditions (SPY below SMA), the strategy uses 60-day and 252-day QQQ cumulative returns to assess bear depth, PSQ (inverse QQQ) RSI as a confirmation signal, and bond relative returns to judge fixed income sentiment. Unlike strategies that simply hold SH when bearish, Sometimes TQQQ actively re-evaluates multiple timeframes and asset classes each day to determine if conditions support a cautious re-entry or continued avoidance."
     ],
@@ -387,7 +387,7 @@ window.STRATEGIES_DATA = [
         "description": "TQQQ is the risk-on asset; SH is the defensive asset; allocation between them reflects the ensemble vote count."
       }
     ],
-    "risk_profile": "Aggressive with gradual exposure scaling. The 10-condition ensemble creates a risk-on/risk-off spectrum rather than binary switching, smoothing the transitions that cause large single-period losses in simpler strategies. Still carries a ~43.7% max drawdown, reflecting that simultaneous multi-condition failures during sharp bear markets can produce significant drawdowns before the ensemble fully exits.",
+    "risk_profile": "Aggressive with gradual exposure scaling. The 10-condition ensemble creates a risk-on/risk-off spectrum rather than binary switching, smoothing the transitions that cause large single-period losses in simpler strategies. Still carries a ~43.5% max drawdown, reflecting that simultaneous multi-condition failures during sharp bear markets can produce significant drawdowns before the ensemble fully exits.",
     "author_note": "Metrics are accurate as of the last_updated date. Update quarterly via RUNBOOK.MD."
   },
   {
@@ -457,7 +457,7 @@ window.STRATEGIES_DATA = [
         "description": "UVXY RSI >65 routes to SPXU (SPY above MA return) or TQQQ; higher UVXY tiers trigger deeper defensive routing."
       }
     ],
-    "risk_profile": "Aggressive. A Calmar ratio of 4.41 and Sharpe of 2.10 indicate strong risk-adjusted performance, but ~34.8% max drawdown and 50.2% standard deviation confirm this remains a high-risk allocation. The cross-asset signal depth gives it more regime awareness than simpler strategies, but complexity does not eliminate drawdowns. The recent 3-month return of -9% is a reminder that even sophisticated multi-asset routing can underperform in fast-moving markets.",
+    "risk_profile": "Aggressive. A Calmar ratio of 4.43 and Sharpe of 2.10 indicate strong risk-adjusted performance, but ~34.8% max drawdown and 50.2% standard deviation confirm this remains a high-risk allocation. The cross-asset signal depth gives it more regime awareness than simpler strategies, but complexity does not eliminate drawdowns. The recent 3-month return of -1.5% is a reminder that even sophisticated multi-asset routing can underperform in fast-moving markets.",
     "author_note": "Metrics are accurate as of the last_updated date. Update quarterly via RUNBOOK.MD."
   },
   {
@@ -493,7 +493,7 @@ window.STRATEGIES_DATA = [
     "how_it_works": [
       "The KMLM Switcher pairs the Frontrunner with a second component focused on individual leveraged ETF dip-buying and tech-sector relative momentum. After the full 14-layer overbought cascade (which routes to SH on any RSI >79 extreme) and the UVXY volatility check, the strategy evaluates individual oversold readings: TQQQ RSI <30 triggers a TQQQ entry, SOXL RSI <30 triggers SOXL, SPXL RSI <30 triggers SPXL. A unique signal not found in other strategies: LABU (3x Biotech) RSI below 25 triggers a biotech sector dip-buy.",
       "When none of the individual dip-buy thresholds are met, the strategy uses a single relative RSI comparison as its default switch: if the 10-period RSI of XLK (Technology Select Sector SPDR) exceeds the baseline RSI — indicating tech sector short-term momentum is above average — it holds a four-ETF basket of TQQQ, SOXL, TECL, and SPXL simultaneously. When tech sector momentum falls below the threshold, the strategy holds SH.",
-      "The strategy's shorter backtest history (≈5.3 years, reflecting instruments available since 2020) and the binary nature of its default allocation — full four-ETF leveraged basket vs. SH based on a single XLK RSI comparison — make it one of the more decisive regime-switchers in the library. The LABU biotech dip-buy and the sector-RSI comparison are unique features not found in the other 11 strategies."
+      "The strategy's shorter backtest history (≈5.5 years, reflecting instruments available since 2020) and the binary nature of its default allocation — full four-ETF leveraged basket vs. SH based on a single XLK RSI comparison — make it one of the more decisive regime-switchers in the library. The LABU biotech dip-buy and the sector-RSI comparison are unique features not found in the other zoop strategies."
     ],
     "signals": [
       {
@@ -522,8 +522,8 @@ window.STRATEGIES_DATA = [
         "description": "4-ETF basket (TQQQ, SOXL, TECL, SPXL) used when XLK momentum is positive; SH when not."
       }
     ],
-    "risk_profile": "Aggressive with a shorter track record. The best Calmar ratio in the library (9.75) and a 2.66 Sharpe reflect strong risk-adjusted performance, but ~29.5% max drawdown and 56.9% standard deviation confirm this is not a conservative allocation. The 5.3-year backtest reflects performance in a predominantly bull market — interpret long-term metrics cautiously relative to the 14-year backtests available for other strategies in this library.",
-    "author_note": "Note: KMLM launched in November 2020. The 5.3-year backtest is shorter than most strategies here. Metrics are accurate as of last_updated."
+    "risk_profile": "Aggressive with a shorter track record. One of the highest Calmar ratios in the library (9.52) and a 2.63 Sharpe reflect strong risk-adjusted performance, but ~29.5% max drawdown and 56.9% standard deviation confirm this is not a conservative allocation. The 5.5-year backtest reflects performance in a predominantly bull market — interpret long-term metrics cautiously relative to the 14-year backtests available for other strategies in this library.",
+    "author_note": "Note: KMLM launched in November 2020. The 5.5-year backtest is shorter than most strategies here. Metrics are accurate as of last_updated."
   },
   {
     "slug": "zoops-upro-ftlt-2026",
@@ -657,7 +657,7 @@ window.STRATEGIES_DATA = [
         "description": "TQQQ is the risk-on position; TECL used for TQQQ RSI <31 dip entries; SH is the defensive hold."
       }
     ],
-    "risk_profile": "Aggressive. At ~47.6% max drawdown and 53.2% standard deviation, this is among the higher-risk strategies in the library. The 60-period RSI guard and cumulative return cap reduce overbought entry frequency but cannot prevent losses when underlying trends reverse sharply. The 1-year trailing return of +120.2% demonstrates the reward available for tolerating this level of volatility.",
+    "risk_profile": "Aggressive. At ~47.6% max drawdown and 53.2% standard deviation, this is among the higher-risk strategies in the library. The 60-period RSI guard and cumulative return cap reduce overbought entry frequency but cannot prevent losses when underlying trends reverse sharply. The 1-year trailing return of +120.4% demonstrates the reward available for tolerating this level of volatility.",
     "author_note": "Metrics are accurate as of the last_updated date. Update quarterly via RUNBOOK.MD."
   },
   {
@@ -744,7 +744,7 @@ window.STRATEGIES_DATA = [
     "trailing_three_month_return": 0.4046910187004893,
     "trailing_one_year_return": 5.321624859134627,
     "backtest_days": 3567,
-    "description": "The highest-risk, highest-return strategy in the library. Uses SOXL (3x Semiconductors) as its core instrument, accepting the most extreme drawdowns in exchange for explosive growth potential.",
+    "description": "The highest-risk, highest-return strategy among the zoop symphonies. Uses SOXL (3x Semiconductors) as its core instrument, accepting the most extreme drawdowns in exchange for explosive growth potential.",
     "tags": [
       "rsi",
       "leveraged-etfs",
@@ -752,13 +752,14 @@ window.STRATEGIES_DATA = [
       "max-drawdown",
       "vix-tiers",
       "standard-deviation",
-      "inverse-etfs"
+      "inverse-etfs",
+      "zoop"
     ],
     "last_updated": "2026-06-15",
     "how_it_works": [
       "SOXL Growth is structurally unique in the library: its primary signal is MaxDD (running maximum drawdown) of SOXL rather than a price-vs-SMA comparison. When SOXL's maximum drawdown reaches or exceeds 50%, the strategy enters a 'deep drawdown mode' where it calibrates position size using TQQQ's standard deviation of daily returns as a secondary volatility gauge. Low TQQQ volatility (std-dev ≤ 3.8%) routes to a three-ETF basket of SOXL, TQQQ, and SPXL; higher volatility triggers further branching based on TQQQ RSI and cumulative return readings.",
       "When SOXL's max drawdown is below 50% (a 'normal' drawdown regime), the strategy switches to using SOXL's own RSI and standard deviation. Below RSI 62.2 with low volatility (std-dev ≤ 4.92%), it holds SOXL alone. As RSI or volatility rises, nuanced sub-conditions comparing cumulative returns and MaxDD(TQQQ) thresholds determine whether to stay in SOXL, expand to a basket, or shift to SH.",
-      "The risk-on basket in both regimes frequently includes TMF (3x 20-year Treasury Bull) or TMV (3x 20-year Treasury Bear) alongside SOXL — using Treasury duration exposure as a hedge within the leveraged position itself. This Treasury pairing inside an equity basket is a distinctive feature not found in the other 11 strategies, reflecting a more portfolio-construction-aware approach to managing semiconductor 3x leverage."
+      "The risk-on basket in both regimes frequently includes TMF (3x 20-year Treasury Bull) or TMV (3x 20-year Treasury Bear) alongside SOXL — using Treasury duration exposure as a hedge within the leveraged position itself. This Treasury pairing inside an equity basket is a distinctive feature not found in the other zoop strategies, reflecting a more portfolio-construction-aware approach to managing semiconductor 3x leverage."
     ],
     "signals": [
       {
@@ -787,7 +788,7 @@ window.STRATEGIES_DATA = [
         "description": "UVXY RSI >65 routes to SPXU or TQQQ — inherited from the Frontrunner component (50% weight)."
       }
     ],
-    "risk_profile": "Extremely Aggressive. The highest-risk strategy in the library with ~65.7% max drawdown and 68.7% standard deviation. SOXL's 3x semiconductor leverage produces the most extreme price swings of any instrument in this suite. The MaxDD and standard deviation signals help time entries and exits, but semiconductor sector concentration means major sector drawdowns can produce 60-80% peak-to-trough losses even with protective routing. Only appropriate as a small satellite allocation within a diversified portfolio.",
+    "risk_profile": "Extremely Aggressive. The highest-risk strategy among the zoop symphonies with ~65.7% max drawdown and 68.7% standard deviation. SOXL's 3x semiconductor leverage produces the most extreme price swings of any instrument in this suite. The MaxDD and standard deviation signals help time entries and exits, but semiconductor sector concentration means major sector drawdowns can produce 60-80% peak-to-trough losses even with protective routing. Only appropriate as a small satellite allocation within a diversified portfolio.",
     "author_note": "Metrics are accurate as of the last_updated date. Update quarterly via RUNBOOK.MD."
   },
   {
@@ -850,8 +851,8 @@ window.STRATEGIES_DATA = [
         "description": "SOXL, LABU, YINN, UDOW, FAS, TNA, URTY, KORU, NAIL — nine or more 3x leveraged ETFs across sectors and geographies, each caught at their own extreme RSI bottom."
       }
     ],
-    "risk_profile": "Extremely Aggressive with a short backtest. At 79.7% standard deviation, this is the most volatile strategy in the library — exceeding even SOXL Growth's 68.7%. The 29.6% max drawdown is low relative to the volatility because the strategy spends most of its time in BIL (via the frontrunner component) and only deploys at extreme market conditions. However, with only 551 days of backtest history (~1.5 years, from early 2024), the extraordinary metrics — 735% ARR, Calmar 24.8, Sharpe 3.04 — reflect a predominantly bull market with the specific volatility spikes this strategy is optimized to catch. These figures should be interpreted with significant caution; a longer out-of-sample record is required before they can be taken at face value.",
-    "author_note": "Note: Backtest covers approximately 1.5 years (≈551 days from early 2024). All metrics reflect this short window. Interpret with caution. Metrics are accurate as of the last_updated date."
+    "risk_profile": "Extremely Aggressive with a short backtest. At 79.7% standard deviation, this is among the most volatile strategies in the library — second only to SOXL Growth v2.4.5 RL's 84.6% and exceeding the zoop SOXL Growth's 68.7%. The 29.6% max drawdown is low relative to the volatility because the strategy spends most of its time in BIL (via the frontrunner component) and only deploys at extreme market conditions. However, with only 551 days of backtest history (~2.2 years, from early 2024), the extraordinary metrics — 735% ARR, Calmar 24.8, Sharpe 3.04 — reflect a predominantly bull market with the specific volatility spikes this strategy is optimized to catch. These figures should be interpreted with significant caution; a longer out-of-sample record is required before they can be taken at face value.",
+    "author_note": "Note: Backtest covers approximately 2.2 years (≈551 trading days from early 2024). All metrics reflect this short window. Interpret with caution. Metrics are accurate as of the last_updated date."
   },
   {
     "slug": "holy-grail",
@@ -1027,7 +1028,7 @@ window.STRATEGIES_DATA = [
         "description": "Active in risk-on regime: 5 inverse and short ETFs. SARK (inverse ARKK), PSQ (1x inverse QQQ), TMV (3x inverse LT bonds), DRV (3x inverse real estate), TYO (3x inverse 7-10yr treasury)."
       }
     ],
-    "risk_profile": "Extremely Aggressive with a short backtest. The 244% ARR and 5.48 Calmar ratio are the highest in this category across ~4.1 years (1,028 trading days from approximately August 2022). This covers only one partial market cycle including the tail end of the 2022 bear and the 2023-2025 bull run — an unusually favorable environment for mean-reversion in both leveraged long and inverse ETFs. Standard deviation of 64.1% is the second-highest in the library. The counterintuitive design — buying beaten-up inverse ETFs in bull markets — works in mean-reverting environments but could face extended losses in strongly trending markets where the worst-performing inverse ETF continues to decline. The 44.5% max drawdown indicates the strategy is not immune to trending crashes. Short backtest makes all metrics provisional.",
+    "risk_profile": "Extremely Aggressive with a short backtest. The 244% ARR and 5.48 Calmar ratio are the highest in this category across ~4.1 years (1,028 trading days from approximately August 2022). This covers only one partial market cycle including the tail end of the 2022 bear and the 2023-2025 bull run — an unusually favorable environment for mean-reversion in both leveraged long and inverse ETFs. Standard deviation of 64.1% is among the highest in the library. The counterintuitive design — buying beaten-up inverse ETFs in bull markets — works in mean-reverting environments but could face extended losses in strongly trending markets where the worst-performing inverse ETF continues to decline. The 44.5% max drawdown indicates the strategy is not immune to trending crashes. Short backtest makes all metrics provisional.",
     "author_note": "Named after Cathie Wood, founder of ARK Invest and the ARKK ETF. TARK (2x long ARKK) and SARK (inverse ARKK) are the anchors of the two pools. Version 2.2 implies prior iterations exist."
   },
   {
@@ -1091,7 +1092,7 @@ window.STRATEGIES_DATA = [
         "description": "Leveraged extremes: SMH RSI(10) < 31 -> SOXL (3x semi long) for dip-buying in bear regime. SMH RSI(10) > 70 in bear mode -> SOXS (3x semi short) for pressing an overbought semi rebound within an overall downtrend."
       }
     ],
-    "risk_profile": "Aggressive and sector-concentrated. The 102.6% ARR is lower than pure leveraged-ETF strategies in this library because the primary bull-mode holding is individual semiconductor equities (not 3x ETFs), which contributes to the lower 47.6% standard deviation. The strategy benefits enormously from semiconductor cycle leadership: NVDA's dominance during the AI bull run of 2023-2025 would naturally dominate the top-3 selection. This creates significant single-name concentration risk within an already cyclical sector. The 42.9% max drawdown reflects both the 2022 semiconductor bear market and SOXL dip-buy losses during extended declines. Bear-mode short exposure via SOXS and SSG distinguishes this strategy as the only one in the library that systematically profits from both semiconductor bull AND bear cycles. Attribution: created by Dereck Nielsen.",
+    "risk_profile": "Aggressive and sector-concentrated. The 102.6% ARR is lower than pure leveraged-ETF strategies in this library because the primary bull-mode holding is individual semiconductor equities (not 3x ETFs), which contributes to the lower 47.6% standard deviation. The strategy benefits enormously from semiconductor cycle leadership: NVDA's dominance during the AI bull run of 2023-2025 would naturally dominate the top-3 selection. This creates significant single-name concentration risk within an already cyclical sector. The 42.9% max drawdown reflects both the 2022 semiconductor bear market and SOXL dip-buy losses during extended declines. Bear-mode short exposure via SOXS and SSG distinguishes this strategy as one of the few in the library that systematically trade both semiconductor bull AND bear cycles. Attribution: created by Dereck Nielsen.",
     "author_note": "Created by Dereck Nielsen. Strategy description in Composer reads: 'The goal of this strategy is to invest in the semiconductor sector of the market under normal market conditions. Added a MACD feature to this strategy when the semiconductor ETF SMH is trading above the 200 day moving average of SPY.'"
   },
   {
@@ -1160,7 +1161,7 @@ window.STRATEGIES_DATA = [
         "description": "Activates when QQQ 252-day cumulative return < -20% (confirmed major bear). Routes through QQQ 20d MA position, QQQ 60d loss thresholds, and TLT vs SQQQ RSI comparison to select from SPY, QQQ, TQQQ, SQQQ, PSQ. Also detects bear-market rallies via QQQ 10d return > +5.5%."
       }
     ],
-    "risk_profile": "Aggressive, but the most structurally diversified strategy in this library's leveraged ETF tier. Running multiple parallel components with different time horizons (SPY 200d MA vs. TQQQ 20d MA) and a deep bear-market protocol with QQQ cumulative-return detection produces a notably better risk-adjusted profile: Sharpe 2.18, Calmar 3.68, and standard deviation of 50.6% — meaningfully lower than Holy Grail (62.3%) or TQQQ Long Term (62.8%) at comparable ARR. The 45.4% max drawdown reflects the 2022 bear market, when all components were simultaneously in bear mode. The SVXY position in bull mode adds tail risk: SVXY can lose 80-90% in a single VIX spike event. The deep bear protocol with QQQ 252d detection provides more nuanced protection than simple RSI dip-buys, but the strategy's logic tree is the largest and most complex in the library, making manual verification difficult."
+    "risk_profile": "Aggressive, but the most structurally diversified strategy in this library's leveraged ETF tier. Running multiple parallel components with different time horizons (SPY 200d MA vs. TQQQ 20d MA) and a deep bear-market protocol with QQQ cumulative-return detection produces a notably better risk-adjusted profile: Sharpe 2.18, Calmar 3.68, and standard deviation of 50.6% — meaningfully lower than Holy Grail (62.3%) or TQQQ Long Term (62.8%) at comparable ARR. The 45.4% max drawdown reflects the 2022 bear market, when all components were simultaneously in bear mode. The SVXY position in bull mode adds tail risk: SVXY can lose 80-90% in a single VIX spike event. The deep bear protocol with QQQ 252d detection provides more nuanced protection than simple RSI dip-buys, but the strategy's logic tree is among the largest and most complex in the library, making manual verification difficult."
   },
   {
     "slug": "soxx-group",
@@ -1194,7 +1195,7 @@ window.STRATEGIES_DATA = [
     "how_it_works": [
       "SOXX Group — full name 'K Wave V6 (w/ SOXX Double Pops) Pure SOXX l Garen/DN' — is built on a single thesis: semiconductor ETFs (SOXX/SMH/SOXL) tend to experience outsized single-day moves followed by mean-reversions, and these moves are more predictable during periods of elevated market volatility. The outer gate checks RSI(UVXY,30d) > 63. When UVXY's 30-day RSI is this elevated, the strategy enters 'high volatility' mode where daily magnitude triggers become active. The specific thresholds (-3%, -5.5%, -7% for down days; +3.5%, +4.5%, +5.5% for up days) represent different tiers of 'pop' severity, each carrying a different expected reversal profile.",
       "The '30-20-10 Double Pop' is the strategy's core signal system. After a significant single-day move, it evaluates SMH's RSI across three decreasing windows: 30-day, 20-day, and 10-day. Thresholds escalate tighter at shorter windows (RSI > 70 at 30d, > 75 at 20d, > 80 at 10d). If any threshold is breached, the strategy holds SOXS — betting that a recent extreme pop is about to fade. RSI(SMH,10d) < 30 inverts the logic and triggers a SOXL buy for extreme oversold conditions. If no RSI threshold fires, the strategy uses SPY RSI(60d) > 50 and a bond-market check (RSI(IEF,200d) vs TLT) to route into either the 'Double Pop Bot' component or the 'SOXL FTLT' component.",
-      "The 'SOXL FTLT' (For The Long Term) sub-component is an embedded longer-term fallback that runs when no short-term mean-reversion signal is active. It checks MaxDD(SPY,10d) > 6 (recent drawdown exceeding 6%) to classify the immediate market environment as bear or bull, then uses CumRet(SVXY,5d) > 0 and RSI(TQQQ,60d) > 50 to select between SOXL and BSV via a momentum filter. In plain terms: when the semiconductor pop system gives no strong signal, the strategy defaults to a SPY/SVXY/TQQQ-based momentum classifier. The 69.2% max drawdown (highest among strategies not using pure inverse ETFs) reflects SOXL's inherent volatility and the strategy's willingness to maintain long semiconductor exposure even through major semiconductor bear markets."
+      "The 'SOXL FTLT' (For The Long Term) sub-component is an embedded longer-term fallback that runs when no short-term mean-reversion signal is active. It checks MaxDD(SPY,10d) > 6 (recent drawdown exceeding 6%) to classify the immediate market environment as bear or bull, then uses CumRet(SVXY,5d) > 0 and RSI(TQQQ,60d) > 50 to select between SOXL and BSV via a momentum filter. In plain terms: when the semiconductor pop system gives no strong signal, the strategy defaults to a SPY/SVXY/TQQQ-based momentum classifier. The 69.2% max drawdown (among the highest in the library) reflects SOXL's inherent volatility and the strategy's willingness to maintain long semiconductor exposure even through major semiconductor bear markets."
     ],
     "signals": [
       {
@@ -1218,7 +1219,7 @@ window.STRATEGIES_DATA = [
         "description": "When no pop signal fires: CumRet(SVXY,5d) > 0 and RSI(TQQQ,60d) > 50 classify the environment as bull or bear. Bull -> BSV/SOXL momentum filter. Bear (MaxDD(SPY,10d) > 6) -> SOXL/BSV bear selector. Functions as the strategy's long-term momentum baseline when short-term signals are quiet."
       }
     ],
-    "risk_profile": "Extremely Aggressive. The 69.2% max drawdown is among the highest in this library, explained by the strategy's willingness to stay in SOXL (3x semiconductors) through extended bear markets. The 66.2% annualized standard deviation reflects both SOXL's inherent volatility amplification and the frequent switching between SOXL and SOXS. The 14.3-year backtest (3,609 days) covers multiple semiconductor cycles. The Calmar ratio of 1.61 and Sharpe of 1.46 are the weakest in the leveraged semiconductor tier, suggesting the 'Double Pop' logic does not dramatically improve raw buy-and-hold SOXL risk-adjusted returns despite its complexity. Attribution: created by Garen/DN.",
+    "risk_profile": "Extremely Aggressive. The 69.2% max drawdown is among the highest in this library, explained by the strategy's willingness to stay in SOXL (3x semiconductors) through extended bear markets. The 66.2% annualized standard deviation reflects both SOXL's inherent volatility amplification and the frequent switching between SOXL and SOXS. The 14.3-year backtest (3,609 days) covers multiple semiconductor cycles. The Calmar ratio of 1.61 and Sharpe of 1.46 are among the weakest in the leveraged semiconductor tier, suggesting the 'Double Pop' logic does not dramatically improve raw buy-and-hold SOXL risk-adjusted returns despite its complexity. Attribution: created by Garen/DN.",
     "author_note": "Created by Garen and DN, as credited in the strategy group name 'K Wave V6 (w/ SOXX Double Pops) Pure SOXX l Garen/DN'. The 'K Wave' name references Kondratiev waves — long-term (40-60 year) economic cycles that Garen likely uses as a macro framework. This is version 6 of the K Wave series."
   },
   {
@@ -1276,7 +1277,7 @@ window.STRATEGIES_DATA = [
         "description": "Bear-mode short basket: Filter top-? of [TMV, SQQQ, SPXS]. TMV (3x inverse long-duration bonds), SQQQ (3x inverse QQQ), SPXS (3x inverse S&P500). Activates when TQQQ 30-day trend is negative or TQQQ 200-day MaxDD exceeds 65%."
       }
     ],
-    "risk_profile": "Extremely Aggressive — the highest max drawdown (82.5%) and highest standard deviation (84.6%) in this library. Both figures reflect SOXL's 3x leverage on semiconductors combined with a strategy that stays long through most downturns, relying on RL-optimized thresholds to exit at precise points rather than using broad regime filters like the 200d MA. The 15.3-year backtest (3,840 days) is the longest in the library, giving the RL-optimized parameters more historical basis. However, the precise thresholds may be overfit to historical SOXL/TQQQ behavior and could perform differently in new market regimes. The Calmar ratio of 1.74 and Sharpe of 1.47 are modest for the risk taken. The -47.3% trailing 1-month return recorded at the time of data fetch illustrates the strategy's capacity for catastrophic short-term losses."
+    "risk_profile": "Extremely Aggressive — the second-highest max drawdown (82.5%, behind Inside Nancy Pelosi's Chips) and the highest standard deviation (84.6%) in this library. Both figures reflect SOXL's 3x leverage on semiconductors combined with a strategy that stays long through most downturns, relying on RL-optimized thresholds to exit at precise points rather than using broad regime filters like the 200d MA. The 15.3-year backtest (3,840 days) is the longest in the library, giving the RL-optimized parameters more historical basis. However, the precise thresholds may be overfit to historical SOXL/TQQQ behavior and could perform differently in new market regimes. The Calmar ratio of 1.74 and Sharpe of 1.47 are modest for the risk taken. The -47.3% trailing 1-month return recorded at the time of data fetch illustrates the strategy's capacity for catastrophic short-term losses."
   },
   {
     "slug": "nancy-pelosi-chips",
@@ -1472,6 +1473,6 @@ window.STRATEGIES_DATA = [
         "description": "Default mode: Filter top-1 of [SOXX, NVDA, AMD, SPY, DBC, XLE, ENPH] by recent return. Spans semiconductors (SOXX, NVDA, AMD), broad market (SPY), commodities (DBC), energy (XLE), and clean energy (ENPH). No leveraged ETFs in the rotation pool — concentrates in the strongest non-leveraged asset."
       }
     ],
-    "risk_profile": "Aggressive but unleveraged in the rotation component. The 65.3% max drawdown comes not from 3x ETFs but from holding concentrated positions in volatile sectors (NVDA, AMD, ENPH) during sector-specific crashes. The 13.8-year backtest (3,480 days) begins around 2012, which means ENPH and AMD's earlier history may be underrepresented. Sharpe of 1.19 and Calmar of 1.13 are the lowest in the library, reflecting the strategy's lack of leverage (in the rotation mode) alongside a still-significant drawdown. The VIXM component carries moderate roll decay versus UVXY but adds meaningful long-duration protection. The strategy does not use a SPY trend gate — it can remain fully in semiconductor stocks during bear markets unless VIXM RSI triggers, which requires sustained (40-day) volatility elevation rather than an immediate response to the market turning negative."
+    "risk_profile": "Aggressive but unleveraged in the rotation component. The 65.3% max drawdown comes not from 3x ETFs but from holding concentrated positions in volatile sectors (NVDA, AMD, ENPH) during sector-specific crashes. The 13.8-year backtest (3,480 days) begins around 2012, which means ENPH and AMD's earlier history may be underrepresented. Sharpe of 1.19 and Calmar of 1.13 are among the lowest in the library, reflecting the strategy's lack of leverage (in the rotation mode) alongside a still-significant drawdown. The VIXM component carries moderate roll decay versus UVXY but adds meaningful long-duration protection. The strategy does not use a SPY trend gate — it can remain fully in semiconductor stocks during bear markets unless VIXM RSI triggers, which requires sustained (40-day) volatility elevation rather than an immediate response to the market turning negative."
   }
 ];

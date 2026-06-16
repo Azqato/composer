@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 add_zoop.py — One-time script that added the "Zoop's Strategies" glossary entry
-(slug: zoop) and applied the 'zoop' tag to all 11 zoops-* strategies in
+(slug: zoop) and applied the 'zoop' tag to all 12 zoops-* strategies in
 data/strategies.json.
 
 Already applied as of v1.5.3 (2026-06-15). Safe to re-run — duplicate-slug check
@@ -40,24 +40,25 @@ ZOOP_ENTRY = {
     {
       "title": "The Strategy Suite",
       "paragraphs": [
-        "The zoops-* strategies are Zoop's primary Composer.trade symphony collection, each built around a shared philosophy: use 3x leveraged Nasdaq ETFs (primarily TQQQ) during confirmed bull markets, and rotate to defensive or inverse positions when trend signals break. The 11 strategies in this collection span a spectrum from capital-preservation-first (2026 Frontrunner) to high-conviction aggressive (Sometimes TQQQ, Leveraged TQQQ Symphony).",
+        "The zoops-* strategies are Zoop's primary Composer.trade symphony collection, each built around a shared philosophy: use 3x leveraged Nasdaq ETFs (primarily TQQQ) during confirmed bull markets, and rotate to defensive or inverse positions when trend signals break. The 12 strategies in this collection span a spectrum from capital-preservation-first (2026 Frontrunner) to high-conviction aggressive (Sometimes TQQQ, Leveraged TQQQ Symphony).",
         "Each strategy shares a common lineage: the 2026 Frontrunner is the base layer, using RSI-triggered dip-buy signals on a universe of leveraged ETFs with BIL as the default. The other strategies layer additional macro signals, sector momentum filters, and bear-mode intelligence on top of this foundation — each one a different answer to the question of how aggressively to pursue returns within a risk-managed framework.",
-        "Across the 11 zoops-* strategies, the backtested annualized return ranges from 92% (2026 Frontrunner) to 182% (Sometimes TQQQ) over a 14.2-year backtest period, with Sharpe ratios ranging from 1.47 to 2.66 and max drawdowns from −22% to −37%. This spread reflects the spectrum of risk tolerance the collection is designed to address."
+        "Across the 12 zoops-* strategies, the backtested annualized return ranges from ~92% (2026 Frontrunner) to ~280% (KMLM Switcher), with Sharpe ratios from ~1.63 to ~2.63 and max drawdowns from ~−22% (2026 Frontrunner) to ~−66% (SOXL Growth). Backtest lengths vary — the 2026 Frontrunner spans ~8.4 years and the KMLM Switcher ~5.5 years, while the remaining strategies cover ~14.2 years — so headline figures are not all measured over the same window. This spread reflects the spectrum of risk tolerance the collection is designed to address."
       ],
       "table": {
         "headers": ["Strategy", "ARR", "Sharpe", "Max DD"],
         "rows": [
-          ["2026 Frontrunner", "~92%", "~1.47", "~−22%"],
-          ["Holy Grail 2026", "~131%", "~1.92", "~−28%"],
-          ["TQQQ Long Term 2026", "~132%", "~1.80", "~−29%"],
-          ["Excellent Adventure 2026", "~141%", "~1.89", "~−29%"],
-          ["Sometimes TQQQ 2026", "~182%", "~2.30", "~−37%"],
-          ["Safety Checks 2026", "~155%", "~2.14", "~−29%"],
-          ["Manhattan Project 2026", "~141%", "~1.87", "~−31%"],
-          ["KMLM Switcher 2026", "~120%", "~2.66", "~−22%"],
-          ["UPRO FTLT 2026", "~121%", "~1.73", "~−32%"],
-          ["Leveraged TQQQ Symphony 2026", "~152%", "~2.12", "~−29%"],
-          ["TQQQ 200d MA 3x 2026", "~126%", "~1.72", "~−32%"]
+          ["2026 Frontrunner", "~91%", "~1.78", "~−22%"],
+          ["Holy Grail 2026", "~113%", "~1.65", "~−45%"],
+          ["TQQQ Long Term 2026", "~111%", "~1.63", "~−46%"],
+          ["Excellent Adventure 2026", "~122%", "~1.82", "~−46%"],
+          ["Sometimes TQQQ 2026", "~182%", "~2.47", "~−35%"],
+          ["Safety Checks 2026", "~103%", "~1.63", "~−43%"],
+          ["Manhattan Project 2026", "~154%", "~2.10", "~−35%"],
+          ["KMLM Switcher 2026", "~280%", "~2.63", "~−29%"],
+          ["UPRO FTLT 2026", "~94%", "~1.64", "~−33%"],
+          ["Leveraged TQQQ Symphony 2026", "~109%", "~1.64", "~−48%"],
+          ["TQQQ 200d MA 3x 2026", "~109%", "~1.65", "~−39%"],
+          ["SOXL Growth 2026", "~164%", "~1.75", "~−66%"]
         ]
       }
     },
@@ -92,6 +93,7 @@ ZOOPS_SLUGS = [
     'zoops-upro-ftlt-2026',
     'zoops-leveraged-tqqq-symphony-2026',
     'zoops-tqqq-200d-ma-3x-2026',
+    'zoops-soxl-growth-2026',
 ]
 
 

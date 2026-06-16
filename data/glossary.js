@@ -454,7 +454,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "When comparing two strategies with similar return profiles, the Sharpe ratio tells you which is doing more with less risk. The strategies in Composer Atlas range from Sharpe ratios of 1.65 to 2.70 — all comfortably above 1.0, reflecting systematic exits that reduce volatility compared to holding leveraged ETFs passively.",
+          "When comparing two strategies with similar return profiles, the Sharpe ratio tells you which is doing more with less risk. The strategies in Composer Atlas range from Sharpe ratios of roughly 1.10 to 3.04 — all above 1.0, reflecting systematic exits that reduce volatility compared to holding leveraged ETFs passively.",
           "For portfolios where stability matters, a strategy with lower absolute returns but higher Sharpe may be preferable — it means the returns are more consistent and predictable."
         ]
       },
@@ -473,7 +473,7 @@ window.GLOSSARY_DATA = [
           "The Sharpe ratio is the most important number in Composer.trade's backtesting output, not because it is the most exciting, but because it is the most honest. Annualized return tells you how fast a strategy grew but says nothing about how terrifying the ride was. Cumulative return tells you the final destination but hides whether the strategy took one harrowing 70% drawdown or a series of small, tolerable dips. The Sharpe ratio accounts for both: it divides the return above the risk-free rate by the volatility of returns, producing a single number that answers the question every rational investor should ask — how much am I being paid for each unit of risk I'm accepting? A strategy earning 50% per year with a Sharpe of 0.8 is taking far more risk per unit of return than a strategy earning 30% per year with a Sharpe of 2.0, and the first strategy's returns will feel much worse in practice.",
           "For Composer.trade symphony builders, the Sharpe ratio is the primary tool for comparing signal variants during strategy development. When testing a new condition — such as adding an RSI filter to an existing trend-following symphony — the correct question is not whether this increases annualized return, but whether it increases the Sharpe ratio. A new condition that reduces returns by 5% but cuts volatility by 30% is a significant improvement; the Sharpe will show this clearly while a raw return comparison would suggest the change was harmful. This methodology — optimizing for risk-adjusted return rather than raw return — is what separates strategies that perform well out-of-sample from those that look good in backtests but fail in live trading.",
           "Sharpe ratio is particularly valuable for comparing leveraged ETF strategies with unlevered alternatives. Holding TQQQ passively over long periods has historically produced exceptional returns, but its Sharpe ratio is modest because the volatility is enormous. A symphony that holds TQQQ only during favorable conditions — and exits to BIL otherwise — will often have a lower total return than passive TQQQ over a long bull market, but its Sharpe ratio will be dramatically higher. This comparison reveals the core value of systematic symphonies: they are not just return-seeking machines, they are risk-adjusted return optimizers. The goal is not maximum return but maximum return per unit of volatility accepted, and Sharpe ratio is the measurement of that objective.",
-          "Understanding what constitutes a good Sharpe score for a specific strategy type matters when evaluating Composer.trade symphonies. A leveraged ETF symphony with a Sharpe of 1.7 is exceptional — typical passive holdings of TQQQ produce a Sharpe under 1.0 over most periods. A diversified multi-asset symphony with lower gross returns but a Sharpe of 2.5 represents elite risk-adjusted performance. The strategies in the Composer Atlas library range from 1.65 to 2.70 — all significantly above 1.0, meaning each provides substantial compensation for the volatility it produces. A symphony with a Sharpe below 1.0 should be treated with skepticism; it means the strategy's volatility is not justified by the returns it generates.",
+          "Understanding what constitutes a good Sharpe score for a specific strategy type matters when evaluating Composer.trade symphonies. A leveraged ETF symphony with a Sharpe of 1.7 is exceptional — typical passive holdings of TQQQ produce a Sharpe under 1.0 over most periods. A diversified multi-asset symphony with lower gross returns but a Sharpe of 2.5 represents elite risk-adjusted performance. The strategies in the Composer Atlas library range from roughly 1.10 to 3.04 — all above 1.0, meaning each provides substantial compensation for the volatility it produces. A symphony with a Sharpe below 1.0 should be treated with skepticism; it means the strategy's volatility is not justified by the returns it generates.",
           "Building specifically to maximize Sharpe ratio in Composer.trade requires attention to three levers simultaneously. The first lever is return enhancement: adding conditions that increase the fraction of time the strategy spends in high-returning positions. The second lever is volatility reduction: adding conditions that reduce the frequency of large swings, particularly on the downside. The third lever is defensive asset quality: when the strategy exits a leveraged position, holding BIL (near risk-free yield) rather than pure cash adds a small but consistent return contribution that improves the Sharpe calculation. A symphony that earns 1–4% annualized on its defensive portion rather than 0% on cash will show a meaningfully higher Sharpe over long backtests, because the baseline earns money even during the protected periods."
         ]
       }
@@ -542,7 +542,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "The KMLM Switcher leads the Composer Atlas library with a Calmar ratio of 10.31 — remarkable even considering its shorter backtest period. The 2026 Frontrunner (4.62) and Sometimes TQQQ (5.61) also stand out.",
+          "The KMLM Switcher posts one of the highest Calmar ratios in the Composer Atlas library at 9.52 — remarkable even considering its shorter backtest period. The 2026 Frontrunner (4.23) and Sometimes TQQQ (5.22) also stand out.",
           "Calmar ratios are especially meaningful for leveraged ETF strategies because drawdown risk is disproportionately damaging — a 50% drawdown requires a 100% gain just to recover. Strategies with higher Calmar ratios manage to avoid or minimize these deep losses while still capturing strong compounding."
         ]
       },
@@ -561,7 +561,7 @@ window.GLOSSARY_DATA = [
           "For Composer.trade symphony builders, the Calmar ratio is the most useful metric for comparing strategies that target different drawdown profiles. Consider two symphonies: Symphony A earns 120% annualized with a max drawdown of -50% (Calmar 2.4) and Symphony B earns 80% annualized with a max drawdown of -20% (Calmar 4.0). A raw return comparison favors Symphony A. But the Calmar comparison reveals that Symphony B is far more capital-efficient from a loss-recovery perspective: its worst scenario requires only 25% of the time to recover that Symphony A's worst scenario would require. For investors who may need to withdraw capital or who have limited tolerance for deep losses, the Calmar ratio is the decisive metric.",
           "The clearest way to improve a symphony's Calmar ratio is to focus the exit logic on preventing drawdowns specifically, rather than reducing overall volatility. These are related but different objectives. An exit signal triggered by broad volatility (high VIX) may cause the strategy to exit before profitable periods if VIX rises during a bull market run. But an exit signal triggered by a genuine trend break (price falling below 200d MA) is specifically correlated with the scenarios that produce large drawdowns. When building in Composer.trade, adding conditions that specifically detect trend deterioration — rather than just general volatility — tends to improve Calmar ratio more than adding conditions that respond to noise. The goal is to cut the denominator (max drawdown) as much as possible while minimally reducing the numerator (annual return).",
           "Calmar ratio also provides an intuitive framework for selecting among symphonies as portfolio building blocks. If you are constructing a multi-symphony portfolio and have limited drawdown capacity — say, you cannot tolerate a portfolio drawdown exceeding 25% — Calmar ratios allow you to select the components that maximize return within that drawdown constraint. A symphony with a Calmar of 5.0 and an expected drawdown of 30% could be sized at 83% of portfolio weight to keep the expected contribution to portfolio drawdown under 25%. Calmar thus becomes the key input to position sizing in a multi-symphony portfolio, enabling systematic risk budgeting rather than arbitrary allocation.",
-          "The KMLM Switcher in the Composer Atlas library illustrates a deliberate Calmar-maximizing design. By rotating between TQQQ (high return, concentrated risk) and KMLM (managed futures, historically performs well during equity bear markets), the symphony seeks to maintain return potential while specifically preventing the scenario that would produce a catastrophic drawdown: holding TQQQ through a sustained equity bear market. The rotation trigger fires before the worst TQQQ drawdowns occur, because KMLM tends to start outperforming TQQQ during the early stages of equity deterioration. The result is a Calmar ratio of 10.3 in the backtest: for every 1% of max drawdown risk, the strategy earns 10.3% per year. This extraordinary efficiency is the goal of Calmar-aware symphony design."
+          "The KMLM Switcher in the Composer Atlas library illustrates a deliberate Calmar-maximizing design. By rotating between TQQQ (high return, concentrated risk) and KMLM (managed futures, historically performs well during equity bear markets), the symphony seeks to maintain return potential while specifically preventing the scenario that would produce a catastrophic drawdown: holding TQQQ through a sustained equity bear market. The rotation trigger fires before the worst TQQQ drawdowns occur, because KMLM tends to start outperforming TQQQ during the early stages of equity deterioration. The result is a Calmar ratio of 9.52 in the backtest: for every 1% of max drawdown risk, the strategy earns 9.52% per year. This extraordinary efficiency is the goal of Calmar-aware symphony design."
         ]
       }
     ]
@@ -630,7 +630,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "Max drawdown is used in Composer Atlas to contextualize each strategy's risk level. Strategies range from -21% (2026 Frontrunner) to -65% (SOXL Growth), reflecting the spectrum from moderate-aggressive to extremely aggressive.",
+          "Max drawdown is used in Composer Atlas to contextualize each strategy's risk level. Strategies range from -21% (2026 Frontrunner) to -86% (Inside Nancy Pelosi's Chips), reflecting the spectrum from moderate-aggressive to extremely aggressive.",
           "When evaluating a strategy, consider max drawdown alongside your personal capacity to stay invested: Can you psychologically hold through a -40% drawdown without selling? Does your time horizon allow for recovery? A -40% drawdown may take 1–3 years to recover."
         ]
       },
@@ -1145,7 +1145,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "The strategies in the Composer Atlas library show ARRs ranging from approximately 73% (Nancy Pelosi's Chips, SPY Energy Chips) to 735% (s90 Half Low Catch — over only ~1.5 years). The core zoop strategies backtested over 14.2 years range from 92% (2026 Frontrunner) to 182% (Sometimes TQQQ).",
+          "The strategies in the Composer Atlas library show ARRs ranging from approximately 73% (Nancy Pelosi's Chips, SPY Energy Chips) to 735% (s90 Half Low Catch — over only ~2.2 years). Among the zoop strategies, backtested annualized returns range from ~91% (2026 Frontrunner) to ~280% (KMLM Switcher), though backtest lengths vary from ~5.5 to ~14.2 years.",
           "These figures are extraordinary by conventional standards: the S&P 500 has historically returned approximately 10% per year, and professional hedge funds rarely sustain 20–30% annualized over multi-year periods. The strategies achieve these figures through 3x leverage on the Nasdaq 100 combined with systematic risk management that avoids the worst bear market periods."
         ]
       },
@@ -1154,14 +1154,14 @@ window.GLOSSARY_DATA = [
         "paragraphs": [
           "ARR says nothing about the journey. A strategy with 100% ARR that dropped 80% halfway through and recovered looks identical to one that grew smoothly. Max drawdown, standard deviation, and Sharpe ratio are essential complements for understanding the actual experience of holding the strategy.",
           "Backtest ARR is not a forward projection. Strategies do not maintain their historical ARR going forward. Exceptional backtested ARR often reflects favorable period selection, overfitting to historical data, or market conditions that may not recur.",
-          "Short backtests produce unreliable ARR. A strategy showing 500% ARR over 18 months has barely survived one market regime. Never compare ARR across strategies without first comparing their backtest lengths — a 735% ARR over 1.5 years and a 182% ARR over 14.2 years are not comparable headline numbers."
+          "Short backtests produce unreliable ARR. A strategy showing 500% ARR over 18 months has barely survived one market regime. Never compare ARR across strategies without first comparing their backtest lengths — a 735% ARR over 2.2 years and a 182% ARR over 14.2 years are not comparable headline numbers."
         ]
       },
       {
         "title": "Interpreting ARR in the Composer Atlas Library",
         "paragraphs": [
           "The right way to read the ARR on a strategy card is as a starting point for further investigation, not a terminal conclusion. A high ARR is a necessary but insufficient condition for a strategy worth using. You must also assess whether the ARR was earned at acceptable risk levels (Sharpe ratio), whether the drawdowns were survivable (max drawdown), and whether the backtest period was long enough to include genuine bear market stress. A strategy with 200% ARR and a 50% max drawdown requires a very different investment commitment than one with 100% ARR and a 20% max drawdown.",
-          "ARR figures cannot be fairly compared across strategies with very different backtest lengths. The s90 Half Low Catch's 735% ARR over 1.5 years and Sometimes TQQQ's 182% ARR over 14.2 years are not directly comparable: the short-backtest strategy has not been tested through a full market cycle, while the long-backtest strategy has survived multiple bear markets, rate cycles, and sector rotations. When allocating real capital, prioritize strategies with the longest backtests and most consistent multi-year performance.",
+          "ARR figures cannot be fairly compared across strategies with very different backtest lengths. The s90 Half Low Catch's 735% ARR over 2.2 years and Sometimes TQQQ's 182% ARR over 14.2 years are not directly comparable: the short-backtest strategy has not been tested through a full market cycle, while the long-backtest strategy has survived multiple bear markets, rate cycles, and sector rotations. When allocating real capital, prioritize strategies with the longest backtests and most consistent multi-year performance.",
           "Cumulative return — also shown on strategy cards — is the total growth of $1 invested from the start of the backtest. ARR is most useful for comparing strategies of different lengths on equal footing. Cumulative return is most useful for communicating the absolute magnitude of compounding — Sometimes TQQQ's cumulative return of over 2,000,000× over 14.2 years reflects 182% annual compounding sustained across multiple market cycles, which is a more visceral demonstration of the compounding power of systematic leveraged investing than the percentage figure alone conveys."
         ]
       }
@@ -1231,7 +1231,7 @@ window.GLOSSARY_DATA = [
       {
         "title": "Limitations",
         "paragraphs": [
-          "KMLM launched in November 2020, giving it only approximately 5 years of live history. The strategy's exceptional 2022 performance was its first major test; extended out-of-sample periods across multiple market regimes are needed to validate the long-run correlation structure.",
+          "KMLM launched in November 2020, giving it only approximately 5.5 years of live history. The strategy's exceptional 2022 performance was its first major test; extended out-of-sample periods across multiple market regimes are needed to validate the long-run correlation structure.",
           "Managed futures underperform in sideways, range-bound markets. When bonds, commodities, currencies, and equities all chop within ranges without sustained trends, the strategy generates whipsaw losses from repeated failed trend signals. Much of the 2010s represented this challenging environment for trend-following managed futures.",
           "The correlation benefit is regime-dependent, not constant. KMLM's negative correlation to equities is highest during trending bear markets but approaches zero or positive during bull markets. Investors expecting consistent diversification from KMLM in all market conditions will be disappointed.",
           "Expense ratio: KMLM charges 0.90% annually, slightly above most equity index ETFs but reasonable for the complexity of its underlying systematic strategy."
@@ -1242,7 +1242,7 @@ window.GLOSSARY_DATA = [
         "paragraphs": [
           "Managed futures are the most powerful defensive diversifier available to Composer.trade symphony builders because they can profit in both bull and bear markets through trend-following across uncorrelated asset classes. This makes KMLM uniquely valuable compared to bonds (which underperformed during 2022's simultaneous equity-bond bear market) or cash (which earns yield but does not benefit from bear market trends). A symphony rotating between TQQQ in bull markets and KMLM in bear markets is not simply moving from offensive to defensive — it is actively seeking profits in both regimes through fundamentally different mechanisms.",
           "The rotation trigger between leveraged equity and managed futures is one of the most important design decisions in a KMLM-inclusive symphony. Using a trend signal on equities (like the 200d MA on SPY) creates a binary switch: bull regime holds TQQQ, bear regime holds KMLM. Using a relative momentum comparison between TQQQ and KMLM directly — holding whichever has the stronger recent return — creates a more dynamic switch that responds to actual relative performance rather than requiring a specific SMA crossover event.",
-          "The KMLM Switcher in this library achieves its exceptional Calmar ratio (9.75) and Sharpe (2.66) by combining the managed futures rotation with the full suite of RSI-based dip-buy signals from the Frontrunner component. When no dip-buy signal is active and tech sector momentum (XLK RSI) is positive, the strategy holds the 4-ETF leveraged equity basket for maximum upside. When tech momentum weakens, it rotates to KMLM, which may continue generating returns from non-equity trends."
+          "The KMLM Switcher in this library achieves its exceptional Calmar ratio (9.52) and Sharpe (2.63) by combining the managed futures rotation with the full suite of RSI-based dip-buy signals from the Frontrunner component. When no dip-buy signal is active and tech sector momentum (XLK RSI) is positive, the strategy holds the 4-ETF leveraged equity basket for maximum upside. When tech momentum weakens, it rotates to KMLM, which may continue generating returns from non-equity trends."
         ]
       }
     ]
@@ -1372,9 +1372,9 @@ window.GLOSSARY_DATA = [
       {
         "title": "The Strategy Suite",
         "paragraphs": [
-          "The zoops-* strategies are Zoop's primary Composer.trade symphony collection, each built around a shared philosophy: use 3x leveraged Nasdaq ETFs (primarily TQQQ) during confirmed bull markets, and rotate to defensive or inverse positions when trend signals break. The 11 strategies in this collection span a spectrum from capital-preservation-first (2026 Frontrunner) to high-conviction aggressive (Sometimes TQQQ, Leveraged TQQQ Symphony).",
+          "The zoops-* strategies are Zoop's primary Composer.trade symphony collection, each built around a shared philosophy: use 3x leveraged Nasdaq ETFs (primarily TQQQ) during confirmed bull markets, and rotate to defensive or inverse positions when trend signals break. The 12 strategies in this collection span a spectrum from capital-preservation-first (2026 Frontrunner) to high-conviction aggressive (Sometimes TQQQ, Leveraged TQQQ Symphony).",
           "Each strategy shares a common lineage: the 2026 Frontrunner is the base layer, using RSI-triggered dip-buy signals on a universe of leveraged ETFs with BIL as the default. The other strategies layer additional macro signals, sector momentum filters, and bear-mode intelligence on top of this foundation — each one a different answer to the question of how aggressively to pursue returns within a risk-managed framework.",
-          "Across the 11 zoops-* strategies, the backtested annualized return ranges from 92% (2026 Frontrunner) to 182% (Sometimes TQQQ) over a 14.2-year backtest period, with Sharpe ratios ranging from 1.47 to 2.66 and max drawdowns from −22% to −37%. This spread reflects the spectrum of risk tolerance the collection is designed to address."
+          "Across the 12 zoops-* strategies, the backtested annualized return ranges from ~92% (2026 Frontrunner) to ~280% (KMLM Switcher), with Sharpe ratios from ~1.63 to ~2.63 and max drawdowns from ~−22% (2026 Frontrunner) to ~−66% (SOXL Growth). Backtest lengths vary — the 2026 Frontrunner spans ~8.4 years and the KMLM Switcher ~5.5 years, while the remaining strategies cover ~14.2 years — so headline figures are not all measured over the same window. This spread reflects the spectrum of risk tolerance the collection is designed to address."
         ],
         "table": {
           "headers": [
@@ -1386,69 +1386,75 @@ window.GLOSSARY_DATA = [
           "rows": [
             [
               "2026 Frontrunner",
-              "~92%",
-              "~1.47",
+              "~91%",
+              "~1.78",
               "~−22%"
             ],
             [
               "Holy Grail 2026",
-              "~131%",
-              "~1.92",
-              "~−28%"
+              "~113%",
+              "~1.65",
+              "~−45%"
             ],
             [
               "TQQQ Long Term 2026",
-              "~132%",
-              "~1.80",
-              "~−29%"
+              "~111%",
+              "~1.63",
+              "~−46%"
             ],
             [
               "Excellent Adventure 2026",
-              "~141%",
-              "~1.89",
-              "~−29%"
+              "~122%",
+              "~1.82",
+              "~−46%"
             ],
             [
               "Sometimes TQQQ 2026",
               "~182%",
-              "~2.30",
-              "~−37%"
+              "~2.47",
+              "~−35%"
             ],
             [
               "Safety Checks 2026",
-              "~155%",
-              "~2.14",
-              "~−29%"
+              "~103%",
+              "~1.63",
+              "~−43%"
             ],
             [
               "Manhattan Project 2026",
-              "~141%",
-              "~1.87",
-              "~−31%"
+              "~154%",
+              "~2.10",
+              "~−35%"
             ],
             [
               "KMLM Switcher 2026",
-              "~120%",
-              "~2.66",
-              "~−22%"
-            ],
-            [
-              "UPRO FTLT 2026",
-              "~121%",
-              "~1.73",
-              "~−32%"
-            ],
-            [
-              "Leveraged TQQQ Symphony 2026",
-              "~152%",
-              "~2.12",
+              "~280%",
+              "~2.63",
               "~−29%"
             ],
             [
+              "UPRO FTLT 2026",
+              "~94%",
+              "~1.64",
+              "~−33%"
+            ],
+            [
+              "Leveraged TQQQ Symphony 2026",
+              "~109%",
+              "~1.64",
+              "~−48%"
+            ],
+            [
               "TQQQ 200d MA 3x 2026",
-              "~126%",
-              "~1.72",
-              "~−32%"
+              "~109%",
+              "~1.65",
+              "~−39%"
+            ],
+            [
+              "SOXL Growth 2026",
+              "~164%",
+              "~1.75",
+              "~−66%"
             ]
           ]
         }

@@ -107,7 +107,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 ### MVP — Shipped (V1.0–V1.2.1)
 
 **Strategy Library**
-- Index page listing all 13 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
+- Index page listing all 24 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
 - Each strategy has a dedicated page with: name, description, tags, "Open in Composer" CTA, plain-English logic breakdown, signals used (cross-linked to glossary), risk profile, and full metrics table
 - Strategy card titles are clickable links
 
@@ -117,8 +117,8 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - Concepts cross-link back to strategies that use them
 
 **Data Layer**
-- `data/strategies.json` — flat-file database of all 13 strategies
-- `data/glossary.json` — flat-file database of all 8 glossary concepts
+- `data/strategies.json` — flat-file database of all 24 strategies
+- `data/glossary.json` — flat-file database of all 19 glossary concepts
 - Dual-mode loading: `window.STRATEGIES_DATA` / `window.GLOSSARY_DATA` globals for `file://` compatibility; `fetch()` fallback for HTTP
 - `scripts/update_metrics.py` — reusable script to refresh all metrics and logic trees from the Composer API
 

@@ -5,6 +5,33 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.5.9] - 2026-06-15
+
+### Fixed — Site-wide accuracy audit (strategies, glossary, counts)
+
+Full fact-check of every strategy, glossary concept, and HTML page. Corrected numbers and superlatives that had drifted out of sync after the library grew from the original 12 zoop symphonies to 24 strategies and after backtest-metric refreshes.
+
+**Counts & dynamic stats:**
+- `about.html` — "12 strategy symphonies" → "24"
+- `index.html` — the homepage "Concepts" stat was hardcoded to `8`; it now reads `glossary.length` (19)
+- Glossary "Zoop's Strategies" — "11 strategies in this collection" → "12"; added the missing 12th row (SOXL Growth 2026) and rebuilt the whole stats table to current ARR/Sharpe/Max DD values
+- `zoops-soxl-growth-2026` was missing the `zoop` tag — added, so it now appears under the Zoop's Strategies concept
+
+**Stale metric citations corrected to match `strategies.json`:**
+- Excellent Adventure 1-yr trailing +190.8% → +170.0%; Manhattan 3-mo −9% → −1.5% and Calmar 4.41 → 4.43; Leveraged TQQQ 1-yr +120.2% → +120.4%; Safety Checks Max DD ~43.7% → ~43.5%; Holy Grail 2026 cumulative 44,142x → 44,866x
+- KMLM Switcher Calmar 9.75/10.31 → 9.52 and Sharpe 2.66 → 2.63 (glossary Calmar/Managed Futures sections too); backtest ≈5.3 yrs → ≈5.5 yrs
+- s90 Half Low Catch backtest "~1.5 years" → "~2.2 years" (551 trading days ÷ 252); also in PATCHNOTES s90 entry
+- Glossary Sharpe range "1.65 to 2.70" → "~1.10 to 3.04"; Calmar "In Practice" Frontrunner 4.62 → 4.23, Sometimes TQQQ 5.61 → 5.22; Max Drawdown range floor "−65% (SOXL Growth)" → "−86% (Inside Nancy Pelosi's Chips)"; ARR range updated
+
+**Superlatives corrected (no longer true at 24 strategies):**
+- zoop SOXL Growth "highest-risk/return strategy in the library" → "among the zoop symphonies"
+- SOXL Growth RL "highest max drawdown" → "second-highest (behind Inside Nancy Pelosi's Chips)"
+- s90 "most volatile in the library" → "second only to SOXL Growth v2.4.5 RL"; Wooden ARKK "second-highest std dev" → "among the highest"; SPY/Energy/Chips "lowest Sharpe/Calmar" → "among the lowest"; several "other 11 strategies" / library-only-uniqueness claims rescoped to the zoop set
+
+**Files changed:** `index.html`, `about.html`, `data/strategies.json`, `data/strategies.js`, `data/glossary.json`, `data/glossary.js`, `scripts/add_glossary.py`, `scripts/add_zoop.py`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.5.8] - 2026-06-15
 
 ### Changed — Brand name displayed as "Composer Atlas" (with a space)
@@ -326,9 +353,9 @@ The low-catchers component is a waterfall of extreme oversold conditions across 
 | Sharpe Ratio | 3.04 |
 | Calmar Ratio | 24.8 |
 | Standard Deviation | 79.7% |
-| Backtest Days | 551 (~1.5 yrs) |
+| Backtest Days | 551 (~2.2 yrs) |
 
-**Important:** Backtest covers ~1.5 years only (from early 2024). Metrics reflect a predominantly bull market and should be interpreted with caution.
+**Important:** Backtest covers ~2.2 years only (from early 2024). Metrics reflect a predominantly bull market and should be interpreted with caution.
 
 Metrics fetched via Composer API (`POST /api/v0.1/symphonies/K8ql2SKFd4VDBemIstEr/backtest`).
 

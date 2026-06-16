@@ -400,7 +400,7 @@ NEW_ENTRIES = [
       {
         "title": "In Practice",
         "paragraphs": [
-          "The strategies in the Composer Atlas library show ARRs ranging from approximately 73% (Nancy Pelosi's Chips, SPY Energy Chips) to 735% (s90 Half Low Catch — over only ~1.5 years). The core zoop strategies backtested over 14.2 years range from 92% (2026 Frontrunner) to 182% (Sometimes TQQQ).",
+          "The strategies in the Composer Atlas library show ARRs ranging from approximately 73% (Nancy Pelosi's Chips, SPY Energy Chips) to 735% (s90 Half Low Catch — over only ~2.2 years). Among the zoop strategies, backtested annualized returns range from ~91% (2026 Frontrunner) to ~280% (KMLM Switcher), though backtest lengths vary from ~5.5 to ~14.2 years.",
           "These figures are extraordinary by conventional standards: the S&P 500 has historically returned approximately 10% per year, and professional hedge funds rarely sustain 20-30% annualized over multi-year periods. The strategies achieve these figures through 3x leverage on the Nasdaq 100 combined with systematic risk management that avoids the worst bear market periods."
         ]
       },
@@ -409,14 +409,14 @@ NEW_ENTRIES = [
         "paragraphs": [
           "ARR says nothing about the journey. A strategy with 100% ARR that dropped 80% halfway through and recovered looks identical to one that grew smoothly. Max drawdown, standard deviation, and Sharpe ratio are essential complements for understanding the actual experience of holding the strategy.",
           "Backtest ARR is not a forward projection. Strategies do not maintain their historical ARR going forward. Exceptional backtested ARR often reflects favorable period selection, overfitting to historical data, or market conditions that may not recur.",
-          "Short backtests produce unreliable ARR. A strategy showing 500% ARR over 18 months has barely survived one market regime. Never compare ARR across strategies without first comparing their backtest lengths — a 735% ARR over 1.5 years and a 182% ARR over 14.2 years are not comparable headline numbers."
+          "Short backtests produce unreliable ARR. A strategy showing 500% ARR over 18 months has barely survived one market regime. Never compare ARR across strategies without first comparing their backtest lengths — a 735% ARR over 2.2 years and a 182% ARR over 14.2 years are not comparable headline numbers."
         ]
       },
       {
         "title": "Interpreting ARR in the Composer Atlas Library",
         "paragraphs": [
           "The right way to read the ARR on a strategy card is as a starting point for further investigation, not a terminal conclusion. A high ARR is a necessary but insufficient condition for a strategy worth using. You must also assess whether the ARR was earned at acceptable risk levels (Sharpe ratio), whether the drawdowns were survivable (max drawdown), and whether the backtest period was long enough to include genuine bear market stress. A strategy with 200% ARR and a 50% max drawdown requires a very different investment commitment than one with 100% ARR and a 20% max drawdown.",
-          "ARR figures cannot be fairly compared across strategies with very different backtest lengths. The s90 Half Low Catch's 735% ARR over 1.5 years and Sometimes TQQQ's 182% ARR over 14.2 years are not directly comparable: the short-backtest strategy has not been tested through a full market cycle, while the long-backtest strategy has survived multiple bear markets, rate cycles, and sector rotations. When allocating real capital, prioritize strategies with the longest backtests and most consistent multi-year performance.",
+          "ARR figures cannot be fairly compared across strategies with very different backtest lengths. The s90 Half Low Catch's 735% ARR over 2.2 years and Sometimes TQQQ's 182% ARR over 14.2 years are not directly comparable: the short-backtest strategy has not been tested through a full market cycle, while the long-backtest strategy has survived multiple bear markets, rate cycles, and sector rotations. When allocating real capital, prioritize strategies with the longest backtests and most consistent multi-year performance.",
           "Cumulative return — also shown on strategy cards — is the total growth of $1 invested from the start of the backtest. ARR is most useful for comparing strategies of different lengths on equal footing. Cumulative return is most useful for communicating the absolute magnitude of compounding — Sometimes TQQQ's cumulative return of over 2,000,000x over 14.2 years reflects 182% annual compounding sustained across multiple market cycles, which is a more visceral demonstration of the compounding power of systematic leveraged investing than the percentage figure alone conveys."
         ]
       }
@@ -466,7 +466,7 @@ NEW_ENTRIES = [
       {
         "title": "Limitations",
         "paragraphs": [
-          "KMLM launched in November 2020, giving it only approximately 5 years of live history. The strategy's exceptional 2022 performance was its first major test; extended out-of-sample periods across multiple market regimes are needed to validate the long-run correlation structure.",
+          "KMLM launched in November 2020, giving it only approximately 5.5 years of live history. The strategy's exceptional 2022 performance was its first major test; extended out-of-sample periods across multiple market regimes are needed to validate the long-run correlation structure.",
           "Managed futures underperform in sideways, range-bound markets. When bonds, commodities, currencies, and equities all chop within ranges without sustained trends, the strategy generates whipsaw losses from repeated failed trend signals. Much of the 2010s represented this challenging environment for trend-following managed futures.",
           "The correlation benefit is regime-dependent, not constant. KMLM's negative correlation to equities is highest during trending bear markets but approaches zero or positive during bull markets. Investors expecting consistent diversification from KMLM in all market conditions will be disappointed.",
           "Expense ratio: KMLM charges 0.90% annually, slightly above most equity index ETFs but reasonable for the complexity of its underlying systematic strategy."
@@ -477,7 +477,7 @@ NEW_ENTRIES = [
         "paragraphs": [
           "Managed futures are the most powerful defensive diversifier available to Composer.trade symphony builders because they can profit in both bull and bear markets through trend-following across uncorrelated asset classes. This makes KMLM uniquely valuable compared to bonds (which underperformed during 2022's simultaneous equity-bond bear market) or cash (which earns yield but does not benefit from bear market trends). A symphony rotating between TQQQ in bull markets and KMLM in bear markets is not simply moving from offensive to defensive — it is actively seeking profits in both regimes through fundamentally different mechanisms.",
           "The rotation trigger between leveraged equity and managed futures is one of the most important design decisions in a KMLM-inclusive symphony. Using a trend signal on equities (like the 200d MA on SPY) creates a binary switch: bull regime holds TQQQ, bear regime holds KMLM. Using a relative momentum comparison between TQQQ and KMLM directly — holding whichever has the stronger recent return — creates a more dynamic switch that responds to actual relative performance rather than requiring a specific SMA crossover event.",
-          "The KMLM Switcher in this library achieves its exceptional Calmar ratio (9.75) and Sharpe (2.66) by combining the managed futures rotation with the full suite of RSI-based dip-buy signals from the Frontrunner component. When no dip-buy signal is active and tech sector momentum (XLK RSI) is positive, the strategy holds the 4-ETF leveraged equity basket for maximum upside. When tech momentum weakens, it rotates to KMLM, which may continue generating returns from non-equity trends."
+          "The KMLM Switcher in this library achieves its exceptional Calmar ratio (9.52) and Sharpe (2.63) by combining the managed futures rotation with the full suite of RSI-based dip-buy signals from the Frontrunner component. When no dip-buy signal is active and tech sector momentum (XLK RSI) is positive, the strategy holds the 4-ETF leveraged equity basket for maximum upside. When tech momentum weakens, it rotates to KMLM, which may continue generating returns from non-equity trends."
         ]
       }
     ]
