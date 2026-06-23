@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-update_metrics.py — Fetch fresh data from the Composer API and update:
+update_metrics.py: Fetch fresh data from the Composer API and update:
   - data/strategies.json + data/strategies.js  (backtest metrics for all 18 strategies)
   - data/symphony_scores.json                   (full logic trees for all 18 symphonies)
 
@@ -105,7 +105,7 @@ def update_strategies() -> list:
             )
 
         except Exception as exc:
-            print(f"FAILED — {exc}")
+            print(f"FAILED: {exc}")
             failed.append(s["name"])
 
     if failed:
@@ -126,7 +126,7 @@ def write_strategies_json(strategies: list) -> None:
 
 def write_strategies_js(strategies: list) -> None:
     comment = (
-        "// Strategies data — loaded as a script tag so the site works with file:// protocol.\n"
+        "// Strategies data - loaded as a script tag so the site works with file:// protocol.\n"
         "// To update metrics: run scripts/update_metrics.py\n"
     )
     body = f"window.STRATEGIES_DATA = {json.dumps(strategies, indent=2, ensure_ascii=False)};\n"
@@ -151,7 +151,7 @@ def update_scores(strategies: list) -> dict:
             scores[slug] = score
             print("OK")
         except Exception as exc:
-            print(f"FAILED — {exc}")
+            print(f"FAILED: {exc}")
             failed.append(s["name"])
 
     if failed:

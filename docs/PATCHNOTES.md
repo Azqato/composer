@@ -1,13 +1,35 @@
-# Composer Atlas — Changelog
+# Composer Atlas: Changelog
 
 All notable changes to Composer Atlas are documented in this file.
 Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.7.2] - 2026-06-22
+
+### Chore: Full em-dash audit and removal across all project files
+
+Removed all 696 em-dash instances (Unicode U+2014) from every project file: HTML pages, documentation, JavaScript, CSS, and JSON data. No HTML entity `&mdash;` forms were found. Double-dash `--` sequences were audited and confirmed to be Markdown/CSS syntax only, not punctuation substitutes, so no changes were made there.
+
+**Replacement rules applied by context:**
+
+- `**Label**: description` for bold label introductions (was `**Label** [em-dash] description`)
+- `` `code`: description `` for inline code labels (was `` `code` [em-dash] description ``)
+- `### Heading: Subtitle` for heading separators (was `### Heading [em-dash] Subtitle`)
+- `Title: Site Name` for page title separators (was `Title [em-dash] Site Name`)
+- Comma for mid-sentence asides in prose
+- Semicolon for adjacent independent clauses
+- Parentheses for supplementary information
+
+**Files changed:** `404.html`, `about.html`, `glossary.html`, `index.html`, `strategies.html`, `README.md`, `js/app.js`, `css/main.css`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`, `docs/PRD.md`, `data/glossary.json`, `data/glossary.js`, `data/strategies.json`, `data/strategies.js`
+
+**Writing Style documented:** PRD Section 19 "Writing Style" added. Covers the em-dash prohibition (both literal U+2014 and `&mdash;` entity), approved replacement patterns, a pattern table, the double-dash rule, and the audit process.
+
+---
+
 ## [1.7.1] - 2026-06-22
 
-### Changed — Homepage: "Longest Backtest" stat + sort by backtest length
+### Changed: Homepage: "Longest Backtest" stat + sort by backtest length
 
 Added a fifth stat to the homepage stats bar: **Longest Backtest**, which reads `~15 yrs` (the max `backtest_days` across all strategies, rounded to nearest year).
 
@@ -19,9 +41,9 @@ Also changed the homepage strategy grid sort order from the default JSON order t
 
 ## [1.7.0] - 2026-06-22
 
-### Added — AI Summary section on every strategy page
+### Added: AI Summary section on every strategy page
 
-Every strategy detail page now opens with an **AI Summary** — a Claude-authored analysis displayed in a distinct purple-accented box directly above the "How It Works" section. For each strategy, Claude reviews the symphony's structure, assets, signals/logic, performance metrics, and backtest period, then explains in plain English **why** someone would follow it, the **purpose** behind its logic, and any **noteworthy characteristics** — short backtests, deep drawdowns, or period-dependent returns that warrant skepticism.
+Every strategy detail page now opens with an **AI Summary**: a Claude-authored analysis displayed in a distinct purple-accented box directly above the "How It Works" section. For each strategy, Claude reviews the symphony's structure, assets, signals/logic, performance metrics, and backtest period, then explains in plain English **why** someone would follow it, the **purpose** behind its logic, and any **noteworthy characteristics**: short backtests, deep drawdowns, or period-dependent returns that warrant skepticism.
 
 The summaries are deliberately even-handed in line with the Transparency Over Hype and Education Before Promotion tenets: strategies with spectacular-but-short backtests (e.g. s90 Half Low Catch at ~2 years / +735% ARR, Simon's KMLM Switcher at ~4 years / +654% ARR) and those with catastrophic drawdowns (Inside Nancy Pelosi's Chips −86%, SOXL Growth v2.4.5 RL −82%, Calmar ≤ 1.0) are explicitly flagged so readers discount the headline figures appropriately.
 
@@ -29,7 +51,7 @@ The summaries are deliberately even-handed in line with the Transparency Over Hy
 - New `ai_summary` field (array of paragraph strings) on all 25 strategies in `data/strategies.json` and `data/strategies.js`, inserted immediately before `how_it_works`
 - `AI Summary` render block in `strategies.html`, placed above How It Works; renders nothing when the field is absent
 - `.ai-summary` component (box, header, ✦ mark, paragraphs) in `css/main.css`
-- `scripts/add_ai_summary.py` — reproducible, re-runnable script that holds every summary keyed by slug and writes both data files in sync
+- `scripts/add_ai_summary.py`: reproducible, re-runnable script that holds every summary keyed by slug and writes both data files in sync
 
 **Process documented:** PRD Section 11 gains a "Generating the AI Summary" runbook; the streamlined URL-based add-strategy workflow now drafts `ai_summary` automatically; Section 12 schema documents the new field; DESIGN.md documents the `.ai-summary` component.
 
@@ -39,11 +61,11 @@ The summaries are deliberately even-handed in line with the Transparency Over Hy
 
 ## [1.6.0] - 2026-06-22
 
-### Added — Simon's KMLM Switcher strategy (strategy #25)
+### Added: Simon's KMLM Switcher strategy (strategy #25)
 
 Added Simon's KMLM Switcher (`simons-kmlm-switcher`) to the strategy library, bringing the total to 25 strategies. Symphony ID: `u5iBJE751BM5FKPRJvKf`.
 
-**Strategy overview:** A three-layer RSI engine that first screens 11 market tickers for overbought conditions (routing to UVXY), then cascades through 4 leveraged ETF dip-buy checks at extreme oversold levels, and finally runs a core KMLM momentum switch — holding the two most oversold assets from {TECL, SOXL, SVIX} when tech leads, or rotating to the stronger of {SQQQ, TLT} when managed futures momentum dominates.
+**Strategy overview:** A three-layer RSI engine that first screens 11 market tickers for overbought conditions (routing to UVXY), then cascades through 4 leveraged ETF dip-buy checks at extreme oversold levels, and finally runs a core KMLM momentum switch, holding the two most oversold assets from {TECL, SOXL, SVIX} when tech leads, or rotating to the stronger of {SQQQ, TLT} when managed futures momentum dominates.
 
 **Key metrics (backtest from ~April 2022, 1,049 trading days):** ARR +654.3%, Max DD −32.0%, Sharpe 3.01, Calmar 20.4. Highest ARR, Sharpe, and Calmar in the library.
 
@@ -55,15 +77,15 @@ Added Simon's KMLM Switcher (`simons-kmlm-switcher`) to the strategy library, br
 
 ## [1.5.9] - 2026-06-15
 
-### Fixed — Site-wide accuracy audit (strategies, glossary, counts)
+### Fixed: Site-wide accuracy audit (strategies, glossary, counts)
 
 Full fact-check of every strategy, glossary concept, and HTML page. Corrected numbers and superlatives that had drifted out of sync after the library grew from the original 12 zoop symphonies to 24 strategies and after backtest-metric refreshes.
 
 **Counts & dynamic stats:**
-- `about.html` — "12 strategy symphonies" → "24"
-- `index.html` — the homepage "Concepts" stat was hardcoded to `8`; it now reads `glossary.length` (19)
-- Glossary "Zoop's Strategies" — "11 strategies in this collection" → "12"; added the missing 12th row (SOXL Growth 2026) and rebuilt the whole stats table to current ARR/Sharpe/Max DD values
-- `zoops-soxl-growth-2026` was missing the `zoop` tag — added, so it now appears under the Zoop's Strategies concept
+- `about.html`: "12 strategy symphonies" → "24"
+- `index.html`: the homepage "Concepts" stat was hardcoded to `8`; it now reads `glossary.length` (19)
+- Glossary "Zoop's Strategies", "11 strategies in this collection" → "12"; added the missing 12th row (SOXL Growth 2026) and rebuilt the whole stats table to current ARR/Sharpe/Max DD values
+- `zoops-soxl-growth-2026` was missing the `zoop` tag: added, so it now appears under the Zoop's Strategies concept
 
 **Stale metric citations corrected to match `strategies.json`:**
 - Excellent Adventure 1-yr trailing +190.8% → +170.0%; Manhattan 3-mo −9% → −1.5% and Calmar 4.41 → 4.43; Leveraged TQQQ 1-yr +120.2% → +120.4%; Safety Checks Max DD ~43.7% → ~43.5%; Holy Grail 2026 cumulative 44,142x → 44,866x
@@ -82,7 +104,7 @@ Full fact-check of every strategy, glossary concept, and HTML page. Corrected nu
 
 ## [1.5.8] - 2026-06-15
 
-### Changed — Brand name displayed as "Composer Atlas" (with a space)
+### Changed: Brand name displayed as "Composer Atlas" (with a space)
 
 The site's display name is now rendered as **Composer Atlas** (two words) instead of the previous one-word **ComposerAtlas**. This applies everywhere the name appears as a brand/product label: page `<title>` tags, the nav logo text, the footer copyright, the hero eyebrow, the About page, and all body/glossary prose that references the library by name. Documentation (PRD, DESIGN, README, this changelog) was updated to match.
 
@@ -91,7 +113,7 @@ Literal technical identifiers were intentionally left unchanged because they are
 - The GitHub repository (`Azqato/composer`) and its prior name (`Azqato/ComposerAtlas`)
 - Historical GitHub Pages URLs and route-table paths (`/ComposerAtlas/...`)
 
-No functional or routing behaviour changed — this is a presentation-only rename.
+No functional or routing behaviour changed, this is a presentation-only rename.
 
 **Files changed:** `index.html`, `about.html`, `glossary.html`, `strategies.html`, `404.html`, `js/app.js`, `css/main.css`, `data/glossary.js`, `data/glossary.json`, `scripts/add_glossary.py`, `scripts/add_zoop.py`, `README.md`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
 
@@ -99,12 +121,12 @@ No functional or routing behaviour changed — this is a presentation-only renam
 
 ## [1.5.7] - 2026-06-15
 
-### Added — "Individual Stocks" and "Leveraged Strategies" nav links
+### Added: "Individual Stocks" and "Leveraged Strategies" nav links
 
 Added two new top navigation links between "About" and "Support", pointing to sibling Azqato sites:
 
-- **Individual Stocks** — links to `https://azqato.github.io/stocks/` (same tab)
-- **Leveraged Strategies** — links to `https://azqato.github.io/leveraged-strategies/` (same tab)
+- **Individual Stocks**: links to `https://azqato.github.io/stocks/` (same tab)
+- **Leveraged Strategies**: links to `https://azqato.github.io/leveraged-strategies/` (same tab)
 
 Both links appear in the desktop nav, mobile nav drawer, and follow the existing nav link rendering pipeline. They open in the same tab (no `target="_blank"`) unlike the Support link.
 
@@ -114,18 +136,18 @@ Both links appear in the desktop nav, mobile nav drawer, and follow the existing
 
 ## [1.5.6] - 2026-06-15
 
-### Added — "Backtesting" glossary concept (19th entry)
+### Added: "Backtesting" glossary concept (19th entry)
 
-Added a comprehensive glossary entry for `backtesting` covering the full lifecycle of how backtests work — both in general and specific to Composer.trade's engine.
+Added a comprehensive glossary entry for `backtesting` covering the full lifecycle of how backtests work, both in general and specific to Composer.trade's engine.
 
 **Sections included:**
-- **Definition** — what backtesting is and its role as an evaluation tool vs. a prediction tool
-- **How It Works** — simulation mechanics, cost accounting, importance of data range and market regime coverage
-- **Common Backtesting Pitfalls** — survivorship bias, look-ahead bias, overfitting (data dredging), curve fitting
-- **Backtesting vs. Forward Testing** — paper trading as the live-environment complement
-- **How Composer.trade Runs Backtests** — daily rebalance lag, adjusted price data, what costs ARE and are NOT modeled (expense ratios embedded in NAV; commissions/spreads not modeled)
-- **Reading a Composer Backtest** — CAGR, max drawdown, Sharpe, benchmark comparison, ETF launch date constraints; includes summary table of the four core metrics
-- **Limitations of Backtesting** — regime change risk, short leveraged ETF history (TQQQ ~15 years), overfitting risk in Composer's condition-rich environment
+- **Definition**: what backtesting is and its role as an evaluation tool vs. a prediction tool
+- **How It Works**: simulation mechanics, cost accounting, importance of data range and market regime coverage
+- **Common Backtesting Pitfalls**: survivorship bias, look-ahead bias, overfitting (data dredging), curve fitting
+- **Backtesting vs. Forward Testing**: paper trading as the live-environment complement
+- **How Composer.trade Runs Backtests**: daily rebalance lag, adjusted price data, what costs ARE and are NOT modeled (expense ratios embedded in NAV; commissions/spreads not modeled)
+- **Reading a Composer Backtest**: CAGR, max drawdown, Sharpe, benchmark comparison, ETF launch date constraints; includes summary table of the four core metrics
+- **Limitations of Backtesting**: regime change risk, short leveraged ETF history (TQQQ ~15 years), overfitting risk in Composer's condition-rich environment
 
 **Files changed:** `data/glossary.json`, `data/glossary.js`, `docs/PATCHNOTES.md`, `docs/PRD.md`
 
@@ -133,7 +155,7 @@ Added a comprehensive glossary entry for `backtesting` covering the full lifecyc
 
 ## [1.5.5] - 2026-06-15
 
-### Infra — Move ad-hoc scripts to `scripts/` folder
+### Infra: Move ad-hoc scripts to `scripts/` folder
 
 Moved `_add_glossary.py` and `_add_zoop.py` from the project root into `scripts/` (renamed to `add_glossary.py` and `add_zoop.py`, dropping the underscore prefix). Updated all internal file paths from hardcoded absolute Windows paths to the portable `Path(__file__).resolve().parent.parent` pattern used by `update_metrics.py`. Deleted the originals from the project root.
 
@@ -146,7 +168,7 @@ Documented the convention in `docs/PRD.md`: all Python scripts must live in the 
 
 ## [1.5.4] - 2026-06-15
 
-### Fix — Improve disabled text legibility
+### Fix: Improve disabled text legibility
 
 Updated `--color-disabled` from `#444444` to `#c0c0c0` globally. This affects all secondary UI text: stat bar labels ("Strategies", "Best Sharpe", "Top ARR", "Concepts"), breadcrumb separators, section counts, and strategy card metadata. The previous value was near-invisible against the dark background.
 
@@ -156,7 +178,7 @@ Updated `--color-disabled` from `#444444` to `#c0c0c0` globally. This affects al
 
 ## [1.5.3] - 2026-06-15
 
-### Added — "Zoop's Strategies" glossary concept and tag
+### Added: "Zoop's Strategies" glossary concept and tag
 
 Added a glossary entry for `zoop` covering who Zoop (Azqato) is, the design philosophy behind his strategy suite, and an overview of all 11 zoops-* strategies with their headline metrics. Added the `zoop` tag (orange) to all 11 zoops-* strategies, with a label and CSS class so it renders distinctively on strategy cards.
 
@@ -166,7 +188,7 @@ Added a glossary entry for `zoop` covering who Zoop (Azqato) is, the design phil
 
 ## [1.5.2] - 2026-06-15
 
-### Added — 9 new glossary concepts (17 total)
+### Added: 9 new glossary concepts (17 total)
 
 Added rich multi-section entries for nine new concepts referenced throughout the site:
 
@@ -186,7 +208,7 @@ Each entry includes Definition, How It Works, In Practice, Limitations, and an e
 
 ## [1.5.1] - 2026-06-15
 
-### Fix — Glossary card titles are now clickable links
+### Fix: Glossary card titles are now clickable links
 
 Made the concept name in each glossary card a clickable anchor link pointing to the detail page (`glossary.html?slug=…`), matching the existing behavior on strategy cards.
 
@@ -196,7 +218,7 @@ Made the concept name in each glossary card a clickable anchor link pointing to 
 
 ## [1.5.0] - 2026-06-14
 
-### Added — 6 new strategies (24 total)
+### Added: 6 new strategies (24 total)
 
 Added six new Composer symphonies to the strategy library, expanding the catalog from 18 to 24 strategies. Each entry was analyzed from the Composer API backtest metrics and logic tree, with full `how_it_works` narrative, `signals` breakdown, and `risk_profile` section.
 
@@ -210,12 +232,12 @@ Added six new Composer symphonies to the strategy library, expanding the catalog
 | SPY, Energy, Chips, Commodities | `rtyBIBOKEY2cPSbJSQX8` | 73.9% | -65.3% |
 
 **Notable additions:**
-- **SOXX Group** — Garen/DN's K Wave V6 system with the '30-20-10 Double Pop' multi-timeframe RSI cascade for semiconductor mean-reversion
-- **SOXL Growth v2.4.5 RL** — Reinforcement-learning-optimized SOXL strategy; identified by ML-precision decimal thresholds (RSI <= 62.1995, StdDev <= 4.9226) and highest drawdown in the library (82.5%)
-- **Inside Nancy Pelosi's Chips - V3** — Semiconductor mean-reversion using SOXX 5-day momentum extremes and individual NVDA/AMD RSI signals at extreme thresholds (RSI > 90 and < 15)
-- **Top Cap by MA + RSI ETF Hedge** — Minimalist 3-branch strategy: SPY RSI(6d) >= 90 → UVXY; RSI(6d) <= 28 → leveraged attack [TQQQ,LABU,SPXL]; normal → mega-cap momentum filter [WMT,MSTR,AMZN,KO,BRK/B,AAPL,TSLA]
-- **Mean Reversion Comparison to Python Code** — Built to cross-validate a Python backtest; minimal SPY MA + TQQQ RSI(10d) logic that serves as a performance baseline vs Holy Grail
-- **SPY, Energy, Chips, Commodities** — VIXM RSI(40d) Black Swan Catcher paired with a multi-sector rotator spanning [SOXX,NVDA,AMD,SPY,DBC,XLE,ENPH]
+- **SOXX Group**: Garen/DN's K Wave V6 system with the '30-20-10 Double Pop' multi-timeframe RSI cascade for semiconductor mean-reversion
+- **SOXL Growth v2.4.5 RL**: Reinforcement-learning-optimized SOXL strategy; identified by ML-precision decimal thresholds (RSI <= 62.1995, StdDev <= 4.9226) and highest drawdown in the library (82.5%)
+- **Inside Nancy Pelosi's Chips - V3**: Semiconductor mean-reversion using SOXX 5-day momentum extremes and individual NVDA/AMD RSI signals at extreme thresholds (RSI > 90 and < 15)
+- **Top Cap by MA + RSI ETF Hedge**: Minimalist 3-branch strategy: SPY RSI(6d) >= 90 → UVXY; RSI(6d) <= 28 → leveraged attack [TQQQ,LABU,SPXL]; normal → mega-cap momentum filter [WMT,MSTR,AMZN,KO,BRK/B,AAPL,TSLA]
+- **Mean Reversion Comparison to Python Code**: Built to cross-validate a Python backtest; minimal SPY MA + TQQQ RSI(10d) logic that serves as a performance baseline vs Holy Grail
+- **SPY, Energy, Chips, Commodities**: VIXM RSI(40d) Black Swan Catcher paired with a multi-sector rotator spanning [SOXX,NVDA,AMD,SPY,DBC,XLE,ENPH]
 
 **Files changed:** `data/strategies.json`, `data/strategies.js`, `docs/PATCHNOTES.md`, `docs/PRD.md`, `README.md`
 
@@ -223,15 +245,15 @@ Added six new Composer symphonies to the strategy library, expanding the catalog
 
 ## [1.4.2] - 2026-06-14
 
-### Fix — Repo-rename-proof BASE URL detection
+### Fix: Repo-rename-proof BASE URL detection
 
 Replaced hardcoded string matching in the `BASE` detection with a hostname check:
 
 ```js
-// Before — breaks whenever the repo is renamed
+// Before, breaks whenever the repo is renamed
 const BASE = (_seg && _seg.toLowerCase() === 'composer') ? '/' + _seg : '';
 
-// After — detects GitHub Pages by host; works regardless of repo name
+// After, detects GitHub Pages by host; works regardless of repo name
 const BASE = (window.location.hostname.endsWith('.github.io') && _seg) ? '/' + _seg : '';
 ```
 
@@ -243,7 +265,7 @@ The previous approach required updating the string literal every time the GitHub
 
 ## [1.4.1] - 2026-06-14
 
-### Infra — GitHub repository renamed from `ComposerAtlas` to `composer`
+### Infra: GitHub repository renamed from `ComposerAtlas` to `composer`
 
 The GitHub repository was renamed from `Azqato/ComposerAtlas` to `Azqato/composer`. The GitHub Pages URL changed accordingly.
 
@@ -252,7 +274,7 @@ The GitHub repository was renamed from `Azqato/ComposerAtlas` to `Azqato/compose
 | Repository | `https://github.com/Azqato/ComposerAtlas` | `https://github.com/Azqato/composer` |
 | Live site | `https://azqato.github.io/ComposerAtlas/` | `https://azqato.github.io/composer/` |
 
-**Critical fix — `js/app.js` BASE detection:** The `BASE` constant is derived from the first URL path segment and used to prefix all internal links. Before: checked for `'composeratlas'` (case-insensitive). After: checks for `'composer'`. Without this fix all navigation and deep links would resolve to the server root.
+**Critical fix; `js/app.js` BASE detection:** The `BASE` constant is derived from the first URL path segment and used to prefix all internal links. Before: checked for `'composeratlas'` (case-insensitive). After: checks for `'composer'`. Without this fix all navigation and deep links would resolve to the server root.
 
 ```js
 // Before
@@ -270,7 +292,7 @@ const BASE = (_seg && _seg.toLowerCase() === 'composer') ? '/' + _seg : '';
 
 ## [1.4.0] - 2026-06-14
 
-### Added — 5 new strategies (18 total)
+### Added: 5 new strategies (18 total)
 
 Added five new Composer symphonies to the strategy library, expanding the catalog from 13 to 18 strategies. Each entry was analyzed from the Composer API logic tree and includes full `how_it_works` narrative, `signals` breakdown, and `risk_profile` section.
 
@@ -318,9 +340,9 @@ Added five new Composer symphonies to the strategy library, expanding the catalo
 
 ## [1.2.1] - 2026-06-14
 
-### Docs — Documented URL-based strategy addition workflow
+### Docs: Documented URL-based strategy addition workflow
 
-Added "Adding a Strategy from a Composer URL (Streamlined)" section to `docs/RUNBOOK.MD` — the preferred method for adding new strategies. Documents the full automated workflow: extract symphony ID from URL, fetch backtest metrics and logic tree from the Composer API (no auth required), AI analysis of IF/ELSE logic tree to draft all content fields, name/slug proposal with user confirmation, and dual-file insertion into `data/strategies.json` + `data/strategies.js`.
+Added "Adding a Strategy from a Composer URL (Streamlined)" section to `docs/RUNBOOK.MD`: the preferred method for adding new strategies. Documents the full automated workflow: extract symphony ID from URL, fetch backtest metrics and logic tree from the Composer API (no auth required), AI analysis of IF/ELSE logic tree to draft all content fields, name/slug proposal with user confirmation, and dual-file insertion into `data/strategies.json` + `data/strategies.js`.
 
 The prior "Adding a New Strategy" workflow is retained and renamed "Manual" for cases where the API is unavailable.
 
@@ -330,7 +352,7 @@ The prior "Adding a New Strategy" workflow is retained and renamed "Manual" for 
 
 ## [1.2.0] - 2026-06-14
 
-### Refactor — Consolidated folder structure: flat root .html files
+### Refactor: Consolidated folder structure: flat root .html files
 
 Eliminated the `strategies/` and `glossary/` subdirectories entirely. Each section's listing and detail views are now served from a single root-level `.html` file.
 
@@ -352,7 +374,7 @@ Eliminated the `strategies/` and `glossary/` subdirectories entirely. Each secti
 | `/ComposerAtlas/glossary/` | `/ComposerAtlas/glossary.html` |
 | `/ComposerAtlas/glossary/detail/?slug=X` | `/ComposerAtlas/glossary.html?slug=X` |
 
-**`u()` simplified** (`js/app.js`): Removed depth-detection logic (no longer needed — all pages are at root depth 0). `file://` path now just strips the leading `/` and maps `'/'` → `'index.html'`. Function shrank from 12 lines to 5.
+**`u()` simplified** (`js/app.js`): Removed depth-detection logic (no longer needed, all pages are at root depth 0). `file://` path now just strips the leading `/` and maps `'/'` → `'index.html'`. Function shrank from 12 lines to 5.
 
 **Files changed:** `strategies.html` (new), `glossary.html` (new), `js/app.js`, `index.html`, `404.html`, `docs/RUNBOOK.MD` (v1.6 → v1.7), `docs/PATCHNOTES.MD`
 
@@ -362,9 +384,9 @@ Eliminated the `strategies/` and `glossary/` subdirectories entirely. Each secti
 
 ## [1.1.9] - 2026-06-14
 
-### Fix — s90 50/40 maxDD: remove incorrect 2026 Frontrunner reference
+### Fix: s90 50/40 maxDD: remove incorrect 2026 Frontrunner reference
 
-The `how_it_works` and `risk_profile` content incorrectly stated the strategy paired with "the 2026 Frontrunner." It uses a different frontrunner component. Updated all three occurrences to "a frontrunner component" / "the frontrunner component" — neutral phrasing that doesn't assert which frontrunner is used.
+The `how_it_works` and `risk_profile` content incorrectly stated the strategy paired with "the 2026 Frontrunner." It uses a different frontrunner component. Updated all three occurrences to "a frontrunner component" / "the frontrunner component", neutral phrasing that doesn't assert which frontrunner is used.
 
 **Files changed:** `data/strategies.json`, `data/strategies.js`, `docs/PATCHNOTES.MD`
 
@@ -372,11 +394,11 @@ The `how_it_works` and `risk_profile` content incorrectly stated the strategy pa
 
 ## [1.1.8] - 2026-06-14
 
-### Feature — Strategy card titles are now clickable links
+### Feature: Strategy card titles are now clickable links
 
 Strategy card titles (`<h2 class="card-title">`) now link to the strategy detail page, identical to the "View Strategy →" button on each card. Clicking the title navigates to `/strategies/detail/?slug=...`.
 
-**Implementation:** Wrapped `s.name` in an `<a>` tag inside `renderStrategyCard()`. Added `.card-title a { color: inherit; text-decoration: none; }` so the link inherits the heading color and the existing `.card:hover .card-title { color: var(--color-green); }` rule applies naturally — hovering the card turns both the title text and the link green with no additional CSS required.
+**Implementation:** Wrapped `s.name` in an `<a>` tag inside `renderStrategyCard()`. Added `.card-title a { color: inherit; text-decoration: none; }` so the link inherits the heading color and the existing `.card:hover .card-title { color: var(--color-green); }` rule applies naturally, hovering the card turns both the title text and the link green with no additional CSS required.
 
 **Files changed:** `js/app.js`, `css/main.css`, `docs/PATCHNOTES.MD`
 
@@ -384,9 +406,9 @@ Strategy card titles (`<h2 class="card-title">`) now link to the strategy detail
 
 ## [1.1.7] - 2026-06-14
 
-### Content — Added Low Catchers strategy (13th symphony)
+### Content: Added Low Catchers strategy (13th symphony)
 
-Added **s90 50/40 maxDD (Half Low Catch)** (`s90-half-low-catch`) — a multi-asset extreme dip-buying strategy that pairs the 2026 Frontrunner with a dedicated low-catching component.
+Added **s90 50/40 maxDD (Half Low Catch)** (`s90-half-low-catch`), a multi-asset extreme dip-buying strategy that pairs the 2026 Frontrunner with a dedicated low-catching component.
 
 **Strategy summary:**
 
@@ -413,21 +435,21 @@ Metrics fetched via Composer API (`POST /api/v0.1/symphonies/K8ql2SKFd4VDBemIstE
 
 ## [1.1.6] - 2026-06-13
 
-### Design — 🗺️ emoji replaces "CA" monogram as site logo and favicon
+### Design: 🗺️ emoji replaces "CA" monogram as site logo and favicon
 
 Replaced the green "CA" monogram with the 🗺️ map emoji across all logo touchpoints.
 
-**favicon.svg** — Replaced the dark-background rectangle + "CA" JetBrains Mono text with a plain 32×32 SVG that renders the emoji. All 7 HTML pages already reference `favicon.svg` via `<link rel="icon">` so no HTML changes were needed.
+**favicon.svg**: Replaced the dark-background rectangle + "CA" JetBrains Mono text with a plain 32×32 SVG that renders the emoji. All 7 HTML pages already reference `favicon.svg` via `<link rel="icon">` so no HTML changes were needed.
 
-**Nav logo mark** (`js/app.js`) — Changed `<span class="nav-logo-mark">CA</span>` to `<span class="nav-logo-mark">🗺️</span>`.
+**Nav logo mark** (`js/app.js`); Changed `<span class="nav-logo-mark">CA</span>` to `<span class="nav-logo-mark">🗺️</span>`.
 
-**`.nav-logo-mark` CSS** (`css/main.css`) — Removed `font-family: var(--font-mono)`, `font-weight: 700`, and `color: var(--color-green)` (irrelevant to emoji rendering). Replaced with an emoji-safe font stack (`'Segoe UI Emoji'`, `'Apple Color Emoji'`, `'Noto Color Emoji'`) and bumped `font-size` to `1.25rem` for visual balance.
+**`.nav-logo-mark` CSS** (`css/main.css`); Removed `font-family: var(--font-mono)`, `font-weight: 700`, and `color: var(--color-green)` (irrelevant to emoji rendering). Replaced with an emoji-safe font stack (`'Segoe UI Emoji'`, `'Apple Color Emoji'`, `'Noto Color Emoji'`) and bumped `font-size` to `1.25rem` for visual balance.
 
 **Files changed:** `favicon.svg`, `js/app.js`, `css/main.css`
 
 ---
 
-### Docs — Strategy building best practice added to PRD
+### Docs: Strategy building best practice added to PRD
 
 Added a "Content Notes (Pending Placement)" section to `docs/PRD.MD` to stage content destined for the website. First entry: avoid lookback periods shorter than 10 days to prevent overfitting and OOS drift.
 
@@ -437,9 +459,9 @@ Added a "Content Notes (Pending Placement)" section to `docs/PRD.MD` to stage co
 
 ## [1.1.5] - 2026-06-08
 
-### Fix — Stats bar values now use primary white color
+### Fix: Stats bar values now use primary white color
 
-Homepage stats bar numbers (12 Strategies, Best Sharpe, Top ARR, 8 Concepts) were inconsistently colored — the Sharpe and ARR values had `text-green` class applied, making them green while the Strategies and Concepts counts were white. All four stat values now consistently use `--color-primary` (`#f0f0f0`).
+Homepage stats bar numbers (12 Strategies, Best Sharpe, Top ARR, 8 Concepts) were inconsistently colored, the Sharpe and ARR values had `text-green` class applied, making them green while the Strategies and Concepts counts were white. All four stat values now consistently use `--color-primary` (`#f0f0f0`).
 
 **Files changed:** `index.html`
 
@@ -447,7 +469,7 @@ Homepage stats bar numbers (12 Strategies, Best Sharpe, Top ARR, 8 Concepts) wer
 
 ## [1.1.4] - 2026-06-08
 
-### Docs — Full documentation audit: all 12 docs updated to reflect v1.1.x site state
+### Docs: Full documentation audit: all 12 docs updated to reflect v1.1.x site state
 
 All documentation files in `docs/` updated to match the current state of the live site. No code changes.
 
@@ -474,7 +496,7 @@ All documentation files in `docs/` updated to match the current state of the liv
 
 **PRD.MD (v1.0 → v1.1)**
 - Updated strategy count 10 → 12 throughout
-- Fixed Dependencies section: "Chosen JS framework (TBD)" → "Vanilla HTML/CSS/JavaScript — zero build dependencies"
+- Fixed Dependencies section: "Chosen JS framework (TBD)" → "Vanilla HTML/CSS/JavaScript: zero build dependencies"
 
 **ROADMAP.MD (v1.0 → v1.1)**
 - Marked V1.0 as Complete (was "In Development"); added live URL
@@ -500,7 +522,7 @@ All documentation files in `docs/` updated to match the current state of the liv
 
 ## [1.1.3] - 2026-06-08
 
-### Design — Footer simplified to match azqato.github.io
+### Design: Footer simplified to match azqato.github.io
 
 Replaced the multi-column footer (logo, tagline, nav links, disclaimer block) with a clean centered layout matching the spacing and approach of azqato.github.io.
 
@@ -517,9 +539,9 @@ Replaced the multi-column footer (logo, tagline, nav links, disclaimer block) wi
 
 ## [1.1.2] - 2026-06-08
 
-### Fix — All internal links broken on GitHub Pages (case-sensitive BASE detection)
+### Fix: All internal links broken on GitHub Pages (case-sensitive BASE detection)
 
-Every internal link generated by `u()` was broken on the live GitHub Pages deployment — nav links (Strategies, Glossary, About), strategy card "View Strategy" buttons, breadcrumbs, sidebar links, and error-state back buttons. Only hardcoded relative URLs (like the homepage hero CTA) were immune.
+Every internal link generated by `u()` was broken on the live GitHub Pages deployment, nav links (Strategies, Glossary, About), strategy card "View Strategy" buttons, breadcrumbs, sidebar links, and error-state back buttons. Only hardcoded relative URLs (like the homepage hero CTA) were immune.
 
 **Root cause:** `BASE` was computed as:
 ```js
@@ -541,17 +563,17 @@ Also updated the homepage hero Glossary CTA to route through `u('/glossary/')` v
 
 ## [1.1.1] - 2026-06-08
 
-### Cleanup — Pre-Launch Optimization
+### Cleanup: Pre-Launch Optimization
 
 Cleaned up project structure and deployment pipeline in preparation for the initial GitHub Pages launch.
 
 **Deploy workflow** (`deploy.yml`): Previous workflow uploaded the entire repository to GitHub Pages, including files that should never be publicly served. Updated to use `rsync` to build a clean `_site/` folder before upload. Files now excluded from deployment:
 
-- `data/symphony_scores.json` — 14MB raw EDN logic tree data; for AI analysis only, not user-facing
-- `docs/` — Internal project documentation (RUNBOOK, TRD, PATCHNOTES, etc.)
-- `scripts/` — Python data sync scripts
-- `strategies.xlsx` — Source spreadsheet reference
-- `README.MD`, `.gitignore`, `.github/` — Dev/CI config
+- `data/symphony_scores.json`: 14MB raw EDN logic tree data; for AI analysis only, not user-facing
+- `docs/`: Internal project documentation (RUNBOOK, TRD, PATCHNOTES, etc.)
+- `scripts/`: Python data sync scripts
+- `strategies.xlsx`: Source spreadsheet reference
+- `README.MD`, `.gitignore`, `.github/`: Dev/CI config
 
 **CSS**: Removed unused `--color-green-muted: #00a854` custom property. It was defined in `:root` but never referenced anywhere in the stylesheet.
 
@@ -563,7 +585,7 @@ Cleaned up project structure and deployment pipeline in preparation for the init
 
 ## [1.1.0] - 2026-06-08
 
-### Content — Logic Tree Analysis: Full Strategy Rewrites
+### Content: Logic Tree Analysis: Full Strategy Rewrites
 
 All 12 strategy pages have been rewritten from scratch based on analysis of the actual IF/ELSE logic trees stored in `data/symphony_scores.json`. The previous content was generic placeholder text that did not accurately reflect how each symphony works. This release corrects the record.
 
@@ -572,22 +594,22 @@ All 12 strategy pages have been rewritten from scratch based on analysis of the 
 | Field | Before | After |
 |---|---|---|
 | `how_it_works` | 2-3 generic paragraphs describing momentum/rotation | 3 precise paragraphs derived from actual logic tree structure |
-| `signals` | Approximate — often missing or mislabeled | Verified against actual IF branches: ETF tickers, RSI thresholds, and conditions confirmed |
+| `signals` | Approximate: often missing or mislabeled | Verified against actual IF branches: ETF tickers, RSI thresholds, and conditions confirmed |
 | `tags` | Multiple errors (see below) | Corrected per actual logic used |
 | `risk_profile` | Cited stale metric figures | Updated to match current API metrics; stale Calmar/return figures removed |
 
 **Tag corrections across all 12 strategies:**
 
-- `rsi` — Added to all 12 strategies (was missing from Frontrunner, TQQQ FTLT, Safety Checks, KMLM Switcher, UPRO FTLT)
-- `vix-tiers` — Added to all 12 strategies (all use UVXY RSI >65 via the Frontrunner component; tag was absent from most)
-- `200d-ma` — Removed from Frontrunner (no SMA comparison exists in its logic tree); correctly added to TQQQ FTLT, UPRO FTLT, Safety Checks, Leveraged TQQQ Symphony where absent
-- `200d-ma` — Removed from KMLM Switcher and SOXL Growth (neither uses a Price > SMA signal in its terminal logic)
-- `max-drawdown` — Added to SOXL Growth; this is the only strategy using MaxDD as a primary regime gate
-- `200d-ma` — Removed from SOXL Growth (MaxDD is the primary signal, not an SMA comparison)
+- `rsi`: Added to all 12 strategies (was missing from Frontrunner, TQQQ FTLT, Safety Checks, KMLM Switcher, UPRO FTLT)
+- `vix-tiers`: Added to all 12 strategies (all use UVXY RSI >65 via the Frontrunner component; tag was absent from most)
+- `200d-ma`: Removed from Frontrunner (no SMA comparison exists in its logic tree); correctly added to TQQQ FTLT, UPRO FTLT, Safety Checks, Leveraged TQQQ Symphony where absent
+- `200d-ma`: Removed from KMLM Switcher and SOXL Growth (neither uses a Price > SMA signal in its terminal logic)
+- `max-drawdown`: Added to SOXL Growth; this is the only strategy using MaxDD as a primary regime gate
+- `200d-ma`: Removed from SOXL Growth (MaxDD is the primary signal, not an SMA comparison)
 
 **Key content corrections (selected highlights):**
 
-- **Frontrunner**: Recharacterized from "momentum/trend-follower" to "cash-first dip-buying strategy that defaults to BIL T-bills" — the actual behavior
+- **Frontrunner**: Recharacterized from "momentum/trend-follower" to "cash-first dip-buying strategy that defaults to BIL T-bills", the actual behavior
 - **KMLM Switcher**: Removed description of KMLM ETF as the switching instrument; actual switch signal is XLK (Technology SPDR) relative RSI; LABU biotech dip-buy documented
 - **Sometimes TQQQ**: Documented multi-period RSI (10/20/60/100), 6 cumulative return windows (1d/6d/10d/60d/62d/252d), and full bond cross-asset signal set (TLT/BND/IEF/AGG/CORP/PSQ)
 - **Safety Checks**: Documented 10-condition ensemble voting structure (the most accurate description of its behavior)
@@ -602,9 +624,9 @@ All 12 strategy pages have been rewritten from scratch based on analysis of the 
 
 ## [1.0.9] - 2026-06-08
 
-### Data — Symphony logic trees fetched and stored for analysis
+### Data: Symphony logic trees fetched and stored for analysis
 
-Added `data/symphony_scores.json` containing the full IF/ELSE logic tree for all 12 symphonies, fetched from `GET /api/v0.1/symphonies/{id}/score`. This file is for AI analysis and future reference only — it is not served to the website.
+Added `data/symphony_scores.json` containing the full IF/ELSE logic tree for all 12 symphonies, fetched from `GET /api/v0.1/symphonies/{id}/score`. This file is for AI analysis and future reference only, it is not served to the website.
 
 Updated `scripts/update_metrics.py` to also refresh `symphony_scores.json` on every run, keeping logic trees in sync alongside backtest metrics. Run the script monthly (or whenever symphonies are edited) to keep all data current.
 
@@ -614,7 +636,7 @@ Updated `scripts/update_metrics.py` to also refresh `symphony_scores.json` on ev
 
 ## [1.0.8] - 2026-06-08
 
-### Data — Live backtest metrics refreshed via Composer API
+### Data: Live backtest metrics refreshed via Composer API
 
 All 12 strategy metrics updated by fetching fresh backtest data directly from the Composer API (`POST /api/v0.1/symphonies/{id}/backtest`). No API key required.
 
@@ -622,7 +644,7 @@ Updated fields per strategy: `annualized_rate_of_return`, `max_drawdown`, `cumul
 
 **Files changed:** `data/strategies.json`, `data/strategies.js`
 
-**Added:** `scripts/update_metrics.py` — reusable Python script to refresh all metrics on demand. Run with `python scripts/update_metrics.py` from the project root.
+**Added:** `scripts/update_metrics.py`: reusable Python script to refresh all metrics on demand. Run with `python scripts/update_metrics.py` from the project root.
 
 ---
 
@@ -630,7 +652,7 @@ Updated fields per strategy: `annualized_rate_of_return`, `max_drawdown`, `cumul
 
 ### Fix: Secondary text legibility across all pages
 
-Lightened the `--color-secondary` CSS token from `#888888` to `#b0b0b0`. This improves readability of all body/description text on a dark background — including the hero subtitle, strategy descriptions, glossary concept descriptions, how-it-works paragraphs, prose section text, and card descriptions.
+Lightened the `--color-secondary` CSS token from `#888888` to `#b0b0b0`. This improves readability of all body/description text on a dark background, including the hero subtitle, strategy descriptions, glossary concept descriptions, how-it-works paragraphs, prose section text, and card descriptions.
 
 **Files changed:** `css/main.css`
 
@@ -638,7 +660,7 @@ Lightened the `--color-secondary` CSS token from `#888888` to `#b0b0b0`. This im
 
 ## [1.0.6] - 2026-06-08
 
-### Glossary — 5-Paragraph Essays for All 8 Concepts
+### Glossary: 5-Paragraph Essays for All 8 Concepts
 
 Each glossary concept now includes a dedicated "Building with…" essay section that explains why the concept is useful for systematic investing and shows concrete examples of how to apply it when building symphonies in Composer.trade.
 
@@ -659,20 +681,20 @@ Each essay covers: why the concept matters for systematic investing, how it func
 
 **Files changed:** `data/glossary.json`, `data/glossary.js`
 
-No rendering changes required — the existing `glossary/detail/index.html` page renders sections from the data array automatically, so the new essay sections appear without any code changes.
+No rendering changes required, the existing `glossary/detail/index.html` page renders sections from the data array automatically, so the new essay sections appear without any code changes.
 
 ---
 
 ## [1.0.5] - 2026-06-08
 
-### Nav + Footer — Support link and Azqato attribution
+### Nav + Footer: Support link and Azqato attribution
 
 **Navigation**
-- Added "Support" link to desktop nav, mobile nav drawer, and footer nav — links to `https://azqato.github.io/support.html` (opens in new tab)
+- Added "Support" link to desktop nav, mobile nav drawer, and footer nav: links to `https://azqato.github.io/support.html` (opens in new tab)
 - External links in nav now include `target="_blank" rel="noopener noreferrer"` automatically via the `external: true` flag on link objects
 
 **Footer**
-- Added "Made by Azqato." centered below the copyright line — links to `https://azqato.github.io/` (opens in new tab)
+- Added "Made by Azqato." centered below the copyright line: links to `https://azqato.github.io/` (opens in new tab)
 
 **Files changed:** `js/app.js`
 
@@ -686,12 +708,12 @@ All internal links now work correctly when the site is opened by double-clicking
 
 #### Problem
 
-Navigation links in `renderNav()`, `renderFooter()`, and inline page scripts were constructed as `BASE + '/strategies/'`, producing absolute paths like `/strategies/`. On `file://` protocol, `/strategies/` resolves to the filesystem root (e.g., `file:///strategies/`), not relative to the project folder — so every nav click went to a dead 404.
+Navigation links in `renderNav()`, `renderFooter()`, and inline page scripts were constructed as `BASE + '/strategies/'`, producing absolute paths like `/strategies/`. On `file://` protocol, `/strategies/` resolves to the filesystem root (e.g., `file:///strategies/`), not relative to the project folder, so every nav click went to a dead 404.
 
 #### Fix
 
 Added a `u(path)` helper function to `js/app.js`:
-- On HTTP/HTTPS: returns `BASE + path` (unchanged behavior — absolute paths work fine on a server)
+- On HTTP/HTTPS: returns `BASE + path` (unchanged behavior: absolute paths work fine on a server)
 - On `file://`: determines the current page's depth in the directory tree (0 = root, 1 = `strategies/` or `glossary/`, 2 = `strategies/detail/` or `glossary/detail/`) and returns a relative path (e.g., `../../strategies/`) so the browser resolves it correctly
 
 All link constructions across `js/app.js` and the inline scripts in `strategies/detail/index.html`, `glossary/detail/index.html`, and `404.html` have been updated to use `u()` instead of `BASE + '/'`.
@@ -700,7 +722,7 @@ All link constructions across `js/app.js` and the inline scripts in `strategies/
 
 ## [1.0.3] - 2026-06-08
 
-### File:// Protocol Compatibility — Open Without a Server
+### File:// Protocol Compatibility: Open Without a Server
 
 The site now works by double-clicking any HTML file directly. No Python server required.
 
@@ -713,30 +735,30 @@ The previous implementation loaded strategy and glossary data via `fetch()`. Bro
 Converted data loading to a `<script>`-tag-based approach:
 
 **Files Added**
-- `data/strategies.js` — Assigns `window.STRATEGIES_DATA = [...]` with all 12 strategies. Loaded before `app.js` via `<script>` tag.
-- `data/glossary.js` — Assigns `window.GLOSSARY_DATA = [...]` with all 8 glossary concepts.
+- `data/strategies.js`: Assigns `window.STRATEGIES_DATA = [...]` with all 12 strategies. Loaded before `app.js` via `<script>` tag.
+- `data/glossary.js`: Assigns `window.GLOSSARY_DATA = [...]` with all 8 glossary concepts.
 
 **Files Updated**
-- `js/app.js` — `loadStrategies()` and `loadGlossary()` now check `window.STRATEGIES_DATA` / `window.GLOSSARY_DATA` first. Falls back to `fetch()` only if the globals are absent.
-- All 7 HTML pages — Added `<script src="[path]/data/strategies.js">` and `<script src="[path]/data/glossary.js">` before the `app.js` include. Relative paths adjusted per directory depth.
+- `js/app.js`: `loadStrategies()` and `loadGlossary()` now check `window.STRATEGIES_DATA` / `window.GLOSSARY_DATA` first. Falls back to `fetch()` only if the globals are absent.
+- All 7 HTML pages: Added `<script src="[path]/data/strategies.js">` and `<script src="[path]/data/glossary.js">` before the `app.js` include. Relative paths adjusted per directory depth.
 
 #### Result
 
-- Open `index.html` by double-clicking — site loads fully, no server needed.
+- Open `index.html` by double-clicking: site loads fully, no server needed.
 - GitHub Pages continues to work unchanged (HTTP origin, globals are just loaded first).
-- Python server still works as before (fetch fallback or globals — both load the same data).
+- Python server still works as before (fetch fallback or globals: both load the same data).
 - `data/strategies.json` and `data/glossary.json` remain the source-of-truth files. When updating data, keep the corresponding `.js` files in sync.
 
 #### Documentation Updated
 
-- `docs/TRD.MD` (v1.2 → v1.3) — Added `data/*.js` files to directory structure; updated data layer section to describe dual-mode loading (globals + fetch fallback)
-- `docs/RUNBOOK.MD` (v1.2 → v1.3) — Updated "Adding a Strategy" and "Adding a Glossary Entry" workflows to require updating both `.json` and `.js` files; updated "Local Dev" section; updated troubleshooting
+- `docs/TRD.MD` (v1.2 → v1.3), Added `data/*.js` files to directory structure; updated data layer section to describe dual-mode loading (globals + fetch fallback)
+- `docs/RUNBOOK.MD` (v1.2 → v1.3), Updated "Adding a Strategy" and "Adding a Glossary Entry" workflows to require updating both `.json` and `.js` files; updated "Local Dev" section; updated troubleshooting
 
 ---
 
 ## [1.0.2] - 2026-06-08
 
-### Site Build — Vanilla HTML/CSS/JS MVP
+### Site Build: Vanilla HTML/CSS/JS MVP
 
 Full site built from scratch as a zero-dependency vanilla web application. No build tooling required. Deployable directly to GitHub Pages.
 
@@ -745,41 +767,41 @@ Full site built from scratch as a zero-dependency vanilla web application. No bu
 Switched from planned Astro 5.x build system to vanilla HTML/CSS/JS:
 - **Removed:** `package.json`, `astro.config.mjs`, `tailwind.config.mjs`, `tsconfig.json`, `src/` directory
 - **Rationale:** Eliminates Node.js installation requirement. The hosted site and all development workflows now have zero npm/build dependencies.
-- **GitHub Actions:** Updated workflow uploads repository root directly — no build step required.
+- **GitHub Actions:** Updated workflow uploads repository root directly: no build step required.
 
 #### Files Created
 
 **Core**
-- `css/main.css` — Complete design system: CSS custom properties (design tokens), base reset, typography, nav, cards, metrics table, tags/badges, buttons, footer, prose, responsive grid layout
-- `js/app.js` — Shared utilities loaded on every page: BASE URL detection, data loading (`loadStrategies()`, `loadGlossary()`), format helpers (`formatPct`, `formatLargePct`, `formatRatio`, `formatDate`, `formatBacktestDays`, `colorClass`), nav and footer rendering, card/table render helpers
-- `favicon.svg` — CA monogram SVG icon
+- `css/main.css`: Complete design system: CSS custom properties (design tokens), base reset, typography, nav, cards, metrics table, tags/badges, buttons, footer, prose, responsive grid layout
+- `js/app.js`: Shared utilities loaded on every page: BASE URL detection, data loading (`loadStrategies()`, `loadGlossary()`), format helpers (`formatPct`, `formatLargePct`, `formatRatio`, `formatDate`, `formatBacktestDays`, `colorClass`), nav and footer rendering, card/table render helpers
+- `favicon.svg`: CA monogram SVG icon
 - `robots.txt`
-- `.github/workflows/deploy.yml` — Simplified GitHub Actions deploy (no build step, uploads repo root)
+- `.github/workflows/deploy.yml`: Simplified GitHub Actions deploy (no build step, uploads repo root)
 
 **Data**
-- `data/glossary.json` — All 8 glossary concepts in structured JSON format with sections, paragraphs, and optional tables
-- `data/strategies.json` — (previously created) 12 real strategies, all fields from spreadsheet
+- `data/glossary.json`: All 8 glossary concepts in structured JSON format with sections, paragraphs, and optional tables
+- `data/strategies.json`: (previously created) 12 real strategies, all fields from spreadsheet
 
 **Pages**
-- `index.html` — Home page: hero section, live stats bar (strategy count, best Sharpe, top ARR), 3-column strategy card grid loaded via JS
-- `strategies/index.html` — Strategy listing page with full 3-column grid
-- `strategies/detail/index.html` — Strategy detail: reads `?slug=` from URL, renders tags, how-it-works, signals, risk profile, full metrics table; sticky sidebar with other strategies list
-- `glossary/index.html` — Glossary listing with concept cards sorted by category
-- `glossary/detail/index.html` — Concept detail: renders all sections with prose formatting, optional formula box, tables; sidebar with related strategies and other concepts
-- `about.html` — Static about page with disclaimers and tech stack info
-- `404.html` — Custom 404 page
+- `index.html`: Home page: hero section, live stats bar (strategy count, best Sharpe, top ARR), 3-column strategy card grid loaded via JS
+- `strategies/index.html`: Strategy listing page with full 3-column grid
+- `strategies/detail/index.html`: Strategy detail: reads `?slug=` from URL, renders tags, how-it-works, signals, risk profile, full metrics table; sticky sidebar with other strategies list
+- `glossary/index.html`: Glossary listing with concept cards sorted by category
+- `glossary/detail/index.html`: Concept detail: renders all sections with prose formatting, optional formula box, tables; sidebar with related strategies and other concepts
+- `about.html`: Static about page with disclaimers and tech stack info
+- `404.html`: Custom 404 page
 
 #### Documentation Updated
 
-- `docs/TRD.MD` (v1.1 → v1.2) — Updated framework decision to vanilla HTML/CSS/JS, updated directory structure, data access patterns, page routes, deploy pipeline, removed Astro/Tailwind/TypeScript references
-- `docs/RUNBOOK.MD` (v1.1 → v1.2) — Updated all commands to use Python HTTP server, updated strategy/glossary workflows to target JSON files directly, updated troubleshooting section for vanilla JS issues
-- `.gitignore` — Removed Astro-specific entries (`node_modules/`, `dist/`, `.astro/`)
+- `docs/TRD.MD` (v1.1 → v1.2), Updated framework decision to vanilla HTML/CSS/JS, updated directory structure, data access patterns, page routes, deploy pipeline, removed Astro/Tailwind/TypeScript references
+- `docs/RUNBOOK.MD` (v1.1 → v1.2), Updated all commands to use Python HTTP server, updated strategy/glossary workflows to target JSON files directly, updated troubleshooting section for vanilla JS issues
+- `.gitignore`: Removed Astro-specific entries (`node_modules/`, `dist/`, `.astro/`)
 
 ---
 
 ## [1.0.1] - 2026-06-08
 
-### Documentation — Foundational Design Buildout
+### Documentation: Foundational Design Buildout
 
 Major expansion of all project documentation to bring the design and technical foundation to a complete, actionable state. All framework and architecture decisions have been made and recorded. The project is now ready for code scaffolding.
 
@@ -800,7 +822,7 @@ Major expansion of all project documentation to bring the design and technical f
 
 #### DESIGN.MD (v1.0 → v1.1)
 - Added `--color-surface-raised`, `--color-border-hover`, `--color-text-disabled`, and muted color variants (`-muted` at 12% opacity) to the palette
-- Added semantic color rules — explicit rules for when each color may and may not be used
+- Added semantic color rules: explicit rules for when each color may and may not be used
 - Added typography table with exact size, weight, and line-height per element level
 - Added Google Fonts `<link>` loading code with `font-display: swap`
 - Added responsive breakpoints table (base/sm/md/lg/xl/2xl)
@@ -818,10 +840,10 @@ Major expansion of all project documentation to bring the design and technical f
 - Added `prefers-reduced-motion` CSS rule
 
 #### METRICS.MD (v1.0 → v1.1)
-- Added `slug` field to MVP schema (required — human-readable URL slug used as route param)
+- Added `slug` field to MVP schema (required: human-readable URL slug used as route param)
 - Added Slug Convention section with derivation rules and examples
 - Added Metric Calculation Notes for Calmar ratio, Sharpe ratio, standard deviation, and period returns
-- Added Display Order section — defines the three-group order for MetricsTable rendering
+- Added Display Order section: defines the three-group order for MetricsTable rendering
 - Added Tag Vocabulary section mapping tag strings to glossary slugs and concept names
 - Updated Sample JSON Entry to include `slug` field
 - Clarified `max_drawdown` is always negative; clarified `description` must not contain HTML
@@ -847,7 +869,7 @@ Major expansion of all project documentation to bring the design and technical f
 - Added `GLOSSARY-SCHEMA.MD` to docs file list
 
 ### Added
-- `docs/GLOSSARY-SCHEMA.MD` — new document defining the full structure for glossary Markdown entries
+- `docs/GLOSSARY-SCHEMA.MD`: new document defining the full structure for glossary Markdown entries
   - Frontmatter schema with Zod-compatible field definitions
   - Category value table with display labels and color assignments
   - Required and optional body section specifications with per-section checklists

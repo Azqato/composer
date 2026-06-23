@@ -1,5 +1,5 @@
 /* =============================================
-   Composer Atlas — Shared App Utilities
+   Composer Atlas: Shared App Utilities
    Loaded on every page. Provides:
      - BASE URL detection
      - Data loading
@@ -219,7 +219,7 @@ function renderFooter() {
 }
 
 // ---- Breadcrumb rendering ----
-// crumbs: [{label, href?}]  — last crumb has no href (current page)
+// crumbs: [{label, href?}] : last crumb has no href (current page)
 function renderBreadcrumb(containerId, crumbs) {
   const el = document.getElementById(containerId);
   if (!el) return;

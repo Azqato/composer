@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-add_zoop.py — One-time script that added the "Zoop's Strategies" glossary entry
+add_zoop.py: One-time script that added the "Zoop's Strategies" glossary entry
 (slug: zoop) and applied the 'zoop' tag to all 12 zoops-* strategies in
 data/strategies.json.
 
-Already applied as of v1.5.3 (2026-06-15). Safe to re-run — duplicate-slug check
+Already applied as of v1.5.3 (2026-06-15). Safe to re-run, duplicate-slug check
 will abort without writing if entry is already present.
 
 Usage:
@@ -24,7 +24,7 @@ ZOOP_ENTRY = {
   "slug": "zoop",
   "name": "Zoop's Strategies",
   "category": "strategy-concept",
-  "description": "A curated collection of Composer.trade symphonies built by Zoop (Azqato) — an investor, developer, and community builder who shares systematic leveraged ETF strategies on Twitch and YouTube.",
+  "description": "A curated collection of Composer.trade symphonies built by Zoop (Azqato), an investor, developer, and community builder who shares systematic leveraged ETF strategies on Twitch and YouTube.",
   "formula": None,
   "related_tags": ["zoop"],
   "last_updated": "2026-06-15",
@@ -33,7 +33,7 @@ ZOOP_ENTRY = {
       "title": "Who Is Zoop?",
       "paragraphs": [
         "Zoop, also known online as Azqato, is an investor, developer, and community builder who creates content across Twitch and YouTube covering gaming, investing, and music production. He is the founder of B5TA, a gaming community built around RuneScape and Discord, and the creator of the Composer.trade symphonies documented in this library.",
-        "Zoop approaches investing the same way he approaches game development and community-building: systematically, iteratively, and with a focus on sharing the process with others. The strategies in this library are the result of years of research into leveraged ETF behavior, regime-detection signals, and risk management techniques — refined through community feedback and live performance tracking.",
+        "Zoop approaches investing the same way he approaches game development and community-building: systematically, iteratively, and with a focus on sharing the process with others. The strategies in this library are the result of years of research into leveraged ETF behavior, regime-detection signals, and risk management techniques, refined through community feedback and live performance tracking.",
         "More about Zoop: https://azqato.github.io/about.html"
       ]
     },
@@ -41,8 +41,8 @@ ZOOP_ENTRY = {
       "title": "The Strategy Suite",
       "paragraphs": [
         "The zoops-* strategies are Zoop's primary Composer.trade symphony collection, each built around a shared philosophy: use 3x leveraged Nasdaq ETFs (primarily TQQQ) during confirmed bull markets, and rotate to defensive or inverse positions when trend signals break. The 12 strategies in this collection span a spectrum from capital-preservation-first (2026 Frontrunner) to high-conviction aggressive (Sometimes TQQQ, Leveraged TQQQ Symphony).",
-        "Each strategy shares a common lineage: the 2026 Frontrunner is the base layer, using RSI-triggered dip-buy signals on a universe of leveraged ETFs with BIL as the default. The other strategies layer additional macro signals, sector momentum filters, and bear-mode intelligence on top of this foundation — each one a different answer to the question of how aggressively to pursue returns within a risk-managed framework.",
-        "Across the 12 zoops-* strategies, the backtested annualized return ranges from ~92% (2026 Frontrunner) to ~280% (KMLM Switcher), with Sharpe ratios from ~1.63 to ~2.63 and max drawdowns from ~−22% (2026 Frontrunner) to ~−66% (SOXL Growth). Backtest lengths vary — the 2026 Frontrunner spans ~8.4 years and the KMLM Switcher ~5.5 years, while the remaining strategies cover ~14.2 years — so headline figures are not all measured over the same window. This spread reflects the spectrum of risk tolerance the collection is designed to address."
+        "Each strategy shares a common lineage: the 2026 Frontrunner is the base layer, using RSI-triggered dip-buy signals on a universe of leveraged ETFs with BIL as the default. The other strategies layer additional macro signals, sector momentum filters, and bear-mode intelligence on top of this foundation, each one a different answer to the question of how aggressively to pursue returns within a risk-managed framework.",
+        "Across the 12 zoops-* strategies, the backtested annualized return ranges from ~92% (2026 Frontrunner) to ~280% (KMLM Switcher), with Sharpe ratios from ~1.63 to ~2.63 and max drawdowns from ~−22% (2026 Frontrunner) to ~−66% (SOXL Growth). Backtest lengths vary, the 2026 Frontrunner spans ~8.4 years and the KMLM Switcher ~5.5 years, while the remaining strategies cover ~14.2 years, so headline figures are not all measured over the same window. This spread reflects the spectrum of risk tolerance the collection is designed to address."
       ],
       "table": {
         "headers": ["Strategy", "ARR", "Sharpe", "Max DD"],
@@ -65,16 +65,16 @@ ZOOP_ENTRY = {
     {
       "title": "Design Philosophy",
       "paragraphs": [
-        "Zoop's strategies share several design principles that distinguish them as a coherent system rather than a collection of unrelated symphonies. First: the primary defense mechanism is always a combination of macro trend confirmation (SPY or QQQ above key moving averages) and RSI-based dip-buy signals — both protective and opportunistic at the same time. The strategy exits leveraged positions when the macro trend breaks, but actively re-enters at panic RSI levels rather than waiting passively in cash.",
-        "Second: SH (1x inverse S&P 500) is the default bear-mode hold across most zoops-* strategies, not BIL. This is an explicit directional view: when the bull-regime conditions break, the market is more likely continuing to fall than recovering — so holding SH generates returns from that decline rather than sitting at the risk-free rate. This distinguishes the zoops-* strategies from purely trend-following approaches that use cash as the defensive position.",
-        "Third: each strategy in the collection is designed to be held as a single portfolio allocation, not combined with each other. The strategies overlap significantly in signal logic — combining two zoops-* strategies would create correlated double-exposure rather than meaningful diversification. The collection exists to give investors of different risk tolerances a single appropriate choice, not to be held simultaneously."
+        "Zoop's strategies share several design principles that distinguish them as a coherent system rather than a collection of unrelated symphonies. First: the primary defense mechanism is always a combination of macro trend confirmation (SPY or QQQ above key moving averages) and RSI-based dip-buy signals, both protective and opportunistic at the same time. The strategy exits leveraged positions when the macro trend breaks, but actively re-enters at panic RSI levels rather than waiting passively in cash.",
+        "Second: SH (1x inverse S&P 500) is the default bear-mode hold across most zoops-* strategies, not BIL. This is an explicit directional view: when the bull-regime conditions break, the market is more likely continuing to fall than recovering, so holding SH generates returns from that decline rather than sitting at the risk-free rate. This distinguishes the zoops-* strategies from purely trend-following approaches that use cash as the defensive position.",
+        "Third: each strategy in the collection is designed to be held as a single portfolio allocation, not combined with each other. The strategies overlap significantly in signal logic, combining two zoops-* strategies would create correlated double-exposure rather than meaningful diversification. The collection exists to give investors of different risk tolerances a single appropriate choice, not to be held simultaneously."
       ]
     },
     {
       "title": "Community and Transparency",
       "paragraphs": [
-        "Zoop publishes and discusses his strategies publicly, sharing the signal logic, backtest methodology, and performance tracking openly with his community on Twitch and YouTube. Composer Atlas was built to document this library in one organized, searchable place — providing the in-depth explanations, signal breakdowns, and risk metric comparisons that aren't possible within Composer.trade's interface alone.",
-        "The strategies are identified in Composer.trade with the 'zoops-' prefix, making them discoverable and attributable. The '2026' suffix in each strategy name reflects the year these versions were refined and published — Zoop iterates on his strategy suite over time, and the year suffix helps track which version a given backtest represents.",
+        "Zoop publishes and discusses his strategies publicly, sharing the signal logic, backtest methodology, and performance tracking openly with his community on Twitch and YouTube. Composer Atlas was built to document this library in one organized, searchable place, providing the in-depth explanations, signal breakdowns, and risk metric comparisons that aren't possible within Composer.trade's interface alone.",
+        "The strategies are identified in Composer.trade with the 'zoops-' prefix, making them discoverable and attributable. The '2026' suffix in each strategy name reflects the year these versions were refined and published, Zoop iterates on his strategy suite over time, and the year suffix helps track which version a given backtest represents.",
         "To follow Zoop's strategy updates, community discussions, and live performance tracking, visit https://azqato.github.io or find him as Azqato on Twitch and YouTube."
       ]
     }

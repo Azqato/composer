@@ -1,6 +1,6 @@
-# Composer Atlas — Master Reference Document
+# Composer Atlas: Master Reference Document
 
-**Version:** 1.7.1
+**Version:** 1.7.2
 **Status:** Active
 **Last Updated:** 2026-06-22
 
@@ -10,7 +10,7 @@ This is the single authoritative reference for Composer Atlas. It consolidates p
 
 ## Table of Contents
 
-**Part A — Product Requirements**
+**Part A; Product Requirements**
 1. [Problem Statement](#1-problem-statement)
 2. [Target Users](#2-target-users)
 3. [Goals](#3-goals)
@@ -21,7 +21,7 @@ This is the single authoritative reference for Composer Atlas. It consolidates p
 8. [Assumptions](#8-assumptions)
 9. [Success Criteria](#9-success-criteria)
 
-**Part B — Technical & Operational Reference**
+**Part B; Technical & Operational Reference**
 10. [Architecture & Technical Reference](#10-architecture--technical-reference)
 11. [Operational Runbook](#11-operational-runbook)
 12. [Strategy & Glossary Data Schemas](#12-strategy--glossary-data-schemas)
@@ -31,10 +31,11 @@ This is the single authoritative reference for Composer Atlas. It consolidates p
 16. [Tenets](#16-tenets)
 17. [FAQ](#17-faq)
 18. [Documentation Process](#18-documentation-process)
+19. [Writing Style](#19-writing-style)
 
 ---
 
-## Part A — Product Requirements
+## Part A: Product Requirements
 
 ---
 
@@ -52,13 +53,13 @@ There is no dedicated site for Composer.trade strategy discovery and education. 
 
 ## 2. Target Users
 
-**Primary — Composer.trade users**
+**Primary; Composer.trade users**
 Self-directed retail investors who already use Composer.trade. They want to understand strategies before cloning them, or want to see how other authors have approached a problem they are solving.
 
-**Secondary — Systematic investing learners**
+**Secondary; Systematic investing learners**
 Intermediate traders learning RSI, momentum, VIX strategies, and leveraged ETF mechanics. They know what a moving average is but have not yet built a systematic strategy. Composer Atlas explains concepts in the context of real strategies.
 
-**Tertiary — Quant-curious beginners**
+**Tertiary; Quant-curious beginners**
 Investors curious about algorithmic or rules-based investing who do not yet know the terminology. The glossary serves as their entry point; strategy pages show them real examples.
 
 ---
@@ -104,7 +105,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 
 ## 6. Feature List
 
-### MVP — Shipped (V1.0–V1.2.1)
+### MVP: Shipped (V1.0–V1.2.1)
 
 **Strategy Library**
 - Index page listing all 25 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
@@ -117,10 +118,10 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - Concepts cross-link back to strategies that use them
 
 **Data Layer**
-- `data/strategies.json` — flat-file database of all 25 strategies
-- `data/glossary.json` — flat-file database of all 19 glossary concepts
+- `data/strategies.json`: flat-file database of all 25 strategies
+- `data/glossary.json`: flat-file database of all 19 glossary concepts
 - Dual-mode loading: `window.STRATEGIES_DATA` / `window.GLOSSARY_DATA` globals for `file://` compatibility; `fetch()` fallback for HTTP
-- `scripts/update_metrics.py` — reusable script to refresh all metrics and logic trees from the Composer API
+- `scripts/update_metrics.py`: reusable script to refresh all metrics and logic trees from the Composer API
 
 **Navigation & Structure**
 - Fixed top nav: Strategies, Glossary, About, Individual Stocks, Leveraged Strategies, Support
@@ -189,7 +190,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 
 ---
 
-## Part B — Technical & Operational Reference
+## Part B: Technical & Operational Reference
 
 ---
 
@@ -197,7 +198,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 
 ### Overview
 
-Composer Atlas is a fully static, browser-only application. There is no server, no API backend, no database service, and no authentication layer. All data is stored in flat JSON files and served via GitHub Pages. All page rendering is done in the browser via vanilla JavaScript — no build step is required.
+Composer Atlas is a fully static, browser-only application. There is no server, no API backend, no database service, and no authentication layer. All data is stored in flat JSON files and served via GitHub Pages. All page rendering is done in the browser via vanilla JavaScript, no build step is required.
 
 ### Tech Stack
 
@@ -223,21 +224,21 @@ ComposerAtlas/
 ├── css/
 │   └── main.css                # Full design system: tokens, layout, components
 ├── data/
-│   ├── strategies.json         # 24 strategy entries — source of truth
-│   ├── strategies.js           # Same data as window.STRATEGIES_DATA — for file:// compat
-│   ├── glossary.json           # 8 glossary concept entries — source of truth
-│   ├── glossary.js             # Same data as window.GLOSSARY_DATA — for file:// compat
-│   └── symphony_scores.json    # Full logic trees — AI analysis only, not served publicly
+│   ├── strategies.json         # 24 strategy entries, source of truth
+│   ├── strategies.js           # Same data as window.STRATEGIES_DATA, for file:// compat
+│   ├── glossary.json           # 8 glossary concept entries, source of truth
+│   ├── glossary.js             # Same data as window.GLOSSARY_DATA, for file:// compat
+│   └── symphony_scores.json    # Full logic trees; AI analysis only, not served publicly
 ├── js/
 │   └── app.js                  # Shared utilities: format, nav, footer, render helpers
-├── scripts/                    # All Python scripts live here — never in the project root
+├── scripts/                    # All Python scripts live here, never in the project root
 │   ├── update_metrics.py       # Fetches backtest metrics + logic trees from Composer API
-│   ├── add_glossary.py         # One-time: added 9 glossary entries (v1.5.2) — safe to re-run
+│   ├── add_glossary.py         # One-time: added 9 glossary entries (v1.5.2), safe to re-run
 │   ├── add_zoop.py             # One-time: added Zoop glossary entry + zoop tags (v1.5.3)
-│   └── add_ai_summary.py       # Writes the ai_summary field on all strategies (v1.7.0) — safe to re-run
+│   └── add_ai_summary.py       # Writes the ai_summary field on all strategies (v1.7.0), safe to re-run
 ├── index.html                  # Home page (hero + strategy grid)
-├── strategies.html             # Strategy listing + detail (?slug=X) — single file
-├── glossary.html               # Glossary listing + concept detail (?slug=X) — single file
+├── strategies.html             # Strategy listing + detail (?slug=X), single file
+├── glossary.html               # Glossary listing + concept detail (?slug=X), single file
 ├── about.html                  # About page
 ├── 404.html                    # Custom 404 page
 ├── favicon.svg                 # 🗺️ map emoji SVG favicon
@@ -282,15 +283,15 @@ Dark mode is the only supported mode in MVP.
 
 **strategies.json and strategies.js**
 
-- `data/strategies.json` — source of truth; JSON array of strategy objects
-- `data/strategies.js` — assigns `window.STRATEGIES_DATA = [...]`; keeps data accessible on `file://` protocol
+- `data/strategies.json`: source of truth; JSON array of strategy objects
+- `data/strategies.js`: assigns `window.STRATEGIES_DATA = [...]`; keeps data accessible on `file://` protocol
 
 Both files must always be kept in sync. When editing `strategies.json`, make the identical change in `strategies.js`.
 
 **glossary.json and glossary.js**
 
-- `data/glossary.json` — source of truth; JSON array of concept objects
-- `data/glossary.js` — assigns `window.GLOSSARY_DATA = [...]`
+- `data/glossary.json`: source of truth; JSON array of concept objects
+- `data/glossary.js`: assigns `window.GLOSSARY_DATA = [...]`
 
 **Dual-mode loading (from `js/app.js`):**
 
@@ -316,7 +317,7 @@ const BASE = (window.location.hostname.endsWith('.github.io') && _seg) ? '/' + _
 // All internal links use u() instead of BASE + path directly
 function u(path) {
   if (window.location.protocol !== 'file:') return BASE + path;
-  // On file://, all pages are at root depth — strip the leading slash
+  // On file://, all pages are at root depth, strip the leading slash
   // Maps '/' → 'index.html'; '/strategies.html?slug=X' → 'strategies.html?slug=X'
   const [pathPart, qs] = path.split('?');
   const rel = pathPart === '/' ? 'index.html' : pathPart.replace(/^\//, '');
@@ -324,7 +325,7 @@ function u(path) {
 }
 ```
 
-Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo name — repo-rename-proof and works on any custom domain without changes.
+Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo name, repo-rename-proof and works on any custom domain without changes.
 
 ### JS Utility Functions (js/app.js)
 
@@ -429,9 +430,9 @@ Chrome 100+, Firefox 100+, Safari 15+, Edge 100+. No IE11. Requires: `fetch()`, 
 |---|---|
 | Client-side search | Fuse.js filter over loaded JSON |
 | Tag filtering on index | Vanilla JS DOM filter |
-| Performance charts | Chart.js or uPlot — loaded as a module script |
+| Performance charts | Chart.js or uPlot: loaded as a module script |
 | Build system upgrade | Migrate to Astro 5.x |
-| Analytics | Plausible (privacy-friendly) — post-MVP only |
+| Analytics | Plausible (privacy-friendly): post-MVP only |
 
 ---
 
@@ -441,13 +442,13 @@ Chrome 100+, Firefox 100+, Safari 15+, Edge 100+. No IE11. Requires: `fetch()`, 
 
 **Prerequisites:** Python (any version), Git. No Node.js required.
 
-**Option 1 — Python HTTP server:**
+**Option 1; Python HTTP server:**
 ```bash
 python -m http.server 8000
 # Site at http://localhost:8000/
 ```
 
-**Option 2 — Open directly:** Double-click any `.html` file. Site loads fully because `data/strategies.js` and `data/glossary.js` are loaded as script tags before `app.js`.
+**Option 2; Open directly:** Double-click any `.html` file. Site loads fully because `data/strategies.js` and `data/glossary.js` are loaded as script tags before `app.js`.
 
 **Validate JSON before committing:**
 ```bash
@@ -457,7 +458,7 @@ python -c "import json; json.load(open('data/glossary.json')); print('Valid JSON
 
 ---
 
-### Adding a Strategy from a Composer URL (Streamlined — Preferred)
+### Adding a Strategy from a Composer URL (Streamlined: Preferred)
 
 Provide a Composer.trade symphony URL to Claude Code and it automates the entire workflow.
 
@@ -494,7 +495,7 @@ Use when you prefer full control or the Composer API is unavailable.
 
 **Step 1: Gather metrics.** Collect all required fields from Composer.trade. See the schema in Section 12.
 
-**Step 2: Generate a slug.** Derive from the strategy name: lowercase, spaces → hyphens, remove special characters. Examples: "VIX Tier Rotator" → `vix-tier-rotator`. Do not change a slug after a strategy page is live — it breaks inbound links.
+**Step 2: Generate a slug.** Derive from the strategy name: lowercase, spaces → hyphens, remove special characters. Examples: "VIX Tier Rotator" → `vix-tier-rotator`. Do not change a slug after a strategy page is live, it breaks inbound links.
 
 **Step 3: Update both data files.** Append to `data/strategies.json`, then make the identical addition to `data/strategies.js` (inside the `window.STRATEGIES_DATA = [...]` array).
 
@@ -569,11 +570,11 @@ git commit -m "data: refresh metrics and symphony scores - YYYY-MM-DD"
 git push origin main
 ```
 
-**symphony_scores.json is for AI analysis only** — it is not served to the website. It contains the full EDN logic tree for each symphony, used to explain strategy logic in future conversations.
+**symphony_scores.json is for AI analysis only**: it is not served to the website. It contains the full EDN logic tree for each symphony, used to explain strategy logic in future conversations.
 
 ---
 
-### Updating Metrics (Manual — Single Strategy)
+### Updating Metrics (Manual: Single Strategy)
 
 1. Open `data/strategies.json` and `data/strategies.js`. Locate the entry by `slug`.
 2. Update changed metric values. Set `last_updated` to today's date.
@@ -714,17 +715,17 @@ Every strategy page renders an **AI Summary** in a purple-accented box directly 
 
 **What each summary must cover.** For every strategy, Claude analyzes and then synthesizes:
 
-1. **Structure** — the overall shape of the logic (e.g. cash-first dip-buyer, three-state trend machine, parallel equal-weight components, shared Frontrunner base).
-2. **Assets** — the instruments it trades (3x ETFs, sector ETFs, bonds, volatility products, individual stocks).
-3. **Signals & logic** — the indicators and gates that drive decisions (RSI thresholds, 200-day MA regime, MACD, volatility tiers, momentum selection).
-4. **Performance metrics** — ARR, max drawdown, Sharpe, Calmar, and standard deviation, read together rather than cherry-picked.
-5. **Backtest period** — how many years/trading days, and whether that window is long enough to trust.
+1. **Structure**: the overall shape of the logic (e.g. cash-first dip-buyer, three-state trend machine, parallel equal-weight components, shared Frontrunner base).
+2. **Assets**: the instruments it trades (3x ETFs, sector ETFs, bonds, volatility products, individual stocks).
+3. **Signals & logic**: the indicators and gates that drive decisions (RSI thresholds, 200-day MA regime, MACD, volatility tiers, momentum selection).
+4. **Performance metrics**: ARR, max drawdown, Sharpe, Calmar, and standard deviation, read together rather than cherry-picked.
+5. **Backtest period**: how many years/trading days, and whether that window is long enough to trust.
 
 From that analysis, each summary then states:
 
-- **Why someone would follow it** — the investor profile and the problem it solves.
-- **The purpose behind its logic** — the thesis the rules are expressing.
-- **Noteworthy characteristics** — anything a reader should weigh carefully, especially **short backtests** (e.g. < ~5 years is period-dependent), **high drawdowns** (e.g. deeper than ~50%), a **Calmar at or below 1.0** (return no larger than the worst loss), or **overfitting risk** in optimized/RL strategies.
+- **Why someone would follow it**: the investor profile and the problem it solves.
+- **The purpose behind its logic**: the thesis the rules are expressing.
+- **Noteworthy characteristics**: anything a reader should weigh carefully, especially **short backtests** (e.g. < ~5 years is period-dependent), **high drawdowns** (e.g. deeper than ~50%), a **Calmar at or below 1.0** (return no larger than the worst loss), or **overfitting risk** in optimized/RL strategies.
 
 **Tone and tenets.** Summaries follow the *Transparency Over Hype* and *Education Before Promotion* tenets: they are even-handed and explicitly discount spectacular-but-fragile backtests rather than amplifying them. If a strategy looks too good because of a short or favorable test window, say so.
 
@@ -734,7 +735,7 @@ From that analysis, each summary then states:
 
 1. Open `scripts/add_ai_summary.py`. It holds an `AI_SUMMARIES` dict keyed by strategy `slug`, each value a list of paragraph strings.
 2. Add or edit the entry for the relevant slug, using the strategy's metrics, `how_it_works`, `signals`, `risk_profile`, and (when deeper logic detail is needed) its tree in `data/symphony_scores.json`.
-3. Run the script — it rewrites both data files in sync and inserts `ai_summary` immediately before `how_it_works`:
+3. Run the script, it rewrites both data files in sync and inserts `ai_summary` immediately before `how_it_works`:
    ```bash
    python scripts/add_ai_summary.py
    ```
@@ -746,7 +747,7 @@ From that analysis, each summary then states:
    ```
 5. Update `docs/PATCHNOTES.md`, then commit `data/strategies.json`, `data/strategies.js`, `scripts/add_ai_summary.py`, and the patch notes.
 
-When adding a brand-new strategy, you may instead author `ai_summary` directly in the JSON entry (as in the manual template above) — the script is the bulk/maintenance path, not the only way to set the field.
+When adding a brand-new strategy, you may instead author `ai_summary` directly in the JSON entry (as in the manual template above), the script is the bulk/maintenance path, not the only way to set the field.
 
 ---
 
@@ -772,10 +773,10 @@ When adding a brand-new strategy, you may instead author `ai_summary` directly i
 **Strategy not found**
 - Confirm the `slug` in `strategies.json` exactly matches the `?slug=` query parameter in the URL (case-sensitive)
 
-**Local dev — data not loading when opened directly**
+**Local dev, data not loading when opened directly**
 - Confirm `data/strategies.js` and `data/glossary.js` are present
 - Confirm each HTML page has `<script src="data/strategies.js">` and `<script src="data/glossary.js">` before the `app.js` script tag
-- All pages are at root level — all script src paths use `data/` (no `../` prefix needed)
+- All pages are at root level: all script src paths use `data/` (no `../` prefix needed)
 
 ---
 
@@ -799,12 +800,12 @@ All fields in `data/strategies.json`. Both `strategies.json` and `strategies.js`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `slug` | string | Yes | URL slug (e.g., `vix-tier-rotator`). Used as `?slug=` param. Must be lowercase, hyphen-separated, unique. Do not change after a page is live — breaks inbound links. |
+| `slug` | string | Yes | URL slug (e.g., `vix-tier-rotator`). Used as `?slug=` param. Must be lowercase, hyphen-separated, unique. Do not change after a page is live: breaks inbound links. |
 | `name` | string | Yes | Display name (e.g., "VIX Tier Rotator") |
 | `symphony_url` | string | Yes | Full URL to clone on Composer.trade |
 | `symphony_id` | string | Yes | Composer symphony ID (alphanumeric segment from URL) |
 | `annualized_rate_of_return` | float | Yes | Annualized return as decimal (e.g., `0.312` = 31.2%) |
-| `max_drawdown` | float | Yes | Maximum drawdown as decimal — always negative (e.g., `-0.187` = -18.7%) |
+| `max_drawdown` | float | Yes | Maximum drawdown as decimal: always negative (e.g., `-0.187` = -18.7%) |
 | `cumulative_return` | float | Yes | Total cumulative return since inception as decimal |
 | `calmar_ratio` | float | Yes | Annualized return / abs(max drawdown). Higher is better. |
 | `sharpe_ratio` | float | Yes | (Return − risk-free rate) / std deviation. Higher is better. |
@@ -828,9 +829,9 @@ All fields in `data/strategies.json`. Both `strategies.json` and `strategies.js`
 
 **Metric calculation notes:**
 - `calmar_ratio` = `annualized_rate_of_return` / abs(`max_drawdown`)
-- `sharpe_ratio` — pull directly from Composer's displayed value; Composer uses its own internal risk-free rate baseline
-- `max_drawdown` — the Composer API returns this as a positive number; the script stores it negative. Always store negative.
-- `backtest_days` — the API field is `size`; the script maps it to `backtest_days`
+- `sharpe_ratio`: pull directly from Composer's displayed value; Composer uses its own internal risk-free rate baseline
+- `max_drawdown`: the Composer API returns this as a positive number; the script stores it negative. Always store negative.
+- `backtest_days`: the API field is `size`; the script maps it to `backtest_days`
 - Period returns (min, mean, median, max) represent single-period (typically monthly) returns, not annualized
 
 **Slug convention:**
@@ -911,7 +912,7 @@ All fields in `data/glossary.json`. Both `glossary.json` and `glossary.js` must 
 
 ```json
 {
-  "slug": "string",          // URL slug — must match tag values in strategies.json
+  "slug": "string",          // URL slug, must match tag values in strategies.json
   "name": "string",          // Display name
   "category": "string",      // "indicator" | "risk-metric" | "asset-class" | "strategy-concept"
   "description": "string",   // One-sentence definition (under 160 chars)
@@ -944,7 +945,7 @@ All fields in `data/glossary.json`. Both `glossary.json` and `glossary.js` must 
 
 **Optional sections:** Additional sections with any title. All 8 MVP entries include a "Building with [Concept] in Composer.trade" essay section.
 
-**Canonical glossary entries (current — 19 total):**
+**Canonical glossary entries (current; 19 total):**
 
 | Slug | Name | Category |
 |---|---|---|
@@ -1030,7 +1031,7 @@ Composer Atlas uses only the two unauthenticated endpoints listed below. No cred
 | `calmar_ratio` | float | Maps 1:1 |
 | `sharpe_ratio` | float | Maps 1:1 |
 | `standard_deviation` | float | Maps 1:1 |
-| `min`, `mean`, `median`, `max` | float | Monthly distribution — maps 1:1 |
+| `min`, `mean`, `median`, `max` | float | Monthly distribution: maps 1:1 |
 | `trailing_one_month_return`, etc. | float | Maps 1:1 |
 | `max_drawdown` | float | **Returned as positive by API; stored as negative in schema** |
 | `size` | integer | Backtest days; stored as `backtest_days` in schema |
@@ -1044,7 +1045,7 @@ Full response also includes `dvm_capital`, `tdvm_weights`, `rebalance_days`, `la
 | Param | In | Required | Notes |
 |---|---|---|---|
 | `symphony-id` | path | yes | |
-| `score_version` | query | yes | `"v1"` or `"v2"` — use `"v1"` |
+| `score_version` | query | yes | `"v1"` or `"v2"`: use `"v1"` |
 
 Returns the symphony's full IF/ELSE logic tree as a nested JSON object. The `step` field on each node indicates its type: `"root"`, `"if"`, `"asset"`, `"group"`, `"filter"`, etc. The `children` array contains nested nodes.
 
@@ -1088,7 +1089,7 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 
 ## 14. Roadmap
 
-### V1.0 — MVP
+### V1.0: MVP
 
 **Launched:** 2026-06-08 | **Status:** Complete
 **Live URL:** https://azqato.github.io/composer/
@@ -1105,30 +1106,30 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 - [x] Dark mode design system
 - [x] Mobile-responsive layout
 
-### V1.1 — Polish + Content Quality
+### V1.1: Polish + Content Quality
 
 **Status:** Complete (at v1.1.5)
 
 - [x] All 12 strategy pages rewritten from logic tree analysis (v1.1.0); 13th added (v1.1.7)
 - [x] `scripts/update_metrics.py` live (v1.0.8)
-- [x] Fix: navigation broken on `file://` protocol — `u()` helper added (v1.0.4)
-- [x] Fix: all links broken on GitHub Pages — case-insensitive BASE detection (v1.1.2)
+- [x] Fix: navigation broken on `file://` protocol: `u()` helper added (v1.0.4)
+- [x] Fix: all links broken on GitHub Pages: case-insensitive BASE detection (v1.1.2)
 - [x] Footer simplified to match azqato.github.io (v1.1.3)
 - [ ] Google AdSense integration (pending approval)
 - [ ] Performance audit and Lighthouse optimization
 
-### V1.2 — Data Tooling + Structure Refactor
+### V1.2: Data Tooling + Structure Refactor
 
 **Status:** Mostly Complete (at v1.2.1)
 
-- [x] `scripts/update_metrics.py` pulls from Composer API (backtest + score) — no auth required
+- [x] `scripts/update_metrics.py` pulls from Composer API (backtest + score), no auth required
 - [x] Streamlined URL-based strategy addition workflow documented in Runbook (v1.8)
 - [x] Folder structure consolidated: flat root `.html` files; `strategies/` and `glossary/` subdirs eliminated (v1.2.0)
 - [x] URL patterns: `?slug=X` replaces `/detail/?slug=X` (v1.2.0)
-- [x] `u()` helper simplified — depth-agnostic (v1.2.0)
+- [x] `u()` helper simplified: depth-agnostic (v1.2.0)
 - [ ] Validation: script checks required fields before writing
 
-### V1.3 — Documentation Consolidation
+### V1.3: Documentation Consolidation
 
 **Status:** Complete (at v1.3.0)
 
@@ -1136,30 +1137,30 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 - [x] All operational, technical, API, schema, roadmap, security, and tenet content moved into `docs/PRD.md`
 - [x] File naming standardized from `.MD` to `.md`
 
-### V1.4 — Strategy Library Expansion + Infra
+### V1.4: Strategy Library Expansion + Infra
 
 **Status:** Complete (at v1.4.2)
 
-- [x] 5 new strategies added: Holy Grail (Original), TQQQ For The Long Term, Wooden ARKK Machine 2.2, Super Semiconductors, The Four Horsemen of the Apocalypse — library grows to 18 (v1.4.0)
+- [x] 5 new strategies added: Holy Grail (Original), TQQQ For The Long Term, Wooden ARKK Machine 2.2, Super Semiconductors, The Four Horsemen of the Apocalypse: library grows to 18 (v1.4.0)
 - [x] GitHub repository renamed from `Azqato/ComposerAtlas` to `Azqato/composer`; GitHub Pages URL updated (v1.4.1)
 - [x] BASE URL detection made repo-rename-proof: hostname-based (`*.github.io`) instead of hardcoded string match (v1.4.2)
 
-### V1.5 — Strategy Library Expansion + Glossary Expansion
+### V1.5: Strategy Library Expansion + Glossary Expansion
 
 **Status:** Complete (at v1.5.9)
 
-- [x] 6 new strategies added: SOXX Group, SOXL Growth v2.4.5 RL, Inside Nancy Pelosi's Chips V3, Top Cap by MA + RSI ETF Hedge, Mean Reversion Comparison to Python Code, SPY Energy Chips Commodities — library grows to 24 (v1.5.0)
-- [x] 9 new glossary concepts added: SMA, EMA, MACD, Mean Reversion, Volatility Decay, Standard Deviation, Annualized Return, Managed Futures, Inverse ETFs — glossary grows to 17 (v1.5.2)
+- [x] 6 new strategies added: SOXX Group, SOXL Growth v2.4.5 RL, Inside Nancy Pelosi's Chips V3, Top Cap by MA + RSI ETF Hedge, Mean Reversion Comparison to Python Code, SPY Energy Chips Commodities: library grows to 24 (v1.5.0)
+- [x] 9 new glossary concepts added: SMA, EMA, MACD, Mean Reversion, Volatility Decay, Standard Deviation, Annualized Return, Managed Futures, Inverse ETFs: glossary grows to 17 (v1.5.2)
 - [x] Zoop's Strategies glossary entry added with overview of all 11 zoops-* symphonies and headline metrics (v1.5.3)
-- [x] Backtesting glossary entry added covering general backtest mechanics and Composer-specific behavior — glossary grows to 19 (v1.5.6)
+- [x] Backtesting glossary entry added covering general backtest mechanics and Composer-specific behavior: glossary grows to 19 (v1.5.6)
 
-### V1.6 — Strategy Library Expansion
+### V1.6: Strategy Library Expansion
 
 **Status:** Complete (at v1.6.0)
 
-- [x] Simon's KMLM Switcher added — library grows to 25 (v1.6.0)
+- [x] Simon's KMLM Switcher added: library grows to 25 (v1.6.0)
 
-### V1.7 — AI Summaries
+### V1.7: AI Summaries
 
 **Status:** Complete (at v1.7.0)
 
@@ -1167,7 +1168,7 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 - [x] `scripts/add_ai_summary.py` added; "Generating the AI Summary" runbook and schema field documented (v1.7.0)
 - [x] Homepage: "Longest Backtest" fifth stat added to stats bar; strategy grid sorted by backtest length (longest first) (v1.7.1)
 
-### V2.0 — Scale + Discovery
+### V2.0: Scale + Discovery
 
 **Status:** Backlog
 
@@ -1178,7 +1179,7 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 - [ ] Expand strategy library toward 50+ entries
 - [ ] Expand glossary
 
-### V2.1 — Community Signals
+### V2.1: Community Signals
 
 **Status:** Backlog
 
@@ -1186,7 +1187,7 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 - [ ] Curator notes field visible on strategy pages
 - [ ] Related strategies section on each strategy page
 
-### V3.0 — Monetization Expansion
+### V3.0: Monetization Expansion
 
 **Status:** Ideation
 
@@ -1224,7 +1225,7 @@ Composer Atlas is a fully static, browser-only website with no server infrastruc
 
 **No secrets in client code.** No API keys, tokens, or credentials are stored in the repository or rendered in client-side JavaScript. The Composer API endpoints used for data refresh require no authentication. The `symphony_url` values are public by nature.
 
-**JSON data integrity.** `data/strategies.json` is the only data source and is committed to the public repo. All changes go through GitHub's commit history — a full audit trail. No PII in strategy entries.
+**JSON data integrity.** `data/strategies.json` is the only data source and is committed to the public repo. All changes go through GitHub's commit history, a full audit trail. No PII in strategy entries.
 
 **XSS prevention.** All dynamic content rendered from JSON must be escaped before DOM insertion. Do not use `innerHTML` with unsanitized JSON values. Strategy descriptions and names in JSON must not contain HTML tags. The `app.js` render functions use template literals with escaped data.
 
@@ -1232,7 +1233,7 @@ Composer Atlas is a fully static, browser-only website with no server infrastruc
 
 **External links.** All links to external sites must use `target="_blank"` with `rel="noopener noreferrer"` to prevent tab-napping.
 
-**GitHub repository.** Repository is public — treat all committed content as fully public. Never commit `.env` files, credentials, or PII. Branch protection on `main` is recommended: require PR review before merge.
+**GitHub repository.** Repository is public, treat all committed content as fully public. Never commit `.env` files, credentials, or PII. Branch protection on `main` is recommended: require PR review before merge.
 
 ### Google AdSense (Post-MVP)
 
@@ -1354,7 +1355,7 @@ A: Become the canonical public reference for Composer.trade strategy discovery a
 
 ### Content Notes
 
-**Strategy building best practice — avoid short lookback periods:**
+**Strategy building best practice, avoid short lookback periods:**
 Do not use RSI or return checks shorter than 10 days (e.g., `1d`). Very short windows make the algorithm extremely twitchy and will not match the backtest in out-of-sample (OOS) performance.
 
 ---
@@ -1409,3 +1410,68 @@ On 2026-06-14, 12 documentation files were consolidated into the current 4-file 
 | `docs/DESIGN.MD` | `docs/DESIGN.md` |
 | `docs/PATCHNOTES.MD` | `docs/PATCHNOTES.md` |
 | `README.MD` (uppercase) | `README.md` (lowercase) |
+
+---
+
+## 19. Writing Style
+
+### Em-Dash Prohibition
+
+Em-dashes are prohibited in all project files: HTML pages, documentation (.md files), JavaScript, CSS, and JSON data. This applies to both forms:
+
+- **Literal Unicode character** (U+2014): the literal character (cannot be stored in this file)
+- **HTML entity**: `&mdash;`
+
+A text search for one form will not catch the other. Both must be searched independently when auditing for compliance.
+
+**Why:** Em-dashes read as an AI writing pattern. They are a hallmark of AI-generated prose and undermine the editorial voice of the site.
+
+### Approved Replacements
+
+Choose the replacement that best fits the sentence, in order of preference:
+
+| Replacement | When to use |
+|---|---|
+| **Comma** | Most natural replacement in most cases; keeps the sentence flowing without drawing attention |
+| **Colon** | When introducing a list, explanation, or elaboration after a complete clause |
+| **Semicolon** | When connecting two closely related independent clauses that could stand alone as sentences |
+| **Parentheses** | For asides or extra information that is supplementary rather than central to the sentence |
+| **Period** | Sometimes the cleanest fix is splitting into two sentences; shorter sentences are often clearer |
+
+### Common Patterns and Their Fixes
+
+| Original | Fixed | Rule Used |
+|---|---|---|
+| `**Label** [em-dash] description` | `**Label**: description` | Colon (label introducing explanation) |
+| `` `code` [em-dash] what it does `` | `` `code`: what it does `` | Colon (code label) |
+| `### Section [em-dash] Subtitle` | `### Section: Subtitle` | Colon (heading) |
+| `Feature [em-dash] works like X` | `Feature, works like X` | Comma (mid-sentence aside) |
+| `It loads data [em-dash] no server needed` | `It loads data; no server needed` | Semicolon (two independent clauses) |
+| `Signal [em-dash] fires when X` | `Signal: fires when X` | Colon (label introducing condition) |
+
+### Double-Dash Punctuation (`--`)
+
+The `--` character sequence used as a punctuation substitute (e.g., `word--word` or `word -- word`) is also prohibited. Do not confuse this with CSS custom property syntax (`--color-bg`, `--nav-height`), which is valid and must not be changed.
+
+### Audit Process
+
+When auditing for em-dash compliance, run both searches independently:
+
+```bash
+# Search for literal em-dash
+python -c "
+import os
+for root, dirs, files in os.walk('.'):
+    dirs[:] = [d for d in dirs if d != '.git']
+    for f in files:
+        if any(f.endswith(e) for e in ['.html','.md','.js','.css','.json']):
+            text = open(os.path.join(root,f), encoding='utf-8').read()
+            if chr(8212) in text:
+                print(f'{f}: {text.count(chr(8212))} em-dashes')
+"
+
+# Search for HTML entity (grep)
+grep -r '&mdash;' --include='*.html' --include='*.md' .
+```
+
+The `scripts/add_ai_summary.py` script contains the canonical AI Summary content. When updating summaries, verify the new text contains no em-dashes before committing.

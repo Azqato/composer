@@ -1,10 +1,10 @@
-# Composer Atlas — Design System
+# Composer Atlas: Design System
 
 **Version:** 1.3
 **Status:** Active
 **Last Updated:** 2026-06-14
 
-All values in this document are derived from `css/main.css` and `js/app.js` — the source files are the ground truth.
+All values in this document are derived from `css/main.css` and `js/app.js`: the source files are the ground truth.
 
 ---
 
@@ -44,34 +44,34 @@ The following color variants appear as inline `rgba()` values in `css/main.css` 
 
 | Usage | Value |
 |---|---|
-| Tag background — RSI, 200d-MA | `rgba(77, 159, 255, 0.08)` |
-| Tag border — RSI, 200d-MA | `rgba(77, 159, 255, 0.25)` |
-| Tag background — momentum | `rgba(167, 139, 250, 0.08)` |
-| Tag border — momentum | `rgba(167, 139, 250, 0.25)` |
-| Tag background — vix-tiers | `rgba(245, 197, 24, 0.08)` |
-| Tag border — vix-tiers | `rgba(245, 197, 24, 0.25)` |
-| Tag background — leveraged-etfs | `rgba(255, 77, 141, 0.08)` |
-| Tag border — leveraged-etfs | `rgba(255, 77, 141, 0.25)` |
-| Tag background — sharpe/calmar/max-drawdown | `rgba(0, 230, 118, 0.08)` |
-| Tag border — sharpe/calmar/max-drawdown | `rgba(0, 230, 118, 0.25)` |
-| Badge background — indicator | `rgba(77, 159, 255, 0.1)` |
-| Badge border — indicator | `rgba(77, 159, 255, 0.2)` |
-| Badge background — risk-metric | `rgba(255, 77, 141, 0.1)` |
-| Badge border — risk-metric | `rgba(255, 77, 141, 0.2)` |
-| Badge background — asset-class | `rgba(245, 197, 24, 0.1)` |
-| Badge border — asset-class | `rgba(245, 197, 24, 0.2)` |
-| Badge background — strategy-concept | `rgba(167, 139, 250, 0.1)` |
-| Badge border — strategy-concept | `rgba(167, 139, 250, 0.2)` |
+| Tag background: RSI, 200d-MA | `rgba(77, 159, 255, 0.08)` |
+| Tag border: RSI, 200d-MA | `rgba(77, 159, 255, 0.25)` |
+| Tag background: momentum | `rgba(167, 139, 250, 0.08)` |
+| Tag border: momentum | `rgba(167, 139, 250, 0.25)` |
+| Tag background: vix-tiers | `rgba(245, 197, 24, 0.08)` |
+| Tag border: vix-tiers | `rgba(245, 197, 24, 0.25)` |
+| Tag background: leveraged-etfs | `rgba(255, 77, 141, 0.08)` |
+| Tag border: leveraged-etfs | `rgba(255, 77, 141, 0.25)` |
+| Tag background: sharpe/calmar/max-drawdown | `rgba(0, 230, 118, 0.08)` |
+| Tag border: sharpe/calmar/max-drawdown | `rgba(0, 230, 118, 0.25)` |
+| Badge background: indicator | `rgba(77, 159, 255, 0.1)` |
+| Badge border: indicator | `rgba(77, 159, 255, 0.2)` |
+| Badge background: risk-metric | `rgba(255, 77, 141, 0.1)` |
+| Badge border: risk-metric | `rgba(255, 77, 141, 0.2)` |
+| Badge background: asset-class | `rgba(245, 197, 24, 0.1)` |
+| Badge border: asset-class | `rgba(245, 197, 24, 0.2)` |
+| Badge background: strategy-concept | `rgba(167, 139, 250, 0.1)` |
+| Badge border: strategy-concept | `rgba(167, 139, 250, 0.2)` |
 | Inline code background | `rgba(0, 230, 118, 0.08)` |
 | Nav background | `rgba(13, 13, 13, 0.95)` |
 
 ### Semantic Color Rules
 
-- **Green** — used exclusively for positive values and primary CTAs. Never decorative.
-- **Pink** — used exclusively for negative values (drawdown, losses). Never decorative.
-- **Purple** — reserved for momentum tags and strategy-concept glossary badges.
-- **Blue** — reserved for interactive states (links, focus rings, hover borders). Not used for data values.
-- **Yellow** — used for neutral/caution indicators (mean period return, median period return).
+- **Green**: used exclusively for positive values and primary CTAs. Never decorative.
+- **Pink**: used exclusively for negative values (drawdown, losses). Never decorative.
+- **Purple**: reserved for momentum tags and strategy-concept glossary badges.
+- **Blue**: reserved for interactive states (links, focus rings, hover borders). Not used for data values.
+- **Yellow**: used for neutral/caution indicators (mean period return, median period return).
 
 ### Contrast Ratios (WCAG AA)
 
@@ -101,8 +101,8 @@ Google Fonts import (in `css/main.css`):
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 ```
 
-- **Inter** — body text, UI labels, headings, nav links
-- **JetBrains Mono** — metric values, strategy IDs, code blocks, `font-mono` utility class
+- **Inter**: body text, UI labels, headings, nav links
+- **JetBrains Mono**: metric values, strategy IDs, code blocks, `font-mono` utility class
 
 ### Type Scale (from css/main.css)
 
@@ -111,26 +111,26 @@ Google Fonts import (in `css/main.css`):
 | `h1` | `h1` | `2rem` (32px) | `700` | `1.2` |
 | `h2` | `h2` | `1.375rem` (22px) | `700` | `1.3` |
 | `h3` | `h3` | `1.125rem` (18px) | `600` | `1.4` |
-| `h4` | `h4` | `0.9375rem` (15px) | `600` | — |
+| `h4` | `h4` | `0.9375rem` (15px) | `600` | n/a |
 | Body | `body` | `0.9375rem` (15px) | `400` | `1.6` |
 | Hero title | `.hero-title` | `clamp(1.75rem, 4vw, 3rem)` | `700` | `1.15` |
 | Hero description | `.hero-desc` | `1.0625rem` (17px) | `400` | `1.7` |
 | Card title | `.card-title` | `0.9375rem` (15px) | `600` | `1.4` |
 | Card description | `.card-desc` | `0.875rem` (14px) | `400` | `1.6` |
-| Metric value (card) | `.card-metric-value` | `0.875rem` (14px) | `500` | — |
-| Metrics row label | `.metrics-row dt` | `0.875rem` (14px) | — (inherited) | — |
-| Metrics row value | `.metrics-row dd` | `0.875rem` (14px) | `500` (mono) | — |
-| Label / eyebrow | `.label`, `.card-metric-label` | `0.6875rem` (11px) | `500` | — |
-| Tag / badge | `.tag`, `.badge` | `0.75rem` (12px) | `500` | — |
-| Nav link | `.nav-link` | `0.875rem` (14px) | — (inherited) | — |
-| Mobile nav link | `.mobile-nav-link` | `0.9375rem` (15px) | — (inherited) | — |
-| Footer link | `.footer-links a` | `0.8rem` (12.8px) | — (inherited) | — |
-| Footer legal | `.footer-legal` | `0.75rem` (12px) | — (inherited) | `1.6` |
-| Footer copy | `.footer-copy` | `0.75rem` (12px) | — (inherited) | — |
-| Prose body | `.prose p` | `0.9375rem` (15px) | — (inherited) | `1.7` |
-| Prose heading | `.prose h2` | `1.125rem` (18px) | `700` | — |
+| Metric value (card) | `.card-metric-value` | `0.875rem` (14px) | `500` | n/a |
+| Metrics row label | `.metrics-row dt` | `0.875rem` (14px) | (inherited) | n/a |
+| Metrics row value | `.metrics-row dd` | `0.875rem` (14px) | `500` (mono) | n/a |
+| Label / eyebrow | `.label`, `.card-metric-label` | `0.6875rem` (11px) | `500` | n/a |
+| Tag / badge | `.tag`, `.badge` | `0.75rem` (12px) | `500` | n/a |
+| Nav link | `.nav-link` | `0.875rem` (14px) | (inherited) | n/a |
+| Mobile nav link | `.mobile-nav-link` | `0.9375rem` (15px) | (inherited) | n/a |
+| Footer link | `.footer-links a` | `0.8rem` (12.8px) | (inherited) | n/a |
+| Footer legal | `.footer-legal` | `0.75rem` (12px) | (inherited) | `1.6` |
+| Footer copy | `.footer-copy` | `0.75rem` (12px) | (inherited) | n/a |
+| Prose body | `.prose p` | `0.9375rem` (15px) | (inherited) | `1.7` |
+| Prose heading | `.prose h2` | `1.125rem` (18px) | `700` | n/a |
 | Stat value | `.stat-value` | `1.5rem` (24px) | `700` (mono) | `1` |
-| Stat label | `.stat-label` | `0.75rem` (12px) | — (inherited) | — |
+| Stat label | `.stat-label` | `0.75rem` (12px) | (inherited) | n/a |
 
 ### Color of Text by Context
 
@@ -227,7 +227,7 @@ Mobile-first. Base styles target the smallest viewport; media queries add comple
 - Logo: 🗺️ emoji (`font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji'`, `font-size: 1.25rem`) + "Composer Atlas" text (hidden below 480px)
 - Logo hover: transitions to `--color-green` in 150ms
 - Nav links: `--color-secondary` default; `--color-primary` + `bg-surface` on active/hover; 150ms transition
-- "Open Composer ↗" button: `.btn-outline-green` — green border, green text; switches to green bg on hover
+- "Open Composer ↗" button: `.btn-outline-green`: green border, green text; switches to green bg on hover
 - Active route detection: `isActive()` function in `renderNav()` in `js/app.js`
 
 **Mobile nav (< 768px):**
@@ -308,9 +308,9 @@ Slim variant used in glossary page sidebars (`renderStrategyListItem()` in `js/a
 </a>
 ```
 
-Container: `.strategy-list-compact` — `border: 1px solid --color-border`, `border-radius: --radius-md`, `overflow: hidden`
+Container: `.strategy-list-compact`: `border: 1px solid --color-border`, `border-radius: --radius-md`, `overflow: hidden`
 
-Row: `.strategy-list-item` — `display: flex`, `justify-content: space-between`, `padding: 10px 12px`, `font-size: 0.875rem`, `--color-secondary`
+Row: `.strategy-list-item`: `display: flex`, `justify-content: space-between`, `padding: 10px 12px`, `font-size: 0.875rem`, `--color-secondary`
 
 Hover: `background: --color-surface-raised`, color → `--color-primary`; transition: `background 0.15s`
 
@@ -424,7 +424,7 @@ Used on strategy detail pages to list signals used by the strategy.
 .signal-desc { font-size: 0.875rem; color: var(--color-secondary); line-height: 1.6; }
 ```
 
-Header row: `.signal-header` — `display: flex`, `align-items: center`, `gap: 10px`, `margin-bottom: 8px`. Contains: signal name + a tag pill linking to the related glossary concept.
+Header row: `.signal-header`: `display: flex`, `align-items: center`, `gap: 10px`, `margin-bottom: 8px`. Contains: signal name + a tag pill linking to the related glossary concept.
 
 ---
 
@@ -542,7 +542,7 @@ Three stacked elements: links row, legal disclaimer, copyright + "Built by Azqat
 .stat-label { font-size: 0.75rem; color: var(--color-disabled); margin-top: 4px; }
 ```
 
-Stat values use `--color-primary` (not `--color-green`) — consistent white for all five stats.
+Stat values use `--color-primary` (not `--color-green`), consistent white for all five stats.
 
 Five stats (left to right): Strategies, Best Sharpe, Top ARR, Concepts, Longest Backtest. The Longest Backtest stat reads the max `backtest_days` across all strategies and displays it as `~X.X years` (e.g. `~15.2 years`). The strategy grid on the homepage is sorted by `backtest_days` descending (longest first).
 
@@ -561,19 +561,19 @@ Five stats (left to right): Strategies, Best Sharpe, Top ARR, Concepts, Longest 
 
 ### Grid Layouts
 
-`.grid-3` — strategy/glossary index cards:
+`.grid-3`: strategy/glossary index cards:
 - Base: `grid-template-columns: 1fr`
 - 640px+: `repeat(2, 1fr)`
 - 1024px+: `repeat(3, 1fr)`
 - `gap: 16px`
 
-`.grid-2` — strategy/glossary detail two-column layout:
+`.grid-2`: strategy/glossary detail two-column layout:
 - Base: `grid-template-columns: 1fr`, `gap: 40px`
 - 1024px+: `grid-template-columns: 2fr 1fr`
 
-`.detail-sidebar` — `display: flex; flex-direction: column; gap: 32px`
+`.detail-sidebar`: `display: flex; flex-direction: column; gap: 32px`
 
-`.detail-sidebar-sticky` (1024px+) — `position: sticky; top: calc(var(--nav-height) + 20px)`
+`.detail-sidebar-sticky` (1024px+); `position: sticky; top: calc(var(--nav-height) + 20px)`
 
 ---
 
@@ -661,7 +661,7 @@ Tab order follows visual reading order. Mobile nav hamburger: `aria-expanded` at
 ### Screen Reader Support
 
 - External links rendered with descriptive context (link text includes destination)
-- Metric color coding is never the sole means of conveying meaning — values include sign (`+` / `-`)
+- Metric color coding is never the sole means of conveying meaning: values include sign (`+` / `-`)
 - Strategy card metric labels are visible text above each value
 
 ### Reduced Motion
