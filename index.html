@@ -83,7 +83,7 @@
       document.getElementById('stat-sharpe').textContent = Math.max(...strategies.map(s => s.sharpe_ratio)).toFixed(2);
       document.getElementById('stat-arr').textContent = formatPct(Math.max(...strategies.map(s => s.annualized_rate_of_return)));
       document.getElementById('stat-concepts').textContent = glossary.length;
-      document.getElementById('stat-backtest').textContent = '~' + Math.round(Math.max(...strategies.map(s => s.backtest_days)) / 252) + ' yrs';
+      document.getElementById('stat-backtest').textContent = '~' + (Math.max(...strategies.map(s => s.backtest_days)) / 252).toFixed(1) + ' years';
 
       // Strategy grid — sorted by longest backtest first
       const sorted = [...strategies].sort((a, b) => b.backtest_days - a.backtest_days);
