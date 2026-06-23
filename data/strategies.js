@@ -1474,5 +1474,69 @@ window.STRATEGIES_DATA = [
       }
     ],
     "risk_profile": "Aggressive but unleveraged in the rotation component. The 65.3% max drawdown comes not from 3x ETFs but from holding concentrated positions in volatile sectors (NVDA, AMD, ENPH) during sector-specific crashes. The 13.8-year backtest (3,480 days) begins around 2012, which means ENPH and AMD's earlier history may be underrepresented. Sharpe of 1.19 and Calmar of 1.13 are among the lowest in the library, reflecting the strategy's lack of leverage (in the rotation mode) alongside a still-significant drawdown. The VIXM component carries moderate roll decay versus UVXY but adds meaningful long-duration protection. The strategy does not use a SPY trend gate — it can remain fully in semiconductor stocks during bear markets unless VIXM RSI triggers, which requires sustained (40-day) volatility elevation rather than an immediate response to the market turning negative."
+  },
+  {
+    "slug": "simons-kmlm-switcher",
+    "name": "Simon's KMLM Switcher",
+    "symphony_url": "https://app.composer.trade/symphony/u5iBJE751BM5FKPRJvKf/details",
+    "symphony_id": "u5iBJE751BM5FKPRJvKf",
+    "annualized_rate_of_return": 6.543247531502101,
+    "max_drawdown": -0.32048264492479117,
+    "cumulative_return": 4533.121606000001,
+    "calmar_ratio": 20.416854500928213,
+    "sharpe_ratio": 3.009383632400482,
+    "standard_deviation": 0.7704711488586083,
+    "min": -0.21878731324224576,
+    "mean": 0.009200965335761473,
+    "median": 0.004909416299873737,
+    "max": 0.38700998346800564,
+    "trailing_one_month_return": 0.25655630673701535,
+    "trailing_three_month_return": 0.7521731139343781,
+    "trailing_one_year_return": 1.3464310190945845,
+    "backtest_days": 1049,
+    "description": "An aggressive three-layer RSI strategy by Simon: an 11-ticker overbought gate routes to UVXY whenever any market sector overheats; a sequential dip-buy cascade catches 3x ETF crashes at extreme oversold levels; and a KMLM momentum switch toggles between the two most oversold leveraged ETFs when tech leads or defensive SQQQ/TLT positions when managed futures momentum dominates.",
+    "tags": [
+      "rsi",
+      "momentum",
+      "leveraged-etfs",
+      "managed-futures",
+      "inverse-etfs",
+      "vix-tiers"
+    ],
+    "last_updated": "2026-06-22",
+    "how_it_works": [
+      "The outermost layer checks RSI(10) on 11 market tickers in sequence: QQQE (equal-weight Nasdaq), VTV (value), VOX (communications), TECL (3x tech ETF), VOOG (S&P 500 growth), VOOV (S&P 500 value), XLP (consumer staples), TQQQ (3x QQQ), XLY (consumer discretionary), FAS (3x financials), and SPY. Thresholds range from 75 (XLP) to 80 (XLY, FAS, SPY), with most set at 79. If any single ticker crosses its threshold, 100% of the portfolio rotates to UVXY (2x long VIX futures). The strategy treats any overbought sector as a systemic early warning — one hot ticker is enough to go defensive. This makes Simon's KMLM Switcher unusual: most strategies rely on 1-2 overbought signals, while this strategy checks 11 in parallel, dramatically increasing the frequency of UVXY rotations.",
+      "When none of the 11 overbought conditions fire, the strategy cascades through four dip-buy checks on leveraged ETFs: TQQQ RSI(10) < 30, SOXL RSI(10) < 30, SPXL RSI(10) < 30, and LABU RSI(10) < 25. These are strict oversold thresholds designed to catch 3x ETF capitulation events — moments when a leveraged instrument has fallen so sharply that RSI reaches extreme lows. Each condition is checked in order; the first one that triggers takes 100% of the portfolio. The LABU threshold of 25 is tighter than the others, reflecting biotech's extreme volatility. This layer only activates in specific crash conditions — when a leveraged ETF is genuinely at panic-sell levels — and not during ordinary pullbacks.",
+      "If neither the overbought layer nor the dip-buy layer fires, the strategy's core logic activates: comparing RSI(10) of XLK (iShares US Technology ETF) versus RSI(10) of KMLM (KFA Mount Lucas Managed Futures Index Strategy ETF). When XLK's RSI exceeds KMLM's — tech showing stronger short-term momentum than managed futures — the strategy selects the bottom two performers by RSI(10) from the trio {TECL, SOXL, SVIX (-1x Short VIX Futures)}, equal-weighting them. This is a mean-reversion bet in the most beaten-up leveraged assets during a tech-momentum environment. When KMLM's RSI exceeds XLK's — managed futures outperforming tech, typically a risk-off or trending market signal — the portfolio rotates entirely to whichever of SQQQ (3x inverse QQQ) or TLT (20+ year treasuries) has the higher RSI(10), placing the full portfolio in a defensive or bearish position."
+    ],
+    "signals": [
+      {
+        "name": "11-Ticker RSI Overbought Gate",
+        "tag": "rsi",
+        "description": "RSI(10) above 75-80 on any of 11 tickers (QQQE, VTV, VOX, TECL, VOOG, VOOV, XLP, TQQQ, XLY, FAS, SPY) routes 100% to UVXY. The widest overbought screen in this library — any single trigger is sufficient to go defensive regardless of other market conditions."
+      },
+      {
+        "name": "4-ETF Dip-Buy Cascade",
+        "tag": "leveraged-etfs",
+        "description": "Sequential RSI(10) < 30 checks on TQQQ, SOXL, and SPXL; RSI(10) < 25 on LABU. Catches extreme 3x ETF capitulation events in tech, semiconductors, broad market, and biotech — each independently checked in order of priority."
+      },
+      {
+        "name": "XLK vs. KMLM Momentum Switch",
+        "tag": "managed-futures",
+        "description": "Core signal: XLK RSI(10) > KMLM RSI(10) → bottom-2 by RSI from {TECL, SOXL, SVIX} (equal weight). KMLM RSI(10) > XLK RSI(10) → top-1 by RSI from {SQQQ, TLT}. Uses managed futures momentum as a macro regime detector — when futures outperform tech, the strategy pivots to defensive positions."
+      },
+      {
+        "name": "SVIX Volatility Premium Position",
+        "tag": "vix-tiers",
+        "description": "SVIX (-1x Short VIX Futures ETF) enters the candidate pool alongside TECL and SOXL when XLK leads KMLM. In calm contango environments SVIX collects VIX roll yield; its negative RSI during volatility spikes makes it a frequent bottom-2 selection, adding a volatility-selling dimension to the leveraged-long rotation."
+      },
+      {
+        "name": "SQQQ Defensive Inversion",
+        "tag": "inverse-etfs",
+        "description": "When KMLM momentum dominates XLK, SQQQ (3x inverse QQQ) is the aggressive defensive option — selected over TLT when SQQQ's RSI(10) is higher. Positions the strategy to profit from Nasdaq decline during managed-futures-dominant regimes."
+      }
+    ],
+    "risk_profile": "Extremely Aggressive with a short backtest. The 654% annualized return and 4,533% cumulative return over approximately 4.2 years (1,049 trading days from April 2022) are among the highest in this library — achieved through constant rotation between UVXY hedges, 3x ETF dip-buys, and momentum-switched leveraged positions. The 32% max drawdown is surprisingly moderate given the 77% standard deviation, suggesting the 11-ticker UVXY overbought layer provides meaningful downside protection during sharp sell-offs. However, all figures reflect a specific 4-year window covering the 2022 bear market and the 2023-2025 bull run — a period that may have been unusually favorable for this style of RSI-switching. The 20.4 Calmar ratio and 3.01 Sharpe are the highest in the library. Interpret with significant caution; a longer out-of-sample track record is essential before taking these metrics at face value.",
+    "author_note": "'Single pops' in the full symphony name refers to the sequential single-ticker overbought detection: each RSI check fires independently on a single ticker, unlike strategies that require multiple conditions simultaneously. KMLM (KFA Mount Lucas Managed Futures Index Strategy ETF) serves as the macro regime detector — when managed futures momentum outpaces tech, the strategy pivots to defensive or bearish positions."
   }
 ];

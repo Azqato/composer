@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.6.0] - 2026-06-22
+
+### Added — Simon's KMLM Switcher strategy (strategy #25)
+
+Added Simon's KMLM Switcher (`simons-kmlm-switcher`) to the strategy library, bringing the total to 25 strategies. Symphony ID: `u5iBJE751BM5FKPRJvKf`.
+
+**Strategy overview:** A three-layer RSI engine that first screens 11 market tickers for overbought conditions (routing to UVXY), then cascades through 4 leveraged ETF dip-buy checks at extreme oversold levels, and finally runs a core KMLM momentum switch — holding the two most oversold assets from {TECL, SOXL, SVIX} when tech leads, or rotating to the stronger of {SQQQ, TLT} when managed futures momentum dominates.
+
+**Key metrics (backtest from ~April 2022, 1,049 trading days):** ARR +654.3%, Max DD −32.0%, Sharpe 3.01, Calmar 20.4. Highest ARR, Sharpe, and Calmar in the library.
+
+**Tags:** `rsi`, `momentum`, `leveraged-etfs`, `managed-futures`, `inverse-etfs`, `vix-tiers`
+
+**Files changed:** `data/strategies.json`, `data/strategies.js`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.5.9] - 2026-06-15
 
 ### Fixed — Site-wide accuracy audit (strategies, glossary, counts)

@@ -1,6 +1,6 @@
 # Composer Atlas — Master Reference Document
 
-**Version:** 1.5.8
+**Version:** 1.6.0
 **Status:** Active
 **Last Updated:** 2026-06-15
 
@@ -65,7 +65,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 
 ## 3. Goals
 
-- Launch a public-facing site with 13 strategy pages and a concept glossary
+- Launch a public-facing site with 25 strategy pages and a concept glossary
 - Require zero server infrastructure; run entirely in the browser via GitHub Pages
 - Establish a scalable JSON-based strategy database that can grow to thousands of entries
 - Educate users on the signals and logic behind each strategy, not just its returns
@@ -107,7 +107,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 ### MVP — Shipped (V1.0–V1.2.1)
 
 **Strategy Library**
-- Index page listing all 24 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
+- Index page listing all 25 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
 - Each strategy has a dedicated page with: name, description, tags, "Open in Composer" CTA, plain-English logic breakdown, signals used (cross-linked to glossary), risk profile, and full metrics table
 - Strategy card titles are clickable links
 
@@ -117,7 +117,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - Concepts cross-link back to strategies that use them
 
 **Data Layer**
-- `data/strategies.json` — flat-file database of all 24 strategies
+- `data/strategies.json` — flat-file database of all 25 strategies
 - `data/glossary.json` — flat-file database of all 19 glossary concepts
 - Dual-mode loading: `window.STRATEGIES_DATA` / `window.GLOSSARY_DATA` globals for `file://` compatibility; `fetch()` fallback for HTTP
 - `scripts/update_metrics.py` — reusable script to refresh all metrics and logic trees from the Composer API
@@ -1035,6 +1035,7 @@ All 24 Composer Atlas strategies with their Composer symphony IDs:
 | Top Cap by MA + RSI ETF Hedge | `wadbe3IfwvSES5vk6yiu` |
 | Mean Reversion Comparison to Python Code | `KJqNBGxYyyKuCcEfdHhq` |
 | SPY, Energy, Chips, Commodities | `rtyBIBOKEY2cPSbJSQX8` |
+| Simon's KMLM Switcher | `u5iBJE751BM5FKPRJvKf` |
 
 Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 
@@ -1100,12 +1101,18 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 
 ### V1.5 — Strategy Library Expansion + Glossary Expansion
 
-**Status:** Complete (at v1.5.6)
+**Status:** Complete (at v1.5.9)
 
 - [x] 6 new strategies added: SOXX Group, SOXL Growth v2.4.5 RL, Inside Nancy Pelosi's Chips V3, Top Cap by MA + RSI ETF Hedge, Mean Reversion Comparison to Python Code, SPY Energy Chips Commodities — library grows to 24 (v1.5.0)
 - [x] 9 new glossary concepts added: SMA, EMA, MACD, Mean Reversion, Volatility Decay, Standard Deviation, Annualized Return, Managed Futures, Inverse ETFs — glossary grows to 17 (v1.5.2)
 - [x] Zoop's Strategies glossary entry added with overview of all 11 zoops-* symphonies and headline metrics (v1.5.3)
 - [x] Backtesting glossary entry added covering general backtest mechanics and Composer-specific behavior — glossary grows to 19 (v1.5.6)
+
+### V1.6 — Strategy Library Expansion
+
+**Status:** Complete (at v1.6.0)
+
+- [x] Simon's KMLM Switcher added — library grows to 25 (v1.6.0)
 
 ### V2.0 — Scale + Discovery
 
@@ -1249,7 +1256,7 @@ The codebase is public, readable, and maintainable by a single developer. We do 
 ### User FAQ
 
 **Q: What is Composer Atlas?**
-A: Composer Atlas is a free reference website that showcases 24 curated Composer.trade strategies, explains how they work in plain language, and educates visitors on the investing concepts behind them.
+A: Composer Atlas is a free reference website that showcases 25 curated Composer.trade strategies, explains how they work in plain language, and educates visitors on the investing concepts behind them.
 
 **Q: Who is this for?**
 A: Self-directed retail investors who use Composer.trade, are curious about systematic investing, or want to learn about concepts like RSI, VIX strategies, momentum, or leveraged ETFs.
