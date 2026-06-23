@@ -716,6 +716,57 @@ p { color: var(--color-secondary); }
   line-height: 1.7;
 }
 
+/* ---- AI Summary box ---- */
+.ai-summary {
+  background: linear-gradient(180deg, rgba(167, 139, 250, 0.06), rgba(167, 139, 250, 0.02));
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+}
+
+.ai-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.ai-summary-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  background: rgba(167, 139, 250, 0.12);
+  color: var(--color-purple);
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.ai-summary-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.ai-summary-p {
+  font-size: 0.9375rem;
+  color: var(--color-secondary);
+  line-height: 1.75;
+  margin-bottom: 12px;
+}
+
+.ai-summary-disclaimer {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(167, 139, 250, 0.15);
+  font-size: 0.75rem;
+  color: var(--color-disabled);
+  line-height: 1.6;
+}
+
 /* ---- Prose (glossary content) ---- */
 .prose h2 {
   font-size: 1.125rem;

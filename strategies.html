@@ -79,6 +79,19 @@
 
       const tags = (s.tags || []).map(renderTag).join('');
 
+      const aiSummary = s.ai_summary && s.ai_summary.length
+        ? `<section class="mb-10">
+            <div class="ai-summary">
+              <div class="ai-summary-header">
+                <span class="ai-summary-mark" aria-hidden="true">✦</span>
+                <h2 class="ai-summary-title">AI Summary</h2>
+              </div>
+              ${s.ai_summary.map(p => `<p class="ai-summary-p">${p}</p>`).join('')}
+              <p class="ai-summary-disclaimer">AI-generated analysis by Claude, based on the strategy's logic tree and backtested metrics. For education only — not financial advice.</p>
+            </div>
+          </section>`
+        : '';
+
       const howItWorks = s.how_it_works && s.how_it_works.length
         ? `<section class="mb-10">
             <h2 style="color:var(--color-primary);margin-bottom:16px">How It Works</h2>
@@ -122,6 +135,7 @@
               <a href="${s.symphony_url}" target="_blank" rel="noopener noreferrer"
                 class="btn btn-green btn-lg">Open in Composer ↗</a>
             </div>
+            ${aiSummary}
             ${howItWorks}
             ${signals}
             ${riskProfile}

@@ -1,8 +1,8 @@
 # Composer Atlas — Master Reference Document
 
-**Version:** 1.6.0
+**Version:** 1.7.0
 **Status:** Active
-**Last Updated:** 2026-06-15
+**Last Updated:** 2026-06-22
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -108,7 +108,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 
 **Strategy Library**
 - Index page listing all 25 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
-- Each strategy has a dedicated page with: name, description, tags, "Open in Composer" CTA, plain-English logic breakdown, signals used (cross-linked to glossary), risk profile, and full metrics table
+- Each strategy has a dedicated page with: name, description, tags, "Open in Composer" CTA, an AI Summary (Claude-authored analysis above How It Works), plain-English logic breakdown, signals used (cross-linked to glossary), risk profile, and full metrics table
 - Strategy card titles are clickable links
 
 **Concept Glossary**
@@ -233,7 +233,8 @@ ComposerAtlas/
 ├── scripts/                    # All Python scripts live here — never in the project root
 │   ├── update_metrics.py       # Fetches backtest metrics + logic trees from Composer API
 │   ├── add_glossary.py         # One-time: added 9 glossary entries (v1.5.2) — safe to re-run
-│   └── add_zoop.py             # One-time: added Zoop glossary entry + zoop tags (v1.5.3)
+│   ├── add_zoop.py             # One-time: added Zoop glossary entry + zoop tags (v1.5.3)
+│   └── add_ai_summary.py       # Writes the ai_summary field on all strategies (v1.7.0) — safe to re-run
 ├── index.html                  # Home page (hero + strategy grid)
 ├── strategies.html             # Strategy listing + detail (?slug=X) — single file
 ├── glossary.html               # Glossary listing + concept detail (?slug=X) — single file
@@ -469,7 +470,7 @@ Provide a Composer.trade symphony URL to Claude Code and it automates the entire
 2. Fetches backtest metrics via `POST /api/v0.1/symphonies/{id}/backtest` (no auth required)
 3. Fetches the logic tree via `GET /api/v0.1/symphonies/{id}/score`
 4. Analyzes the logic tree to determine: primary trend gate, volatility routing, dip-buy conditions, cross-asset signals, correct canonical tags
-5. Drafts all content fields: `description`, `how_it_works`, `signals`, `risk_profile`
+5. Drafts all content fields: `description`, `ai_summary`, `how_it_works`, `signals`, `risk_profile`
 6. Proposes name and slug; asks for confirmation before inserting
 7. Inserts the complete entry into `data/strategies.json` and `data/strategies.js`
 8. Updates `docs/PATCHNOTES.md`
@@ -520,6 +521,7 @@ Use when you prefer full control or the Composer API is unavailable.
   "description": "Plain-English description. 1-3 sentences. No HTML.",
   "tags": ["tag1", "tag2"],
   "last_updated": "YYYY-MM-DD",
+  "ai_summary": ["AI analysis paragraph 1 (structure, assets, logic, why follow it).", "AI analysis paragraph 2 (metrics, backtest period, noteworthy characteristics)."],
   "how_it_works": ["Paragraph 1.", "Paragraph 2.", "Paragraph 3."],
   "signals": [
     { "name": "Signal Name", "tag": "related-tag", "description": "What this signal does." }
@@ -706,6 +708,48 @@ git push origin main
 
 ---
 
+### Generating the AI Summary
+
+Every strategy page renders an **AI Summary** in a purple-accented box directly above "How It Works." It is a Claude-authored analysis stored in the `ai_summary` field (an array of paragraph strings) and is distinct from `how_it_works`: where `how_it_works` walks through the mechanics step by step, the AI Summary stands back and *evaluates* the strategy for the reader.
+
+**What each summary must cover.** For every strategy, Claude analyzes and then synthesizes:
+
+1. **Structure** — the overall shape of the logic (e.g. cash-first dip-buyer, three-state trend machine, parallel equal-weight components, shared Frontrunner base).
+2. **Assets** — the instruments it trades (3x ETFs, sector ETFs, bonds, volatility products, individual stocks).
+3. **Signals & logic** — the indicators and gates that drive decisions (RSI thresholds, 200-day MA regime, MACD, volatility tiers, momentum selection).
+4. **Performance metrics** — ARR, max drawdown, Sharpe, Calmar, and standard deviation, read together rather than cherry-picked.
+5. **Backtest period** — how many years/trading days, and whether that window is long enough to trust.
+
+From that analysis, each summary then states:
+
+- **Why someone would follow it** — the investor profile and the problem it solves.
+- **The purpose behind its logic** — the thesis the rules are expressing.
+- **Noteworthy characteristics** — anything a reader should weigh carefully, especially **short backtests** (e.g. < ~5 years is period-dependent), **high drawdowns** (e.g. deeper than ~50%), a **Calmar at or below 1.0** (return no larger than the worst loss), or **overfitting risk** in optimized/RL strategies.
+
+**Tone and tenets.** Summaries follow the *Transparency Over Hype* and *Education Before Promotion* tenets: they are even-handed and explicitly discount spectacular-but-fragile backtests rather than amplifying them. If a strategy looks too good because of a short or favorable test window, say so.
+
+**Format.** Two paragraphs is the standard: paragraph 1 covers structure/assets/logic and why-follow/purpose; paragraph 2 covers metrics/backtest period and noteworthy characteristics. Plain text only — no HTML or markdown inside the strings. The page automatically appends a fixed disclaimer ("AI-generated analysis by Claude … not financial advice"), so do not repeat it inside the field.
+
+**How to write or update summaries.**
+
+1. Open `scripts/add_ai_summary.py`. It holds an `AI_SUMMARIES` dict keyed by strategy `slug`, each value a list of paragraph strings.
+2. Add or edit the entry for the relevant slug, using the strategy's metrics, `how_it_works`, `signals`, `risk_profile`, and (when deeper logic detail is needed) its tree in `data/symphony_scores.json`.
+3. Run the script — it rewrites both data files in sync and inserts `ai_summary` immediately before `how_it_works`:
+   ```bash
+   python scripts/add_ai_summary.py
+   ```
+4. Validate and preview:
+   ```bash
+   python -c "import json; json.load(open('data/strategies.json')); print('Valid JSON')"
+   python -m http.server 8000
+   # http://localhost:8000/strategies.html?slug=<slug>
+   ```
+5. Update `docs/PATCHNOTES.md`, then commit `data/strategies.json`, `data/strategies.js`, `scripts/add_ai_summary.py`, and the patch notes.
+
+When adding a brand-new strategy, you may instead author `ai_summary` directly in the JSON entry (as in the manual template above) — the script is the bulk/maintenance path, not the only way to set the field.
+
+---
+
 ### Troubleshooting
 
 **Site not updating after push**
@@ -776,6 +820,7 @@ All fields in `data/strategies.json`. Both `strategies.json` and `strategies.js`
 | `description` | string | Yes | Short plain-English description (1-3 sentences). No HTML tags. |
 | `tags` | string[] | Yes | Concept tags for glossary cross-linking. Must match `slug` values in `data/glossary.json`. |
 | `last_updated` | string | Yes | ISO date metrics were last updated (YYYY-MM-DD) |
+| `ai_summary` | string[] | Recommended | Claude-authored analysis. Each string becomes a `<p>` inside the AI Summary box, rendered above How It Works. See "Generating the AI Summary" in Section 11. |
 | `how_it_works` | string[] | Recommended | Paragraphs explaining strategy logic. Each string becomes a `<p>` tag. |
 | `signals` | object[] | Recommended | Signals used. Each: `{ "name": string, "tag": string, "description": string }`. `tag` must match a glossary slug. |
 | `risk_profile` | string | Recommended | Risk summary for the strategy detail page. |
@@ -1113,6 +1158,13 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 **Status:** Complete (at v1.6.0)
 
 - [x] Simon's KMLM Switcher added — library grows to 25 (v1.6.0)
+
+### V1.7 — AI Summaries
+
+**Status:** Complete (at v1.7.0)
+
+- [x] `ai_summary` field added to all 25 strategies; Claude-authored analysis box renders above How It Works on every strategy page (v1.7.0)
+- [x] `scripts/add_ai_summary.py` added; "Generating the AI Summary" runbook and schema field documented (v1.7.0)
 
 ### V2.0 — Scale + Discovery
 

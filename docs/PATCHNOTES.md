@@ -5,6 +5,27 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.7.0] - 2026-06-22
+
+### Added — AI Summary section on every strategy page
+
+Every strategy detail page now opens with an **AI Summary** — a Claude-authored analysis displayed in a distinct purple-accented box directly above the "How It Works" section. For each strategy, Claude reviews the symphony's structure, assets, signals/logic, performance metrics, and backtest period, then explains in plain English **why** someone would follow it, the **purpose** behind its logic, and any **noteworthy characteristics** — short backtests, deep drawdowns, or period-dependent returns that warrant skepticism.
+
+The summaries are deliberately even-handed in line with the Transparency Over Hype and Education Before Promotion tenets: strategies with spectacular-but-short backtests (e.g. s90 Half Low Catch at ~2 years / +735% ARR, Simon's KMLM Switcher at ~4 years / +654% ARR) and those with catastrophic drawdowns (Inside Nancy Pelosi's Chips −86%, SOXL Growth v2.4.5 RL −82%, Calmar ≤ 1.0) are explicitly flagged so readers discount the headline figures appropriately.
+
+**What was added:**
+- New `ai_summary` field (array of paragraph strings) on all 25 strategies in `data/strategies.json` and `data/strategies.js`, inserted immediately before `how_it_works`
+- `AI Summary` render block in `strategies.html`, placed above How It Works; renders nothing when the field is absent
+- `.ai-summary` component (box, header, ✦ mark, paragraphs, and an AI-generated disclaimer) in `css/main.css`
+- `scripts/add_ai_summary.py` — reproducible, re-runnable script that holds every summary keyed by slug and writes both data files in sync
+- Each summary carries an inline disclaimer: "AI-generated analysis by Claude … For education only — not financial advice."
+
+**Process documented:** PRD Section 11 gains a "Generating the AI Summary" runbook; the streamlined URL-based add-strategy workflow now drafts `ai_summary` automatically; Section 12 schema documents the new field; DESIGN.md documents the `.ai-summary` component.
+
+**Files changed:** `data/strategies.json`, `data/strategies.js`, `strategies.html`, `css/main.css`, `scripts/add_ai_summary.py`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.6.0] - 2026-06-22
 
 ### Added — Simon's KMLM Switcher strategy (strategy #25)
