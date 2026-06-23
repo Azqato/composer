@@ -16,9 +16,8 @@ The summaries are deliberately even-handed in line with the Transparency Over Hy
 **What was added:**
 - New `ai_summary` field (array of paragraph strings) on all 25 strategies in `data/strategies.json` and `data/strategies.js`, inserted immediately before `how_it_works`
 - `AI Summary` render block in `strategies.html`, placed above How It Works; renders nothing when the field is absent
-- `.ai-summary` component (box, header, ✦ mark, paragraphs, and an AI-generated disclaimer) in `css/main.css`
+- `.ai-summary` component (box, header, ✦ mark, paragraphs) in `css/main.css`
 - `scripts/add_ai_summary.py` — reproducible, re-runnable script that holds every summary keyed by slug and writes both data files in sync
-- Each summary carries an inline disclaimer: "AI-generated analysis by Claude … For education only — not financial advice."
 
 **Process documented:** PRD Section 11 gains a "Generating the AI Summary" runbook; the streamlined URL-based add-strategy workflow now drafts `ai_summary` automatically; Section 12 schema documents the new field; DESIGN.md documents the `.ai-summary` component.
 

@@ -728,7 +728,7 @@ From that analysis, each summary then states:
 
 **Tone and tenets.** Summaries follow the *Transparency Over Hype* and *Education Before Promotion* tenets: they are even-handed and explicitly discount spectacular-but-fragile backtests rather than amplifying them. If a strategy looks too good because of a short or favorable test window, say so.
 
-**Format.** Two paragraphs is the standard: paragraph 1 covers structure/assets/logic and why-follow/purpose; paragraph 2 covers metrics/backtest period and noteworthy characteristics. Plain text only — no HTML or markdown inside the strings. The page automatically appends a fixed disclaimer ("AI-generated analysis by Claude … not financial advice"), so do not repeat it inside the field.
+**Format.** Two paragraphs is the standard: paragraph 1 covers structure/assets/logic and why-follow/purpose; paragraph 2 covers metrics/backtest period and noteworthy characteristics. Plain text only, with no HTML or markdown inside the strings. The site-wide footer already carries the "not financial advice" disclaimer, so the AI Summary box does not repeat one.
 
 **How to write or update summaries.**
 

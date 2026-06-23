@@ -442,10 +442,9 @@ Used at the top of strategy detail pages, directly above the "How It Works" sect
 .ai-summary-mark { width: 26px; height: 26px; border-radius: var(--radius-sm); background: rgba(167, 139, 250, 0.12); color: var(--color-purple); }
 .ai-summary-title { font-size: 1.125rem; font-weight: 700; color: var(--color-primary); }
 .ai-summary-p { font-size: 0.9375rem; color: var(--color-secondary); line-height: 1.75; }
-.ai-summary-disclaimer { font-size: 0.75rem; color: var(--color-disabled); border-top: 1px solid rgba(167, 139, 250, 0.15); }
 ```
 
-Header row: `.ai-summary-header` with `display: flex`, `align-items: center`, `gap: 10px`. Contains a `✦` mark in `.ai-summary-mark` plus the `AI Summary` title. Each `ai_summary` paragraph renders as a `.ai-summary-p`. A fixed `.ai-summary-disclaimer` line closes the box, separated by a faint purple top border.
+Header row: `.ai-summary-header` with `display: flex`, `align-items: center`, `gap: 10px`. Contains a `✦` mark in `.ai-summary-mark` plus the `AI Summary` title. Each `ai_summary` paragraph renders as a `.ai-summary-p`.
 
 ---
 

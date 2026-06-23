@@ -758,13 +758,8 @@ p { color: var(--color-secondary); }
   margin-bottom: 12px;
 }
 
-.ai-summary-disclaimer {
-  margin-top: 4px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(167, 139, 250, 0.15);
-  font-size: 0.75rem;
-  color: var(--color-disabled);
-  line-height: 1.6;
+.ai-summary-p:last-child {
+  margin-bottom: 0;
 }
 
 /* ---- Prose (glossary content) ---- */
