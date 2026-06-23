@@ -1,6 +1,6 @@
 # Composer Atlas — Master Reference Document
 
-**Version:** 1.7.0
+**Version:** 1.7.1
 **Status:** Active
 **Last Updated:** 2026-06-22
 
@@ -1165,6 +1165,7 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 
 - [x] `ai_summary` field added to all 25 strategies; Claude-authored analysis box renders above How It Works on every strategy page (v1.7.0)
 - [x] `scripts/add_ai_summary.py` added; "Generating the AI Summary" runbook and schema field documented (v1.7.0)
+- [x] Homepage: "Longest Backtest" fifth stat added to stats bar; strategy grid sorted by backtest length (longest first) (v1.7.1)
 
 ### V2.0 — Scale + Discovery
 

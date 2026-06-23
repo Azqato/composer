@@ -5,6 +5,18 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.7.1] - 2026-06-22
+
+### Changed — Homepage: "Longest Backtest" stat + sort by backtest length
+
+Added a fifth stat to the homepage stats bar: **Longest Backtest**, which reads `~15 yrs` (the max `backtest_days` across all strategies, rounded to nearest year).
+
+Also changed the homepage strategy grid sort order from the default JSON order to **longest backtest first**, so strategies with the most validated history surface at the top.
+
+**Files changed:** `index.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.7.0] - 2026-06-22
 
 ### Added — AI Summary section on every strategy page

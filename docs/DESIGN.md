@@ -542,7 +542,9 @@ Three stacked elements: links row, legal disclaimer, copyright + "Built by Azqat
 .stat-label { font-size: 0.75rem; color: var(--color-disabled); margin-top: 4px; }
 ```
 
-Stat values use `--color-primary` (not `--color-green`) — consistent white for all four stats.
+Stat values use `--color-primary` (not `--color-green`) — consistent white for all five stats.
+
+Five stats (left to right): Strategies, Best Sharpe, Top ARR, Concepts, Longest Backtest. The Longest Backtest stat reads the max `backtest_days` across all strategies and displays it as `~X yrs` (e.g. `~15 yrs`). The strategy grid on the homepage is sorted by `backtest_days` descending (longest first).
 
 ---
 

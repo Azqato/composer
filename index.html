@@ -45,6 +45,10 @@
             <p class="stat-value" id="stat-concepts">—</p>
             <p class="stat-label">Concepts</p>
           </div>
+          <div>
+            <p class="stat-value" id="stat-backtest">—</p>
+            <p class="stat-label">Longest Backtest</p>
+          </div>
         </div>
       </div>
     </section>
@@ -79,10 +83,12 @@
       document.getElementById('stat-sharpe').textContent = Math.max(...strategies.map(s => s.sharpe_ratio)).toFixed(2);
       document.getElementById('stat-arr').textContent = formatPct(Math.max(...strategies.map(s => s.annualized_rate_of_return)));
       document.getElementById('stat-concepts').textContent = glossary.length;
+      document.getElementById('stat-backtest').textContent = '~' + Math.round(Math.max(...strategies.map(s => s.backtest_days)) / 252) + ' yrs';
 
-      // Strategy grid
+      // Strategy grid — sorted by longest backtest first
+      const sorted = [...strategies].sort((a, b) => b.backtest_days - a.backtest_days);
       const grid = document.getElementById('strategy-grid');
-      grid.innerHTML = strategies.map(renderStrategyCard).join('');
+      grid.innerHTML = sorted.map(renderStrategyCard).join('');
       document.getElementById('strategy-count').textContent = `${strategies.length} strategies`;
     })().catch(err => {
       document.getElementById('strategy-grid').innerHTML = `
