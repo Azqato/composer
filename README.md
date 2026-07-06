@@ -4,7 +4,7 @@ A curated strategy library and educational reference for Composer.trade users. C
 
 ## Live Site
 
-https://azqato.github.io/composer
+https://composeratlas.com
 
 ## Tech Stack
 

@@ -644,7 +644,7 @@ git push origin main
 
 Composer Atlas deploys automatically via GitHub Actions on every push to `main`. No manual steps required.
 
-- **Live URL:** https://azqato.github.io/composer
+- **Live URL:** https://composeratlas.com (Cloudflare Pages, linked directly to this GitHub repo)
 - **Repository:** https://github.com/Azqato/composer
 - **Deploy time:** Typically 1-2 minutes after push
 

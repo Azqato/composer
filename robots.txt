@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://azqato.github.io/composer/sitemap.xml
+Sitemap: https://composeratlas.com/sitemap.xml
