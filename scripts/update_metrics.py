@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 update_metrics.py: Fetch fresh data from the Composer API and update:
-  - data/strategies.json + data/strategies.js  (backtest metrics for all 18 strategies)
-  - data/symphony_scores.json                   (full logic trees for all 18 symphonies)
+  - data/strategies.json + data/strategies.js  (backtest metrics for all strategies)
+  - data/symphony_scores.json                   (full logic trees for all symphonies)
 
 Symphony scores are stored for AI analysis and future reference only.
 They are NOT served to the website.

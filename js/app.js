@@ -86,6 +86,7 @@ const TAG_CLASSES = {
   'calmar-ratio': 'tag-calmar-ratio',
   'max-drawdown': 'tag-max-drawdown',
   'zoop': 'tag-zoop',
+  'original': 'tag-original',
 };
 
 function tagClass(slug) {
@@ -108,6 +109,7 @@ function tagLabel(slug) {
     'managed-futures': 'Managed Futures',
     'inverse-etfs': 'Inverse ETFs',
     'zoop': "Zoop's Strategies",
+    'original': 'Original',
   };
   return labels[slug] || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
@@ -145,8 +147,8 @@ function renderNav() {
     { href: u('/strategies.html'), label: 'Strategies' },
     { href: u('/glossary.html'), label: 'Glossary' },
     { href: u('/about.html'), label: 'About' },
-    { href: 'https://azqato.github.io/stocks/', label: 'Individual Stocks' },
-    { href: 'https://azqato.github.io/leveraged-strategies/', label: 'Leveraged Strategies' },
+    { href: 'https://azqato.github.io/stocks/', label: 'Individual Stocks', external: true },
+    { href: 'https://azqato.github.io/leveraged-strategies/', label: 'Leveraged Strategies', external: true },
     { href: 'https://azqato.github.io/support.html', label: 'Support', external: true },
   ];
 

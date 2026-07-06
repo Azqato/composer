@@ -1,4 +1,4 @@
-// Glossary data - loaded as a script tag so the site works with file:// protocol.
+// To update content: edit this file and data/glossary.json in sync.
 window.GLOSSARY_DATA = [
   {
     "slug": "rsi",
@@ -1570,6 +1570,33 @@ window.GLOSSARY_DATA = [
           "In Composer specifically, the available backtest history for leveraged ETFs is relatively short. TQQQ has roughly 15 years of history as of 2026, enough to cover a few cycles, but not enough to make definitive claims about multi-decade robustness. A strategy's backtest starts on the date its most recently launched asset began trading, which can make a strategy appear untested under conditions that occurred before its components existed.",
           "Overfitting is the most persistent risk. Composer makes it easy to add conditions, RSI thresholds, moving average filters, multi-asset ranking logic, and each added condition offers more knobs to turn during optimization. A symphony tuned until its backtest looks perfect is a symphony fit to historical noise, not a strategy with genuine forward-looking edge.",
           "The most honest interpretation of a Composer backtest: it shows you what would have happened if you had run this exact logic on this exact data. That's valuable information. It tells you how the strategy handles stress, what kind of drawdowns it tolerates, and whether its return profile matches your risk appetite. But it is the beginning of strategy evaluation, not the end of it."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "original",
+    "name": "Original",
+    "category": "strategy-concept",
+    "description": "Marks a strategy as an independent, non-zoop source symphony that one or more of zoop's suite strategies were adapted from.",
+    "formula": null,
+    "related_tags": [
+      "original"
+    ],
+    "last_updated": "2026-07-06",
+    "sections": [
+      {
+        "title": "What 'Original' Means",
+        "paragraphs": [
+          "The 'Original' tag identifies strategies that are not part of zoop's zoops-* suite, but that directly inspired one of those suite entries. Composer Atlas documents both a source strategy and the zoop-authored adaptation built on top of it, so readers can compare the two side by side.",
+          "Four strategies currently carry this tag: The Holy Grail, TQQQ For The Long Term, SOXL Growth, and Simon's KMLM Switcher. Each has a corresponding zoop's suite counterpart (zoop's Holy Grail 2026, zoop's TQQQ For The Long Term 2026, zoop's SOXL Growth 2026, and zoop's KMLM Switcher 2026, respectively) that layers zoop's own risk-management refinements on top of the original logic."
+        ]
+      },
+      {
+        "title": "Why It's Useful",
+        "paragraphs": [
+          "Tagging these strategies as 'Original' makes the lineage between a source symphony and its zoop-authored adaptation explicit and discoverable, rather than something a reader has to infer from strategy names alone.",
+          "See [[zoop]] for more on how the zoops-* suite builds on these source strategies."
         ]
       }
     ]

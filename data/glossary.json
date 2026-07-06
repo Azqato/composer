@@ -1572,5 +1572,32 @@
         ]
       }
     ]
+  },
+  {
+    "slug": "original",
+    "name": "Original",
+    "category": "strategy-concept",
+    "description": "Marks a strategy as an independent, non-zoop source symphony that one or more of zoop's suite strategies were adapted from.",
+    "formula": null,
+    "related_tags": [
+      "original"
+    ],
+    "last_updated": "2026-07-06",
+    "sections": [
+      {
+        "title": "What 'Original' Means",
+        "paragraphs": [
+          "The 'Original' tag identifies strategies that are not part of zoop's zoops-* suite, but that directly inspired one of those suite entries. Composer Atlas documents both a source strategy and the zoop-authored adaptation built on top of it, so readers can compare the two side by side.",
+          "Four strategies currently carry this tag: The Holy Grail, TQQQ For The Long Term, SOXL Growth, and Simon's KMLM Switcher. Each has a corresponding zoop's suite counterpart (zoop's Holy Grail 2026, zoop's TQQQ For The Long Term 2026, zoop's SOXL Growth 2026, and zoop's KMLM Switcher 2026, respectively) that layers zoop's own risk-management refinements on top of the original logic."
+        ]
+      },
+      {
+        "title": "Why It's Useful",
+        "paragraphs": [
+          "Tagging these strategies as 'Original' makes the lineage between a source symphony and its zoop-authored adaptation explicit and discoverable, rather than something a reader has to infer from strategy names alone.",
+          "See [[zoop]] for more on how the zoops-* suite builds on these source strategies."
+        ]
+      }
+    ]
   }
 ]

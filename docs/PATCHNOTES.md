@@ -5,6 +5,42 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.8.0] - 2026-07-06
+
+### Added: "Original" tag and lineage between source strategies and zoop's suite
+
+Four strategies (The Holy Grail, TQQQ For The Long Term, SOXL Growth, Simon's KMLM Switcher) are the independent, non-zoop symphonies that zoop's suite strategies (zoop's Holy Grail 2026, zoop's TQQQ For The Long Term 2026, zoop's SOXL Growth 2026, zoop's KMLM Switcher 2026) were adapted from. These four now carry a new `original` tag so that lineage is explicit and discoverable rather than only implied by naming.
+
+**Renamed for clarity (matching the existing "The Holy Grail (Original)" convention):**
+- "TQQQ For The Long Term" → "TQQQ For The Long Term (Original)"
+- "SOXL Growth v2.4.5 RL" → "SOXL Growth (Original)"
+- "Simon's KMLM Switcher" → "Simon's KMLM Switcher (Original)"
+
+**What was added:**
+- `original` tag applied to `holy-grail`, `tqqq-long-term`, `soxl-growth-rl`, `simons-kmlm-switcher` in `data/strategies.json` / `data/strategies.js`
+- New `original` glossary entry (`data/glossary.json` / `data/glossary.js`, 20 concepts total) explaining what the tag means and linking to the `zoop` entry
+- `.tag-original` CSS class and `TAG_CLASSES` / tag-label entries in `js/app.js`
+- `scripts/add_original_tag.py`: reproducible, re-runnable script that performed the renames, tag additions, and glossary entry in sync
+
+### Changed: External nav links open in a new tab
+
+"Individual Stocks" and "Leveraged Strategies" in the top nav now open in a new tab (`target="_blank" rel="noopener noreferrer"`), matching the existing behavior of the "Support" link, since all three point to external sites outside this repo.
+
+### Fixed: Documentation drift after recent library growth
+
+Full pass over README, PRD, DESIGN, and `about.html` to reconcile stale figures and pipeline descriptions against the current site state:
+- Strategy count corrected from 24 to 25 in `README.md` and `about.html`
+- Glossary concept count corrected from 19 to 20 across `docs/PRD.md`
+- PRD Section 4 (Non-Goals) no longer claims there's no automated metric pipeline: `.github/workflows/update-metrics.yml` has run `scripts/update_metrics.py` daily since v1.6.x, corrected here
+- PRD Section 11 runbook rewritten to describe the daily automated refresh (with 7-day staleness skip and self-healing retry) instead of a stale "run monthly" manual instruction
+- DESIGN.md's tag color table now includes the previously-undocumented `zoop` tag and the new `original` tag
+- `scripts/update_metrics.py` docstring no longer hardcodes a stale strategy count
+- PRD Section 14 (Roadmap) V2.0 "Tag-based filtering on strategy index" item expanded to describe filtering by the tag taxonomy already generated for every strategy (signal, asset class, and collection tags)
+
+**Files changed:** `data/strategies.json`, `data/strategies.js`, `data/glossary.json`, `data/glossary.js`, `js/app.js`, `css/main.css`, `about.html`, `README.md`, `docs/PRD.md`, `docs/DESIGN.md`, `scripts/add_original_tag.py`, `scripts/update_metrics.py`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.7.2] - 2026-06-22
 
 ### Chore: Full em-dash audit and removal across all project files

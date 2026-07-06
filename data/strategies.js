@@ -931,7 +931,8 @@ window.STRATEGIES_DATA = [
       "200d-ma",
       "leveraged-etfs",
       "momentum",
-      "inverse-etfs"
+      "inverse-etfs",
+      "original"
     ],
     "last_updated": "2026-07-06",
     "ai_summary": [
@@ -969,7 +970,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "tqqq-long-term",
-    "name": "TQQQ For The Long Term",
+    "name": "TQQQ For The Long Term (Original)",
     "symphony_url": "https://app.composer.trade/symphony/HukRwDJLlYPLMbrQbua5/details",
     "symphony_id": "HukRwDJLlYPLMbrQbua5",
     "annualized_rate_of_return": 1.635314726259952,
@@ -992,7 +993,8 @@ window.STRATEGIES_DATA = [
       "200d-ma",
       "leveraged-etfs",
       "momentum",
-      "inverse-etfs"
+      "inverse-etfs",
+      "original"
     ],
     "last_updated": "2026-07-06",
     "ai_summary": [
@@ -1300,7 +1302,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "soxl-growth-rl",
-    "name": "SOXL Growth v2.4.5 RL",
+    "name": "SOXL Growth (Original)",
     "symphony_url": "https://app.composer.trade/symphony/CW8oWU12S6vEvn2Hh7jD/details",
     "symphony_id": "CW8oWU12S6vEvn2Hh7jD",
     "annualized_rate_of_return": 1.4186396780241775,
@@ -1323,7 +1325,8 @@ window.STRATEGIES_DATA = [
       "momentum",
       "leveraged-etfs",
       "standard-deviation",
-      "inverse-etfs"
+      "inverse-etfs",
+      "original"
     ],
     "last_updated": "2026-07-06",
     "ai_summary": [
@@ -1573,7 +1576,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "simons-kmlm-switcher",
-    "name": "Simon's KMLM Switcher",
+    "name": "Simon's KMLM Switcher (Original)",
     "symphony_url": "https://app.composer.trade/symphony/u5iBJE751BM5FKPRJvKf/details",
     "symphony_id": "u5iBJE751BM5FKPRJvKf",
     "annualized_rate_of_return": 6.008026447934369,
@@ -1597,7 +1600,8 @@ window.STRATEGIES_DATA = [
       "leveraged-etfs",
       "managed-futures",
       "inverse-etfs",
-      "vix-tiers"
+      "vix-tiers",
+      "original"
     ],
     "last_updated": "2026-07-06",
     "ai_summary": [

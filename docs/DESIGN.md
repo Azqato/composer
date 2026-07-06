@@ -381,6 +381,8 @@ Tag color assignments (from `TAG_CLASSES` in `js/app.js`):
 | `vix-tiers` | `.tag-vix-tiers` | Yellow |
 | `leveraged-etfs` | `.tag-leveraged-etfs` | Pink |
 | `sharpe-ratio`, `calmar-ratio`, `max-drawdown` | `.tag-sharpe-ratio`, etc. | Green |
+| `zoop` | `.tag-zoop` | Orange |
+| `original` | `.tag-original` | Neutral gray |
 | Unknown | `.tag-default` | Surface-raised + secondary |
 
 ---

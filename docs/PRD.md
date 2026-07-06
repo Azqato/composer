@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.7.2
+**Version:** 1.8.0
 **Status:** Active
-**Last Updated:** 2026-06-22
+**Last Updated:** 2026-07-06
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -79,7 +79,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - No user accounts or authentication
 - No community features or comments
 - No newsletter or email capture at launch
-- No fully automated metric update pipeline (script-based updates via `scripts/update_metrics.py` are available but require a manual run and commit)
+- No manual metric update pipeline needed day-to-day: `scripts/update_metrics.py` runs daily via `.github/workflows/update-metrics.yml` and commits automatically; `scripts/update_metrics.py` can still be run manually for an immediate refresh
 - No mobile app
 - No light mode (dark mode only at MVP)
 
@@ -113,13 +113,13 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - Strategy card titles are clickable links
 
 **Concept Glossary**
-- Index page listing all 19 glossary concepts with category badges and strategy-use counts
+- Index page listing all 20 glossary concepts with category badges and strategy-use counts
 - Each concept has a dedicated page with: definition, how it works, in practice examples, limitations, formula (when applicable), and a "Building with..." essay section
 - Concepts cross-link back to strategies that use them
 
 **Data Layer**
 - `data/strategies.json`: flat-file database of all 25 strategies
-- `data/glossary.json`: flat-file database of all 19 glossary concepts
+- `data/glossary.json`: flat-file database of all 20 glossary concepts
 - Dual-mode loading: `window.STRATEGIES_DATA` / `window.GLOSSARY_DATA` globals for `file://` compatibility; `fetch()` fallback for HTTP
 - `scripts/update_metrics.py`: reusable script to refresh all metrics and logic trees from the Composer API
 
@@ -224,7 +224,7 @@ ComposerAtlas/
 ├── css/
 │   └── main.css                # Full design system: tokens, layout, components
 ├── data/
-│   ├── strategies.json         # 24 strategy entries, source of truth
+│   ├── strategies.json         # 25 strategy entries, source of truth
 │   ├── strategies.js           # Same data as window.STRATEGIES_DATA, for file:// compat
 │   ├── glossary.json           # 8 glossary concept entries, source of truth
 │   ├── glossary.js             # Same data as window.GLOSSARY_DATA, for file:// compat
@@ -552,17 +552,19 @@ git push origin main
 
 ### Updating Metrics (Script)
 
-Run monthly or after any symphony logic changes:
+`.github/workflows/update-metrics.yml` runs `scripts/update_metrics.py` automatically every day and commits any changes. The script skips any strategy whose `last_updated` is under `STALE_AFTER_DAYS` (7) old, so most daily runs are a no-op except for retrying anything that failed on a previous run. No manual action is required for routine refreshes.
+
+To force an immediate refresh (e.g. after a symphony logic change), run manually:
 
 ```bash
 python scripts/update_metrics.py
 ```
 
 This script:
-1. Hits `POST /api/v0.1/symphonies/{id}/backtest` for all 24 strategies → rewrites `data/strategies.json` and `data/strategies.js`
-2. Hits `GET /api/v0.1/symphonies/{id}/score` for all 24 strategies → rewrites `data/symphony_scores.json`
+1. Hits `POST /api/v0.1/symphonies/{id}/backtest` for all strategies not refreshed in the last 7 days → rewrites `data/strategies.json` and `data/strategies.js`
+2. Hits `GET /api/v0.1/symphonies/{id}/score` for the same strategies → rewrites `data/symphony_scores.json`
 
-No API key required. After running:
+No API key required. After a manual run:
 
 ```bash
 git add data/strategies.json data/strategies.js data/symphony_scores.json
@@ -945,7 +947,7 @@ All fields in `data/glossary.json`. Both `glossary.json` and `glossary.js` must 
 
 **Optional sections:** Additional sections with any title. All 8 MVP entries include a "Building with [Concept] in Composer.trade" essay section.
 
-**Canonical glossary entries (current; 19 total):**
+**Canonical glossary entries (current; 20 total):**
 
 | Slug | Name | Category |
 |---|---|---|
@@ -959,6 +961,7 @@ All fields in `data/glossary.json`. Both `glossary.json` and `glossary.js` must 
 | `mean-reversion` | Mean Reversion | strategy-concept |
 | `volatility-decay` | Volatility Decay | strategy-concept |
 | `zoop` | Zoop's Strategies | strategy-concept |
+| `original` | Original | strategy-concept |
 | `backtesting` | Backtesting | strategy-concept |
 | `leveraged-etfs` | Leveraged ETFs | asset-class |
 | `managed-futures` | Managed Futures | asset-class |
@@ -1173,7 +1176,7 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 **Status:** Backlog
 
 - [ ] Client-side search (Fuse.js or similar)
-- [ ] Tag-based filtering on strategy index
+- [ ] Tag-based filtering on strategy index: let visitors filter the strategy grid by the tags already generated for every strategy (signal type, e.g. `rsi`, `200d-ma`, `momentum`; asset class, e.g. `leveraged-etfs`, `inverse-etfs`; collection, e.g. `zoop`, `original`), instead of only using tags as read-only labels
 - [ ] Strategy comparison view
 - [ ] Performance chart per strategy
 - [ ] Expand strategy library toward 50+ entries
