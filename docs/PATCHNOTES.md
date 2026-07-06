@@ -7,9 +7,9 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ## [1.8.0] - 2026-07-06
 
-### Added: "Original" tag and lineage between source strategies and zoop's suite
+### Added: "Original Strategies" tag marking unmodified baseline logic
 
-Four strategies (The Holy Grail, TQQQ For The Long Term, SOXL Growth, Simon's KMLM Switcher) are the independent, non-zoop symphonies that zoop's suite strategies (zoop's Holy Grail 2026, zoop's TQQQ For The Long Term 2026, zoop's SOXL Growth 2026, zoop's KMLM Switcher 2026) were adapted from. These four now carry a new `original` tag so that lineage is explicit and discoverable rather than only implied by naming.
+Four strategies (The Holy Grail, TQQQ For The Long Term, SOXL Growth, Simon's KMLM Switcher) are the original, unmodified versions of their trading logic, documented alongside a remixed edition elsewhere in the library that adds layers the original build never had, frontrunner-style RSI dip-buys, extra overbought or volatility guards, additional asset legs, and so on. These four now carry a new `original` tag so readers can find the baseline version and compare it against what a later remix added.
 
 **Renamed for clarity (matching the existing "The Holy Grail (Original)" convention):**
 - "TQQQ For The Long Term" → "TQQQ For The Long Term (Original)"
@@ -18,7 +18,7 @@ Four strategies (The Holy Grail, TQQQ For The Long Term, SOXL Growth, Simon's KM
 
 **What was added:**
 - `original` tag applied to `holy-grail`, `tqqq-long-term`, `soxl-growth-rl`, `simons-kmlm-switcher` in `data/strategies.json` / `data/strategies.js`
-- New `original` glossary entry (`data/glossary.json` / `data/glossary.js`, 20 concepts total) explaining what the tag means and linking to the `zoop` entry
+- New "Original Strategies" glossary entry (`data/glossary.json` / `data/glossary.js`, 20 concepts total) explaining what the tag means and why the baseline version is worth keeping alongside its remix
 - `.tag-original` CSS class and `TAG_CLASSES` / tag-label entries in `js/app.js`
 - `scripts/add_original_tag.py`: reproducible, re-runnable script that performed the renames, tag additions, and glossary entry in sync
 

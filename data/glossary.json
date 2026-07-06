@@ -1577,7 +1577,7 @@
     "slug": "original",
     "name": "Original Strategies",
     "category": "strategy-concept",
-    "description": "Marks a strategy as an independent, non-zoop source symphony that one or more of zoop's suite strategies were adapted from.",
+    "description": "Marks a strategy as the original, unmodified version of its logic, before later editions remixed it with additional layers like frontrunner dip-buys or extra risk checks.",
     "formula": null,
     "related_tags": [
       "original"
@@ -1587,15 +1587,15 @@
       {
         "title": "What 'Original' Means",
         "paragraphs": [
-          "The 'Original' tag identifies strategies that are not part of zoop's zoops-* suite, but that directly inspired one of those suite entries. Composer Atlas documents both a source strategy and the zoop-authored adaptation built on top of it, so readers can compare the two side by side.",
-          "Four strategies currently carry this tag: The Holy Grail, TQQQ For The Long Term, SOXL Growth, and Simon's KMLM Switcher. Each has a corresponding zoop's suite counterpart (zoop's Holy Grail 2026, zoop's TQQQ For The Long Term 2026, zoop's SOXL Growth 2026, and zoop's KMLM Switcher 2026, respectively) that layers zoop's own risk-management refinements on top of the original logic."
+          "The 'Original' tag marks a strategy as the baseline, unmodified version of its trading logic, the form it took before anyone layered additional conditions on top of it. Later editions of the same strategy often add things the original build never had: a frontrunner-style RSI dip-buy layer, extra overbought or volatility guards, additional asset legs, or tighter regime-detection rules. The original entry is what the strategy looked like before any of that was added.",
+          "Four strategies currently carry this tag: The Holy Grail, TQQQ For The Long Term, SOXL Growth, and Simon's KMLM Switcher. Each also has a remixed edition elsewhere in this library that builds on the original by adding its own dip-buy layers and risk-management refinements."
         ]
       },
       {
         "title": "Why It's Useful",
         "paragraphs": [
-          "Tagging these strategies as 'Original' makes the lineage between a source symphony and its zoop-authored adaptation explicit and discoverable, rather than something a reader has to infer from strategy names alone.",
-          "See [[zoop]] for more on how the zoops-* suite builds on these source strategies."
+          "Keeping the original version documented alongside its remixed edition lets readers see exactly what changed and why: which conditions were added, which assets were introduced, and how those additions affected the backtested metrics. Without the original for comparison, it's easy to assume a strategy's full rule set was there from the start, when in practice much of the risk management was added later.",
+          "This also makes it easier to evaluate a modification on its own merits. If a remixed edition outperforms the original, the 'Original' tag lets a reader trace that improvement back to a specific added layer rather than crediting the strategy's core logic for gains that came from a later addition."
         ]
       }
     ]
