@@ -11,12 +11,17 @@ Usage:
     python scripts/update_metrics.py
 
 No API key required. Run from the project root or the scripts/ folder.
-Run regularly (monthly or after any symphony logic changes).
+Run regularly (daily, or after any symphony logic changes).
+
+Strategies whose last_updated is less than STALE_AFTER_DAYS old are skipped,
+so this script can be run daily and will only refresh what's actually due
+(and automatically retry any strategy that failed on a previous run).
 """
 
 import json
+import time
 import urllib.request
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 # ---- Paths ----
@@ -36,6 +41,9 @@ BACKTEST_PARAMS = {
 
 API_BASE = "https://api.composer.trade"
 
+STALE_AFTER_DAYS = 7
+API_CALL_DELAY_SECONDS = 2
+
 # Fields in the API stats object that map 1:1 to our schema
 DIRECT_FIELDS = [
     "annualized_rate_of_return",
@@ -53,8 +61,14 @@ DIRECT_FIELDS = [
 ]
 
 
+# Composer's edge (Cloudflare) blocks requests without a browser-like
+# User-Agent (error code 1010), so every request needs one set explicitly.
+USER_AGENT = "Mozilla/5.0 (compatible; composer-metrics-updater/1.0)"
+
+
 def get(url: str) -> dict:
-    with urllib.request.urlopen(url, timeout=30) as resp:
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(req, timeout=30) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
 
@@ -62,7 +76,7 @@ def post(url: str, body: dict) -> dict:
     req = urllib.request.Request(
         url,
         data=json.dumps(body).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", "User-Agent": USER_AGENT},
         method="POST",
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
@@ -74,10 +88,21 @@ def post(url: str, body: dict) -> dict:
 def update_strategies() -> list:
     strategies = json.loads(STRATEGIES_JSON.read_text(encoding="utf-8"))
     today = date.today().isoformat()
+    stale_cutoff = date.today() - timedelta(days=STALE_AFTER_DAYS)
     failed = []
+    calls_made = 0
 
     for s in strategies:
         sym_id = s["symphony_id"]
+
+        last_updated = s.get("last_updated")
+        if last_updated and date.fromisoformat(last_updated) > stale_cutoff:
+            continue
+
+        if calls_made > 0:
+            time.sleep(API_CALL_DELAY_SECONDS)
+        calls_made += 1
+
         print(f"  {s['name']} ... ", end="", flush=True)
         try:
             result = post(
@@ -108,6 +133,9 @@ def update_strategies() -> list:
             print(f"FAILED: {exc}")
             failed.append(s["name"])
 
+    if calls_made == 0:
+        print(f"  Nothing due (all strategies updated within the last {STALE_AFTER_DAYS} days)")
+
     if failed:
         print(f"\nWARNING: {len(failed)} strategies failed:")
         for name in failed:
@@ -137,12 +165,18 @@ def write_strategies_js(strategies: list) -> None:
 # ---- Symphony logic trees ----
 
 def update_scores(strategies: list) -> dict:
-    scores = {}
+    # Start from the existing file so a failed fetch keeps the last-known
+    # score instead of being dropped from the output.
+    scores = json.loads(SCORES_JSON.read_text(encoding="utf-8")) if SCORES_JSON.exists() else {}
     failed = []
 
-    for s in strategies:
+    for i, s in enumerate(strategies):
         slug   = s["slug"]
         sym_id = s["symphony_id"]
+
+        if i > 0:
+            time.sleep(API_CALL_DELAY_SECONDS)
+
         print(f"  {s['name']} ... ", end="", flush=True)
         try:
             score = get(
