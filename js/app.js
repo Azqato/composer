@@ -109,7 +109,7 @@ function tagLabel(slug) {
     'managed-futures': 'Managed Futures',
     'inverse-etfs': 'Inverse ETFs',
     'zoop': "Zoop's Strategies",
-    'original': 'Original',
+    'original': 'Original Strategies',
   };
   return labels[slug] || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }

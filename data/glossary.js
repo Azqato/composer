@@ -1576,7 +1576,7 @@ window.GLOSSARY_DATA = [
   },
   {
     "slug": "original",
-    "name": "Original",
+    "name": "Original Strategies",
     "category": "strategy-concept",
     "description": "Marks a strategy as an independent, non-zoop source symphony that one or more of zoop's suite strategies were adapted from.",
     "formula": null,

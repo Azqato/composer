@@ -961,7 +961,7 @@ All fields in `data/glossary.json`. Both `glossary.json` and `glossary.js` must 
 | `mean-reversion` | Mean Reversion | strategy-concept |
 | `volatility-decay` | Volatility Decay | strategy-concept |
 | `zoop` | Zoop's Strategies | strategy-concept |
-| `original` | Original | strategy-concept |
+| `original` | Original Strategies | strategy-concept |
 | `backtesting` | Backtesting | strategy-concept |
 | `leveraged-etfs` | Leveraged ETFs | asset-class |
 | `managed-futures` | Managed Futures | asset-class |
