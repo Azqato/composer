@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.8.0
+**Version:** 1.10.0
 **Status:** Active
-**Last Updated:** 2026-07-06
+**Last Updated:** 2026-07-07
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -108,7 +108,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 ### MVP: Shipped (V1.0–V1.2.1)
 
 **Strategy Library**
-- Index page listing all 25 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
+- Index page listing all 28 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
 - Each strategy has a dedicated page with: name, description, tags, "Open in Composer" CTA, an AI Summary (Claude-authored analysis above How It Works), plain-English logic breakdown, signals used (cross-linked to glossary), risk profile, and full metrics table
 - Strategy card titles are clickable links
 
@@ -118,7 +118,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - Concepts cross-link back to strategies that use them
 
 **Data Layer**
-- `data/strategies.json`: flat-file database of all 25 strategies
+- `data/strategies.json`: flat-file database of all 28 strategies
 - `data/glossary.json`: flat-file database of all 20 glossary concepts
 - Dual-mode loading: `window.STRATEGIES_DATA` / `window.GLOSSARY_DATA` globals for `file://` compatibility; `fetch()` fallback for HTTP
 - `scripts/update_metrics.py`: reusable script to refresh all metrics and logic trees from the Composer API
@@ -138,6 +138,27 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 
 **Deploy**
 - GitHub Actions auto-deploy on push to `main`; rsync excludes internal docs and large files
+
+### In Progress: Full Database Initiative (Not Yet Public)
+
+Separate from the 25 curated strategies, `data/full_database.json` holds the full raw
+symphony database (6,488 entries) originally scraped by an external Google Apps Script.
+Only ~953 entries have usable backtest metrics; the rest failed on the script's daily
+`urlfetch` quota. The goal is to recreate that refresh pipeline on composeratlas.com
+itself against the real Composer API, then build a Leaderboard and Screener on top of
+the full database. **This work stays off the public deploy until it is fully vetted**:
+`database.html` exists in the working tree but is not yet excluded from or included in
+any deploy decision; see Section 14 Roadmap for the phased plan.
+
+- [x] `data/full_database.json` imported from the raw xlsx as the canonical JSON source (v1.9.0)
+- [x] `scripts/import_full_database.py`: one-time, re-runnable xlsx → JSON importer (v1.9.0)
+- [x] `scripts/refresh_full_database.py`: resumable, checkpointed API refresh script, mirrors `update_metrics.py` conventions (v1.9.0)
+- [x] `database.html` template: tabbed page (All Strategies / Leaderboard / Screener); only All Strategies is implemented, the other two render a "Coming Soon" state (v1.9.0)
+- [x] Target schema expansion: 17 new fields locked and captured (v1.9.1)
+- [ ] Noise filtering (test ports, "Invest Copy" duplicates, WIP builds) before any full-database view is public
+- [ ] Leaderboard tab
+- [ ] Screener tab
+- [ ] Full-scale metric refresh (currently only `last_updated`/`script_errors` are refreshed; actual metric fields are not yet repopulated at scale)
 
 ### Future Backlog (Post-MVP)
 
@@ -224,22 +245,29 @@ ComposerAtlas/
 ├── css/
 │   └── main.css                # Full design system: tokens, layout, components
 ├── data/
-│   ├── strategies.json         # 25 strategy entries, source of truth
+│   ├── strategies.json         # 28 strategy entries, source of truth
 │   ├── strategies.js           # Same data as window.STRATEGIES_DATA, for file:// compat
 │   ├── glossary.json           # 8 glossary concept entries, source of truth
 │   ├── glossary.js             # Same data as window.GLOSSARY_DATA, for file:// compat
-│   └── symphony_scores.json    # Full logic trees; AI analysis only, not served publicly
+│   ├── symphony_scores.json    # Full logic trees; AI analysis only, not served publicly
+│   ├── full_database.json      # Full raw ~6,500-symphony database (not the curated 25); see Section 14
+│   ├── full_database.js        # Same data as window.FULL_DATABASE_DATA, for file:// compat
+│   └── Full Database.xlsx      # Raw source spreadsheet; full_database.json is generated from this
 ├── js/
 │   └── app.js                  # Shared utilities: format, nav, footer, render helpers
 ├── scripts/                    # All Python scripts live here, never in the project root
-│   ├── update_metrics.py       # Fetches backtest metrics + logic trees from Composer API
+│   ├── update_metrics.py       # Fetches backtest metrics + logic trees from Composer API (curated 25)
 │   ├── add_glossary.py         # One-time: added 9 glossary entries (v1.5.2), safe to re-run
 │   ├── add_zoop.py             # One-time: added Zoop glossary entry + zoop tags (v1.5.3)
-│   └── add_ai_summary.py       # Writes the ai_summary field on all strategies (v1.7.0), safe to re-run
+│   ├── add_ai_summary.py       # Writes the ai_summary field on all strategies (v1.7.0), safe to re-run
+│   ├── import_full_database.py # One-time: xlsx → data/full_database.json (v1.9.0), safe to re-run
+│   ├── refresh_full_database.py # Resumable, checkpointed API refresh for the full database (v1.9.0)
+│   └── export_full_database_to_xlsx.py # Local-only, occasional: regenerates the xlsx from the JSON (v1.9.4)
 ├── index.html                  # Home page (hero + strategy grid)
 ├── strategies.html             # Strategy listing + detail (?slug=X), single file
 ├── glossary.html               # Glossary listing + concept detail (?slug=X), single file
-├── about.html                  # About page
+├── database.html                # Full-database tabs: All Strategies / Leaderboard / Screener (v1.9.0)
+├── about.html                   # About page
 ├── 404.html                    # Custom 404 page
 ├── favicon.svg                 # 🗺️ map emoji SVG favicon
 ├── robots.txt
@@ -306,6 +334,8 @@ async function loadStrategies() {
 
 The same pattern applies to `loadGlossary()`. This ensures the site works in all three environments: double-click (`file://`), Python HTTP server, and GitHub Pages.
 
+**Full database dataset:** `database.html` uses the identical pattern via its own inline `loadFullDatabase()` (not a shared `js/app.js` function, since this dataset is not part of the curated-library data layer). `data/full_database.js` assigns `window.FULL_DATABASE_DATA`; both `scripts/import_full_database.py` and `scripts/refresh_full_database.py` write the `.json` and `.js` twins in sync, same as `update_metrics.py` does for the curated 25. A v1.9.0/v1.9.1 oversight shipped `database.html` with `fetch()`-only loading (no global fallback), which fails with "Failed to fetch" on `file://`; fixed in v1.9.2.
+
 ### BASE URL and `u()` Helper
 
 ```javascript
@@ -360,6 +390,7 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/strategies.html?slug=foo` | `strategies.html` | Detail view for `foo` |
 | `/composer/glossary.html` | `glossary.html` | Listing view (no slug) |
 | `/composer/glossary.html?slug=foo` | `glossary.html` | Detail view for `foo` |
+| `/composer/database.html` | `database.html` | Tabs: All Strategies (implemented), Leaderboard, Screener (both "Coming Soon") |
 | `/composer/about.html` | `about.html` | Static HTML |
 | `/composer/404.html` | `404.html` | GitHub Pages error page |
 
@@ -859,6 +890,47 @@ All fields in `data/strategies.json`. Both `strategies.json` and `strategies.js`
 
 ---
 
+### Full Database JSON Schema
+
+All fields in `data/full_database.json`. This is a separate, lighter schema from
+`strategies.json`: it holds the raw ~6,500-entry database (see Section 14 Roadmap),
+not the 25 curated strategies. There is no `.js` twin file for this dataset; it is
+loaded via `fetch()` only (see `database.html`).
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | string \| null | Symphony name as scraped; may be null on entries that never finished scraping |
+| `symphony_url` | string | Full URL to the symphony on Composer.trade; always present, the true unique key |
+| `symphony_id` | string \| null | Extracted from `symphony_url`; used to call the Composer API |
+| `annualized_rate_of_return` through `trailing_one_year_return` | float \| null | Same meaning and sign conventions as the matching fields in `strategies.json` Section 12; `null` when the entry has no usable metrics yet |
+| `backtest_days` | integer \| null | Backtest length in trading days (API field `size`) |
+| `last_updated` | string \| null | ISO date this entry's metrics were last refreshed |
+| `script_errors` | string \| null | Error message from the most recent failed refresh attempt (either the original Apps Script scrape or `scripts/refresh_full_database.py`); `null` when the last attempt succeeded |
+
+**Extended fields (added v1.9.1, target schema expansion):** every entry has these keys; `null` until the entry has been through `scripts/refresh_full_database.py` under the new schema (full overwrite policy, see Section 11-adjacent script docstring).
+
+| Field | Type | Description |
+|---|---|---|
+| `sortino_ratio` | float \| null | Downside-only risk-adjusted return |
+| `win_rate` | float \| null | Fraction of winning periods |
+| `skewness`, `kurtosis` | float \| null | Return distribution shape |
+| `tail_ratio` | float \| null | Ratio of right-tail to left-tail extremes |
+| `top_one_day_contribution`, `top_five_percent_day_contribution`, `top_ten_percent_day_contribution` | float \| null | How concentrated returns are in a handful of days |
+| `herfindahl_index` | float \| null | Portfolio concentration score |
+| `annualized_turnover` | float \| null | Trading frequency |
+| `trailing_one_day_return`, `trailing_one_week_return`, `trailing_two_week_return` | float \| null | Finer-grained trailing windows, in addition to the existing 1mo/3mo/1yr |
+| `last_market_days_holdings` | object \| null | Current live allocation, ticker symbol → dollar amount (e.g. `{"TQQQ": 7537.17, "$USD": 0.36}`). This is where real ticker symbols live, not `active_asset_nodes` |
+| `active_asset_nodes` | object \| null | Internal node UUID → weight (e.g. `{"875f367e-...": 1.0}`). **Not a ticker list**; corrected after live validation in v1.9.1, do not use for a ticker/holding filter |
+| `total_costs` | float \| null | Sum of the API's `costs` object (`reg_fee` + `taf_fee` + `cat_fee` + `slippage` + `spread_markup` + `subscription`); the per-category breakdown is not separately stored |
+| `data_warnings` | object \| null | Composer's own flag that a backtest's underlying data may be shaky; `null` when Composer reports none |
+
+**Known data quality issues (as of v1.9.0):**
+- Only ~953 of 6,488 entries have usable metrics; the rest have `script_errors` set and all metric fields `null`
+- The dataset includes non-strategy noise: test ports (e.g. names prefixed `TESTPORT #`), "Invest Copy" duplicates, "Copy of Copy of..." chains, and WIP builds; none of this is filtered yet (see Section 14 Roadmap, Noise Filtering)
+- `name` collisions are common (the same strategy cloned/modified many times under a near-identical name); `symphony_url` is the only guaranteed-unique key, not `name`
+
+---
+
 ### Metric Display Guidelines
 
 **Formatting:**
@@ -1004,10 +1076,26 @@ Composer Atlas uses only the two unauthenticated endpoints listed below. No cred
 
 ### Rate Limits
 
-| Endpoint | Limit |
+| Endpoint | Documented Limit |
 |---|---|
 | All endpoints (default) | 1 req/sec |
 | `POST /symphonies/{id}/backtest` | 500 req/sec |
+
+**Empirically observed (v1.9.4-v1.9.5):** the documented 500 req/sec ceiling does not hold in practice. Four one-time tests against `/backtest`, at four different rates:
+
+| Test | Result |
+|---|---|
+| Sequential, 1 call per 2 seconds (0.5 req/sec), the original throttle | 140 consecutive calls, **zero** failures |
+| Sequential, 1 call per second (1 req/sec) | 25 succeeded, then `HTTP 429: Too Many Requests` |
+| ~2 concurrent req/sec | 25 succeeded, then 429s |
+| ~20 concurrent req/sec | 25 succeeded, then 429s |
+| ~100 concurrent req/sec | 25 succeeded, then 429s |
+
+**Conclusion: this behaves like a token-bucket limiter, not a flat requests-per-second cap.** Burst capacity is ~25 requests, refilling at roughly the rate already proven safe (~0.5 req/sec, i.e. 1 call per 2 seconds). At 0.5 req/sec, consumption matches the refill rate, so the bucket never empties and the run sustains indefinitely (140/140, zero failures). At every faster rate tested, from 1 req/sec all the way to 100 concurrent req/sec, the initial ~25-request bucket drains and then every subsequent call gets throttled until it refills, regardless of how much faster than 25/window the attempted rate was. Whatever is enforcing it is likely a Cloudflare layer in front of the documented API limit, not the API's own application-layer limit. Failed calls do not corrupt data: `apply_backtest_result()` is never called on failure, and `last_updated` is only advanced on success, so a 429'd row just stays correctly marked "due" for the next run.
+
+**Practical takeaway:** stick to the existing 1-call-per-2-seconds sequential throttle for any bulk refresh. There is no known safe way to go faster without triggering the bucket; do not re-test higher rates without a specific reason, each test costs ~25 wasted/retried calls plus whatever cooldown the bucket needs to refill.
+
+The sequential, 1-call-per-2-seconds throttle already used by `update_metrics.py` and `refresh_full_database.py` is the validated, sustainable approach; it processed 140 consecutive rows with zero failures before being intentionally paused. Do not attempt higher concurrency against this endpoint without re-testing carefully at small scale first.
 
 ### Backtest Endpoint
 
@@ -1040,6 +1128,29 @@ Composer Atlas uses only the two unauthenticated endpoints listed below. No cred
 | `size` | integer | Backtest days; stored as `backtest_days` in schema |
 
 Full response also includes `dvm_capital`, `tdvm_weights`, `rebalance_days`, `last_market_days_holdings`, `costs`, `legend`, `data_warnings`, `benchmark_errors`.
+
+**Available `stats` fields not yet captured by any schema** (confirmed live against 5 real symphonies on 2026-07-07; candidates for the Leaderboard/Screener target schema, see Section 14 Roadmap):
+
+| Field | Notes |
+|---|---|
+| `sortino_ratio` | Downside-only risk-adjusted return; strong leaderboard/screener candidate |
+| `win_rate` | Fraction of winning periods |
+| `skewness`, `kurtosis` | Return distribution shape; tail-risk indicators |
+| `tail_ratio` | Ratio of right-tail to left-tail extremes |
+| `top_one_day_contribution`, `top_five_percent_day_contribution`, `top_ten_percent_day_contribution` | How concentrated returns are in a handful of days |
+| `herfindahl_index` | Portfolio concentration score |
+| `annualized_turnover` | Trading frequency; proxy for fee/tax drag not otherwise modeled |
+| `trailing_one_day_return`, `trailing_one_week_return`, `trailing_two_week_return` | Finer-grained trailing windows than the three currently stored |
+
+**Available top-level fields not yet captured by any schema:**
+
+| Field | Notes |
+|---|---|
+| `last_market_days_holdings` | Current live allocation (ticker → $ amount); screener candidate ("currently holding TQQQ") |
+| `active_asset_nodes` | **Not a ticker list** (corrected in v1.9.1 after live validation): a dict of internal node UUID → weight. Real ticker symbols live in `last_market_days_holdings` instead. |
+| `costs` (`reg_fee`, `taf_fee`, `cat_fee`, `slippage`, `spread_markup`) | Real cost drag beyond the net return figure |
+| `data_warnings` | Composer's own flag that a backtest's underlying data may be shaky |
+| `dvm_capital`, `rebalance_days` | Full daily capital time series; heavy, more suited to a future performance chart than a leaderboard row |
 
 ### Logic Tree Endpoint
 
@@ -1085,6 +1196,9 @@ All 24 Composer Atlas strategies with their Composer symphony IDs:
 | Mean Reversion Comparison to Python Code | `KJqNBGxYyyKuCcEfdHhq` |
 | SPY, Energy, Chips, Commodities | `rtyBIBOKEY2cPSbJSQX8` |
 | Simon's KMLM Switcher | `u5iBJE751BM5FKPRJvKf` |
+| 10d BND vs. 10d SPHB (Original) | `0HCtnEKGw1PRt8Om77a3` |
+| Dip Buying Tech | `98cACZSS00eDg8Kv5BBV` |
+| Ob Os Staple my Bonds (Original) | `OmMmeWyyAu0IRN2yOP6k` |
 
 Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 
@@ -1171,7 +1285,137 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 - [x] `scripts/add_ai_summary.py` added; "Generating the AI Summary" runbook and schema field documented (v1.7.0)
 - [x] Homepage: "Longest Backtest" fifth stat added to stats bar; strategy grid sorted by backtest length (longest first) (v1.7.1)
 
-### V2.0: Scale + Discovery
+### V1.9: Full Database Foundation
+
+**Status:** Complete (at v1.9.0)
+
+- [x] Investigated `data/Full Database.xlsx` (6,488 rows from a prior Google Apps Script scrape); found only 953 rows have usable metrics, the rest failed on the script's daily `urlfetch` quota (v1.9.0)
+- [x] Confirmed live against 5 real symphonies that Composer's actual API (not scraping) returns far more data than currently captured: `sortino_ratio`, `win_rate`, `skewness`, `kurtosis`, `tail_ratio`, concentration metrics, live holdings, cost breakdown; documented in Section 13 (v1.9.0)
+- [x] `data/full_database.json` created as the canonical JSON source, imported from the xlsx via `scripts/import_full_database.py` (v1.9.0)
+- [x] `scripts/refresh_full_database.py` built: resumable, checkpointed (every 10 rows), captures the API's actual error text into `script_errors` on failure (v1.9.0)
+- [x] Validated the refresh script against 105 rows live (5 + 100), 0 failures (v1.9.0)
+- [x] `database.html` template shipped: tabbed page (All Strategies / Leaderboard / Screener); All Strategies renders a paginated table against the full dataset, the other two tabs render a "Coming Soon" state (v1.9.0)
+- [x] `.db-tabs` / `.db-table` component patterns documented in `docs/DESIGN.md` (v1.4 design doc revision) (v1.9.0)
+- [x] Nav/footer updated with a "Database" link (v1.9.0)
+- **Not yet pushed to GitHub**: this entire initiative stays local until V1.13 below is complete
+
+### V1.9.1: Target Schema Expansion
+
+**Status:** Complete (at v1.9.1)
+
+- [x] Decided the full field set via 7 clarifying questions: all newly-discovered stats fields (sortino_ratio, win_rate, skewness, kurtosis, tail_ratio, concentration metrics, annualized_turnover, finer trailing windows), both holdings fields, costs summed into `total_costs`, and `data_warnings` (v1.9.1)
+- [x] Decided schema shape (flat, top-level, matching `strategies.json` convention), null-handling (explicit null, never omit a key), and refresh policy (full overwrite every successful call) (v1.9.1)
+- [x] `refresh_full_database.py` updated to capture the expanded field set (v1.9.1)
+- [x] `import_full_database.py` updated so a fresh xlsx import also initializes the extended fields to null (v1.9.1)
+- [x] All 6,488 existing entries in `full_database.json` migrated in place to carry the new keys (null where not yet refreshed), without disturbing the 105 rows already refreshed under the old schema (v1.9.1)
+- [x] Validated live against 5 real symphonies; discovered and corrected a documentation error: `active_asset_nodes` is not a ticker list (it's node UUID → weight), real ticker holdings are in `last_market_days_holdings` (v1.9.1)
+- [x] Full Database JSON Schema (Section 12) and API Reference (Section 13) updated to match
+
+### V1.9.2: file:// Loading Fix
+
+**Status:** Complete (at v1.9.2)
+
+- [x] Bug: `database.html` shipped in v1.9.0 with `fetch()`-only data loading, no `window.*_DATA` global fallback like every other page uses; failed with "Failed to fetch" when opened via `file://` (double-click) instead of a server (v1.9.2)
+- [x] `data/full_database.js` added (assigns `window.FULL_DATABASE_DATA`), matching the `strategies.js`/`glossary.js` convention (v1.9.2)
+- [x] `scripts/import_full_database.py` and `scripts/refresh_full_database.py` updated to write the `.json`/`.js` twins in sync, matching `update_metrics.py` (v1.9.2)
+- [x] `database.html`'s inline `loadFullDatabase()` now checks `window.FULL_DATABASE_DATA` first, `fetch()` fallback (v1.9.2)
+- [x] Verified via local HTTP server smoke test; `.js` twin syntax validated (v1.9.2)
+
+### V1.9.3: All Strategies Table Redesign
+
+**Status:** Complete (at v1.9.3)
+
+- [x] Reformatted the All Strategies table to match a reference community strategy-search tool's density and layout (toolbar header with result-count pill, sortable columns with click-to-toggle asc/desc arrows, sticky first column, icon-style first/prev/next/last pagination), while keeping the site's existing dark palette, `Inter`/`JetBrains Mono` typography, and color-coding conventions intact (v1.9.3)
+- [x] Finalized the public-facing column set via clarifying questions: Symphony, ARR, 1-Year Trailing Return, Max Drawdown, Sharpe, Calmar, Sortino, Win Rate, Backtest Length, Last Updated, and a Data Warnings indicator; explicitly excluded Cumulative Return, Volatility, skewness/kurtosis/tail ratio, turnover, and total costs from the public table for now (v1.9.3)
+- [x] Client-side sort implemented on the full dataset (not just the visible page), nulls always sort last (v1.9.3)
+- [x] Symphony column widened to a fixed 420px with ellipsis truncation and a hover tooltip (`title` attribute) for the full name, after two rounds of "wider please" turned up names too long to reasonably fit unwrapped (v1.9.3)
+- [x] Security fix found while widening the column: `name` is community-sourced from many different authors (unlike the curated 25 strategies), so inserting it into `innerHTML` and an HTML `title` attribute without escaping was an XSS risk; added `escapeHtml()` and applied it, plus `encodeURI()` on `symphony_url` (v1.9.3)
+- [x] Intro copy corrected: no longer claims the database is "every symphony pulled from Composer.trade"; now accurately describes it as a community-sourced database gathered from many locations (v1.9.3)
+
+### V1.9.4: xlsx Export Tool + Table Width Fix
+
+**Status:** Complete (at v1.9.4)
+
+- [x] `scripts/export_full_database_to_xlsx.py` added: local-only, occasional-use script that regenerates `data/Full Database.xlsx` from `data/full_database.json` (the reverse direction of `import_full_database.py`), so the spreadsheet can still be reviewed offline even though it's no longer part of the live pipeline. Nested fields (`last_market_days_holdings`, `active_asset_nodes`, `data_warnings`) are serialized to a JSON string per cell (v1.9.4)
+- [x] Confirmed `Full Database.xlsx` is otherwise frozen: nothing in the pipeline writes back to it since v1.9.0, `full_database.json`/`.js` are the sole canonical source (v1.9.4)
+- [x] Kicked off a full-scale `--force` background refresh of all 6,488 entries under the new v1.9.1 schema (a `--force` flag was added to `refresh_full_database.py` so already-touched rows aren't skipped by the 7-day staleness check and get backfilled with the new fields too); this is V1.12's work started early since it's a long-running, throttled background job with no reason to wait (v1.9.4)
+- [x] Fixed: the All Strategies table was clipped by `.container`'s 1280px max-width, cutting off the rightmost columns. Added a `.db-table-bleed` wrapper (92vw, capped at 1600px, centered) that only activates above a 1300px viewport so the table gets natural side padding instead of running edge-to-edge; below that width it stays in the normal container and scrolls horizontally as before (v1.9.4)
+
+### V1.9.5: API Rate-Limit Testing
+
+**Status:** Complete (at v1.9.5)
+
+- [x] The `--force` background refresh from v1.9.4 was paused at 140/6,488 rows (clean, zero failures) to test whether a faster approach was viable before committing hours of wall-clock time to the sequential throttle (v1.9.5)
+- [x] Four one-time tests run against `/backtest` at four different rates (~100 concurrent req/sec, ~20 concurrent req/sec, ~2 concurrent req/sec, and fully sequential 1 req/sec): all four topped out at exactly 25 successful calls before `HTTP 429: Too Many Requests` started, regardless of rate. Combined with the original 0.5 req/sec throttle's 140/140 clean run, this points to a token-bucket limiter (burst capacity ~25, refill rate ~0.5 req/sec) rather than a flat requests-per-second cap. Findings documented in Section 13 (v1.9.5)
+- [x] Added an early-bail safeguard to the concurrency and sequential tests (stop after 3 consecutive all-fail batches/calls) so a confirmed rate-limit doesn't get burned through pointlessly (v1.9.5)
+- [x] Confirmed no data corruption from the failed calls: `script_errors` is set but `last_updated` is untouched on failure, so every rate-limited row remains correctly queued as "due" for the next run (v1.9.5)
+- [x] Conclusion: the sequential 1-call-per-2-seconds throttle already built into `refresh_full_database.py` is the only rate confirmed safe for a sustained run; no further rate testing planned. 240 rows now carry the full v1.9.1 schema (140 sequential + 25 x 4 test runs). Resuming the full sequential run is a normal next step whenever wanted, not blocked on anything new (v1.9.5)
+
+### V1.9.6: Noise Filtering
+
+**Status:** Planned
+
+- [ ] Define exclusion rules for non-strategy noise: `TESTPORT #` prefix, "Invest Copy" suffix, "Copy of Copy of..." chains, "[Work]" / "STILL BUILDING" WIP markers
+- [ ] Decide a de-duplication policy for near-identical name clusters (e.g. the many "TQQQ For The Long Term" variants): keep first/canonical only, or keep all with a "variant of" link
+- [ ] Add a filter flag (e.g. `is_noise: true`) at import time rather than deleting rows, so the raw dataset is preserved
+- [ ] All-Strategies, Leaderboard, and Screener views default to excluding flagged noise, with an explicit toggle to show everything
+
+### V1.10: Strategy Library Expansion
+
+**Status:** Complete (at v1.10.0)
+
+- [x] 10d BND vs. 10d SPHB (Original) added: contrarian SOXL/SHV switcher using BND vs. SPHB relative RSI(10), with UVXY and SOXX RSI guards (v1.10.0)
+- [x] Dip Buying Tech added: three-branch SPY 200d MA baseline with QQQ RSI(10) < 30 XLK dip-buy; backtested from April 1999 (v1.10.0)
+- [x] Ob Os Staple my Bonds (Original) added: V0.0 defensive baseline using QQQ oversold dip-buy and lower-RSI rotation between XLP/VBF; backtested from 1999 (v1.10.0)
+- [x] Library grows to 28 strategies (v1.10.0)
+
+### V1.11: Leaderboard Tab
+
+**Status:** Planned
+
+- [ ] Define ranking metrics and default sort order (likely Sharpe or Calmar, with a metric picker)
+- [ ] Sortable columns on the existing `.db-table` component (click header to sort, ascending/descending)
+- [ ] Surface `sortino_ratio` and `win_rate` columns once captured (V1.9.1); until then, rank on the currently-available fields
+- [ ] Reuse existing pagination pattern from the All Strategies tab
+
+### V1.12: Screener Tab
+
+**Status:** Planned
+
+- [ ] Filter UI: numeric range inputs for ARR, Sharpe, Max DD, backtest length
+- [ ] Asset/holding filter using `last_market_days_holdings` ticker keys (e.g. "currently holding TQQQ"); `active_asset_nodes` is not a ticker list, see Section 13 correction (V1.9.1)
+- [ ] Client-side filter engine over `full_database.json` (no backend; consistent with the Zero Cost to Operate tenet)
+- [ ] Combine with noise-filtering default from V1.9.6
+
+### V1.13: Full-Scale Refresh
+
+**Status:** In Progress; background run started early in V1.9.4 (the API pulling itself doesn't need to wait for its roadmap slot, only verification/finalization does)
+
+- [x] `scripts/refresh_full_database.py --force` launched in the background against all 6,488 entries, populating the full v1.9.1 field set for every row, not just `last_updated`/`script_errors` (started v1.9.4)
+- [ ] Monitor for new failure patterns beyond the original quota error once complete
+- [ ] Measure and document the real recovery rate against the 5,535 originally-broken rows
+- [ ] Decide a policy for rows that still fail after a real API attempt (e.g. deleted symphony, private symphony): flag vs. drop
+- [ ] Leaderboard and Screener (built against the partial 105-row dataset in V1.11/V1.12) get re-verified against the full refreshed dataset
+
+### V1.14: Performance Fix (Data Weight)
+
+**Status:** Planned
+
+- [ ] Resolve `full_database.json` at ~4MB exceeding the 500KB page-weight target (Section 10, Performance Targets)
+- [ ] Likely approach: a slim summary JSON (name, url, the handful of table/leaderboard/screener columns) for initial load, with full API stats fetched on demand per symphony rather than bundled for all 6,488 up front
+- [ ] Re-measure Lighthouse/page-weight against the target after the fix
+- **Gate:** V1.13 must be complete before the next item, going public with an unoptimized 4MB fetch violates an existing PRD constraint
+
+### V2.0: Full Database Goes Public
+
+**Status:** Planned; blocked on V1.9-V1.13 above
+
+- [ ] Full docs and content audit of `database.html`, Leaderboard, and Screener (same bar as any other public page: em-dash check, accuracy check, mobile responsiveness)
+- [ ] Decide deploy posture: update `.github/workflows/deploy.yml` rsync exclusion list to include `data/full_database.json` and `database.html`; keep `Full Database.xlsx` excluded (raw source artifact, not needed at runtime)
+- [ ] First commit and push touching this feature, only after every item above is checked off
+- [ ] Update Section 6 Feature List: move "Full Database Initiative" from "In Progress" to "Shipped"
+
+### V2.1: Scale + Discovery (Curated Library)
 
 **Status:** Backlog
 
@@ -1182,7 +1426,7 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 - [ ] Expand strategy library toward 50+ entries
 - [ ] Expand glossary
 
-### V2.1: Community Signals
+### V2.2: Community Signals
 
 **Status:** Backlog
 

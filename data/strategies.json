@@ -1640,5 +1640,158 @@
     ],
     "risk_profile": "Extremely Aggressive with a short backtest. The 654% annualized return and 4,533% cumulative return over approximately 4.2 years (1,049 trading days from April 2022) are among the highest in this library, achieved through constant rotation between UVXY hedges, 3x ETF dip-buys, and momentum-switched leveraged positions. The 32% max drawdown is surprisingly moderate given the 77% standard deviation, suggesting the 11-ticker UVXY overbought layer provides meaningful downside protection during sharp sell-offs. However, all figures reflect a specific 4-year window covering the 2022 bear market and the 2023-2025 bull run, a period that may have been unusually favorable for this style of RSI-switching. The 20.4 Calmar ratio and 3.01 Sharpe are the highest in the library. Interpret with significant caution; a longer out-of-sample track record is essential before taking these metrics at face value.",
     "author_note": "'Single pops' in the full symphony name refers to the sequential single-ticker overbought detection: each RSI check fires independently on a single ticker, unlike strategies that require multiple conditions simultaneously. KMLM (KFA Mount Lucas Managed Futures Index Strategy ETF) serves as the macro regime detector, when managed futures momentum outpaces tech, the strategy pivots to defensive or bearish positions."
+  },
+  {
+    "slug": "bnd-vs-sphb",
+    "name": "10d BND vs. 10d SPHB (Original)",
+    "symphony_url": "https://app.composer.trade/symphony/0HCtnEKGw1PRt8Om77a3/details",
+    "symphony_id": "0HCtnEKGw1PRt8Om77a3",
+    "annualized_rate_of_return": 1.0064806332284024,
+    "max_drawdown": -0.7002444340919811,
+    "cumulative_return": 27497.774674,
+    "calmar_ratio": 1.437327573383033,
+    "sharpe_ratio": 1.4076027916887144,
+    "standard_deviation": 0.6372083075231022,
+    "min": -0.2982779711358804,
+    "mean": 0.0035592706053839663,
+    "median": 0.0,
+    "max": 0.5462990735750248,
+    "trailing_one_month_return": 0.6262461369923416,
+    "trailing_three_month_return": 0.9504319813337219,
+    "trailing_one_year_return": 6.223386655900459,
+    "backtest_days": 3698,
+    "description": "A contrarian semiconductor strategy that uses the relative 10-day RSI of BND (total bond market) versus SPHB (high-beta stocks) as a regime signal, buying SOXL when bonds show stronger momentum than high-beta equities and holding cash (SHV) when high-beta stocks lead, with UVXY RSI tiers providing additional nuance within the bond-leading regime.",
+    "tags": [
+      "rsi",
+      "leveraged-etfs",
+      "mean-reversion",
+      "vix-tiers"
+    ],
+    "last_updated": "2026-07-07",
+    "how_it_works": [
+      "The strategy's central signal compares the 10-day RSI of BND (Vanguard Total Bond Market ETF) versus SPHB (Invesco S&P 500 High Beta ETF), two proxies at opposite ends of the risk spectrum. When BND's 10-day RSI exceeds SPHB's, the strategy interprets this as a short-term risk-off signal and takes its most aggressive position: holding SOXL (3x leveraged semiconductors). The rationale is mean-reversion. Defensive assets outperforming aggressive ones on a 10-day basis often signals a temporary sentiment extreme, and the leveraged semiconductor position profits from the eventual rotation back to risk-on. The inverse also holds: when SPHB RSI exceeds BND RSI (risk-on environment), the strategy defaults to SHV (near cash), treating high-beta outperformance as a sign the rally may be overextended.",
+      "Within the bond-leading regime (BND RSI > SPHB RSI), two sequential conditions refine the default SOXL position. First, if SOXX RSI(10) exceeds 80 (semiconductors overbought despite broad defensiveness), the strategy rotates to SHV to avoid a blow-off top entry. Second, if SOXX is not overbought, the strategy checks UVXY RSI(10) as a volatility gauge. A reading above 84 (extreme panic) triggers an unconditional SOXL buy. Between 74 and 84 (elevated volatility), SOXL is only bought if its own RSI(10) is below 30 (doubly confirmed oversold); otherwise the strategy holds SHV. If UVXY RSI is below 74 (calm market), the strategy simply holds SOXL as the default bond-leading position with no fear signal required.",
+      "The risk-on branch (SPHB RSI > BND RSI) is simpler: the only exception to holding SHV is if SOXL RSI(10) falls below 30, which overrides the risk-on signal with a dip-buy. Outside that extreme, the strategy sits in cash when the market is broadly bullish and risk-seeking. This design, holding SOXL when the market is defensive and holding cash when the market is euphoric, makes 10d BND vs. 10d SPHB a high-patience, high-conviction contrarian strategy. SPHB launched in May 2011, which anchors the backtest start date and prevents testing through the 2008 financial crisis or the dot-com bust."
+    ],
+    "signals": [
+      {
+        "name": "BND vs. SPHB Relative RSI(10)",
+        "tag": "mean-reversion",
+        "description": "Primary regime signal: BND RSI(10) > SPHB RSI(10) (bonds outperforming high-beta) defaults to SOXL (contrarian long). SPHB RSI(10) > BND RSI(10) (risk-on) defaults to SHV (cash). Inverts the conventional risk-on/risk-off response: aggressive when the market is defensive, defensive when the market is aggressive."
+      },
+      {
+        "name": "UVXY RSI Tiers (74 and 84)",
+        "tag": "vix-tiers",
+        "description": "Within the bond-leading regime: UVXY RSI(10) above 84 (extreme panic) buys SOXL unconditionally. Between 74 and 84 (elevated) buys SOXL only if SOXL RSI(10) is below 30, else holds SHV. Below 74 (calm) holds SOXL by default. Two-tier VIX filter calibrates the contrarian long trade by volatility severity."
+      },
+      {
+        "name": "SOXX RSI(10) > 80 Overbought Guard",
+        "tag": "rsi",
+        "description": "In the bond-leading regime: if SOXX (semiconductor sector ETF) RSI(10) exceeds 80, exit to SHV regardless of other signals. Prevents buying SOXL into a semiconductor blow-off top even when the broader market is rotating defensively."
+      },
+      {
+        "name": "SOXL RSI(10) < 30 Dip-Buy Override",
+        "tag": "leveraged-etfs",
+        "description": "Applied in both regimes: SOXL RSI(10) below 30 triggers a SOXL dip-buy even in the risk-on branch (which normally defaults to SHV). Catches extreme semiconductor capitulation events that override the conservative risk-on default."
+      }
+    ],
+    "risk_profile": "Extremely Aggressive. The 100.6% ARR and 27,498x cumulative return over approximately 14.7 years (3,698 trading days from roughly May 2011 when SPHB launched) are exceptional, but the 70% max drawdown is among the highest in this library. The strategy concentrates exclusively in SOXL (3x leveraged semiconductors) or SHV (near cash) with no middle-ground positions. SOXL alone can lose 80-90% during semiconductor bear markets, which explains the severe max drawdown figure. The 63.7% standard deviation reflects the extreme contrast between these two holdings. The backtest covers 2011-2026 including the 2022 tech bear market (when SOXL fell over 90%), the 2020 COVID crash, and the 2023-2025 AI bull run. The Calmar ratio of 1.44 and Sharpe of 1.41 are respectable given the drawdown severity, but this strategy requires exceptional risk tolerance and very long holding periods to survive inevitable periods of severe loss.",
+    "author_note": "The median daily return was not available from the Composer API for this symphony and is displayed as 0.00%. SPHB (Invesco S&P 500 High Beta ETF) launched in May 2011, which is why the backtest cannot extend to the 2008 financial crisis or the dot-com bust despite both BND and SOXL having longer histories."
+  },
+  {
+    "slug": "dip-buying-tech",
+    "name": "Dip Buying Tech",
+    "symphony_url": "https://app.composer.trade/symphony/98cACZSS00eDg8Kv5BBV/details",
+    "symphony_id": "98cACZSS00eDg8Kv5BBV",
+    "annualized_rate_of_return": 0.13970202243473052,
+    "max_drawdown": -0.2632920730403323,
+    "cumulative_return": 34.209672999999995,
+    "calmar_ratio": 0.5305971456775697,
+    "sharpe_ratio": 0.8131091991342325,
+    "standard_deviation": 0.1808178590115023,
+    "min": -0.09488416001643507,
+    "mean": 0.0005834312084524175,
+    "median": 0.0006944679938586384,
+    "max": 0.15981515188903028,
+    "trailing_one_month_return": 0.014090283156451777,
+    "trailing_three_month_return": 0.12849989657191174,
+    "trailing_one_year_return": 0.2161651996674423,
+    "backtest_days": 6862,
+    "description": "A three-branch SPY 200-day MA strategy that holds SPY in bull markets, defaults to XLP (consumer staples) when the market is in a downtrend, and dip-buys XLK (technology ETF) during bear markets when QQQ's 10-day RSI falls below 30, backtested from April 1999 through the dot-com crash as an educational baseline.",
+    "tags": [
+      "rsi",
+      "200d-ma",
+      "mean-reversion"
+    ],
+    "last_updated": "2026-07-07",
+    "how_it_works": [
+      "Dip Buying Tech is one of the simplest strategies in this library: a three-leaf decision tree with a single trend gate and one dip-buy signal. In bull mode, when SPY's current price is above its 200-day simple moving average, the strategy holds SPY outright with 100% allocation. No overbought guards, no leveraged ETFs, no momentum filters. The full Composer name makes the educational intent explicit: 'Dip Buying Tech Below 10d RSI of 30 using XLP as the cash position and XLK as the tech ETF to backtest through the dot com crash.' The strategy was designed as a transparent baseline to test whether adding a single tech dip-buy signal to a SPY 200d MA framework meaningfully improves returns over a 27-year window that includes two catastrophic bear markets.",
+      "When SPY crosses below its 200-day moving average, the strategy enters bear mode and shifts to XLP (Consumer Staples Select Sector SPDR Fund) as its default holding. Consumer staples companies generate steady revenues across economic cycles, making XLP one of the most reliable defensive sector rotations. The strategy uses XLP rather than cash or bonds because the 1999 backtest start date predates many bond ETFs, and because XLP provides equity-like returns during mild bear markets while limiting catastrophic losses during severe ones. XLP is essentially the strategy's low-volatility parking position between dip-buy entries.",
+      "The one active signal in bear mode is a QQQ RSI dip-buy: when QQQ's 10-day RSI falls below 30, the strategy rotates from XLP to XLK (iShares U.S. Technology ETF). A QQQ RSI(10) below 30 requires a sustained sharp decline in the Nasdaq 100, not a single bad day. During bear markets, tech often leads the decline; when RSI hits extreme oversold levels, the strategy bets on a mean-reversion bounce and positions in the unleveraged XLK. The use of XLK over TQQQ or TECL keeps the risk profile conservative even at the dip-buy entry. When QQQ RSI recovers above 30, the strategy returns to XLP until SPY reclaims its 200d moving average."
+    ],
+    "signals": [
+      {
+        "name": "SPY 200-Day MA Trend Gate",
+        "tag": "200d-ma",
+        "description": "Primary regime filter: SPY current price vs. SMA(200). Above 200d MA = bull mode (hold SPY). Below = bear mode (XLP default with QQQ RSI override). The most common trend gate in this library, here used in its simplest possible form."
+      },
+      {
+        "name": "QQQ RSI(10) < 30 Tech Dip-Buy",
+        "tag": "rsi",
+        "description": "Bear mode only: QQQ 10-day RSI below 30 triggers a rotation from XLP to XLK (1x technology ETF). Catches tech capitulation in bear markets as a contrarian entry. Uses unleveraged XLK rather than TQQQ or TECL, appropriate for a conservative educational baseline and the 1999 start date."
+      },
+      {
+        "name": "XLP Defensive Default",
+        "tag": "mean-reversion",
+        "description": "When SPY is below its 200d MA and QQQ is not oversold, the strategy holds XLP (consumer staples). Defensive rotation away from growth exposure during downtrends, used as the safety parking position between dip-buy entries."
+      }
+    ],
+    "risk_profile": "Conservative relative to the rest of this library. The 14.0% ARR over 27.2 years (6,862 trading days from April 1999) is modest for an unleveraged strategy holding SPY, XLK (1x tech), or XLP at all times. The 26.3% max drawdown reflects exposure to the dot-com crash and 2008 financial crisis, during both of which even XLP's defensive positioning could not prevent meaningful losses. The 18.1% standard deviation is among the lowest in the library. The Calmar ratio of 0.53 and Sharpe of 0.81 are below 1.0, indicating underwhelming risk-adjusted returns relative to the drawdown sustained. The strategy's primary value is educational: its simplicity over a 27-year window including the dot-com bust, 2008 crisis, 2020 COVID crash, and 2022 tech bear makes it a clean benchmark for evaluating what a single RSI dip-buy signal adds to a SPY 200d MA framework.",
+    "author_note": "The full Composer name: 'Dip Buying Tech Below 10d RSI of 30 using XLP as the \"cash\" position and XLK as the \"tech\" etf to backtest through the dot com crash. Backtest to April 26th 1999.' The author explicitly positions this as a backtesting study and validation tool rather than a live strategy recommendation."
+  },
+  {
+    "slug": "ob-os-staple-bonds",
+    "name": "Ob Os Staple my Bonds (Original)",
+    "symphony_url": "https://app.composer.trade/symphony/OmMmeWyyAu0IRN2yOP6k/details",
+    "symphony_id": "OmMmeWyyAu0IRN2yOP6k",
+    "annualized_rate_of_return": 0.17424494891922016,
+    "max_drawdown": -0.19596507719362044,
+    "cumulative_return": 78.399417,
+    "calmar_ratio": 0.8891632703875088,
+    "sharpe_ratio": 1.0378086322889961,
+    "standard_deviation": 0.1683566314376583,
+    "min": -0.09488399735325936,
+    "mean": 0.0006933411325757889,
+    "median": 0.0004959952118985811,
+    "max": 0.16721643637482986,
+    "trailing_one_month_return": 0.02886613998181664,
+    "trailing_three_month_return": 0.027650857794493833,
+    "trailing_one_year_return": 0.029238108284836528,
+    "backtest_days": 6862,
+    "description": "A two-signal defensive strategy that buys QQQ when the Nasdaq reaches extreme oversold territory (RSI(10) <= 30) and otherwise holds whichever of XLP (consumer staples) or VBF (Invesco Bond Fund) currently has the lower 10-day RSI, always rotating to the more beaten-up defensive asset. The V0.0 Original baseline from 1999, first in a multi-version series.",
+    "tags": [
+      "rsi",
+      "mean-reversion"
+    ],
+    "last_updated": "2026-07-07",
+    "how_it_works": [
+      "Ob Os Staple my Bonds V0.0 is the original baseline of a multi-version strategy series. The name decodes as Overbought/Oversold (Ob/Os) + Staples (XLP) + Bonds (VBF). The strategy operates on a single oversold threshold: when QQQ's 10-day RSI falls to or below 30, it exits its defensive position and buys QQQ outright. A QQQ RSI(10) at or below 30 signals a sustained sharp Nasdaq decline, and the strategy enters expecting a mean-reversion bounce. Unlike most strategies in this library that use leveraged ETFs (TQQQ, TECL, SOXL) for dip-buying, V0.0 holds unleveraged QQQ, reflecting both its 1999 origin date when 3x ETFs did not yet exist and its conservative design philosophy.",
+      "When QQQ is not in extreme oversold territory, the strategy runs a two-asset competition between XLP (Consumer Staples Select Sector SPDR Fund) and VBF (Invesco Bond Fund, an actively managed bond fund). It evaluates the 10-day RSI of both and holds whichever has the lower reading, always rotating to the more beaten-up of the two. If XLP has been selling off while VBF has been rising, the strategy holds XLP. If VBF has been declining while staples hold steady, it moves to VBF. The result is a defensive portfolio that continuously tilts toward the asset experiencing more near-term stress, applying mean-reversion logic within an already-conservative two-asset universe.",
+      "The multi-version series (V0.0 from 1999, V0.1 from 2007, V0.2 from 2010, V0.3 from 2011) stress-tests the same logic across different market eras. V0.0 is the most demanding test, covering both the dot-com crash (Nasdaq fell 78% from 2000 to 2002) and the 2008 financial crisis. The 19.6% max drawdown over 27.2 years despite those two historic bear markets reflects the protective power of the XLP/VBF defensive default and the QQQ dip-buy's discipline in waiting for RSI(10) <= 30 before entering. VBF (Invesco Bond Fund) is an actively managed bond fund, distinct from passive ETFs like BND or TLT, and its inclusion reflects the instruments available at the 1999 backtest start date."
+    ],
+    "signals": [
+      {
+        "name": "QQQ RSI(10) <= 30 Oversold Dip-Buy",
+        "tag": "rsi",
+        "description": "Primary entry signal: QQQ 10-day RSI at or below 30 triggers a full rotation to unleveraged QQQ. Fires only during sustained sharp Nasdaq declines. The <= 30 threshold (not just < 30) means RSI exactly at 30 also triggers, a slightly wider gate than many comparable strategies use."
+      },
+      {
+        "name": "XLP vs. VBF Lower-RSI Rotation",
+        "tag": "mean-reversion",
+        "description": "Default regime: compares RSI(10) of XLP (consumer staples) and VBF (Invesco Bond Fund) and holds whichever has the lower reading. Always rotates to the more beaten-up defensive asset. A contrarian micro-rotation between two conservative positions, continuously chasing the underperformer within the defensive pair."
+      }
+    ],
+    "risk_profile": "Conservative. The 17.4% ARR over 27.2 years (6,862 trading days from April 1999) reflects consistent defensive positioning with a QQQ dip-buy layer. The 19.6% max drawdown is among the lowest in this library, achieved across a window that includes the dot-com crash, 2008 financial crisis, and 2022 tech bear. The 16.8% standard deviation is among the lowest in the library. The Calmar ratio of 0.89 and Sharpe of 1.04 are modest but earned over a demanding 27-year backtest covering catastrophic bear markets. The trailing 1-year return of 2.9% indicates the strategy has significantly underperformed the broader bull market in recent years, as expected for a strategy that holds unleveraged QQQ only during brief extreme oversold windows and otherwise stays in consumer staples or bonds. VBF (Invesco Bond Fund, ticker BFUGX) is an actively managed intermediate-term bond fund; investors replicating this strategy today might substitute a passive alternative like BND or AGG.",
+    "author_note": "The strategy notes four versions by start date in its Composer description: V0.0 (1999), V0.1 (2007), V0.2 (2010), V0.3 (2011). The (23,19,1999) in the symphony name likely refers to a specific backtest start date of November 23 or November 19, 1999. This page covers V0.0 only."
   }
 ]

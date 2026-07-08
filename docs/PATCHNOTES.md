@@ -5,6 +5,142 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.10.0] - 2026-07-07
+
+### Added: 3 new strategies (28 total)
+
+- **10d BND vs. 10d SPHB (Original)** (`bnd-vs-sphb`, symphony `0HCtnEKGw1PRt8Om77a3`): Contrarian semiconductor strategy using relative BND vs. SPHB RSI(10) as a regime signal. Buys SOXL when bonds outperform high-beta stocks (risk-off = contrarian long), holds SHV when high-beta leads (risk-on = cash). UVXY RSI tiers (74/84) and SOXX/SOXL RSI guards refine the bond-leading regime. ARR 100.6%, max DD 70%, ~14.7-year backtest from SPHB's May 2011 launch date. Tags: `rsi`, `leveraged-etfs`, `mean-reversion`, `vix-tiers`.
+- **Dip Buying Tech** (`dip-buying-tech`, symphony `98cACZSS00eDg8Kv5BBV`): Three-branch educational baseline: SPY above 200d MA = hold SPY; SPY below 200d MA = hold XLP (consumer staples); XLP default except when QQQ RSI(10) < 30 = dip-buy XLK (1x tech ETF). Backtested from April 1999 through the dot-com crash. ARR 14.0%, max DD 26.3%, 27.2-year backtest. Tags: `rsi`, `200d-ma`, `mean-reversion`.
+- **Ob Os Staple my Bonds (Original)** (`ob-os-staple-bonds`, symphony `OmMmeWyyAu0IRN2yOP6k`): Conservative two-signal strategy: QQQ RSI(10) <= 30 = buy unleveraged QQQ; otherwise hold whichever of XLP or VBF (Invesco Bond Fund) has the lower RSI(10). V0.0 original baseline of a multi-version series (V0.0/1999, V0.1/2007, V0.2/2010, V0.3/2011). ARR 17.4%, max DD 19.6%, 27.2-year backtest. Tags: `rsi`, `mean-reversion`.
+
+**Files changed:** `data/strategies.json`, `data/strategies.js`, `docs/PATCHNOTES.md`, `docs/PRD.md`
+
+---
+
+## [1.9.5] - 2026-07-07
+
+### Tested: Composer API rate limits (4 tests, token-bucket behavior identified)
+
+Before committing hours of wall-clock time to the sequential (1-call-per-2-seconds) full-scale refresh, paused it at 140/6,488 clean rows to test whether a faster approach was viable.
+
+**Four one-time tests against `/backtest`, at four different rates:**
+- ~100 req/sec (100-worker thread pool, 10 batches): 25 succeeded, then `HTTP 429: Too Many Requests` on the remaining 975
+- ~20 req/sec (20-worker thread pool): 25 succeeded, then 429s
+- ~2 req/sec (2-worker thread pool): 25 succeeded, then 429s
+- Sequential 1 req/sec (no concurrency at all): 25 succeeded, then 429s
+
+Every test topped out at exactly 25 successful calls regardless of rate, from 1 req/sec all the way to 100 concurrent req/sec. Combined with the fact that the original 0.5 req/sec throttle (1 call per 2 seconds) sustained 140 consecutive calls with zero failures, this points to a token-bucket limiter: burst capacity of ~25 requests, refilling at roughly the already-proven-safe 0.5 req/sec rate. At 0.5 req/sec, consumption matches the refill rate so the bucket never empties; at any faster rate, the initial bucket drains and every call after the 25th gets throttled regardless of how much faster than "25 per window" the attempted rate was. Likely enforced by a Cloudflare layer in front of the documented 500 req/sec API limit, not the API's own application-layer limit. No data corruption resulted from any of the four tests: failed calls set `script_errors` but never touch `last_updated`, so every rate-limited row is still correctly queued as "due" for the next run. Early-bail safeguards (stop after 3 consecutive failures) were added to each test script and worked correctly, avoiding wasted retries once a test had clearly hit the wall.
+
+**Conclusion:** the existing sequential 1-call-per-2-seconds throttle in `refresh_full_database.py` is the only rate confirmed safe for a sustained run; no further rate testing is planned. 240 rows now carry the full v1.9.1 schema (140 from the paused sequential run + 25 from each of the 4 tests). Documented in `docs/PRD.md` Section 13's Rate Limits table. Resuming the full sequential background refresh remains a normal next step.
+
+**Files changed:** `data/full_database.json`, `data/full_database.js`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.9.4] - 2026-07-07
+
+### Added: xlsx export tool; started full-scale refresh; fixed table width clipping
+
+**xlsx export tool.** `data/Full Database.xlsx` stopped being written to back in v1.9.0 (`data/full_database.json` became the canonical source), so it's been silently going stale ever since. Added `scripts/export_full_database_to_xlsx.py`, a local-only, occasional-use script (the reverse direction of `import_full_database.py`) that regenerates the spreadsheet from the current JSON on demand. Nested fields (`last_market_days_holdings`, `active_asset_nodes`, `data_warnings`) are serialized to a JSON string per cell since spreadsheet cells can't hold nested structures. Not run automatically, not part of the deploy pipeline, meant to be triggered manually every so often (e.g. monthly) for offline review.
+
+**Full-scale refresh started early.** Added a `--force` flag to `refresh_full_database.py` (the normal 7-day staleness check would otherwise skip the ~110 rows already touched in earlier passes, leaving them permanently missing the v1.9.1 field expansion). Launched `refresh_full_database.py --force` in the background against all 6,488 entries. This is V1.12's work on the roadmap; started now rather than waiting for its turn, since it's a multi-hour, throttled, I/O-bound job that can run unattended while Noise Filtering, Leaderboard, and Screener get built in the foreground. Verification and recovery-rate measurement against the roadmap's V1.12 checklist still happens once it completes.
+
+### Fixed: All Strategies table clipped by the page's max-width
+
+The table's rightmost columns (Win Rate, Backtest, Last Updated) were cut off, hidden behind the page's normal `1280px` container without an obvious way to see them beyond scrolling. Added a `.db-table-bleed` wrapper that lets the table break out to `92vw` (capped at `1600px`, centered) on viewports 1300px and wider, giving it natural side padding instead of either staying clipped or running edge-to-edge. Below 1300px the table stays in the normal container and scrolls horizontally as before.
+
+**Files changed:** `scripts/export_full_database_to_xlsx.py` (new), `scripts/refresh_full_database.py`, `database.html`, `css/main.css`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.9.3] - 2026-07-07
+
+### Changed: All Strategies table redesigned to match a reference community tool
+
+Reformatted `database.html`'s All Strategies table against a reference screenshot of a community Composer symphony search tool: dense sortable columns, a toolbar header with a result-count pill, sticky first column, and icon-style first/prev/next/last pagination. All of it built with the site's existing dark palette, `Inter`/`JetBrains Mono` typography, and green/pink color-coding conventions, no new dependencies or visual language introduced.
+
+**Public column set finalized** (via clarifying questions, since this table is user-facing): Symphony, ARR, 1-Year Trailing Return, Max Drawdown, Sharpe, Calmar, Sortino, Win Rate, Backtest Length, Last Updated, and a Data Warnings indicator. Deliberately excluded for now: Cumulative Return, Standard Deviation/Volatility, skewness/kurtosis/tail ratio, annualized turnover, and total costs, kept off the public table as more advanced metrics better suited to a future detail view or the Screener's advanced filters.
+
+**Sorting:** click any sortable column header to sort the full dataset (not just the visible page) ascending/descending; entries with a null value for the sorted field always sort last regardless of direction.
+
+**Symphony column:** widened to a fixed 420px with ellipsis truncation and a `title` tooltip for the full name, several community-authored names in this dataset run well past 100 characters and don't reasonably fit unwrapped.
+
+**Security fix found in the process:** `name` values in this dataset come from many different community authors (unlike the curated 25 strategies, which are hand-entered), so they were being inserted into `innerHTML` and an HTML `title` attribute without escaping, an XSS risk if any entry ever contained something like `<script>` or a stray `"`. Added an `escapeHtml()` helper and applied it everywhere `name` renders, plus `encodeURI()` on `symphony_url`.
+
+**Copy fix:** the page's intro paragraph previously claimed this was "every symphony pulled from Composer.trade." Corrected: it's a community-sourced database gathered from many locations, not a first-party Composer.trade export.
+
+**Files changed:** `database.html`, `css/main.css`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.9.2] - 2026-07-07
+
+### Fixed: database.html failed to load on file:// protocol
+
+`database.html` shipped in v1.9.0 with `fetch()`-only data loading and no `window.*_DATA` global fallback, the pattern every other page on the site uses (documented since v1.0.3). Opening the page via `file://` (double-clicking the HTML file, the primary way this local-only feature has been reviewed so far) failed with "Failed to load database / Failed to fetch," since browsers block `fetch()` on `file://` due to CORS.
+
+**Fix:**
+- Added `data/full_database.js`, assigns `window.FULL_DATABASE_DATA`, same convention as `data/strategies.js` and `data/glossary.js`
+- `scripts/import_full_database.py` and `scripts/refresh_full_database.py` now write the `.json` and `.js` twins in sync on every run, matching how `update_metrics.py` keeps the curated 25's twin files in sync
+- `database.html`'s data loader (`loadFullDatabase()`) now checks `window.FULL_DATABASE_DATA` first and only falls back to `fetch()` when the global is absent
+- Verified via local HTTP server smoke test and `.js` syntax validation
+
+**Files changed:** `database.html`, `data/full_database.js` (new), `scripts/import_full_database.py`, `scripts/refresh_full_database.py`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.9.1] - 2026-07-07
+
+### Added: Full Database target schema expansion (not yet public)
+
+Locked and implemented the target schema for `data/full_database.json`, decided via 7 clarifying questions covering which API fields to capture, schema shape, null-handling, and refresh policy.
+
+**Decisions:**
+- Capture all newly-discovered `stats` fields from Section 13's earlier findings: `sortino_ratio`, `win_rate`, `skewness`, `kurtosis`, `tail_ratio`, concentration metrics (`top_one_day_contribution`, `top_five_percent_day_contribution`, `top_ten_percent_day_contribution`, `herfindahl_index`), `annualized_turnover`, and finer trailing windows (1-day/1-week/2-week)
+- Capture both `last_market_days_holdings` and `active_asset_nodes` now, ahead of the Screener (V1.11), rather than deferring
+- Capture costs as one summed `total_costs` field rather than the per-category breakdown or skipping entirely
+- Capture `data_warnings`
+- Schema shape: flat top-level fields, matching `strategies.json` convention (no nested sub-object)
+- Null handling: every entry always has the same keys; unrefreshed or not-yet-meaningful fields are explicit `null`, never omitted
+- Refresh policy: full overwrite of the metrics block on every successful API call, no partial backfill logic
+
+**Correction found during live validation:** `active_asset_nodes` is not a ticker list as originally assumed in v1.9.0's API notes, it's a dict of internal node UUID → weight. Real ticker holdings live in `last_market_days_holdings` instead. Corrected in `docs/PRD.md` Section 13, and the Screener roadmap item (V1.11) updated to use the correct field.
+
+**What was added:**
+- `scripts/refresh_full_database.py`: rewritten to capture the full 17-field extended schema per successful API call, via a new `apply_backtest_result()` helper
+- `scripts/import_full_database.py`: now initializes the 17 extended fields to `null` on a fresh xlsx import, so schema shape is consistent regardless of import path
+- All 6,488 existing entries in `data/full_database.json` migrated in place to carry the new keys (`null` where not yet refreshed under the new schema); the 105 rows already refreshed in v1.9.0 were not disturbed
+- Validated live against 5 real symphonies, 0 failures; confirmed the new fields populate correctly
+
+**Files changed:** `scripts/refresh_full_database.py`, `scripts/import_full_database.py`, `data/full_database.json`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.9.0] - 2026-07-07
+
+### Added: Full Database Foundation (not yet public)
+
+Started work recreating, on composeratlas.com itself, the daily metrics-refresh pipeline that `data/Full Database.xlsx` was originally built for. That file holds 6,488 symphonies scraped by an external Google Apps Script that hit its daily `urlfetch` quota; only 953 rows ever got usable metrics, the remaining 5,535 carry the error `Exception: Service invoked too many times for one day: urlfetch.` and no data. This release lays the foundation to fix that using Composer's real API, and to eventually build a Leaderboard and Screener on top of the full database. **Nothing in this release is deployed or linked from the public site's deploy pipeline yet**; it stays local until the roadmap items in PRD.md Section 14 (V1.9-V1.12) are complete.
+
+**Investigation findings:**
+- Confirmed live against 5 real symphonies that Composer's actual API (`POST /api/v0.1/symphonies/{id}/backtest`) returns far more data per call than `strategies.json` currently captures: `sortino_ratio`, `win_rate`, `skewness`, `kurtosis`, `tail_ratio`, concentration metrics, live holdings (`last_market_days_holdings`), cost breakdown (`costs`), and finer trailing-return windows. Documented in `docs/PRD.md` Section 13.
+- The full database contains significant non-strategy noise: test ports (`TESTPORT #NNN`), "Invest Copy" duplicates, "Copy of Copy of..." chains, and WIP builds mixed in with real strategies. Flagged as a roadmap item (noise filtering) before any full-database view goes public.
+
+**What was added:**
+- `data/full_database.json`: canonical JSON source for the full ~6,500-symphony database, imported from the raw xlsx (`max_drawdown` sign normalized to match `strategies.json` convention)
+- `scripts/import_full_database.py`: one-time, re-runnable xlsx → JSON importer
+- `scripts/refresh_full_database.py`: resumable, checkpointed (every 10 rows) API refresh script; on failure, pastes the API's actual error text into `script_errors` instead of guessing. Validated live against 105 rows (5 + 100 in a follow-up batch) with 0 failures.
+- `database.html`: new tabbed page (All Strategies / Leaderboard / Screener). All Strategies renders a paginated table (50 rows/page) against the full dataset with select metrics (ARR, Max DD, Sharpe, Calmar, Backtest Days, Last Updated); Leaderboard and Screener render a "Coming Soon" empty state.
+- `.db-tabs`, `.db-tab-panel`, `.db-table`, `.db-pagination` component patterns added to `css/main.css` and documented in `docs/DESIGN.md`
+- "Database" nav link added to desktop nav, mobile nav, and footer (`js/app.js`)
+- `docs/PRD.md` Section 14 Roadmap: added versioned plan V1.9 through V2.0 covering full-scale refresh, target schema expansion, noise filtering, Leaderboard, Screener, and the data-weight fix required before this can go public (`full_database.json` is ~4MB, over the site's 500KB page-weight target)
+
+**Known limitation carried forward:** `refresh_full_database.py` currently only updates `last_updated` and `script_errors`, not the actual metric fields; full metric repopulation is scoped to V1.9.1.
+
+**Files changed:** `data/full_database.json` (new), `data/Full Database.xlsx` (5 + 100 rows refreshed), `database.html` (new), `css/main.css`, `js/app.js`, `scripts/import_full_database.py` (new), `scripts/refresh_full_database.py` (new), `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.8.0] - 2026-07-06
 
 ### Added: "Original Strategies" tag marking unmodified baseline logic
