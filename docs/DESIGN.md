@@ -1,8 +1,8 @@
 # Composer Atlas: Design System
 
-**Version:** 1.3
+**Version:** 1.5
 **Status:** Active
-**Last Updated:** 2026-06-14
+**Last Updated:** 2026-07-07
 
 All values in this document are derived from `css/main.css` and `js/app.js`: the source files are the ground truth.
 
@@ -527,6 +527,80 @@ footer {
 ```
 
 Three stacked elements: links row, legal disclaimer, copyright + "Built by Azqato".
+
+---
+
+### Tabs (Database Page)
+
+Used on `database.html` to switch between All Strategies, Leaderboard, and Screener views (`renderNav()`-adjacent inline script in `database.html`).
+
+```css
+.db-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--color-border); margin-bottom: 24px; }
+.db-tab {
+  background: none; border: none; border-bottom: 2px solid transparent;
+  color: var(--color-secondary); font-size: 0.9375rem; font-weight: 500;
+  padding: 10px 16px; cursor: pointer; transition: color 0.15s, border-color 0.15s;
+}
+.db-tab:hover { color: var(--color-primary); }
+.db-tab.active { color: var(--color-primary); border-bottom-color: var(--color-green); }
+.db-tab-panel[hidden] { display: none; }
+```
+
+Markup: a `role="tablist"` container of `button[role="tab"]` elements, each with a `data-tab` attribute matching a sibling `.db-tab-panel[role="tabpanel"]` id. JS toggles `.active` and `aria-selected` on the clicked tab and `hidden` on the corresponding panels; no page navigation occurs on tab switch.
+
+**Coming-soon panel:** an unbuilt tab (e.g. Leaderboard, Screener) renders the existing `.empty-state` pattern with `.empty-eyebrow` reading "Coming Soon" instead of building a placeholder from scratch.
+
+---
+
+### Data Table (Database Page)
+
+Used on `database.html`'s All Strategies tab to render the full raw symphony database (thousands of rows) without the card-grid layout used elsewhere on the site.
+
+```css
+.db-table-wrap { overflow-x: auto; border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.db-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; white-space: nowrap; }
+.db-table th {
+  text-align: left; padding: 10px 16px; background: var(--color-surface-raised);
+  color: var(--color-disabled); font-size: 0.6875rem; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid var(--color-border);
+}
+.db-table td { padding: 10px 16px; color: var(--color-primary); font-family: var(--font-mono); border-bottom: 1px solid var(--color-border); }
+.db-table td:first-child { font-family: var(--font-sans); white-space: normal; max-width: 360px; }
+.db-pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 20px; }
+```
+
+**Why a table instead of cards:** at full-database scale (~6,500 rows), the card grid used for the curated 25 strategies does not scale; a dense table with client-side pagination (50 rows/page) keeps the DOM light while still fitting the site's existing color-coded metric conventions (Section 12/PRD.md Metric Display Guidelines apply identically here: green positive, pink negative).
+
+**Resolved (V1.16, Performance Fix):** the table loads `data/database_summary.json` (a columnar, float-rounded derivative of the full `database.json`, ~2.3MB vs. ~11.5MB, ~540KB gzipped), not the full file. Note the site's `<500KB` target (Section 13) is scoped to the homepage specifically; it never literally bound this page, an earlier version of this note over-generalized it. See PRD.md Section 14, V1.16 for the full before/after and what actually drove the size down (columnar layout beat dropping fields alone by a wide margin).
+
+---
+
+### Filter Panel (database.html, V1.11)
+
+Shared component reused by both the All Strategies tab and the Screener tab (V1.12), each gets its own independent filter state (`createFilterController()` instance), but both use the same field list and match logic.
+
+```css
+.filter-panel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; }
+.filter-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.filter-row select, .filter-row input { background: var(--color-surface-raised); border: 1px solid var(--color-border); color: var(--color-primary); border-radius: var(--radius-sm); padding: 6px 8px; font-size: 0.8125rem; }
+.filter-remove { background: none; border: none; color: var(--color-pink); cursor: pointer; }
+```
+
+A "Filter" button sits directly above each tab's result-count line. Clicking it toggles a panel below the toolbar: an empty state ("No filters applied") until at least one row exists, each row a field-picker + operator dropdown + value input + delete icon, an "Add filter" button to stack more rows (AND logic between them), and Cancel/Apply. Apply closes the panel and re-filters the table in place; Cancel discards unsaved edits back to the last-applied state. Field list is restricted to real fields in `database_summary.json` (see PRD.md Section 12), never fabricated columns.
+
+### Tier Badge (Leaderboard, database.html, V1.13)
+
+```css
+.tier-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; padding: 2px 8px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; border: 1px solid; }
+.tier-sp { color: var(--color-green); background: rgba(0, 230, 118, 0.14); border-color: rgba(0, 230, 118, 0.35); }
+.tier-s  { color: var(--color-green); background: rgba(0, 230, 118, 0.08); border-color: rgba(0, 230, 118, 0.25); }
+.tier-a  { color: var(--color-blue); background: rgba(77, 159, 255, 0.08); border-color: rgba(77, 159, 255, 0.25); }
+.tier-b  { color: var(--color-yellow); background: rgba(245, 197, 24, 0.08); border-color: rgba(245, 197, 24, 0.25); }
+.tier-c  { color: var(--color-secondary); background: var(--color-surface-raised); border-color: var(--color-border); }
+.tier-f  { color: var(--color-pink); background: rgba(255, 77, 141, 0.08); border-color: rgba(255, 77, 141, 0.25); }
+```
+
+Six tiers (S+, S, A, B, C, F), color intensity roughly tracking favorability: S+/S green, A blue, B yellow, C neutral/secondary, F pink. S+ is visually distinguished from S by a stronger background/border opacity rather than a different hue, since both represent "top tier," S+ is just the perfect-score special case.
 
 ---
 

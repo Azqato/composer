@@ -1,0 +1,1003 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse the full 6,500+ symphony database with a leaderboard and screener (in progress).">
+  <title>Database: Composer Atlas</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <nav class="nav" id="nav-root"></nav>
+
+  <div class="page">
+    <div class="container py-12">
+      <div id="breadcrumb-root"></div>
+
+      <div style="max-width:600px;margin-bottom:32px">
+        <h1 style="color:var(--color-primary);margin-bottom:8px">Database</h1>
+        <p style="color:var(--color-secondary);font-size:1.0625rem">
+          A community-sourced database of thousands of Composer.trade symphonies,
+          gathered from many locations, not just the 25 curated strategies. This
+          section is a work in progress.
+        </p>
+      </div>
+
+      <div class="db-tabs" role="tablist" aria-label="Database views">
+        <button class="db-tab active" role="tab" aria-selected="true" data-tab="all">All Strategies</button>
+        <button class="db-tab" role="tab" aria-selected="false" data-tab="leaderboard">Leaderboard</button>
+        <button class="db-tab" role="tab" aria-selected="false" data-tab="screener">Screener</button>
+        <button class="db-tab" role="tab" aria-selected="false" data-tab="metrics">Metrics</button>
+      </div>
+
+      <div id="tab-all" class="db-tab-panel" role="tabpanel">
+        <div id="content">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <div id="tab-leaderboard" class="db-tab-panel" role="tabpanel" hidden>
+        <div id="leaderboard-content">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <div id="tab-screener" class="db-tab-panel" role="tabpanel" hidden>
+        <div id="screener-content">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <div id="tab-metrics" class="db-tab-panel" role="tabpanel" hidden>
+        <div class="prose" style="max-width:760px">
+          <h2>Return Metrics</h2>
+          <p><strong>Annualized Rate of Return (ARR)</strong>: if you invested money in this strategy, how much bigger does it get in a typical year, as a percentage. ARR of 20% means $100 becomes $120 after a year, on average, every year.</p>
+          <p><strong>Cumulative Return</strong>: the total growth over the entire backtest from day one to now, expressed as one big multiplier rather than a yearly rate. A cumulative return of 4,000% means $100 grew into $4,100 across the strategy's whole history.</p>
+          <p><strong>Trailing One-Year Return</strong>: what actually happened to your money over the most recent 12 months, a real recorded result rather than a long-run average.</p>
+          <p><strong>Trailing Three-Month Return</strong>: what actually happened to your money over the most recent 3 months, a real recorded result rather than a long-run average.</p>
+          <p><strong>Trailing One-Month Return</strong>: what actually happened to your money over the most recent single month, a real recorded result rather than a long-run average.</p>
+          <p><strong>Trailing Two-Week Return</strong>: what actually happened to your money over the most recent two weeks, a real recorded result rather than a long-run average.</p>
+          <p><strong>Trailing One-Week Return</strong>: what actually happened to your money over the most recent week, a real recorded result rather than a long-run average.</p>
+          <p><strong>Trailing One-Day Return</strong>: what actually happened to your money on the most recent single trading day.</p>
+          <p><strong>Min</strong>: the single worst period (e.g. the worst month) this strategy has ever recorded.</p>
+          <p><strong>Mean</strong>: add up every period's return and divide by how many periods there are, a plain, unweighted average.</p>
+          <p><strong>Median</strong>: line up every period's return from worst to best; this is the value sitting exactly in the middle.</p>
+          <p><strong>Max</strong>: the single best period (e.g. the best month) this strategy has ever recorded.</p>
+
+          <h2>Risk Metrics</h2>
+          <p><strong>Max Drawdown</strong>: the biggest drop from a peak to a bottom before the strategy recovered, its single worst "ouch" moment. -30% means at some point your money shrank 30% from its highest point.</p>
+          <p><strong>Standard Deviation</strong>: how much the returns swing around on average, a measure of choppiness. A high number means a wild rollercoaster of ups and downs; a low number means smooth, predictable moves.</p>
+          <p><strong>Skewness</strong>: whether the strategy's good days tend to be bigger than its bad days, or the other way around, a measure of how lopsided the wins and losses are.</p>
+          <p><strong>Kurtosis</strong>: how likely rare, extreme swings are on any given day, versus everything staying close to typical. A high value warns that things are usually calm but occasionally shock hard in either direction.</p>
+          <p><strong>Tail Ratio</strong>: compares the size of the strategy's rare best days against the size of its rare worst days.</p>
+
+          <h2>Risk-Adjusted Ratios</h2>
+          <p><strong>Sharpe Ratio</strong>: divide the strategy's return by how much its returns bounce around, measuring how much reward you got for the total bumpiness of the ride. A higher number means a smoother path to the same or better payoff.</p>
+          <p><strong>Calmar Ratio</strong>: divide the strategy's yearly return by its worst-ever drop, measuring whether the payoff is big enough to justify the deepest pain it put you through. A strategy earning 50%/year with a 25% worst-ever drop scores a Calmar of 2.</p>
+          <p><strong>Sortino Ratio</strong>: divide the strategy's return by how much its returns bounce around only on the downside, ignoring any bounciness that came from winning big. Rewards a strategy that stays calm while losing and only gets wild while winning.</p>
+
+          <h2>Consistency &amp; Concentration</h2>
+          <p><strong>Win Rate</strong>: out of every day the strategy was active, the percentage that ended up profitable.</p>
+          <p><strong>Top One Day Contribution</strong>: how much of the strategy's entire return came from just its single best trading day. A large number means the overall success leans heavily on one lucky moment.</p>
+          <p><strong>Top Five Percent Day Contribution</strong>: how much of the strategy's entire return came from just its best 5% of trading days added together. A large number means a small slice of unusually good days is doing most of the work.</p>
+          <p><strong>Top Ten Percent Day Contribution</strong>: how much of the strategy's entire return came from just its best 10% of trading days added together. A large number means a modest slice of standout days is carrying most of the performance.</p>
+          <p><strong>Herfindahl Index</strong>: measures how concentrated the portfolio is in one or two holdings versus spread evenly across many. A higher number means more money riding on fewer assets.</p>
+
+          <h2>Trading Behavior &amp; Cost</h2>
+          <p><strong>Annualized Turnover</strong>: how often the strategy buys and sells positions over the course of a year. A higher number means more frequent trading, which tends to add more fees and tax drag.</p>
+          <p><strong>Total Costs</strong>: the actual dollar amount lost to trading fees, slippage, and related costs over the backtest.</p>
+
+          <h2>Longevity</h2>
+          <p><strong>Backtest Days</strong>: the number of trading days the strategy has actual history for. A larger number of days is stronger evidence, the same way flipping a coin 1,000 times tells you more than flipping it 10 times.</p>
+          <p><strong>OOS Days</strong>: the number of days since the strategy's rules were last edited. A large number means it has run untouched for a long stretch, so its recent results reflect real performance rather than rules that were just tweaked to fit the recent past.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer id="footer-root"></footer>
+
+  <div id="modal-overlay" class="modal-overlay" hidden>
+    <div class="modal-panel" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2 id="modal-title"></h2>
+        <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="data/strategies.js"></script>
+  <script src="data/glossary.js"></script>
+  <script src="data/database_summary.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    (function () {
+      renderBreadcrumb('breadcrumb-root', [
+        { label: 'Home', href: u('/') },
+        { label: 'Database' },
+      ]);
+
+      // ---- Tab switching ----
+      const tabs = document.querySelectorAll('.db-tab');
+      const panels = {
+        all: document.getElementById('tab-all'),
+        leaderboard: document.getElementById('tab-leaderboard'),
+        screener: document.getElementById('tab-screener'),
+        metrics: document.getElementById('tab-metrics'),
+      };
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+          tab.classList.add('active');
+          tab.setAttribute('aria-selected', 'true');
+          Object.entries(panels).forEach(([key, panel]) => { panel.hidden = key !== tab.dataset.tab; });
+        });
+      });
+    })();
+
+    // ---- All Strategies tab: sortable, paginated data table ----
+    const PAGE_SIZE = 42;
+    let dbEntries = [];        // every loaded entry, unfiltered
+    let filteredEntries = [];  // dbEntries after the active Filter Panel filters
+    let currentPage = 1;
+    let sortField = null;
+    let sortDir = 'desc'; // 'asc' | 'desc'
+
+    // ---- Shared Filter Panel component (V1.11) ----
+    // Reused by both the All Strategies tab and the Screener tab (V1.12); each
+    // tab gets its own createFilterController() instance (independent filter
+    // state), but both share this same field list and matching logic.
+    function oosDaysValue(e) {
+      const ts = e.last_semantic_update_at;
+      if (!ts) return null;
+      const clean = ts.split('[')[0];
+      const d = new Date(clean);
+      if (isNaN(d.getTime())) return null;
+      return Math.floor((Date.now() - d.getTime()) / 86400000);
+    }
+
+    const FILTER_FIELDS = [
+      { key: 'name', label: 'Symphony Name', type: 'text' },
+      { key: 'annualized_rate_of_return', label: 'ARR', type: 'number' },
+      { key: 'trailing_one_year_return', label: '1Y Return', type: 'number' },
+      { key: 'trailing_three_month_return', label: '3M Return', type: 'number' },
+      { key: 'trailing_one_month_return', label: '1M Return', type: 'number' },
+      { key: 'trailing_two_week_return', label: '2W Return', type: 'number' },
+      { key: 'max_drawdown', label: 'Max Drawdown', type: 'number' },
+      { key: 'standard_deviation', label: 'Standard Deviation', type: 'number' },
+      { key: 'sharpe_ratio', label: 'Sharpe Ratio', type: 'number' },
+      { key: 'calmar_ratio', label: 'Calmar Ratio', type: 'number' },
+      { key: 'sortino_ratio', label: 'Sortino Ratio', type: 'number' },
+      { key: 'win_rate', label: 'Win Rate', type: 'number' },
+      { key: 'median', label: 'Median Period Return', type: 'number' },
+      { key: 'skewness', label: 'Skewness', type: 'number' },
+      { key: 'kurtosis', label: 'Kurtosis', type: 'number' },
+      { key: 'tail_ratio', label: 'Tail Ratio', type: 'number' },
+      { key: 'top_one_day_contribution', label: 'Top 1-Day Contribution', type: 'number' },
+      { key: 'top_five_percent_day_contribution', label: 'Top 5% Contribution', type: 'number' },
+      { key: 'top_ten_percent_day_contribution', label: 'Top 10% Contribution', type: 'number' },
+      { key: 'backtest_days', label: 'Backtest Days', type: 'number' },
+      { key: 'oos_days', label: 'OOS Days', type: 'number', derived: oosDaysValue },
+      { key: 'holding', label: 'Holding (Ticker)', type: 'holding' },
+    ];
+    const NUMBER_OPS = ['=', '>', '<', '>=', '<=', 'between'];
+
+    function fieldDef(key) { return FILTER_FIELDS.find(f => f.key === key) || FILTER_FIELDS[0]; }
+
+    function fieldValue(e, key) {
+      const def = fieldDef(key);
+      return def.derived ? def.derived(e) : e[key];
+    }
+
+    function matchesFilter(e, filter) {
+      const def = fieldDef(filter.field);
+      const val = fieldValue(e, filter.field);
+
+      if (def.type === 'text') {
+        if (typeof val !== 'string') return false;
+        return val.toLowerCase().includes(String(filter.value).toLowerCase());
+      }
+
+      if (def.type === 'holding') {
+        const holdings = e.last_market_days_holdings;
+        if (!holdings || typeof holdings !== 'object') return false;
+        const ticker = String(filter.value).toUpperCase().trim();
+        return Object.keys(holdings).some(k => k.toUpperCase() === ticker && Number(holdings[k]) > 0);
+      }
+
+      // numeric
+      if (typeof val !== 'number') return false;
+      if (filter.operator === 'between') {
+        const parts = String(filter.value).split(',').map(s => parseFloat(s.trim()));
+        if (parts.length !== 2 || parts.some(isNaN)) return true; // incomplete input, don't filter out yet
+        return val >= Math.min(...parts) && val <= Math.max(...parts);
+      }
+      const num = parseFloat(filter.value);
+      if (isNaN(num)) return true; // incomplete input, don't filter out yet
+      switch (filter.operator) {
+        case '=': return val === num;
+        case '>': return val > num;
+        case '<': return val < num;
+        case '>=': return val >= num;
+        case '<=': return val <= num;
+        default: return true;
+      }
+    }
+
+    function matchesAllFilters(e, filters) {
+      return filters.every(f => matchesFilter(e, f));
+    }
+
+    // opts: { panelId, buttonId, onApply(activeFilters) }
+    function createFilterController(opts) {
+      let applied = [];
+      let pending = [];
+      let open = false;
+
+      function newRow() {
+        const def = FILTER_FIELDS[0];
+        return { field: def.key, operator: def.type === 'number' ? '=' : 'contains', value: '' };
+      }
+
+      function fieldOptionsHtml(selected) {
+        return FILTER_FIELDS.map(f => `<option value="${f.key}"${f.key === selected ? ' selected' : ''}>${f.label}</option>`).join('');
+      }
+
+      function operatorOptionsHtml(fieldKey, selected) {
+        const def = fieldDef(fieldKey);
+        const ops = def.type === 'number' ? NUMBER_OPS : ['contains'];
+        return ops.map(op => `<option value="${op}"${op === selected ? ' selected' : ''}>${op}</option>`).join('');
+      }
+
+      function renderPanel() {
+        const panel = document.getElementById(opts.panelId);
+        if (!panel) return;
+        panel.hidden = !open;
+        if (!open) return;
+
+        const rowsHtml = pending.length === 0
+          ? `<div class="filter-empty">
+               <p class="filter-empty-title">No filters applied</p>
+               <p class="filter-empty-hint text-secondary">Add filters to refine your rows.</p>
+             </div>`
+          : pending.map((f, i) => {
+              const def = fieldDef(f.field);
+              const placeholder = def.type === 'number' && f.operator === 'between' ? 'e.g. 10, 50' : 'Enter a value...';
+              return `
+                <div class="filter-row" data-i="${i}">
+                  <span class="filter-row-label">Where</span>
+                  <select class="filter-field">${fieldOptionsHtml(f.field)}</select>
+                  <select class="filter-op">${operatorOptionsHtml(f.field, f.operator)}</select>
+                  <input type="text" class="filter-value" placeholder="${placeholder}" value="${escapeHtml(String(f.value))}">
+                  <button class="filter-remove" aria-label="Remove filter" title="Remove filter">&#128465;</button>
+                </div>
+              `;
+            }).join('');
+
+        panel.innerHTML = `
+          <div class="filter-panel-inner">
+            ${rowsHtml}
+            <div class="filter-panel-actions">
+              <button class="btn btn-outline btn-sm filter-add">+ Add filter</button>
+              <div class="filter-panel-buttons">
+                <button class="btn btn-outline btn-sm filter-cancel">Cancel</button>
+                <button class="btn btn-green btn-sm filter-apply">Apply</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        panel.querySelectorAll('.filter-row').forEach(row => {
+          const i = Number(row.dataset.i);
+          row.querySelector('.filter-field').addEventListener('change', (e) => {
+            const def = fieldDef(e.target.value);
+            pending[i].field = e.target.value;
+            pending[i].operator = def.type === 'number' ? '=' : 'contains';
+            pending[i].value = '';
+            renderPanel();
+          });
+          row.querySelector('.filter-op').addEventListener('change', (e) => { pending[i].operator = e.target.value; renderPanel(); });
+          row.querySelector('.filter-value').addEventListener('input', (e) => { pending[i].value = e.target.value; });
+          row.querySelector('.filter-remove').addEventListener('click', () => { pending.splice(i, 1); renderPanel(); });
+        });
+
+        panel.querySelector('.filter-add').addEventListener('click', () => { pending.push(newRow()); renderPanel(); });
+        panel.querySelector('.filter-cancel').addEventListener('click', () => { open = false; renderPanel(); });
+        panel.querySelector('.filter-apply').addEventListener('click', () => {
+          applied = pending.filter(f => String(f.value).trim() !== '').map(f => ({ ...f }));
+          open = false;
+          renderPanel();
+          opts.onApply(applied);
+        });
+      }
+
+      function toggle() {
+        if (!open) pending = applied.map(f => ({ ...f }));
+        open = !open;
+        renderPanel();
+      }
+
+      // Re-attach the button listener and restore panel state; call after
+      // every innerHTML replacement of the container the button/panel live in.
+      function rewire() {
+        const btn = document.getElementById(opts.buttonId);
+        if (btn) btn.addEventListener('click', toggle);
+        renderPanel();
+      }
+
+      return {
+        rewire,
+        activeCount: () => applied.length,
+        filterFn: (e) => matchesAllFilters(e, applied),
+      };
+    }
+
+    const allFilterController = createFilterController({
+      panelId: 'filter-panel-all',
+      buttonId: 'filter-btn-all',
+      onApply: () => {
+        filteredEntries = dbEntries.filter(allFilterController.filterFn);
+        applySort();
+        currentPage = 1;
+        renderTablePage();
+      },
+    });
+
+    // key: field on entry object | label: column header | fmt: value formatter
+    const COLUMNS = [
+      { key: 'name', label: 'Symphony', sortable: false },
+      { key: 'annualized_rate_of_return', label: 'ARR', fmt: formatPct, colored: true },
+      { key: 'trailing_one_year_return', label: '1Y Return', fmt: formatPct, colored: true },
+      { key: 'max_drawdown', label: 'Max Drawdown', fmt: formatPct, colored: true },
+      { key: 'sharpe_ratio', label: 'Sharpe', fmt: formatRatio, colored: true },
+      { key: 'calmar_ratio', label: 'Calmar', fmt: formatRatio, colored: true },
+      { key: 'sortino_ratio', label: 'Sortino', fmt: formatRatio, colored: true },
+      { key: 'win_rate', label: 'Win Rate', fmt: formatPct, colored: false },
+      { key: 'backtest_days', label: 'Backtest', fmt: (n) => `~${Math.round(n / 252)} years`, colored: false },
+      { key: 'last_updated', label: 'Last Updated', fmt: (d) => formatDate(d), colored: false, isDate: true },
+      // OOS (days since last logic edit) intentionally not displayed here; kept
+      // in the underlying data for use as a filter/scoring input (V1.11/V1.13),
+      // not as an All Strategies column.
+    ];
+
+    function formatMetric(n, fmt) {
+      if (typeof n !== 'number') return '–';
+      return fmt(n);
+    }
+
+    // OOS ("out of sample") days: how long the symphony's logic has run
+    // untouched since its last edit. Computed at render time from the raw
+    // timestamp, not stored, since a stored value goes stale the moment a
+    // day passes without a fresh API call. The API's timestamp carries a
+    // trailing IANA zone annotation (e.g. "[America/New_York]") that
+    // JS's Date() can't parse, so it's stripped first.
+    function formatOosDays(iso) {
+      const clean = iso.split('[')[0];
+      const d = new Date(clean);
+      if (isNaN(d.getTime())) return '–';
+      const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+      return `${days.toLocaleString()}d`;
+    }
+
+    // Names in this dataset are community-sourced from many different authors
+    // (not curated), so they must be escaped before insertion into innerHTML
+    // or an HTML attribute (textContent->innerHTML alone doesn't escape quotes).
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function sortIndicator(key) {
+      if (sortField !== key) return '<span class="db-sort-arrow">&#8597;</span>';
+      return `<span class="db-sort-arrow active">${sortDir === 'asc' ? '&#9650;' : '&#9660;'}</span>`;
+    }
+
+    function applySort() {
+      if (!sortField) return;
+      const dir = sortDir === 'asc' ? 1 : -1;
+      filteredEntries.sort((a, b) => {
+        const av = a[sortField];
+        const bv = b[sortField];
+        const aNull = av === null || av === undefined;
+        const bNull = bv === null || bv === undefined;
+        if (aNull && bNull) return 0;
+        if (aNull) return 1;  // nulls always sort last
+        if (bNull) return -1;
+        if (av < bv) return -1 * dir;
+        if (av > bv) return 1 * dir;
+        return 0;
+      });
+    }
+
+    function renderTablePage() {
+      const totalPages = Math.max(1, Math.ceil(filteredEntries.length / PAGE_SIZE));
+      currentPage = Math.min(Math.max(1, currentPage), totalPages);
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const pageRows = filteredEntries.slice(start, start + PAGE_SIZE);
+
+      const headerCells = COLUMNS.map(col => {
+        if (col.sortable === false) return `<th>${col.label}</th>`;
+        return `<th class="sortable" data-sort="${col.key}">${col.label} ${sortIndicator(col.key)}</th>`;
+      }).join('') + '<th></th>';
+
+      const rows = pageRows.map(e => {
+        const cells = COLUMNS.map(col => {
+          if (col.key === 'name') {
+            const fullName = e.name || e.symphony_id;
+            const shortName = fullName.length > 22 ? fullName.slice(0, 22) + '…' : fullName;
+            const url = encodeURI(e.symphony_url || '#');
+            return `<td><a href="${url}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(fullName)}">${escapeHtml(shortName)}</a></td>`;
+          }
+          const val = e[col.key];
+          const cls = col.colored && typeof val === 'number' ? colorClass(val) : (col.isDate || col.isDuration ? 'text-secondary' : '');
+          const display = col.isDate
+            ? (val ? formatDate(val) : '–')
+            : col.isDuration
+            ? (val ? formatOosDays(val) : '–')
+            : formatMetric(val, col.fmt);
+          return `<td class="${cls}">${display}</td>`;
+        }).join('');
+        const warning = e.data_warnings
+          ? `<td><span class="db-warning" title="Composer flagged this backtest's data as potentially unreliable">&#9888;</span></td>`
+          : '<td></td>';
+        return `<tr>${cells}${warning}</tr>`;
+      }).join('');
+
+      const filterCount = allFilterController.activeCount();
+      const filterLabel = filterCount ? `Filter (${filterCount})` : 'Filter';
+
+      document.getElementById('content').innerHTML = `
+        <div class="db-toolbar">
+          <div>
+            <h2>All Strategies</h2>
+            <span class="db-count-pill">${filteredEntries.length.toLocaleString()} results</span>
+            <button class="btn btn-outline btn-sm" id="filter-btn-all" style="margin-left:8px">
+              <span aria-hidden="true">&#9776;</span> ${filterLabel}
+            </button>
+          </div>
+          <span class="text-secondary" style="font-size:0.8125rem">${filteredEntries.filter(e => typeof e.sharpe_ratio === 'number').length.toLocaleString()} with usable metrics</span>
+        </div>
+        <div id="filter-panel-all" class="filter-panel" hidden></div>
+        <div class="db-table-wrap">
+          <table class="db-table">
+            <thead><tr>${headerCells}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <div class="db-pagination">
+          <button class="btn btn-outline btn-sm" id="db-first" aria-label="First page" ${currentPage === 1 ? 'disabled' : ''}>&laquo;</button>
+          <button class="btn btn-outline btn-sm" id="db-prev" aria-label="Previous page" ${currentPage === 1 ? 'disabled' : ''}>&lsaquo;</button>
+          <span class="text-secondary" style="font-size:0.875rem">Page ${currentPage.toLocaleString()} of ${totalPages.toLocaleString()}</span>
+          <button class="btn btn-outline btn-sm" id="db-next" aria-label="Next page" ${currentPage === totalPages ? 'disabled' : ''}>&rsaquo;</button>
+          <button class="btn btn-outline btn-sm" id="db-last" aria-label="Last page" ${currentPage === totalPages ? 'disabled' : ''}>&raquo;</button>
+        </div>
+      `;
+
+      document.getElementById('db-first').addEventListener('click', () => { currentPage = 1; renderTablePage(); window.scrollTo({ top: 0 }); });
+      document.getElementById('db-prev').addEventListener('click', () => { currentPage--; renderTablePage(); window.scrollTo({ top: 0 }); });
+      document.getElementById('db-next').addEventListener('click', () => { currentPage++; renderTablePage(); window.scrollTo({ top: 0 }); });
+      document.getElementById('db-last').addEventListener('click', () => { currentPage = totalPages; renderTablePage(); window.scrollTo({ top: 0 }); });
+
+      document.querySelectorAll('.db-table th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+          const key = th.dataset.sort;
+          if (sortField === key) {
+            sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+          } else {
+            sortField = key;
+            sortDir = 'desc';
+          }
+          applySort();
+          currentPage = 1;
+          renderTablePage();
+        });
+      });
+
+      allFilterController.rewire();
+    }
+
+    // ---- Screener tab (V1.12): reuses the Filter Panel (V1.11), adds a
+    // Finviz-style multi-view column switcher on top of the same .db-table
+    // rendering pattern used by All Strategies. ----
+    const SCREENER_VIEWS = {
+      overview: {
+        label: 'Overview',
+        columns: [
+          { key: 'name', label: 'Symphony', sortable: false },
+          { key: 'annualized_rate_of_return', label: 'ARR', fmt: formatPct, colored: true },
+          { key: 'trailing_one_year_return', label: '1Y Return', fmt: formatPct, colored: true },
+          { key: 'max_drawdown', label: 'Max Drawdown', fmt: formatPct, colored: true },
+          { key: 'sharpe_ratio', label: 'Sharpe', fmt: formatRatio, colored: true },
+          { key: 'calmar_ratio', label: 'Calmar', fmt: formatRatio, colored: true },
+          { key: 'backtest_days', label: 'Backtest', fmt: (n) => `~${Math.round(n / 252)} years`, colored: false },
+        ],
+      },
+      riskAdjusted: {
+        label: 'Risk-Adjusted',
+        columns: [
+          { key: 'name', label: 'Symphony', sortable: false },
+          { key: 'sharpe_ratio', label: 'Sharpe', fmt: formatRatio, colored: true },
+          { key: 'calmar_ratio', label: 'Calmar', fmt: formatRatio, colored: true },
+          { key: 'sortino_ratio', label: 'Sortino', fmt: formatRatio, colored: true },
+          { key: 'win_rate', label: 'Win Rate', fmt: formatPct, colored: false },
+          { key: 'max_drawdown', label: 'Max Drawdown', fmt: formatPct, colored: true },
+          { key: 'standard_deviation', label: 'Std Deviation', fmt: formatPct, colored: false },
+        ],
+      },
+      distribution: {
+        label: 'Distribution',
+        columns: [
+          { key: 'name', label: 'Symphony', sortable: false },
+          { key: 'median', label: 'Median', fmt: formatPct, colored: true },
+          { key: 'skewness', label: 'Skewness', fmt: formatRatio, colored: false },
+          { key: 'kurtosis', label: 'Kurtosis', fmt: formatRatio, colored: false },
+          { key: 'tail_ratio', label: 'Tail Ratio', fmt: formatRatio, colored: false },
+          { key: 'top_one_day_contribution', label: 'Top 1-Day %', fmt: formatPct, colored: false },
+          { key: 'top_five_percent_day_contribution', label: 'Top 5% %', fmt: formatPct, colored: false },
+          { key: 'top_ten_percent_day_contribution', label: 'Top 10% %', fmt: formatPct, colored: false },
+        ],
+      },
+    };
+
+    let screenerFiltered = [];
+    let screenerPage = 1;
+    let screenerSortField = null;
+    let screenerSortDir = 'desc';
+    let screenerView = 'overview';
+
+    const screenerFilterController = createFilterController({
+      panelId: 'filter-panel-screener',
+      buttonId: 'filter-btn-screener',
+      onApply: () => {
+        screenerFiltered = dbEntries.filter(screenerFilterController.filterFn);
+        applyScreenerSort();
+        screenerPage = 1;
+        renderScreenerPage();
+      },
+    });
+
+    function applyScreenerSort() {
+      if (!screenerSortField) return;
+      const dir = screenerSortDir === 'asc' ? 1 : -1;
+      screenerFiltered.sort((a, b) => {
+        const av = a[screenerSortField];
+        const bv = b[screenerSortField];
+        const aNull = av === null || av === undefined;
+        const bNull = bv === null || bv === undefined;
+        if (aNull && bNull) return 0;
+        if (aNull) return 1;
+        if (bNull) return -1;
+        if (av < bv) return -1 * dir;
+        if (av > bv) return 1 * dir;
+        return 0;
+      });
+    }
+
+    function screenerSortIndicator(key) {
+      if (screenerSortField !== key) return '<span class="db-sort-arrow">&#8597;</span>';
+      return `<span class="db-sort-arrow active">${screenerSortDir === 'asc' ? '&#9650;' : '&#9660;'}</span>`;
+    }
+
+    function renderScreenerPage() {
+      const columns = SCREENER_VIEWS[screenerView].columns;
+      const totalPages = Math.max(1, Math.ceil(screenerFiltered.length / PAGE_SIZE));
+      screenerPage = Math.min(Math.max(1, screenerPage), totalPages);
+      const start = (screenerPage - 1) * PAGE_SIZE;
+      const pageRows = screenerFiltered.slice(start, start + PAGE_SIZE);
+
+      const viewTabsHtml = Object.entries(SCREENER_VIEWS).map(([key, view]) =>
+        `<button class="db-tab${key === screenerView ? ' active' : ''}" data-view="${key}" style="font-size:0.8125rem;padding:8px 14px">${view.label}</button>`
+      ).join('');
+
+      const headerCells = columns.map(col => {
+        if (col.sortable === false) return `<th>${col.label}</th>`;
+        return `<th class="sortable" data-sort="${col.key}">${col.label} ${screenerSortIndicator(col.key)}</th>`;
+      }).join('');
+
+      const rows = pageRows.map(e => {
+        const cells = columns.map(col => {
+          if (col.key === 'name') {
+            const fullName = e.name || e.symphony_id;
+            const shortName = fullName.length > 22 ? fullName.slice(0, 22) + '…' : fullName;
+            const url = encodeURI(e.symphony_url || '#');
+            return `<td><a href="${url}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(fullName)}">${escapeHtml(shortName)}</a></td>`;
+          }
+          const val = e[col.key];
+          const cls = col.colored && typeof val === 'number' ? colorClass(val) : '';
+          return `<td class="${cls}">${formatMetric(val, col.fmt)}</td>`;
+        }).join('');
+        return `<tr>${cells}</tr>`;
+      }).join('');
+
+      const filterCount = screenerFilterController.activeCount();
+      const filterLabel = filterCount ? `Filter (${filterCount})` : 'Filter';
+
+      document.getElementById('screener-content').innerHTML = `
+        <div class="db-toolbar">
+          <div>
+            <h2>Screener</h2>
+            <span class="db-count-pill">${screenerFiltered.length.toLocaleString()} results</span>
+            <button class="btn btn-outline btn-sm" id="filter-btn-screener" style="margin-left:8px">
+              <span aria-hidden="true">&#9776;</span> ${filterLabel}
+            </button>
+          </div>
+        </div>
+        <div id="filter-panel-screener" class="filter-panel" hidden></div>
+        <div class="db-tabs" role="tablist" aria-label="Screener column views" style="margin-bottom:16px">
+          ${viewTabsHtml}
+        </div>
+        <div class="db-table-wrap">
+          <table class="db-table">
+            <thead><tr>${headerCells}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <div class="db-pagination">
+          <button class="btn btn-outline btn-sm" id="screener-first" aria-label="First page" ${screenerPage === 1 ? 'disabled' : ''}>&laquo;</button>
+          <button class="btn btn-outline btn-sm" id="screener-prev" aria-label="Previous page" ${screenerPage === 1 ? 'disabled' : ''}>&lsaquo;</button>
+          <span class="text-secondary" style="font-size:0.875rem">Page ${screenerPage.toLocaleString()} of ${totalPages.toLocaleString()}</span>
+          <button class="btn btn-outline btn-sm" id="screener-next" aria-label="Next page" ${screenerPage === totalPages ? 'disabled' : ''}>&rsaquo;</button>
+          <button class="btn btn-outline btn-sm" id="screener-last" aria-label="Last page" ${screenerPage === totalPages ? 'disabled' : ''}>&raquo;</button>
+        </div>
+      `;
+
+      document.getElementById('screener-first').addEventListener('click', () => { screenerPage = 1; renderScreenerPage(); window.scrollTo({ top: 0 }); });
+      document.getElementById('screener-prev').addEventListener('click', () => { screenerPage--; renderScreenerPage(); window.scrollTo({ top: 0 }); });
+      document.getElementById('screener-next').addEventListener('click', () => { screenerPage++; renderScreenerPage(); window.scrollTo({ top: 0 }); });
+      document.getElementById('screener-last').addEventListener('click', () => { screenerPage = totalPages; renderScreenerPage(); window.scrollTo({ top: 0 }); });
+
+      document.querySelectorAll('#screener-content .db-tabs .db-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          screenerView = btn.dataset.view;
+          screenerSortField = null;
+          renderScreenerPage();
+        });
+      });
+
+      document.querySelectorAll('#screener-content .db-table th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+          const key = th.dataset.sort;
+          if (screenerSortField === key) {
+            screenerSortDir = screenerSortDir === 'asc' ? 'desc' : 'asc';
+          } else {
+            screenerSortField = key;
+            screenerSortDir = 'desc';
+          }
+          applyScreenerSort();
+          screenerPage = 1;
+          renderScreenerPage();
+        });
+      });
+
+      screenerFilterController.rewire();
+    }
+
+    // ---- Leaderboard tab (V1.13): relative-percentile scoring model. ----
+    // Methodology locked in docs/PRD.md Section 14 (V1.13): 20 metrics, 7
+    // categories, 1,000 points total. Every metric is ranked by percentile
+    // among eligible entries (not raw value), then run through a clamp curve
+    // so only the top ~22% of a metric earns full marks; missing data scores
+    // a hard zero. Tiers are assigned by rank (S/A/B/C/F at 10/10/20/25/25%),
+    // ties round up into the better tier, plus a special S+ for a perfect
+    // 1,000/1,000. Noise-flagged entries are NOT excluded yet (V1.14 doesn't
+    // exist yet); accepted as a known, temporary gap per the v1.10.x decision.
+    const CLAMP_Q = 0.22;
+    function scoreClamp(x, lo, hi) { return x < lo ? lo : (x > hi ? hi : x); }
+    function pointsFromPct(p, cap) { return scoreClamp(cap * (p - CLAMP_Q) / (1 - 2 * CLAMP_Q), 0, cap); }
+
+    const SCORE_METRICS = [
+      { key: 'arr', cap: 100, higher: true, get: e => e.annualized_rate_of_return },
+      { key: 'median', cap: 100, higher: true, get: e => e.median },
+      { key: 't1y', cap: 50, higher: true, get: e => e.trailing_one_year_return },
+      { key: 't3m', cap: 25, higher: true, get: e => e.trailing_three_month_return },
+      { key: 't1m', cap: 15, higher: true, get: e => e.trailing_one_month_return },
+      { key: 't2w', cap: 10, higher: true, get: e => e.trailing_two_week_return },
+      { key: 'sharpe', cap: 50, higher: true, get: e => e.sharpe_ratio },
+      { key: 'calmar', cap: 50, higher: true, get: e => e.calmar_ratio },
+      { key: 'sortino', cap: 50, higher: true, get: e => e.sortino_ratio },
+      { key: 'win_rate', cap: 50, higher: true, get: e => e.win_rate },
+      { key: 'max_dd', cap: 100, higher: true, get: e => e.max_drawdown },
+      { key: 'std_dev', cap: 100, higher: false, get: e => e.standard_deviation },
+      { key: 'skew', cap: 40, higher: true, get: e => e.skewness },
+      { key: 'tail_ratio', cap: 30, higher: true, get: e => e.tail_ratio },
+      { key: 'kurtosis', cap: 30, higher: false, get: e => e.kurtosis },
+      { key: 'top1day', cap: 50, higher: false, get: e => e.top_one_day_contribution },
+      { key: 'top5pct', cap: 25, higher: false, get: e => e.top_five_percent_day_contribution },
+      { key: 'top10pct', cap: 25, higher: false, get: e => e.top_ten_percent_day_contribution },
+      { key: 'backtest', cap: 75, higher: true, get: e => e.backtest_days },
+      { key: 'oos', cap: 25, higher: true, get: oosDaysValue },
+    ];
+    const TOTAL_POSSIBLE = SCORE_METRICS.reduce((s, m) => s + m.cap, 0); // 1,000
+    const TIER_CUTS = [['S', 0.10], ['A', 0.20], ['B', 0.50], ['C', 0.75]]; // F = the rest
+    const TIER_LABEL_CLASS = { 'S+': 'sp', S: 's', A: 'a', B: 'b', C: 'c', F: 'f' };
+
+    // Category grouping + human labels, for the per-row score breakdown modal
+    // and the Methodology modal. Mirrors the locked model in docs/PRD.md
+    // Section 14, V1.13, keep both in sync if the model ever changes.
+    const SCORE_CATEGORIES = [
+      { label: 'A. Return', keys: ['arr', 'median'] },
+      { label: 'B. Trailing Returns', keys: ['t1y', 't3m', 't1m', 't2w'] },
+      { label: 'C. Risk-Adjusted', keys: ['sharpe', 'calmar', 'sortino', 'win_rate'] },
+      { label: 'D. Downside Risk', keys: ['max_dd', 'std_dev'] },
+      { label: 'E. Asymmetry / Shape', keys: ['skew', 'tail_ratio', 'kurtosis'] },
+      { label: 'F. Concentration / Fragility', keys: ['top1day', 'top5pct', 'top10pct'] },
+      { label: 'G. Longevity', keys: ['backtest', 'oos'] },
+    ];
+    const METRIC_LABELS = {
+      arr: 'Annualized Rate of Return', median: 'Median Period Return',
+      t1y: '1-Year Trailing Return', t3m: '3-Month Trailing Return',
+      t1m: '1-Month Trailing Return', t2w: '2-Week Trailing Return',
+      sharpe: 'Sharpe Ratio', calmar: 'Calmar Ratio', sortino: 'Sortino Ratio', win_rate: 'Win Rate',
+      max_dd: 'Max Drawdown', std_dev: 'Standard Deviation',
+      skew: 'Skewness', tail_ratio: 'Tail Ratio', kurtosis: 'Kurtosis',
+      top1day: 'Top 1-Day Contribution', top5pct: 'Top 5% Contribution', top10pct: 'Top 10% Contribution',
+      backtest: 'Backtest Days', oos: 'OOS Days',
+    };
+    function metricCap(key) { return SCORE_METRICS.find(m => m.key === key).cap; }
+
+    // entries: the eligible pool (has been refreshed, i.e. sharpe_ratio present)
+    function computeScores(entries) {
+      const ptsByIdx = entries.map(() => ({}));
+
+      SCORE_METRICS.forEach(m => {
+        const vals = [];
+        entries.forEach((e, i) => {
+          const v = m.get(e);
+          if (typeof v === 'number') vals.push({ i, v });
+        });
+        const n = vals.length;
+        if (!n) return;
+        vals.sort((a, b) => a.v - b.v);
+        let i = 0;
+        while (i < n) {
+          let j = i;
+          while (j + 1 < n && vals[j + 1].v === vals[i].v) j++; // average-rank ties
+          let perc = n > 1 ? ((i + j) / 2) / (n - 1) : 0.5;
+          if (!m.higher) perc = 1 - perc;
+          const p = pointsFromPct(perc, m.cap);
+          for (let k = i; k <= j; k++) ptsByIdx[vals[k].i][m.key] = p;
+          i = j + 1;
+        }
+      });
+
+      return entries.map((e, i) => {
+        const pts = ptsByIdx[i];
+        const total = SCORE_METRICS.reduce((s, m) => s + (pts[m.key] || 0), 0);
+        return { entry: e, score: Math.round(total * 10) / 10, fieldsPresent: Object.keys(pts).length, parts: pts };
+      });
+    }
+
+    function computeTiers(scored) {
+      const ranked = scored.slice().sort((a, b) => b.score - a.score);
+      const n = ranked.length;
+      const cuts = TIER_CUTS.map(c => Math.max(1, Math.round(c[1] * n)));
+      for (let k = 0; k < cuts.length; k++) {
+        let j = Math.min(cuts[k], n) - 1;
+        const boundary = ranked[j].score;
+        while (j + 1 < n && ranked[j + 1].score === boundary) j++; // ties round up
+        cuts[k] = j + 1;
+        if (k > 0 && cuts[k] < cuts[k - 1]) cuts[k] = cuts[k - 1];
+      }
+      let ci = 0;
+      ranked.forEach((r, i) => {
+        while (ci < cuts.length && i >= cuts[ci]) ci++;
+        r.tier = r.score >= TOTAL_POSSIBLE ? 'S+' : (ci < TIER_CUTS.length ? TIER_CUTS[ci][0] : 'F');
+      });
+      return ranked; // already sorted by score descending
+    }
+
+    let leaderboardRanked = []; // [{ entry, score, tier, fieldsPresent, parts }], sorted by score desc
+    let leaderboardFiltered = [];
+    let leaderboardPage = 1;
+
+    // ---- Shared modal (score breakdown + Methodology) ----
+    function openModal(title, bodyHtml) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-body').innerHTML = bodyHtml;
+      document.getElementById('modal-overlay').hidden = false;
+    }
+    function closeModal() { document.getElementById('modal-overlay').hidden = true; }
+
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    document.getElementById('modal-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'modal-overlay') closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !document.getElementById('modal-overlay').hidden) closeModal();
+    });
+
+    function fmtScoreValue(v) {
+      return Math.round(v * 10) / 10;
+    }
+
+    // Per-row score breakdown: every category's earned/max, and every metric
+    // within it; "no data" is distinguished from "scored zero" (bottom of
+    // the pack still earned a real score of 0, missing data never entered
+    // the ranking at all for that metric).
+    function scoreBreakdownHtml(r) {
+      const e = r.entry;
+      const name = e.name || e.symphony_id;
+      let html = `<p class="text-secondary">${escapeHtml(name)} scored <strong style="color:var(--color-primary)">${fmtScoreValue(r.score)} / ${TOTAL_POSSIBLE}</strong>, tier <strong style="color:var(--color-primary)">${r.tier}</strong>.</p>`;
+
+      SCORE_CATEGORIES.forEach(cat => {
+        const catCap = cat.keys.reduce((s, k) => s + metricCap(k), 0);
+        const catEarned = cat.keys.reduce((s, k) => s + (r.parts[k] || 0), 0);
+        html += `<h3>${cat.label} <span class="text-secondary" style="font-weight:400">(${fmtScoreValue(catEarned)} / ${catCap})</span></h3>`;
+        cat.keys.forEach(k => {
+          const hasData = r.parts[k] !== undefined;
+          const cls = hasData ? '' : 'no-data';
+          const valueText = hasData ? `${fmtScoreValue(r.parts[k])} / ${metricCap(k)}` : `No data / ${metricCap(k)}`;
+          html += `<div class="score-row ${cls}"><span class="score-row-label">${METRIC_LABELS[k]}</span><span class="score-row-value">${valueText}</span></div>`;
+        });
+      });
+      return html;
+    }
+
+    function methodologyHtml() {
+      let html = `
+        <p>Every strategy is scored on ${SCORE_METRICS.length} metrics across ${SCORE_CATEGORIES.length} categories, ${TOTAL_POSSIBLE} points total. Each metric is scored by <strong>percentile rank</strong> among strategies with usable data, not its raw value, so a strategy is judged against its peers, not an arbitrary fixed scale.</p>
+        <p>Only the top ~22% of a metric earns full marks, and the bottom ~22% earns zero, with a straight ramp in between. That keeps a perfect score rare instead of common. Missing data scores a hard zero for that one metric, the ${TOTAL_POSSIBLE}-point denominator never shrinks, so an incomplete strategy can never outscore a complete one just by having fewer things to fail.</p>
+        <p>Tiers are assigned by <strong>rank</strong>, not raw score: S = top 10% of scored strategies, A = next 10%, B = next 20% (top 20-50%), C = next 25% (50-75%), F = bottom 25%. A perfect ${TOTAL_POSSIBLE}/${TOTAL_POSSIBLE} earns a special S+ tier.</p>
+      `;
+      SCORE_CATEGORIES.forEach(cat => {
+        const catCap = cat.keys.reduce((s, k) => s + metricCap(k), 0);
+        html += `<h3>${cat.label} <span class="text-secondary" style="font-weight:400">(${catCap} pts)</span></h3>`;
+        cat.keys.forEach(k => {
+          html += `<div class="score-row"><span class="score-row-label">${METRIC_LABELS[k]}</span><span class="score-row-value">${metricCap(k)} pts</span></div>`;
+        });
+      });
+      html += `<p style="margin-top:16px">See the <strong style="color:var(--color-primary)">Metrics</strong> tab (next to Screener) for a plain-English explanation of what each metric measures.</p>`;
+      return html;
+    }
+
+    const leaderboardFilterController = createFilterController({
+      panelId: 'filter-panel-leaderboard',
+      buttonId: 'filter-btn-leaderboard',
+      onApply: () => {
+        leaderboardFiltered = leaderboardRanked.filter(r => leaderboardFilterController.filterFn(r.entry));
+        leaderboardPage = 1;
+        renderLeaderboardPage();
+      },
+    });
+
+    function renderLeaderboardPage() {
+      const totalPages = Math.max(1, Math.ceil(leaderboardFiltered.length / PAGE_SIZE));
+      leaderboardPage = Math.min(Math.max(1, leaderboardPage), totalPages);
+      const start = (leaderboardPage - 1) * PAGE_SIZE;
+      const pageRows = leaderboardFiltered.slice(start, start + PAGE_SIZE);
+      const rankOffset = start;
+
+      const rows = pageRows.map((r, i) => {
+        const e = r.entry;
+        const fullName = e.name || e.symphony_id;
+        const shortName = fullName.length > 22 ? fullName.slice(0, 22) + '…' : fullName;
+        const url = encodeURI(e.symphony_url || '#');
+        const tierClass = TIER_LABEL_CLASS[r.tier] || 'f';
+        return `
+          <tr>
+            <td class="db-col-narrow">${(rankOffset + i + 1).toLocaleString()}</td>
+            <td><span class="tier-badge tier-${tierClass}">${r.tier}</span></td>
+            <td><button class="score-link" data-rank="${rankOffset + i}" title="Click for score breakdown">${r.score.toLocaleString()} / ${TOTAL_POSSIBLE}</button></td>
+            <td><a href="${url}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(fullName)}">${escapeHtml(shortName)}</a></td>
+            <td class="${colorClass(e.annualized_rate_of_return)}">${formatMetric(e.annualized_rate_of_return, formatPct)}</td>
+            <td class="${colorClass(e.sharpe_ratio)}">${formatMetric(e.sharpe_ratio, formatRatio)}</td>
+            <td class="${colorClass(e.calmar_ratio)}">${formatMetric(e.calmar_ratio, formatRatio)}</td>
+            <td class="${colorClass(e.max_drawdown)}">${formatMetric(e.max_drawdown, formatPct)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const filterCount = leaderboardFilterController.activeCount();
+      const filterLabel = filterCount ? `Filter (${filterCount})` : 'Filter';
+
+      document.getElementById('leaderboard-content').innerHTML = `
+        <div class="db-toolbar">
+          <div>
+            <h2>Leaderboard</h2>
+            <span class="db-count-pill">${leaderboardFiltered.length.toLocaleString()} ranked</span>
+            <button class="btn btn-outline btn-sm" id="filter-btn-leaderboard" style="margin-left:8px">
+              <span aria-hidden="true">&#9776;</span> ${filterLabel}
+            </button>
+            <button class="btn btn-outline btn-sm" id="methodology-btn-leaderboard" style="margin-left:8px">Methodology</button>
+          </div>
+          <span class="text-secondary" style="font-size:0.8125rem">Scored out of ${TOTAL_POSSIBLE}; ${(dbEntries.length - leaderboardRanked.length).toLocaleString()} not yet refreshed, excluded from ranking</span>
+        </div>
+        <div id="filter-panel-leaderboard" class="filter-panel" hidden></div>
+        <div class="db-table-wrap">
+          <table class="db-table">
+            <thead>
+              <tr>
+                <th class="db-col-narrow">Rank</th>
+                <th>Tier</th>
+                <th>Score</th>
+                <th>Symphony</th>
+                <th>ARR</th>
+                <th>Sharpe</th>
+                <th>Calmar</th>
+                <th>Max Drawdown</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <div class="db-pagination">
+          <button class="btn btn-outline btn-sm" id="leaderboard-first" aria-label="First page" ${leaderboardPage === 1 ? 'disabled' : ''}>&laquo;</button>
+          <button class="btn btn-outline btn-sm" id="leaderboard-prev" aria-label="Previous page" ${leaderboardPage === 1 ? 'disabled' : ''}>&lsaquo;</button>
+          <span class="text-secondary" style="font-size:0.875rem">Page ${leaderboardPage.toLocaleString()} of ${totalPages.toLocaleString()}</span>
+          <button class="btn btn-outline btn-sm" id="leaderboard-next" aria-label="Next page" ${leaderboardPage === totalPages ? 'disabled' : ''}>&rsaquo;</button>
+          <button class="btn btn-outline btn-sm" id="leaderboard-last" aria-label="Last page" ${leaderboardPage === totalPages ? 'disabled' : ''}>&raquo;</button>
+        </div>
+      `;
+
+      document.getElementById('leaderboard-first').addEventListener('click', () => { leaderboardPage = 1; renderLeaderboardPage(); window.scrollTo({ top: 0 }); });
+      document.getElementById('leaderboard-prev').addEventListener('click', () => { leaderboardPage--; renderLeaderboardPage(); window.scrollTo({ top: 0 }); });
+      document.getElementById('leaderboard-next').addEventListener('click', () => { leaderboardPage++; renderLeaderboardPage(); window.scrollTo({ top: 0 }); });
+      document.getElementById('leaderboard-last').addEventListener('click', () => { leaderboardPage = totalPages; renderLeaderboardPage(); window.scrollTo({ top: 0 }); });
+
+      document.querySelectorAll('#leaderboard-content .score-link').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const r = leaderboardFiltered[Number(btn.dataset.rank)];
+          if (r) openModal('Score Breakdown', scoreBreakdownHtml(r));
+        });
+      });
+
+      document.getElementById('methodology-btn-leaderboard').addEventListener('click', () => {
+        openModal('Leaderboard Methodology', methodologyHtml());
+      });
+
+      leaderboardFilterController.rewire();
+    }
+
+    // The summary payload is columnar ({ fields: [...], rows: [[...], ...] })
+    // rather than one object per entry, that's most of the Performance Fix
+    // (V1.16): repeating every field name as a key on 6,488 objects was the
+    // biggest chunk of the old file's size, not any single field's data.
+    // Reconstruct plain row objects here so the rest of the page (COLUMNS,
+    // sorting, rendering) doesn't need to know the wire format changed.
+    function rowsFromColumnar(payload) {
+      const { fields, rows } = payload;
+      return rows.map(row => {
+        const obj = {};
+        fields.forEach((f, i) => { obj[f] = row[i]; });
+        return obj;
+      });
+    }
+
+    async function loadFullDatabase() {
+      if (window.DATABASE_SUMMARY_DATA) return rowsFromColumnar(window.DATABASE_SUMMARY_DATA);
+      const res = await fetch(`${BASE}/data/database_summary.json`);
+      if (!res.ok) throw new Error('Failed to load database_summary.json');
+      return rowsFromColumnar(await res.json());
+    }
+
+    (async function () {
+      dbEntries = await loadFullDatabase();
+      filteredEntries = dbEntries.slice();
+      renderTablePage();
+      screenerFiltered = dbEntries.slice();
+      renderScreenerPage();
+
+      // Eligibility: only score entries that have actually been refreshed
+      // under the full schema (sharpe_ratio present is the proxy used
+      // throughout this session's live scoring previews). Not yet excluding
+      // noise (V1.14 doesn't exist yet); see the render function's comment.
+      const eligible = dbEntries.filter(e => typeof e.sharpe_ratio === 'number');
+      leaderboardRanked = computeTiers(computeScores(eligible));
+      leaderboardFiltered = leaderboardRanked.slice();
+      renderLeaderboardPage();
+    })().catch(err => {
+      const errorHtml = `
+        <div class="error-state">
+          <h2>Failed to load database</h2>
+          <p>${err.message}</p>
+        </div>`;
+      document.getElementById('content').innerHTML = errorHtml;
+      document.getElementById('screener-content').innerHTML = errorHtml;
+      document.getElementById('leaderboard-content').innerHTML = errorHtml;
+    });
+  </script>
+</body>
+</html>

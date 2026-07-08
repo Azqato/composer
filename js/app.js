@@ -44,7 +44,7 @@ async function loadGlossary() {
 
 // ---- Format utilities ----
 function formatPct(n) {
-  const pct = (n * 100).toFixed(2);
+  const pct = (n * 100).toFixed(1);
   return n >= 0 ? `+${pct}%` : `${pct}%`;
 }
 
@@ -144,12 +144,11 @@ function renderNav() {
   }
 
   const links = [
-    { href: u('/strategies.html'), label: 'Strategies' },
-    { href: u('/glossary.html'), label: 'Glossary' },
     { href: u('/about.html'), label: 'About' },
-    { href: 'https://azqato.github.io/stocks/', label: 'Individual Stocks', external: true },
-    { href: 'https://azqato.github.io/leveraged-strategies/', label: 'Leveraged Strategies', external: true },
-    { href: 'https://azqato.github.io/support.html', label: 'Support', external: true },
+    { href: u('/strategies.html'), label: 'Strategies' },
+    { href: u('/database.html'), label: 'Database' },
+    { href: u('/glossary.html'), label: 'Glossary' },
+    { href: 'https://azqato.com/support.html', label: 'Support', external: true },
   ];
 
   const desktopLinks = links.map(l =>
@@ -209,14 +208,15 @@ function renderFooter() {
   const year = new Date().getFullYear();
   footer.innerHTML = `
     <nav class="footer-links">
-      <a href="${u('/strategies.html')}">Strategies</a>
-      <a href="${u('/glossary.html')}">Glossary</a>
       <a href="${u('/about.html')}">About</a>
-      <a href="https://azqato.github.io/support.html" target="_blank" rel="noopener noreferrer">Support</a>
+      <a href="${u('/strategies.html')}">Strategies</a>
+      <a href="${u('/database.html')}">Database</a>
+      <a href="${u('/glossary.html')}">Glossary</a>
+      <a href="https://azqato.com/support.html" target="_blank" rel="noopener noreferrer">Support</a>
       <a href="https://composer.trade" target="_blank" rel="noopener noreferrer">Composer.trade ↗</a>
     </nav>
     <p class="footer-legal">Not affiliated with Composer Technologies, Inc. All metrics are backtested historical data and do not guarantee future results. Not financial advice.</p>
-    <p class="footer-copy">&copy; ${year} Composer Atlas &middot; Built by <a href="https://azqato.github.io/" target="_blank" rel="noopener noreferrer">Azqato</a></p>
+    <p class="footer-copy">&copy; ${year} Composer Atlas &middot; Built by <a href="https://azqato.com/" target="_blank" rel="noopener noreferrer">Azqato</a></p>
   `;
 }
 

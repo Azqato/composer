@@ -1035,3 +1035,428 @@ footer {
 }
 
 .about-content a:hover { opacity: 0.8; }
+
+/* ---- Database tabs (database.html) ---- */
+.db-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 24px;
+}
+
+.db-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.db-tab:hover { color: var(--color-primary); }
+
+.db-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-green);
+}
+
+.db-tab-panel[hidden] { display: none; }
+
+/* ---- Database toolbar (database.html) ---- */
+.db-toolbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+}
+
+.db-toolbar h2 {
+  display: inline;
+  color: var(--color-primary);
+  font-size: 1.125rem;
+  margin-right: 10px;
+}
+
+.db-count-pill {
+  display: inline-flex;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  color: var(--color-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ---- Database table (database.html) ---- */
+.db-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.db-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.db-table th {
+  text-align: left;
+  padding: 10px 16px;
+  background: var(--color-surface-raised);
+  color: var(--color-disabled);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.db-table th.sortable {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.db-table th.sortable:hover { color: var(--color-primary); }
+
+.db-sort-arrow {
+  display: inline-block;
+  font-size: 0.625rem;
+  opacity: 0.4;
+  margin-left: 2px;
+}
+
+.db-sort-arrow.active {
+  opacity: 1;
+  color: var(--color-green);
+}
+
+.db-table td {
+  padding: 10px 16px;
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.db-table tbody tr {
+  transition: background 0.15s;
+}
+
+.db-table tbody tr:hover {
+  background: var(--color-surface-raised);
+}
+
+.db-table td:first-child,
+.db-table th:first-child {
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 220px;
+  min-width: 220px;
+  max-width: 220px;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.db-table td:first-child a {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.db-table th:first-child { background: var(--color-surface-raised); z-index: 2; }
+.db-table td:first-child { background: var(--color-surface); box-shadow: 1px 0 0 var(--color-border); }
+.db-table tbody tr:hover td:first-child { background: var(--color-surface-raised); }
+
+.db-table td:first-child a {
+  color: var(--color-primary);
+  transition: color 0.15s;
+}
+
+.db-table td:first-child a:hover { color: var(--color-green); }
+
+.db-table tbody tr:last-child td { border-bottom: none; }
+
+.db-warning {
+  color: var(--color-yellow);
+  cursor: help;
+}
+
+.db-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.db-pagination .btn {
+  min-width: 32px;
+  text-align: center;
+}
+
+/* ---- Filter Panel (database.html, shared by All Strategies + Screener) ---- */
+.filter-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.filter-empty {
+  text-align: center;
+  padding: 12px 0 20px;
+}
+
+.filter-empty-title {
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  margin-bottom: 4px;
+}
+
+.filter-empty-hint {
+  font-size: 0.8125rem;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-row-label {
+  color: var(--color-secondary);
+  font-size: 0.8125rem;
+  flex-shrink: 0;
+}
+
+.filter-row select,
+.filter-row input {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  font-size: 0.8125rem;
+  font-family: var(--font-sans);
+}
+
+.filter-row select:focus,
+.filter-row input:focus {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 1px;
+}
+
+.filter-value {
+  flex: 1;
+  min-width: 120px;
+}
+
+.filter-remove {
+  background: none;
+  border: none;
+  color: var(--color-pink);
+  cursor: pointer;
+  font-size: 0.9375rem;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.filter-remove:hover {
+  opacity: 0.7;
+}
+
+.filter-panel-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-panel-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---- Tier badges (Leaderboard, database.html, V1.13) ---- */
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid;
+}
+
+.tier-sp { color: var(--color-green); background: rgba(0, 230, 118, 0.14); border-color: rgba(0, 230, 118, 0.35); }
+.tier-s  { color: var(--color-green); background: rgba(0, 230, 118, 0.08); border-color: rgba(0, 230, 118, 0.25); }
+.tier-a  { color: var(--color-blue); background: rgba(77, 159, 255, 0.08); border-color: rgba(77, 159, 255, 0.25); }
+.tier-b  { color: var(--color-yellow); background: rgba(245, 197, 24, 0.08); border-color: rgba(245, 197, 24, 0.25); }
+.tier-c  { color: var(--color-secondary); background: var(--color-surface-raised); border-color: var(--color-border); }
+.tier-f  { color: var(--color-pink); background: rgba(255, 77, 141, 0.08); border-color: rgba(255, 77, 141, 0.25); }
+
+/* ---- Modal (score breakdown + methodology, database.html, V1.13) ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.modal-overlay[hidden] { display: none; }
+
+.modal-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  max-width: 880px;
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.modal-header h2 {
+  font-size: 1.0625rem;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--color-secondary);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.modal-close:hover { color: var(--color-primary); }
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  color: var(--color-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.modal-body h3 {
+  color: var(--color-primary);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin: 20px 0 8px;
+}
+
+.modal-body h3:first-child { margin-top: 0; }
+
+.modal-body p { margin-bottom: 12px; }
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.875rem;
+}
+
+.score-row:last-child { border-bottom: none; }
+
+.score-row-label { color: var(--color-secondary); }
+
+.score-row-value {
+  font-family: var(--font-mono);
+  color: var(--color-primary);
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.score-row.category-total {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.score-row.category-total .score-row-label { color: var(--color-primary); }
+
+.score-row.no-data .score-row-value { color: var(--color-disabled); }
+
+/* Score cell button: looks identical to every other .db-table value cell
+   (same color, font, size), just clickable; only a hover state hints that
+   it opens the breakdown, no distinct "link" treatment. */
+.score-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: inherit;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.score-link:hover { text-decoration: underline; }
+
+.db-col-narrow {
+  width: 52px;
+  max-width: 52px;
+  white-space: nowrap;
+  padding-left: 8px;
+  padding-right: 8px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* .db-table td:first-child (220px, sticky, sans-serif) is meant for the
+   Symphony name column, which is first on All Strategies/Screener. On
+   Leaderboard, Rank is first instead, and that rule's higher specificity
+   (.db-table td:first-child) was winning over .db-col-narrow alone. This
+   overrides it specifically when both classes land on the same cell. */
+.db-table td.db-col-narrow:first-child,
+.db-table th.db-col-narrow:first-child {
+  width: 52px;
+  max-width: 52px;
+  min-width: 0;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  position: static;
+  text-align: center;
+}

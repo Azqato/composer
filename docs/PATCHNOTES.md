@@ -5,6 +5,148 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.11.2] - 2026-07-07
+
+### Added: Leaderboard score breakdown modal + Methodology button
+
+Each Leaderboard row's Score cell is now clickable (styled identically to every other value cell, no distinct "link" look, just a hover underline), opening a modal that breaks the score down by all 7 categories and all 20 metrics for that specific strategy, distinguishing "no data" (metric never entered the ranking) from "scored zero" (present, but bottom of the pack).
+
+A "Methodology" button next to Filter opens a second modal explaining the model in plain language: percentile-rank scoring, the clamp curve, missing-data handling, and tier assignment, plus the full category/metric point-value breakdown.
+
+Both modals share one component (`openModal()`/`closeModal()`, a single `#modal-overlay` in the page), closable via the × button, clicking outside the panel, or Escape. Widened from 640px to 880px after the first pass looked cramped for the metric list. Also narrowed the Leaderboard's Rank column (was taking up more width than its short content needed).
+
+**Files changed:** `database.html`, `css/main.css`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.1] - 2026-07-07
+
+### Added: Synced 1,197 new URLs from storage.csv into database.json
+
+`data/storage.csv` had grown to 7,685 URLs (from its 6,489 seed at creation, v1.10.1), 1,197 of them not yet present in `data/database.json`. New `scripts/sync_storage_to_database.py` (safe to re-run) adds any storage.csv URL missing from database.json as a new, unrefreshed entry (every field null except `symphony_url`/`symphony_id`), so the next `refresh_full_database.py` run picks them up like any other due row. `database.json` grows from 6,488 to 7,685 entries; `data/database_summary.json` (the Performance Fix's slim derivative, V1.16) regenerated to match, still ~80% smaller than the full file.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `scripts/sync_storage_to_database.py` (new), `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.0] - 2026-07-07
+
+### Added: Performance Fix, Filter Panel, Screener, and Leaderboard all shipped together
+
+Built out of roadmap order at the user's explicit request: Performance Fix (originally V1.16) done first, then V1.11 (Filter Panel), V1.12 (Screener), and V1.13 (Leaderboard) in one batch. All four still gated behind the "not yet pushed to GitHub" rule, none of this is live.
+
+**Performance Fix.** Found the "<500KB" target this item was framed around is actually scoped to the homepage specifically (Section 10), not database.html, a mistake in earlier docs, corrected rather than carried forward. The real problem was still worth fixing: `database.json` had grown to ~11.5MB as the background refresh populated more rows. Dropping 8 unused fields alone only saved ~26%, most of the weight was JSON format overhead (repeating ~29 field names as keys across 6,488 objects), not any field's data. The actual fix: a **columnar** format (`{fields: [...], rows: [[...], ...]}`) plus **rounding floats to 4 decimal places**. Result: ~11.5MB → ~2.3MB uncompressed (79.9% reduction), ~540KB gzipped in production. New `scripts/export_summary.py` derives `data/database_summary.json`/`.js` from `database.json`; `database.html` now loads the summary file and reconstructs row objects client-side via `rowsFromColumnar()`.
+
+**Filter Panel (V1.11).** Shared searchable field-picker + operator (`=`, `>`, `<`, `>=`, `<=`, `between`, `contains`) + value filter, stackable rows (AND logic), Cancel/Apply. 20 filterable fields including a `holding` type matching tickers against `last_market_days_holdings`. One `createFilterController()` factory, three independent instances (All Strategies, Screener, Leaderboard).
+
+**Screener (V1.12).** Reuses the Filter Panel. Three switchable column views (Overview, Risk-Adjusted, Distribution) built in full now rather than deferred, per explicit decision. Order-by dropdown skipped in favor of the existing click-to-sort column headers.
+
+**Leaderboard (V1.13).** The 20-metric, 1,000-point, 7-category scoring model (locked in v1.10.7) implemented for real: `computeScores()` (percentile rank + clamp curve per metric) and `computeTiers()` (rank-based S/A/B/C/F cuts with round-up ties, S+ for a perfect score). Eligibility gated on `sharpe_ratio` being present (the "has been refreshed" proxy used throughout this session). Ships without noise-exclusion, an accepted, documented gap, since Noise Filtering (V1.14) doesn't exist yet.
+
+Also removed OOS Days from the All Strategies table display per a mid-session request (kept in the underlying data for filter/scoring use, just not shown as a column there).
+
+**Files changed:** `database.html`, `css/main.css`, `scripts/export_summary.py` (new), `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.10.7] - 2026-07-07
+
+### Changed: Leaderboard scoring model finalized and validated against real data
+
+Docs-only change, no code yet (implementation is still V1.13, not started). Final iteration on the scoring methodology after a full metric-by-metric review.
+
+**Final model: 20 metrics, 1,000 points, 7 categories** (up from the earlier 10-metric/4-category version): Return (200: ARR, Median), Trailing Returns (100, split across 1yr/3mo/1mo/2wk), Risk-Adjusted (200: Sharpe/Calmar/Sortino/Win Rate at 50 each), Downside Risk (200: Max Drawdown, Standard Deviation, `min` removed as likely redundant with Max Drawdown for this leveraged-ETF-heavy dataset), Asymmetry/Shape (100, split across Skewness/Tail Ratio/Kurtosis), Concentration/Fragility (100, split across the three Top-Day-Contribution metrics, lower=better), Longevity (100: Backtest Days 75 / OOS Days 25).
+
+**Explicitly excluded, each with a documented reason:** Cumulative Return, Mean, Max, Herfindahl Index, Total Costs, Annualized Turnover, Min.
+
+**Validated live:** implemented the full model in a throwaway script and ran it against the 2,282 database entries refreshed so far. Confirmed the math works correctly end to end, and the top-25 output surfaced real, expected noise: roughly half the top 25 were the same underlying strategies double/triple-counted via TESTPORT ports and clone/copy duplicates. This is exactly the problem Noise Filtering (V1.14) exists to solve. Decision: accept this as a known, temporary gap rather than reordering V1.13/V1.14, Leaderboard ships first without noise-exclusion and picks it up once V1.14 lands.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.10.6] - 2026-07-07
+
+### Added: "Metrics" tab on database.html
+
+New tab next to Screener explaining every metric available in `database.json` (29 total, across Return, Risk, Risk-Adjusted, Consistency/Concentration, Trading Behavior/Cost, and Longevity categories) in independent, plain-English descriptions, no explanation references another metric by name, so each one stands alone. Static `.prose`-styled content, same component used for glossary detail pages, no data loading required.
+
+**Files changed:** `database.html`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.10.5] - 2026-07-07
+
+### Changed: Leaderboard scoring model finalized (all decisions locked)
+
+Docs-only change, no code. Every open question from v1.10.4 is now answered.
+
+**Locked model:** 10 metrics, 100 points each, 1,000 total, across 4 equal-standing categories: Return (ARR, trailing 1yr), Risk-Adjusted (Sharpe, Calmar, Sortino, Win Rate), Risk-Safety (Max Drawdown, Std Deviation), Longevity (backtest_days, OOS days). Percentile-rank + clamp curve per metric (`100 × (percentile - 0.22) / (1 - 2×0.22)`), clamp constant kept at 0.22 for launch with re-evaluation explicitly deferred to post-rollout as its own checklist item. Missing data is a hard zero against a fixed 1,000 denominator. Noise-flagged entries excluded from the ranking pool entirely. Tier split kept at S/A/B/C/F 10/10/20/25/25% with an S+ carve-out for a perfect score.
+
+**Sequencing conflict flagged, not resolved:** Leaderboard (V1.13) excludes noise-flagged entries by design, but Noise Filtering (V1.14) ships after it per the confirmed roadmap order, so the `is_noise` flag won't exist yet when Leaderboard first launches. Documented in `docs/PRD.md` as an open decision rather than silently working around it.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.10.4] - 2026-07-07
+
+### Added: Leaderboard scoring methodology documented (V1.13)
+
+Docs-only change, no code. Fetched and read the sibling Individual Stocks site's screener source (`github.com/Azqato/stocks`: `screener.js`, `screener.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`) to understand its relative-percentile scoring model, per the user's request to base the Leaderboard's tier list on the same methodology.
+
+**Methodology captured in full:** weighted pillars summing to 100, percentile-rank-based scoring (not raw value) with a clamp curve (`20 × (percentile - 0.22) / (1 - 2×0.22)`, bottom/top 22% flattened) that keeps a perfect 100 rare, missing data scored as a hard zero against a fixed denominator, and rank-based tiers (S/A/B/C/F at 10/10/20/25/25%, plus a special S+ for perfect scores) with ties rounding up into the better tier.
+
+**Proposed (not decided) pillar translation** for our schema: Return (ARR, trailing 1yr) ~ stock Growth pillar; Risk-Adjusted (Sharpe, Calmar, Sortino) ~ Valuation pillar; Risk/Safety (Max Drawdown, Std Deviation) ~ Balance Sheet pillar; Win Rate/backtest length/turnover/costs as context-only, weight-0 columns.
+
+**Explicitly left open, flagged as real decisions needing confirmation, not assumptions:** exact pillar/metric/weight assignments, whether `backtest_days` should gate scoring eligibility outright (a 6-month vs. 15-year backtest aren't comparable the way two mature stocks are) rather than just being a context column, whether the 0.22 clamp constant transfers as-is given how different our ARR distribution shape is from stock fundamentals, whether Noise Filtering (V1.14) should exclude flagged entries from the percentile pool before scoring, and whether the 10/10/20/25/25 tier split fits a 6,000+ entry pool the same way it fits ~100-500 stocks.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.10.3] - 2026-07-07
+
+### Changed: Roadmap reordered (V1.11-V1.16)
+
+Docs-only change, no code. Per explicit sequencing decisions: the shared filter panel (searchable field-picker + operator + value, from the community "Symphony Search Tool" reference) is now its own near-term roadmap item, built first, ahead of and reused by the Screener tab. Screener now comes before Leaderboard. Noise Filtering moves to after Screener Tab creation, rather than before Leaderboard as originally sequenced.
+
+**New order:** V1.11 Filter Panel (Shared Component) → V1.12 Screener Tab → V1.13 Leaderboard Tab → V1.14 Noise Filtering → V1.15 Full-Scale Refresh → V1.16 Performance Fix → V2.0 Full Database Goes Public.
+
+All cross-references updated (the "not yet pushed to GitHub" gate, the Performance Fix gate, the Section 6 in-progress checklist).
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.10.2] - 2026-07-07
+
+### Changed: Nav restructured; Individual Stocks and Leveraged Strategies moved off primary nav
+
+Top navigation reordered to **About, Strategies, Database, Glossary, Support** (was Strategies, Glossary, Database, About, Individual Stocks, Leveraged Strategies, Support). Footer nav reordered to match.
+
+Removed the direct external nav links to Individual Stocks and Leveraged Strategies, originally added in v1.5.7. The sites aren't gone, they're presented instead on `about.html` in a new "More From Azqato" section: a short description of what each sibling site is, how it relates to Composer.trade and this library, and a CTA button linking out to it.
+
+**Files changed:** `js/app.js`, `about.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.10.1] - 2026-07-07
+
+### Changed: Renamed full_database.json to database.json; added storage.csv URL backup
+
+**Rename.** `data/full_database.json` and `data/full_database.js` are now `data/database.json` and `data/database.js`. The `window.FULL_DATABASE_DATA` global is now `window.DATABASE_DATA`, matching the `STRATEGIES_DATA`/`GLOSSARY_DATA` naming convention already used elsewhere. Updated every reference: `database.html`, `scripts/import_full_database.py`, `scripts/refresh_full_database.py`, `scripts/export_full_database_to_xlsx.py`, `docs/PRD.md`, `docs/DESIGN.md`. Script filenames were intentionally left as-is, only the data files were renamed. Historical `docs/PATCHNOTES.md` entries describing past work under the old filename were left untouched as an accurate record of what happened at the time, rather than rewritten.
+
+**Resumed the full-scale refresh.** Paused since v1.9.5 pending this rename; now running against the renamed `database.json`, 6,127 rows due.
+
+**Added `data/storage.csv`.** A single-column (`url`), append-only, deduplicated backup of every Composer symphony URL ever shared, referenced, or added to the site, independent of whether it ever backtested successfully. Its purpose is durability: `database.json` can be rebuilt, re-scoped, or have entries dropped (e.g. by the upcoming Noise Filtering pass), but `storage.csv` is meant to never lose a URL once it's been seen. `symphony_url` (here just `url`) is the primary key, one row per unique symphony regardless of how many times it's been discussed. Seeded with 6,489 unique URLs from the union of `database.json` and `strategies.json`. Documented in `docs/PRD.md` Section 12.
+
+**Also fixed:** Section 12's Metric Display Guidelines still documented percentages as rendering to 2 decimal places; corrected to 1, matching the `formatPct()` change made earlier in the session but never reflected in the docs at the time.
+
+**Files changed:** `data/database.json` (renamed from `data/full_database.json`), `data/database.js` (renamed from `data/full_database.js`), `data/storage.csv` (new), `database.html`, `scripts/import_full_database.py`, `scripts/refresh_full_database.py`, `scripts/export_full_database_to_xlsx.py`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.10.0] - 2026-07-07
 
 ### Added: 3 new strategies (28 total)
