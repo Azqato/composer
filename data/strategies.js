@@ -1705,7 +1705,7 @@ window.STRATEGIES_DATA = [
     "name": "Dip Buying Tech",
     "symphony_url": "https://app.composer.trade/symphony/98cACZSS00eDg8Kv5BBV/details",
     "symphony_id": "98cACZSS00eDg8Kv5BBV",
-    "annualized_rate_of_return": 0.13970202243473052,
+    "annualized_rate_of_return": 0.1397020224347305,
     "max_drawdown": -0.2632920730403323,
     "cumulative_return": 34.209672999999995,
     "calmar_ratio": 0.5305971456775697,
