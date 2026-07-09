@@ -1777,9 +1777,12 @@ Composer does not publicly document which RSI smoothing variant they use. What i
 
 **Decisions locked (pre-implementation):**
 1. **Nav label:** "RSI" — short wins even if slightly cryptic to a first-time visitor.
-2. **Prior close vs. intraday:** Use most recent confirmed close (previous trading day). Intraday RSI is unreliable until after 4:30 PM ET; the nightly GitHub Actions refresh handles this naturally.
+2. **Price source:** Yahoo Finance daily bars (`interval=1d`). Yahoo updates today's daily bar in real-time during market hours, so no separate intraday/1m fetch is needed — the daily adjclose already tracks the live price while the market is open and locks to the official close after 4 PM ET.
 3. **Sparklines:** Skip in V2.3; add in a future pass.
-4. **Refresh cadence:** GitHub Actions nightly job. Exact run time/days TBD — prompt user at implementation time to decide.
+4. **Refresh cadence:** GitHub Actions, 3×/day on weekdays only. Cron: `0 15,19,22 * * 1-5`.
+   - **15:00 UTC** — 11:00 AM EDT / 10:00 AM EST — post-open (after market open in both DST zones)
+   - **19:00 UTC** — 3:00 PM EDT / 2:00 PM EST — pre-close
+   - **22:00 UTC** — 6:00 PM EDT / 5:00 PM EST — post-close
 5. **Sort order:** Descending by RSI (highest first), matching Composer's convention.
 6. **Color thresholds:** Our own 70/30 with extreme tiers at 80/20. Composer's observed 60/40 documented as a future reference if 70/30 feels too quiet.
 
