@@ -5,6 +5,308 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.11.23] - 2026-07-08
+
+### V1.14 complete: dedup pipeline finished its full run
+
+`scripts/dedupe_symphonies.py` (launched in the previous entry) finished processing all 362 candidate clusters (842 candidate rows): **225 rows flagged `duplicate`** this run (229 total including the earlier validation test), **23 logic-tree fetches failed** (mostly `404`s, likely symphonies deleted/made private since being scraped — left ungrouped rather than force-refreshed, a known gap, not a crash). Regenerated `database_summary.json`/`.js` and `Full Database.xlsx` to match.
+
+**Confirmed the sequencing worked as designed** on the real "Holy Grail simplified" cluster used throughout this whole thread as the running example: `flag_name_noise.py` (run first) had already flagged `TESTPORT #016:...` as `excluded`, so by the time dedup ran it was never a candidate — the `symphony_id` tiebreak picked a legitimately-named row among the remaining three instead. Updated the PRD's documented example to reflect this real outcome rather than the earlier prediction.
+
+Final database-wide `flag` tally: 6,221 clean, 229 duplicate, 88 excluded, 88 caution, 14 retry (6,640 total entries). Marked V1.14 (both Part A and Part B) as **Implemented** in the roadmap.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `data/Full Database.xlsx`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.22] - 2026-07-08
+
+### V1.14 Part A implemented: name-noise flagging + logic-tree dedup pipeline, plus a manual-only rule
+
+Built out the full V1.14 Part A pipeline designed over the previous several entries:
+
+**`scripts/flag_name_noise.py`** (new): flags `TESTPORT #`/`[Work]`/`STILL BUILDING` rows with `flag = "excluded"` (reusing the existing level, no new UI surface needed), no API calls. Run: flagged 88 rows.
+
+**`scripts/dedupe_symphonies.py`** (new): implements the full dedup policy from the last several entries — normalize-name clustering (candidate-finding only), logic-tree structural equality as the primary identity check (one `GET /symphonies/{id}/score` call per candidate row), metrics-tolerance fallback, `oos_date`→`symphony_id` tiebreak with no name-based priority, flags losers `flag = "duplicate"` without deleting anything. Tested against a real 5-member "Holy Grail" family before the full run (correctly kept the row matching the hand-computed tiebreak, correctly left two near-miss rows alone since their names didn't normalize into the same candidate cluster — an accepted soft-miss, not a bug). Full run launched against all 362 candidate clusters (842 rows); in progress as of this entry.
+
+Also purged the remaining 41 `excluded` (404/422) rows via the existing `scripts/purge_flagged_entries.py`.
+
+**Documented a manual-only rule**, per user request: neither script (nor any other full-database maintenance script) should ever be added to a GitHub Actions workflow or other CI/scheduled job. `dedupe_symphonies.py` makes hundreds of live API calls per run and can take 20-30+ minutes; running it unattended risks hammering Composer's API far more than a human would choose to. Added explicit warnings to both scripts' docstrings and a new Operational Runbook section ("Name-Based Noise & De-Duplication").
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `data/Full Database.xlsx`, `scripts/flag_name_noise.py` (new), `scripts/dedupe_symphonies.py` (new), `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.21] - 2026-07-08
+
+### Replaced All Strategies' "Last Updated" column with "OOS"
+
+Per user decision, no reason to show users how stale a row's `refresh_date` is. Swapped the column for `oos_date` (days since the strategy's logic was last edited), reusing the existing `formatOosDays()`/`isDuration` rendering path already built for the Screener's bucket filters — no new formatting logic needed. Verified via the CDP harness: header reads "OOS", cells render as e.g. "114d"/"163d" instead of a calendar date.
+
+**Files changed:** `database.html`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.20] - 2026-07-08
+
+### Added a "Duplicates" flag-mode placeholder to All Strategies/Screener
+
+Per user decision, added `"Duplicates"` as a 4th flag-mode toggle option on both All Strategies and Screener, positioned between "Broken" and "All" (full order: Working, Broken, Duplicates, All). Filters to `flag === 'duplicate'` specifically, distinct from "Broken" (`caution`/`excluded`). "Working" (the default view) now also excludes `duplicate`-flagged rows via a shared `isNoiseFlag()` check covering all three noise categories.
+
+This is a placeholder: no row in the database currently has `flag: "duplicate"` — the V1.14 Part A dedup pipeline that would set it (logic-tree structural comparison, tiebreak, flagging) is fully designed (see the last several PATCHNOTES entries) but not yet built. "Duplicates" correctly shows 0 results until that pipeline runs. Verified via the same headless-Chrome CDP harness used for the original flag-mode work: toggle order/labels correct, "Duplicates" mode returns 0 as expected.
+
+**Files changed:** `database.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.19] - 2026-07-08
+
+### All Strategies page copy/layout tweaks: description text, toolbar layout, flag-mode relabel
+
+Small batch of UI tweaks, not previously versioned:
+
+- **Page description** shortened and split into two paragraphs: "A community-sourced database of thousands of Composer.trade symphonies, not just the 25 curated strategies." / "This section is a work in progress." (dropped "gathered from many locations").
+- **All Strategies toolbar**: removed the "N with usable metrics" secondary text; the Filter button now sits in that spot instead (right side of the toolbar).
+- **Flag-mode toggle relabeled and reordered**: "Default" → "Working"; order changed from Working/All/Broken to Working/Broken/All. Applies to both All Strategies and Screener automatically, since both share the same `flagToggleHtml()`/`FLAG_MODES` code.
+
+**Files changed:** `database.html`
+
+---
+
+## [1.11.18] - 2026-07-08
+
+### V1.14 Part A dedup: tiebreak confirmed as-is, candidate-finding elaborated, losers now flagged instead of deleted (documentation only, nothing implemented)
+
+Three follow-ups resolved from the previous entry, all documentation:
+
+**Tiebreak confirmed with no name-based priority.** Per user decision, `symphony_id` sort is used exactly as specified even when it produces a counterintuitive keeper — no special-casing for `TESTPORT #`/WIP-marker names. Demonstrated with two more real clusters: the 4-way "Holy Grail simplified" cluster (already-known example, full walkthrough of the ID sort); and a 6-row "TQQQ For The Long Term V2 (226.7% RR/46.1% Max DD)" cluster that splits into two identical sub-groups (one where `oos_date` differs and the primary rule decides directly, one where it ties and falls to the ID sort) plus one genuine remix correctly excluded from both.
+
+**Candidate-finding elaborated:** name-normalization alone, no corroborating signal (e.g. holdings matching) needed — reasoned through why the two possible failure modes of the name filter are asymmetric (false positives are harmless since the structural check catches them; false negatives are just a soft "didn't dedupe as aggressively as possible," never a wrong deletion). Flagged that the normalization regex needs `(Buy Copy)` added, currently missing alongside `(Invest Copy)`.
+
+**Disposition changed:** duplicates are now flagged, not deleted — a real policy reversal from the v1.11.16 "delete outright" plan, specific to dedup (the already-executed 404/422 `excluded` purge from v1.11.14 is unaffected). New `flag` value `"duplicate"` proposed for all cluster losers. UI: proposed an independent toggle from the existing Default/All/Broken control, not folded into "Broken," per user request that it be filterable — not yet confirmed/built.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.17] - 2026-07-08
+
+### V1.14 Part A dedup: logic-tree structural comparison adopted as the primary identity check (documentation only, nothing implemented)
+
+Follow-up to v1.11.16's metrics-tolerance dedup policy. Investigated whether symphony structure could be compared directly instead of inferring duplication from backtest metrics — it can, via `GET /api/v0.1/symphonies/{id}/score?score_version=v1` (already documented in Section 13, Logic Tree Endpoint), a single lightweight GET per symphony that returns the full IF/ELSE logic tree, no backtest execution required.
+
+**Tested live against the real 4-row "Holy Grail simplified" cluster** from the previous entry: raw responses differ in size/hash (Composer assigns a unique UUID to every node, even on literal clones), but after stripping every `id` field (root and nested) and the root `name` field, all four rows hash **byte-for-byte identical** — confirming they're genuinely the same underlying strategy logic, not just similar-performing.
+
+**Revised the policy** to make this the primary identity check, with the earlier metrics-tolerance approach (3 percentage points absolute / 3% relative, same-`refresh_date`-only) demoted to a fallback for when the logic-tree endpoint is unavailable. The structural check needs no tolerance threshold (exact match, not "close enough") and no same-day-refresh alignment, since logic tree structure doesn't drift day to day the way backtest metrics do.
+
+**Still open, not yet decided:** whether name-normalization alone is a strong enough signal for finding dedup *candidates* in the first place (before spending an API call on the structural check); the TESTPORT/WIP-marker-vs-tiebreak-priority question from the previous entry, still unresolved; and the disposition of the standalone name-pattern noise rules (TESTPORT #, WIP markers) independent of dedup.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.16] - 2026-07-08
+
+### V1.14 Part A: de-duplication policy decided (documentation only, nothing implemented)
+
+Planning session for the near-identical-name-cluster de-duplication policy — no code, no data changes, per user request to document the discussion before implementing.
+
+**Decided:** cluster rows by normalized name (strip `TESTPORT #N:`/`Copy of`/`(Invest Copy)` patterns); within a cluster, only compare metrics between rows refreshed on the *same day* (force a refresh first if not), on a fixed field subset (`annualized_rate_of_return`, `max_drawdown`, `trailing_one_year_return`, `cumulative_return`, `sharpe_ratio`, `calmar_ratio`, `backtest_days`); rows differing on any of those are genuine remixes and all stay; identical rows keep the longest `oos_date`, tiebreaking on lexicographically-earliest `symphony_id`; losers get deleted outright (URL preserved in `storage.csv` first, reusing the `purge_flagged_entries.py` safety-invariant pattern), not just flagged.
+
+**Found and presented a real example** from the live data: a 4-way "Holy Grail simplified" cluster, all refreshed the same day, all target metrics *and* `oos_date` identical — a full tie that falls through to the `symphony_id` tiebreak, which lands on the `TESTPORT #016:`-prefixed row. Surfaced a real conflict this exposes: `TESTPORT #` is supposed to be its own separate noise pattern (excluded outright), so it probably shouldn't be eligible to "win" a dedup tiebreak — likely resolution is pattern-based exclusion running before/taking priority over the dedup tiebreak, but this isn't finalized yet.
+
+**Still open, not yet decided:** whether name-normalization alone is a reliable-enough clustering signal or needs corroboration (e.g. matching `last_market_days_holdings`); the TESTPORT-vs-tiebreak priority question above; and the disposition (delete vs. flag) of the other Part A noise patterns (`TESTPORT #`, WIP markers) independent of dedup.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.15] - 2026-07-08
+
+### V1.14 Part B UI: flag-based exclusion on All Strategies/Screener/Leaderboard; Screener redesigned as a Finviz-style bucketed filter grid
+
+**Flag-based exclusion**, per user decisions: All Strategies and Screener each get an independent 3-state toggle — **Default** (excludes `caution`/`excluded` rows), **All** (shows everything), **Broken** (shows only flagged rows). Leaderboard is *not* toggleable — it always excludes flagged rows from its scoring pool and recomputes percentile ranks/tiers accordingly, since unlike the other two tabs this can't be a simple post-hoc render filter. `retry` (transient 429/500/503/timeout) is deliberately never treated as noise — those rows behave normally and clear on their own via the next refresh.
+
+**Screener redesigned**: replaced the hidden, click-to-open Filter Panel (previously shared with All Strategies) with an always-visible, Finviz-style grid of one label+dropdown per field (20 fields, plus a free-text name search), per a reference screenshot the user provided. All Strategies is unchanged and keeps its existing specific-value Filter Panel — the two tabs now intentionally have different filter UIs, not a shared component. Bucket thresholds (25th/50th/75th/90th percentile per field) are computed live from the loaded dataset rather than hardcoded, so they don't go stale as the database changes. `backtest_days`/`oos_date` use natural-language duration labels ("Over 3.5 years") instead of raw day counts, per user request. The "Broken" toggle label itself was also a direct rename from an initial "Flagged Only" per user request.
+
+**Testing:** no `chromium-cli` or Playwright available in this environment, so verification was done by driving headless Chrome directly over its DevTools Protocol remote-debugging websocket (custom Python harness, not saved as a project asset). Confirmed: All Strategies mode counts correct across all three states; Leaderboard has zero flag-toggle UI; Screener bucket selects render with live percentile-derived options and correctly filter results (e.g. "ARR: Over 50%" cut 6,549 → 3,268); zero console errors throughout. One false alarm caught and resolved: the bucket grid initially screenshotted as a single stacked column — root cause was stale browser cache serving pre-edit CSS, not a real layout bug, confirmed once cache was disabled for the test session.
+
+Also folded in the results of the 845-row background refresh (entries with a null `oos_date`) that completed during this work: 790 OK, 55 failed (transient), current flag distribution 6,538 clean / 88 caution / 41 excluded / 14 retry. Re-synced `database_summary.json`/`.js` and `Full Database.xlsx`.
+
+**Files changed:** `database.html`, `css/main.css`, `data/database_summary.json`, `data/database_summary.js`, `data/Full Database.xlsx`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.14] - 2026-07-08
+
+### Purged all 404/422 `excluded` entries from the database; added a reusable purge script
+
+Per user decision, removed all 1,004 entries flagged `excluded` (permanent 404/422 failures) from `data/database.json` outright, rather than just filtering them from views. Before deletion, confirmed all 1,004 `symphony_url`s were already present in `data/storage.csv` (the durable URL backup) — nothing is lost; any of them can be re-promoted back into `database.json` unrefreshed later via `scripts/sync_storage_to_database.py` if a symphony ever becomes valid again. Database now has 6,681 entries (down from 7,685).
+
+**Built `scripts/purge_flagged_entries.py`**, a reusable tool for this and future cleanses rather than a one-off: takes one or more `flag` levels as CLI arguments (`excluded`, `caution`, `retry`), aborts with no changes if any purge candidate's URL is missing from `storage.csv` (the safety invariant above, enforced automatically), and regenerates every downstream export in one run (`database.js`, `database_summary.json`/`.js`, `Full Database.xlsx`). Documented in `docs/PRD.md`'s Operational Runbook under "Purging Flagged Full-Database Entries". Tested with a safe no-op call (`retry caution`, 0 matches since those were already cleared — see v1.11.12 below) and an invalid-argument call, both behaved correctly.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `data/Full Database.xlsx`, `scripts/purge_flagged_entries.py` (new), `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.13] - 2026-07-08
+
+### Reordered trailing fields: `oos_date`, `refresh_date`, `flag`, `error`
+
+Per user decision, reordered the last four keys on every `data/database.json` entry from `flag, refresh_date, oos_date, error` to `oos_date, refresh_date, flag, error`. Cosmetic only — no value changes. Regenerated `database.js`, `database_summary.json`/`.js`, and `Full Database.xlsx`.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `data/Full Database.xlsx`
+
+---
+
+## [1.11.12] - 2026-07-08
+
+### Reset all `caution`/`retry`-flagged entries to null, queuing them for re-refresh
+
+Per user decision, all 197 entries flagged `caution` (88) or `retry` (109) had `flag`, `error`, and `refresh_date` reset to `null`. This puts them back in the "due" queue for the next `scripts/refresh_full_database.py` run — a fresh API attempt rather than trusting the existing flagged state. `excluded` entries (404/422) were left untouched at this step; see v1.11.14 above for their eventual removal. Regenerated `database.js`, `database_summary.json`/`.js`, and `Full Database.xlsx`.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `data/Full Database.xlsx`
+
+---
+
+## [1.11.11] - 2026-07-08
+
+### Split `flag` back into `flag` (category) + `error` (message), per user decision on reflection
+
+After thinking it over, the combined `flag = {"level": ..., "reason": ...}` object from v1.11.8/v1.11.9 wasn't the right shape. Split into two sibling fields: `flag` is now just the plain category string (`"excluded"`, `"caution"`, `"retry"`, or `null`), and `error` holds the original message on its own — a string for script errors, or Composer's `data_warnings` object for `"caution"` rows.
+
+**`scripts/refresh_full_database.py`**: `classify_error()` now returns a plain string instead of a dict; the success path (`apply_backtest_result()`) and both failure branches in `main()` set `entry["flag"]`/`entry["error"]` as two separate assignments instead of one combined object.
+
+**Migrated all 7,685 existing entries**, splitting the `{level, reason}` object into the two fields. Counts unchanged from before the split: 1,004 excluded, 88 caution, 109 retry, 6,484 clean.
+
+**Fixed the other live consumer**: `database.html`'s ⚠ badge, which read `e.flag.level === 'caution'`, updated to `e.flag === 'caution'`.
+
+**Updated `scripts/export_full_database_to_xlsx.py`**: `flag` is no longer in the nested-object JSON-serialization list (it's a plain string now); `error` is conditionally serialized only when it's actually a dict (the `data_warnings` case), left as a plain string otherwise, since it's a mixed-type field.
+
+**Tested live** against a mixed batch — 15 clean rows plus 5 already-known `excluded` rows in the same run, deliberately exercising both the success and failure write paths together. Verified correct `flag`/`error` shapes across all four cases (clean, a live `422`, a live `404`, and an existing `caution` row), and confirmed zero entries anywhere in the dataset still use the old combined-object shape.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `data/Full Database.xlsx`, `scripts/refresh_full_database.py`, `scripts/export_full_database_to_xlsx.py`, `database.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.10] - 2026-07-08
+
+### Renamed `last_updated`→`refresh_date` and `last_semantic_update_at`→`oos_date`; `oos_date` truncated to `YYYY-MM-DD`
+
+Renamed two fields across the full-database schema (`data/database.json`) for clarity: `last_updated` → `refresh_date` (when this entry's metrics were last successfully refreshed) and `last_semantic_update_at` → `oos_date` (when the symphony's underlying logic was last edited — the out-of-sample reference date). Scoped strictly to `database.json`'s own schema; `strategies.json` and `glossary.json` each have their own independent `last_updated` field, untouched.
+
+`oos_date` is also now truncated to plain `YYYY-MM-DD` at write time, both retroactively (5,795 existing non-null values) and going forward in `scripts/refresh_full_database.py`. Previously it stored the Composer API's full timestamp verbatim, including time-of-day and a named timezone (e.g. `2026-03-16T08:11:33.345904-04:00[America/New_York]`) — far more precision than the field is ever used for (the "days since last edit" computation in `database.html`'s `oosDaysValue()` only ever needed the date).
+
+Updated every touchpoint in the full-database pipeline: `scripts/refresh_full_database.py` (write path + staleness check), `scripts/export_full_database_to_xlsx.py`, `scripts/import_full_database.py` (legacy bootstrap script, already out of sync with the current xlsx column layout for unrelated reasons — noted in its docstring, not fixed this session), and `database.html` (2 references: the All Strategies "Last Updated" column, and `oosDaysValue()`'s live-computation input).
+
+**Caught and fixed a live regression from the previous flag-consolidation pass**: All Strategies' ⚠ warning badge was still reading `e.data_warnings` directly, which no longer exists after that field was removed in v1.11.9 — the badge would have silently gone dark. Fixed to read `e.flag && e.flag.level === 'caution'`.
+
+**Testing:** ran a real `--force 20` live-API batch after the rename and spot-checked results — confirmed correctly-named fields and a properly truncated `oos_date` sourced from an actual API response, not just the retroactive backfill. Also (unintentionally) confirmed a pre-existing, unrelated behavior while testing the staleness check: permanently-`excluded` rows (404/422) never get `refresh_date` advanced on failure, so they always look "due" and would be retried by a plain no-argument run — not new behavior, not fixed this session, just newly visible. Caught the resulting 1,109-row live run early (checkpoint-safe, no data loss) and stopped it since it wasn't the intended test.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `data/Full Database.xlsx`, `scripts/refresh_full_database.py`, `scripts/export_full_database_to_xlsx.py`, `scripts/import_full_database.py`, `database.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.9] - 2026-07-08
+
+### Consolidated `flag` as the sole error/warning field, removed `script_errors`/`data_warnings`
+
+Following up on v1.11.8's derived `flag` field: `script_errors` and `data_warnings` are now gone entirely, replaced by `flag` as the single write target.
+
+**Rewrote `scripts/refresh_full_database.py`** to compute and write `entry["flag"]` directly on every API call — a new `classify_error()` helper buckets failures into `"excluded"` (404/422, permanent) or `"retry"` (429/500/503/timeout, transient; unrecognized shapes default to `"retry"` with a printed warning), and success handling inline-classifies the API's `data_warnings` response into `{"level": "caution", "reason": ...}`. No more separate `script_errors`/`data_warnings` writes.
+
+**Stripped `script_errors` and `data_warnings`** from all 7,685 existing entries in `data/database.json`/`.js` — their content is fully preserved in `flag.reason`, nothing was lost. **Deleted `scripts/add_flag_field.py`**, the one-time migration script from v1.11.8; its job (backfilling `flag` from those two fields) no longer applies once the fields don't exist and the refresh script writes `flag` natively.
+
+**Updated the export scripts**: `scripts/export_full_database_to_xlsx.py`'s nested-field serialization list dropped `data_warnings` (kept `flag`); regenerated `Full Database.xlsx` (36 columns, down from 38) and `data/database_summary.json`/`.js` (28 fields, down from 30).
+
+**Extensively tested with two independent 50-record live batches** against the real Composer API: 50 from the front of the array (`--force` limit) and 50 from the back (a manual bottom-slice test harness, since the front-only `LIMIT` argument doesn't support slicing from the tail). The second batch hit a real transient `429 Too Many Requests` mid-run, which was correctly classified `{"level": "retry", ...}` — a live test of the failure path, not just the success path. Post-test audit confirmed zero entries retain `script_errors`/`data_warnings`, and `flag.level` counts are internally consistent: 6,484 clean + 88 caution + 109 retry + 1,004 excluded = 7,685.
+
+Scrapped a second proposed change this session (replacing `last_semantic_update_at` with a stored `oos_days` day-count) per user decision — it would have traded the Filter Panel/Leaderboard's current live, always-accurate OOS-days computation for a value that goes stale between refreshes; not pursued.
+
+**Files changed:** `scripts/refresh_full_database.py`, `scripts/export_full_database_to_xlsx.py`, `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `data/Full Database.xlsx`, `docs/PRD.md`, `docs/PATCHNOTES.md`. **Deleted:** `scripts/add_flag_field.py`.
+
+---
+
+## [1.11.8] - 2026-07-08
+
+### Implemented: unified `flag` field on the full database, derived from `script_errors`/`data_warnings`
+
+Full database refresh (`scripts/refresh_full_database.py`) finished all 7,685 rows. Re-ran the `script_errors`/`data_warnings` audit against the complete dataset per the gate documented in V1.14 Part B: final counts are 1,113 `script_errors` (14.48%, up sharply from the 1.3% partial-sample figure — concentrated almost entirely in the second half of the run, largely `422`) and 88 `data_warnings` (1.15%).
+
+**Added `scripts/add_flag_field.py`**, a one-time migration that derives a single `flag` field per entry from the existing `script_errors`/`data_warnings` values: `{"level": "excluded" | "caution" | "retry", "reason": ...}` or `null`. Classification checks `data_warnings` first (caution) since a warning only ever occurs on a successful backtest; otherwise `script_errors` is bucketed `excluded` (404/422, permanent) or `retry` (429/500/503/timeout, transient). Final tally across all 7,685 entries: 1,004 excluded, 88 caution, 109 retry, 6,484 clean. Backfilled onto `data/database.json`/`data/database.js`; `script_errors`/`data_warnings` are left untouched as the underlying audit trail.
+
+**Updated and re-ran the downstream exports** to keep everything in sync: `scripts/export_full_database_to_xlsx.py` (added `flag` to the nested-object JSON-string serialization list, regenerated `data/Full Database.xlsx`) and `scripts/export_summary.py` (regenerated `data/database_summary.json`/`.js`; `flag` passes through automatically since it isn't in `DROPPED_FIELDS`).
+
+**Documented the new field** in the Full Database JSON Schema (`docs/PRD.md` Section 12) and updated V1.14 Part B's checklist to reflect the field now existing in the data — the UI work to actually read `flag.level` (⚠ badges in All Strategies, default exclusion in Leaderboard/Screener) is still not built. Also flagged an open item: the newly-excluded `422`/`404` rows haven't been spot-checked by hand yet, given how much higher the final error rate came in versus the partial-sample estimate.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `data/Full Database.xlsx`, `scripts/add_flag_field.py` (new), `scripts/export_full_database_to_xlsx.py`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.7] - 2026-07-08
+
+### Documented: `local-maestro` added to the V4.0 roadmap entry
+
+Reviewed `local-maestro` (`Gabraham4/local-maestro`), an offline, local recreation of MyMaestro.co for multi-strategy portfolio correlation and risk analysis (Returns/Correlations/Volatility/Exposure/Metrics tabs, CARP metric, Plotly.js reports), validated by its author at ~97–99.9% accuracy against the real MyMaestro.co. Folded it into the existing V4.0 roadmap section in `docs/PRD.md` as the fifth candidate fork, alongside the three signal-discovery Python tools and `quantstats-js`. Unlike those four (which analyze a single strategy), `local-maestro` answers a different question — how a set of strategies correlate/diversify each other as a portfolio — and shares `quantstats-js`'s core gap: it needs daily equity-curve series per strategy, which Atlas's `database.json` schema doesn't currently store. Its own `data_loader.py` already solves that data-loading problem for Composer backtest-cache JSON, so it's worth cross-referencing if that schema gap is ever addressed. No code was touched or repos cloned/executed this session — documentation only.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.6] - 2026-07-08
+
+### Documented: `quantstats-js` added to the V4.0 roadmap entry, plus an explicit adaptation-required note for all four tools
+
+Reviewed `quantstats-js` (`whsmacon/quantstats-js`), a zero-dependency JS/Node port of the Python `quantstats` portfolio-analytics library (40+ metrics, HTML tearsheet with 13+ SVG charts), and folded it into the existing V4.0 roadmap section in `docs/PRD.md` alongside the three previously-reviewed Python tools. Unlike those three, it's pure JavaScript and could in principle run client-side, which is more compatible with Atlas's static, no-backend architecture — but it's still authored against Node.js/npm conventions and a raw daily-returns data shape Atlas's `database.json` schema doesn't currently store, so it is not a drop-in either.
+
+Added an explicit **adaptation-required** callout to the V4.0 section that applies to all four candidate tools: each was built as an independent standalone project, and integrating any of them means rebuilding the integration surface against Atlas's actual data layer and static front-end structure, not just installing/cloning them. No code was touched or repos cloned/executed this session — documentation only.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.5] - 2026-07-08
+
+### Documented: V4.0 roadmap entry for signal-discovery/robustness tooling (extreme future state, no implementation)
+
+Reviewed three external repos (`composer_json_fuzz_tester`, `rsi_search`, `strategy_generation`, all `VoxMachina1`) as candidate forks while the full database refresh ran in the background. Added a new **V4.0: Signal Discovery & Robustness Tooling** section to `docs/PRD.md` (Section 14, after V3.0) documenting what each tool does, why it matters (turns Atlas from a strategy *catalog* into a robustness/discovery tool, and gives V2.2 Community Signals a technical engine), and the major architectural implications of ever integrating them — namely that all three are local Python CLI tools requiring their own Tiingo API key and real compute, which conflicts with Atlas's current fully-static, zero-server-cost architecture (Tenet 4). Explicitly marked as extreme future state per user direction: no forking, cloning, or implementation work was done this session, documentation only.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.4] - 2026-07-08
+
+### Planned: V1.14 Noise Filtering plan expanded with a data-quality (error/warning-based) filtering policy
+
+**Resumed the paused full-scale refresh.** `scripts/refresh_full_database.py` restarted against the 3,978 rows still due (3,707 already refreshed out of 7,685 total). Confirmed no new failure pattern emerged versus the pre-pause run, same 404/422/429/500/503/timeout mix.
+
+**Audited every `script_errors` and `data_warnings` value in the database** (partial refresh snapshot, 3,707/7,685 rows processed at audit time): 98 entries (1.3%) carry a `script_errors` value, 40 (0.5%) carry a `data_warnings` value. Breakdown: 42 `404 Not Found` + 45 `422 Unprocessable Entity` (87 total, 1.1% of the database) are permanent, dead symphonies or ones that can't be backtested; 12 are transient (`429`/`500`/`503`/timeout) and will clear on their own via the normal refresh retry cycle. All 40 `data_warnings` share one shape, `"Close price data is not available for TICKER after DATE"`, a mid-backtest delisting on a holding, not a fetch failure.
+
+**Decided and documented the V1.14 data-quality filtering policy** in `docs/PRD.md` (Section 14, V1.14 Part B): entries with a permanent 404/422 error get excluded from default Leaderboard/Screener views (flagged, not deleted); entries with a `data_warnings` value get excluded from default Leaderboard/Screener views too but stay visible in All Strategies with a ⚠ indicator, since the backtest itself succeeded, the metrics are just potentially skewed; entries with a transient 429/500/503/timeout error are left unflagged, since the ongoing refresh's staleness check will retry and clear them. Implementation is explicitly gated on V1.15 (Full-Scale Refresh) finishing first, since the error mix above is from a partial sample and may shift once every row has had a real API attempt.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.11.3] - 2026-07-07
+
+### Changed: Pushed the full-database code to GitHub (data withheld); fixed a data-loss race condition
+
+**Pushed to `main` (commit `88cf45e`), deliberately partial.** `database.html`, its CSS/JS, and the full-database scripts are now live on composeratlas.com via the "Database" nav link. `data/database.json`/`.js`, `data/database_summary.json`/`.js`, `data/storage.csv`, and `data/Full Database.xlsx` were intentionally left out (all still untracked in git), the live page will fail to fetch its data until those are pushed separately. This is accepted and expected, not a bug; `.github/workflows/deploy.yml` was not modified, since none of the withheld files were ever in its exclusion list to begin with.
+
+**Race condition found and fixed while syncing `storage.csv`.** Ran `scripts/sync_storage_to_database.py` to add 1,197 URLs from `storage.csv` into `database.json` (6,488 → 7,685 entries) while a `refresh_full_database.py` background run was still active. The sync appeared to succeed, but the still-running refresh script had loaded the file into memory *before* the sync and periodically overwrites the whole file with that stale in-memory copy on every checkpoint, silently reverting the sync a few checkpoints later. Caught via a routine entry-count check coming back wrong (6,488 instead of the expected 7,685). Recovered cleanly: stopped the running refresh, re-ran the sync (now nothing to overwrite it), regenerated `database_summary.json`, and restarted the refresh against the correct 7,685-entry file. No data was permanently lost, refresh progress up to that point was real and intact.
+
+**Operational rule added to both scripts' docstrings and `docs/PRD.md`:** never run another script that writes `database.json` while a refresh is running in the background, stop it first.
+
+**Background refresh paused (user request, logging out):** stopped cleanly at 3,706/7,685 entries refreshed. Verified `database.json` is valid and intact before stopping. Safe to resume any time.
+
+**Docs audit:** corrected several "not yet pushed to GitHub" / "stays local" statements across `docs/PRD.md` that were true when written but became stale the moment the code push above happened; updated strategy count (25 → 28) and added the Full Database section to `README.md`, which hadn't been touched all session.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`, `README.md`, `scripts/refresh_full_database.py`, `scripts/sync_storage_to_database.py`, `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`
+
+---
+
 ## [1.11.2] - 2026-07-07
 
 ### Added: Leaderboard score breakdown modal + Methodology button
@@ -430,6 +732,18 @@ Literal technical identifiers were intentionally left unchanged because they are
 No functional or routing behaviour changed, this is a presentation-only rename.
 
 **Files changed:** `index.html`, `about.html`, `glossary.html`, `strategies.html`, `404.html`, `js/app.js`, `css/main.css`, `data/glossary.js`, `data/glossary.json`, `scripts/add_glossary.py`, `scripts/add_zoop.py`, `README.md`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.5.8] - 2026-07-09
+
+### Docs — V2.3 RSI Signals Page added to roadmap
+
+Added a detailed implementation plan for the Live RSI Signals page as roadmap item V2.3 in `docs/PRD.md`. No code changes in this patch.
+
+**Plan covers:** purpose and context (Frontrunner signal universe), full ticker list (20 tickers), RSI formula spec (Wilder's 10-period smoothing), two data-source options (Python refresh script vs. live client-side fetch) with tradeoffs and a recommended starting approach, `data/rsi.json` schema, `scripts/refresh_rsi.py` responsibilities, `rsi.html` page design (table layout, default sort, color-coding thresholds for 5 signal levels), CSS additions, nav placement decision, complete file change list, and four open questions to resolve before implementation begins.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
 
 ---
 
