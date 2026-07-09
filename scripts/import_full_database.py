@@ -14,6 +14,14 @@ Usage:
 Re-running overwrites data/database.json from the current state of the
 xlsx. Run scripts/refresh_full_database.py afterward to pull fresh
 metrics from the Composer API.
+
+NOTE (v1.11.10): this script's column layout expects the *original*
+scrape-format xlsx (script_errors, no flag/data_warnings). It has not
+been updated to match the column layout scripts/export_full_database_
+to_xlsx.py now produces (which includes flag and no longer has
+script_errors/data_warnings). Not part of the live pipeline; do not
+run against a re-exported "Full Database.xlsx" without reconciling the
+column list first.
 """
 
 import json
@@ -44,7 +52,7 @@ FIELDS = [
     "trailing_three_month_return",
     "trailing_one_year_return",
     "backtest_days",
-    "last_updated",
+    "refresh_date",
     "script_errors",
 ]
 
@@ -69,7 +77,7 @@ EXTENDED_FIELDS = [
     "active_asset_nodes",
     "total_costs",
     "data_warnings",
-    "last_semantic_update_at",
+    "oos_date",
 ]
 
 
@@ -86,7 +94,7 @@ def main():
     entries = []
     for row in ws.iter_rows(min_row=2, values_only=True):
         (name, symphony_url, _sid, arr, max_dd, cum_ret, calmar, sharpe,
-         std_dev, mn, mean, median, mx, t1m, t3m, t1y, size, last_updated,
+         std_dev, mn, mean, median, mx, t1m, t3m, t1y, size, refresh_date,
          script_errors) = row
 
         entry = {
@@ -107,7 +115,7 @@ def main():
             "trailing_three_month_return": t3m,
             "trailing_one_year_return": t1y,
             "backtest_days": size,
-            "last_updated": last_updated.date().isoformat() if hasattr(last_updated, "date") else last_updated,
+            "refresh_date": refresh_date.date().isoformat() if hasattr(refresh_date, "date") else refresh_date,
             "script_errors": script_errors,
         }
         for field in EXTENDED_FIELDS:

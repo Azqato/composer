@@ -13,8 +13,11 @@ layout. Any manual edits made directly in the spreadsheet will be lost;
 the JSON is the source of truth, not the other way around.
 
 Fields holding nested objects (last_market_days_holdings,
-active_asset_nodes, data_warnings) are serialized to a compact JSON
-string per cell, since spreadsheet cells can't hold nested structures.
+active_asset_nodes) are serialized to a compact JSON string per cell,
+since spreadsheet cells can't hold nested structures. `error` is mixed
+type (a plain string for script errors, or an object for Composer's
+data_warnings on a "caution"-flagged row) and is only JSON-serialized
+when its value is actually a dict/list.
 
 Usage:
     python scripts/export_full_database_to_xlsx.py
@@ -30,7 +33,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 JSON_PATH = BASE_DIR / "data" / "database.json"
 XLSX_PATH = BASE_DIR / "data" / "Full Database.xlsx"
 
-JSON_FIELDS = {"last_market_days_holdings", "active_asset_nodes", "data_warnings"}
+JSON_FIELDS = {"last_market_days_holdings", "active_asset_nodes"}
 
 
 def main():
@@ -52,7 +55,9 @@ def main():
             val = entry.get(key)
             if key in JSON_FIELDS and val is not None:
                 val = json.dumps(val, ensure_ascii=False)
-            elif key == "last_updated" and val:
+            elif key == "error" and isinstance(val, (dict, list)):
+                val = json.dumps(val, ensure_ascii=False)
+            elif key == "refresh_date" and val:
                 val = date.fromisoformat(val)
             row.append(val)
         ws.append(row)

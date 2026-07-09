@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.11.23
+**Version:** 1.12.0
 **Status:** Active
 **Last Updated:** 2026-07-08
 
@@ -139,36 +139,38 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 **Deploy**
 - GitHub Actions auto-deploy on push to `main`; rsync excludes internal docs and large files
 
-### In Progress: Full Database Initiative (Code Live, Data Not Yet Pushed)
+### Shipped: Full Database Initiative (v1.12.0)
 
 Separate from the 28 curated strategies, `data/database.json` holds the full raw
-symphony database (7,685 entries as of v1.11.3: the original 6,488-row scrape plus
-1,197 more synced in from `data/storage.csv`) originally seeded by an external Google
-Apps Script scrape. ~3,700+ entries have usable backtest metrics as the background
-refresh continues; the rest are due for a real API call. The goal was to recreate
-that refresh pipeline on composeratlas.com itself against the real Composer API, then
-build a Leaderboard and Screener on top of the full database, all of which is now
-built (V1.9-V1.13, V1.16).
+symphony database, originally seeded by an external Google Apps Script scrape (the
+original 6,488-row scrape plus rows synced in from `data/storage.csv` over time).
+The goal was to recreate that refresh pipeline on composeratlas.com itself against
+the real Composer API, filter out non-strategy noise and duplicates, and build a
+Leaderboard and Screener on top of the full database — all of which is now built,
+refreshed, cleaned, and live.
 
-**Current deploy state (v1.11.2):** the code (`database.html`, its CSS/JS, the
-full-database scripts) is live on `main`/composeratlas.com. The data files
-(`data/database.json`/`.js`, `data/database_summary.json`/`.js`, `data/storage.csv`,
-`data/Full Database.xlsx`) are deliberately **not** committed yet, so the live page
-will 404 trying to fetch its data. This is an accepted, intentional interim state,
-not a bug, see Section 14 Roadmap (V1.9's correction note) for the exact reasoning.
+**Went fully live v1.12.0:** the code (`database.html`, its CSS/JS, the full-database
+scripts) had been live on `main`/composeratlas.com since v1.11.2, but the data files
+were deliberately withheld until the full refresh and V1.14 noise-filtering pass
+completed (see Section 14 Roadmap, V1.9's correction note, for the original
+reasoning). As of v1.12.0, `data/database.json`/`.js`, `data/database_summary.json`/
+`.js`, and `data/storage.csv` are committed and live. Final numbers at go-live:
+**6,640 total entries** — 6,221 clean, 229 flagged `duplicate`, 88 `excluded`
+(permanent API failures + name-pattern noise), 88 `caution` (Composer data warnings),
+14 `retry` (transient, self-clearing).
 
 - [x] `data/database.json` imported from the raw xlsx as the canonical JSON source (v1.9.0)
 - [x] `scripts/import_full_database.py`: one-time, re-runnable xlsx → JSON importer (v1.9.0)
-- [x] `scripts/refresh_full_database.py`: resumable, checkpointed API refresh script, mirrors `update_metrics.py` conventions (v1.9.0)
-- [x] `database.html` template: tabbed page (All Strategies / Leaderboard / Screener); only All Strategies is implemented, the other two render a "Coming Soon" state (v1.9.0)
+- [x] `scripts/refresh_full_database.py`: resumable, checkpointed API refresh script, mirrors `update_metrics.py` conventions (v1.9.0); automated weekly via `.github/workflows/refresh-full-database.yml` as of v1.12.0
+- [x] `database.html` template: tabbed page (All Strategies / Leaderboard / Screener) (v1.9.0)
 - [x] Target schema expansion: 17 new fields locked and captured (v1.9.1)
-- [x] Filter panel (shared component, All Strategies first) (v1.10.x)
-- [x] Screener tab (reuses the filter panel), full multi-view column switcher (v1.10.x)
-- [x] Leaderboard tab, 20-metric/1,000-point scoring model (v1.10.x)
+- [x] Filter panel (shared component for All Strategies; Screener has its own separate always-visible bucketed filter grid as of v1.11.15) (v1.10.x-v1.11.15)
+- [x] Screener tab, full multi-view column switcher (v1.10.x, redesigned v1.11.15)
+- [x] Leaderboard tab, 20-metric/1,000-point scoring model (v1.10.x) — flagged for a scoring revision, see V1.17 Roadmap
 - [x] Performance Fix: columnar + float-rounded summary JSON, ~80% size reduction (v1.10.x)
-- [ ] Noise filtering (test ports, "Invest Copy" duplicates, WIP builds) before any full-database view is public; Leaderboard/Screener/Filter Panel all ship without it for now, an accepted known gap
-- [ ] Full-scale metric refresh: resumed (v1.11.4), was paused at 3,706/7,685, now running against the remaining rows
-- [ ] Push the data files (`database.json`/`.js`, `database_summary.json`/`.js`, `storage.csv`) once ready; the code has been live without them since v1.11.2
+- [x] Noise filtering (test ports, "Invest Copy"/duplicate clusters, WIP builds): implemented and run (V1.14, v1.11.22-23) — permanent API failures and name-pattern noise flagged `excluded`, near-identical duplicates flagged `duplicate` via logic-tree structural comparison, all filterable via the Working/Broken/Duplicates/All toggle
+- [x] Full-scale metric refresh: complete, all entries refreshed at least once; ongoing via the weekly automated workflow above
+- [x] Data files pushed live (v1.12.0)
 
 ### Future Backlog (Post-MVP)
 
@@ -622,6 +624,28 @@ git push origin main
 
 ---
 
+### Updating the Full Database (Script, Automated)
+
+`.github/workflows/refresh-full-database.yml` (added v1.12.0) runs `scripts/refresh_full_database.py` automatically every **Sunday at 01:07 UTC** and commits any changes, plus regenerates and commits `data/database_summary.json`/`.js` (via `scripts/export_summary.py`) so the live site's actual data source stays in sync. No manual action required for routine refreshes.
+
+**This is a meaningfully heavier job than `update-metrics.yml`'s daily run.** `STALE_AFTER_DAYS` (7) matches this workflow's weekly cadence exactly, so essentially the entire ~6,600-row full database is "due" on every run, not just a handful of stragglers — at the proven-safe 2-second-per-call throttle (Section 13, Rate Limits), that's roughly 4.5–5 hours, close to GitHub's 6-hour job ceiling. The workflow's refresh step has its own 340-minute timeout with `continue-on-error: true`, and the summary-regeneration/commit steps run with `if: always()`, so if a run gets cut short, whatever `refresh_full_database.py` already checkpointed to disk (every 10 rows, per its own docstring) still gets committed rather than lost — the next Sunday's run picks up whatever's still stale via the normal staleness check. GitHub Actions minutes are unmetered for public repositories on GitHub-hosted runners, so the long weekly runtime has no cost implication.
+
+`Full Database.xlsx` is deliberately **not** regenerated/committed by this workflow — it's documented as a local-only, occasional-use review artifact (see `scripts/export_full_database_to_xlsx.py`'s docstring), not part of the site's data pipeline, and not worth the binary-diff churn in git history on a weekly cadence. Regenerate it manually when wanted.
+
+To force an immediate full-database refresh, either trigger the workflow manually (GitHub → Actions → "Refresh Full Database" → Run workflow) or run locally:
+
+```bash
+python scripts/refresh_full_database.py
+python scripts/export_summary.py
+git add data/database.json data/database.js data/database_summary.json data/database_summary.js
+git commit -m "data: refresh full database - YYYY-MM-DD"
+git push origin main
+```
+
+**Reminder — scope boundary:** this workflow runs `refresh_full_database.py` only. `scripts/flag_name_noise.py` and `scripts/dedupe_symphonies.py` (V1.14 Part A) remain manual-only and must never be added here or to any other scheduled/CI job — see "Name-Based Noise & De-Duplication" above for why.
+
+---
+
 ### Updating Metrics (Manual: Single Strategy)
 
 1. Open `data/strategies.json` and `data/strategies.js`. Locate the entry by `slug`.
@@ -717,7 +741,7 @@ python scripts/dedupe_symphonies.py 20  # optional LIMIT arg, for a small test r
 
 Running `flag_name_noise.py` first matters: it removes `TESTPORT #`-prefixed rows from the dedup candidate pool entirely, so one can never win the `symphony_id` tiebreak and become the sole surviving "keeper" of a real strategy family. This is a sequencing choice, not special-case logic inside the dedup script itself.
 
-**MANUAL-ONLY, do not automate.** `dedupe_symphonies.py` makes roughly one live API call per candidate row (hundreds per run) against Composer's unauthenticated API, and a full pass can take 20–30+ minutes. Neither script is wired into GitHub Actions, and neither should be — the deploy workflow already excludes `scripts/` entirely, and `update-metrics.yml` only ever runs `update_metrics.py` (the curated 25 strategies, a separate, lighter pipeline). Running this unattended on a schedule risks hammering Composer's API far more often than a human would choose to, with no one watching for rate-limit or correctness problems. Every full-database maintenance script in `scripts/` follows this same manual-only rule, not just these two.
+**MANUAL-ONLY, do not automate.** `dedupe_symphonies.py` makes roughly one live API call per candidate row (hundreds per run) against Composer's unauthenticated API, and a full pass can take 20–30+ minutes. Neither script is wired into GitHub Actions, and neither should be — the deploy workflow excludes `scripts/` entirely, `update-metrics.yml` only ever runs `update_metrics.py` (the curated 25 strategies), and `refresh-full-database.yml` (added v1.12.0, see "Updating the Full Database" above) only ever runs `refresh_full_database.py`. Running this unattended on a schedule risks hammering Composer's API far more often than a human would choose to, with no one watching for rate-limit or correctness problems. Every full-database maintenance script in `scripts/` follows this same manual-only rule except `refresh_full_database.py`, which was deliberately opted into weekly automation as a distinct decision.
 
 ---
 
@@ -1621,15 +1645,23 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 - [x] Verified end to end: page loads, data renders, size reduction measured and confirmed (see above)
 - [ ] Re-measure actual Lighthouse/LCP numbers once the page is live (not yet possible pre-deploy)
 
+### V1.17: Leaderboard Scoring Revision
+
+**Status:** Backlog — user feedback (2026-07-08): current scoring "isn't as good as I would like it to be." Not yet scoped; no specifics on what's wrong or what a better model looks like.
+
+- [ ] Get concrete feedback on what's underperforming in the current model (Section 14 V1.13: 20 metrics, 7 categories, 1,000 points, percentile-rank + clamp curve, rank-based S/A/B/C/F tiers) — which tier placements feel wrong, which metrics feel over/under-weighted, or is it the mechanism itself (percentile ranking, the clamp curve, category weights)?
+- [ ] Decide whether this is a weighting/tuning pass on the existing model or a more fundamental rework
+- [ ] Re-verify against the now-complete, deduplicated dataset (V1.14 excludes noise/duplicates from the eligible pool as of v1.11.22/23 — the original model was tuned before that exclusion existed)
+
 ### V2.0: Full Database Goes Public
 
-**Status:** Planned; partially and deliberately ahead of schedule (see V1.9's correction above), code is live, data is not
+**Status:** Complete (v1.12.0)
 
-**What actually happened, corrected from the original plan:** the original plan was one clean push once every gate was cleared. Instead, the code (`database.html` and its supporting CSS/JS/scripts) was pushed to `main` on v1.11.2 while the data files were deliberately held back. `database.html` is live right now and will fail to load data until a separate push adds `data/database.json`/`.js`, `data/database_summary.json`/`.js`, and `data/storage.csv`. `deploy.yml`'s rsync exclusion list was **not** changed, since none of those data files are committed yet, there's nothing for it to need to exclude or include.
+**What actually happened, corrected from the original plan:** the original plan was one clean push once every gate was cleared. Instead, the code (`database.html` and its supporting CSS/JS/scripts) was pushed to `main` on v1.11.2 while the data files were deliberately held back until the full refresh and V1.14 noise-filtering pass completed. The data files went live on v1.12.0. `deploy.yml`'s rsync exclusion list was left unchanged — it already didn't touch the `database.json` family, and `Full Database.xlsx` (a local-only review artifact, not fetched by the live site) was never included in the exclusion list either since nothing needed excluding.
 
-- [ ] Full docs and content audit of `database.html`, Leaderboard, and Screener (same bar as any other public page: em-dash check, accuracy check, mobile responsiveness)
-- [ ] Push the data files (`database.json`/`.js`, `database_summary.json`/`.js`, `storage.csv`) once they're ready; decide then whether `deploy.yml`'s exclusion list needs any changes (currently it excludes `strategies.xlsx`, not `Full Database.xlsx`, and doesn't need to touch the `database.json` family since they were never excluded to begin with)
-- [ ] Update Section 6 Feature List: move "Full Database Initiative" from "In Progress" to "Shipped"
+- [x] Full docs and content audit of `database.html`, Leaderboard, and Screener (v1.12.0): no em-dashes found; copy reviewed and accurate. Mobile responsiveness audit **found and fixed two real, pre-existing sitewide CSS bugs**, not specific to this page: (1) `.nav-cta` (the "Open Composer" button) had the same specificity as `.btn`'s `display: inline-flex` and lost the cascade regardless of source order — meaning the button never actually hid on mobile anywhere on the site; fixed by reordering `.nav-cta`'s rule after `.btn`'s. (2) `.db-tabs` (used for the page-level tabs, Screener's view switcher, and the new flag-mode toggle) had no `overflow-x`, so on narrow viewports its content silently forced the whole page to scroll horizontally instead of scrolling internally; fixed with `overflow-x: auto`. Also fixed a `database.html`-specific instance of the same root problem: `.page` (a `flex: 1` child of `body { display: flex }`) had no `min-width: 0`, so its widest descendant (the data table) could force the whole page wider than the viewport instead of letting `.db-table-wrap`'s own `overflow-x: auto` contain it. Verified via headless-Chrome screenshots at a 390px mobile viewport before and after each fix.
+- [x] Pushed the data files (`database.json`/`.js`, `database_summary.json`/`.js`, `storage.csv`) live (v1.12.0)
+- [x] Update Section 6 Feature List: moved "Full Database Initiative" from "In Progress" to "Shipped" (v1.12.0)
 
 ### V2.1: Scale + Discovery (Curated Library)
 

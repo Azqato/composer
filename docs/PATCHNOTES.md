@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.12.0] - 2026-07-08
+
+### V2.0: Full Database goes live
+
+`data/database.json`/`.js`, `data/database_summary.json`/`.js`, and `data/storage.csv` are committed and public for the first time — the code has been live on `database.html` since v1.11.2, but the data files were deliberately withheld until the full refresh and V1.14 noise-filtering pass completed. Final numbers at go-live: 6,640 total entries — 6,221 clean, 229 `duplicate`, 88 `excluded`, 88 `caution`, 14 `retry`.
+
+**Pre-launch mobile audit found and fixed two real, pre-existing sitewide CSS bugs**, not specific to this page or introduced this session: (1) `.nav-cta` (the "Open Composer" nav button) had equal CSS specificity to `.btn`'s `display: inline-flex` and lost the cascade regardless of viewport — the button never actually hid on mobile, anywhere on the site. Fixed by reordering `.nav-cta`'s rule after `.btn`'s. (2) `.db-tabs` (page tabs, Screener's view switcher, the flag-mode toggle) had no `overflow-x`, so on narrow viewports its content forced the whole page to scroll horizontally instead of scrolling internally. Fixed with `overflow-x: auto`. Also fixed a `database.html`-specific version of the same underlying problem: `.page` (a `flex: 1` child of `body { display: flex }`) had no `min-width: 0`, letting its widest descendant (the data table) force the whole page wider than the viewport instead of `.db-table-wrap`'s own `overflow-x: auto` containing it. Verified via headless-Chrome screenshots at a 390px mobile viewport before and after each fix — first attempt at verification gave false readings due to a mistake in the CDP test harness (`mobile: true` in `Emulation.setDeviceMetricsOverride` was reporting an incorrect `window.innerWidth`), caught and corrected before trusting the results.
+
+**Added `.github/workflows/refresh-full-database.yml`**: automates `scripts/refresh_full_database.py` weekly (Sunday 01:07 UTC), plus regenerates `database_summary.json`/`.js` so the live site's actual data source stays in sync. `STALE_AFTER_DAYS` (7) matches this weekly cadence exactly, so essentially the entire database is "due" every run (~4.5-5 hours at the proven-safe throttle) — unlike `update-metrics.yml`'s near-no-op daily runs over 25 strategies. Designed around a mid-run timeout: the refresh step has its own 340-minute cap with `continue-on-error: true`, and the summary-regen/commit steps run with `if: always()`, so a cut-short run still commits whatever was checkpointed rather than losing it. Confirmed with the user this is scoped to `refresh_full_database.py` only — `flag_name_noise.py`/`dedupe_symphonies.py` remain explicitly manual-only, not wired into this or any workflow.
+
+**Updated `README.md`** and Section 6's Feature List (`docs/PRD.md`) to describe the Full Database section as live rather than "in progress, not fully public."
+
+**Files changed:** `data/database.json` (new), `data/database.js` (new), `data/database_summary.json` (new), `data/database_summary.js` (new), `data/storage.csv` (new), `data/Full Database.xlsx` (new), `.github/workflows/refresh-full-database.yml` (new), `css/main.css`, `README.md`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.11.23] - 2026-07-08
 
 ### V1.14 complete: dedup pipeline finished its full run

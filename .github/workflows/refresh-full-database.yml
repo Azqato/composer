@@ -1,0 +1,65 @@
+name: Refresh Full Database
+
+on:
+  schedule:
+    # 01:07 UTC Sunday (~6:07pm PDT / 9:07pm EDT Saturday). Offset 7 minutes
+    # past the hour to avoid GitHub's on-the-hour scheduling congestion.
+    #
+    # NOTE: STALE_AFTER_DAYS in refresh_full_database.py is 7, matching this
+    # weekly cadence exactly - unlike update-metrics.yml's daily run (a
+    # near-no-op most days over 25 strategies), essentially the entire
+    # ~6,600-row full database is "due" on every run of this workflow.
+    # At the proven-safe 2-second-per-call throttle that is ~4.5-5 hours,
+    # close to GitHub's 6-hour job ceiling. See the timeout/continue-on-error
+    # handling below: this is deliberate, not an oversight.
+    - cron: '7 1 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-full-database:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # timeout-minutes here is a per-step cap, not the whole job - if the
+      # refresh runs long and gets cancelled, continue-on-error lets the job
+      # proceed to the steps below instead of stopping dead, so whatever
+      # progress refresh_full_database.py already checkpointed to disk
+      # (every 10 rows) still gets committed rather than lost when the
+      # ephemeral runner is torn down. Next Sunday's run picks up the rest
+      # via the normal staleness check - this script was designed to be
+      # safely interrupted and resumed, see its own docstring.
+      - name: Run refresh_full_database.py
+        timeout-minutes: 340
+        continue-on-error: true
+        run: python scripts/refresh_full_database.py
+
+      # The live site fetches database_summary.json, not database.json
+      # directly - this step must run even if the refresh above was cut
+      # short, or the summary silently falls out of sync with whatever
+      # partial progress just got made.
+      - name: Regenerate database_summary.json/.js
+        if: always()
+        run: python scripts/export_summary.py
+
+      - name: Commit and push changes
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/database.json data/database.js data/database_summary.json data/database_summary.js
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: weekly full database refresh"
+            git push
+          fi

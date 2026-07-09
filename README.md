@@ -1,6 +1,8 @@
 # Composer Atlas
 
-A curated strategy library and educational reference for Composer.trade users. Covers 25 symphonies with plain-English logic breakdowns, backtested metrics, and a concept glossary.
+A curated strategy library and educational reference for Composer.trade users. Covers 28 symphonies with plain-English logic breakdowns, backtested metrics, and a concept glossary.
+
+**Full Database (live):** `database.html` is a separate section covering the full community symphony database (thousands of entries, not just the 28 curated strategies), with an All Strategies table, a Screener with switchable metric views and a bucketed filter grid, and a Leaderboard with a 20-metric percentile-rank scoring model. Non-strategy noise and near-identical duplicates are flagged and filterable. Still a work in progress in the sense that the Leaderboard scoring model is due for a revision. See `docs/PRD.md` Section 14 (Roadmap) for the full status.
 
 ## Live Site
 
@@ -55,9 +57,9 @@ None. The Composer API endpoints used by `scripts/update_metrics.py` require no 
 
 Fetches fresh data from the Composer API and rewrites three files:
 
-- `data/strategies.json`: backtest metrics for all 25 strategies (ARR, max drawdown, Sharpe, Calmar, standard deviation, trailing returns, backtest days)
+- `data/strategies.json`: backtest metrics for all 28 strategies (ARR, max drawdown, Sharpe, Calmar, standard deviation, trailing returns, backtest days)
 - `data/strategies.js`: same data assigned to `window.STRATEGIES_DATA`
-- `data/symphony_scores.json`: full IF/ELSE logic trees for all 25 symphonies (for AI analysis only; not served publicly)
+- `data/symphony_scores.json`: full IF/ELSE logic trees for all 28 symphonies (for AI analysis only; not served publicly)
 
 ```bash
 python scripts/update_metrics.py
@@ -72,6 +74,23 @@ git add data/strategies.json data/strategies.js data/symphony_scores.json
 git commit -m "data: refresh metrics and symphony scores - YYYY-MM-DD"
 git push origin main
 ```
+
+### Full Database scripts (`database.html`)
+
+Separate pipeline for the full community symphony database, not the curated 28. See `docs/PRD.md` Section 10 for the full directory listing and Section 14 for status. `refresh_full_database.py` runs automatically every Sunday via `.github/workflows/refresh-full-database.yml`; everything else in this table is manual-only by design, see each script's docstring.
+
+| Script | Purpose |
+|---|---|
+| `import_full_database.py` | One-time: imports the raw source spreadsheet into `data/database.json` |
+| `refresh_full_database.py` | Resumable, checkpointed API refresh; automated weekly. **Do not run other scripts that write `database.json` while this is running**, see the script's docstring |
+| `sync_storage_to_database.py` | Adds any URL in `data/storage.csv` missing from `database.json` as a new unrefreshed row |
+| `export_summary.py` | Derives the slim `data/database_summary.json`/`.js` used by the site from the full `database.json`; run after every refresh |
+| `export_full_database_to_xlsx.py` | Local-only, occasional: regenerates a spreadsheet snapshot from the JSON |
+| `flag_name_noise.py` | Flags non-strategy noise (test ports, WIP builds) by name pattern; manual-only |
+| `dedupe_symphonies.py` | Flags near-identical duplicate symphonies via logic-tree comparison; manual-only, makes hundreds of live API calls per run |
+| `purge_flagged_entries.py` | Removes entries by `flag` level from `database.json`, enforcing a `storage.csv` safety check first |
+
+`database.json`, `database_summary.json`, and `storage.csv` are committed and live as of v1.12.0.
 
 ## Build and Deploy
 

@@ -18,9 +18,10 @@
       <div style="max-width:600px;margin-bottom:32px">
         <h1 style="color:var(--color-primary);margin-bottom:8px">Database</h1>
         <p style="color:var(--color-secondary);font-size:1.0625rem">
-          A community-sourced database of thousands of Composer.trade symphonies,
-          gathered from many locations, not just the 25 curated strategies. This
-          section is a work in progress.
+          A community-sourced database of thousands of Composer.trade symphonies, not just the 25 curated strategies.
+        </p>
+        <p style="color:var(--color-secondary);font-size:1.0625rem">
+          This section is a work in progress.
         </p>
       </div>
 
@@ -140,22 +141,53 @@
     // ---- All Strategies tab: sortable, paginated data table ----
     const PAGE_SIZE = 42;
     let dbEntries = [];        // every loaded entry, unfiltered
-    let filteredEntries = [];  // dbEntries after the active Filter Panel filters
+    let filteredEntries = [];  // dbEntries after flag mode + the active Filter Panel filters
     let currentPage = 1;
     let sortField = null;
     let sortDir = 'desc'; // 'asc' | 'desc'
+    let allFlagMode = 'default';
 
-    // ---- Shared Filter Panel component (V1.11) ----
-    // Reused by both the All Strategies tab and the Screener tab (V1.12); each
-    // tab gets its own createFilterController() instance (independent filter
-    // state), but both share this same field list and matching logic.
+    // ---- Filter Panel component (V1.11) ----
+    // Used by the All Strategies tab: hidden-by-default, specific-value
+    // field/operator/value filter builder. The Screener tab (V1.12) uses a
+    // separate always-visible bucketed filter grid instead (see below),
+    // per user decision - the two tabs intentionally have different filter
+    // UIs, not a shared component.
     function oosDaysValue(e) {
-      const ts = e.last_semantic_update_at;
+      const ts = e.oos_date;
       if (!ts) return null;
       const clean = ts.split('[')[0];
       const d = new Date(clean);
       if (isNaN(d.getTime())) return null;
       return Math.floor((Date.now() - d.getTime()) / 86400000);
+    }
+
+    // ---- Flag-based noise filtering (V1.14 Part B) ----
+    // "excluded" (permanent 404/422 failures) and "caution" (Composer-flagged
+    // data_warnings) are data-quality noise ("Broken"). "duplicate" (V1.14
+    // Part A, placeholder - no row has this flag yet, the dedup pipeline
+    // that would set it hasn't been built) is a separate kind of noise
+    // ("Duplicates") - redundant with another row, not a data problem.
+    // "retry" (transient 429/500/503/timeout) is neither; those rows behave
+    // like any other row until the next refresh clears them naturally.
+    function isBrokenFlag(e) { return e.flag === 'caution' || e.flag === 'excluded'; }
+    function isDuplicateFlag(e) { return e.flag === 'duplicate'; }
+    function isNoiseFlag(e) { return isBrokenFlag(e) || isDuplicateFlag(e); }
+
+    const FLAG_MODES = ['default', 'flagged', 'duplicates', 'all'];
+    const FLAG_MODE_LABELS = { default: 'Working', flagged: 'Broken', duplicates: 'Duplicates', all: 'All' };
+
+    function applyFlagMode(entries, mode) {
+      if (mode === 'all') return entries;
+      if (mode === 'flagged') return entries.filter(isBrokenFlag);
+      if (mode === 'duplicates') return entries.filter(isDuplicateFlag);
+      return entries.filter(e => !isNoiseFlag(e)); // 'default' / Working: excludes Broken + Duplicates
+    }
+
+    function flagToggleHtml(mode, idPrefix) {
+      return FLAG_MODES.map(m =>
+        `<button class="db-tab${m === mode ? ' active' : ''}" data-flagmode="${m}" id="${idPrefix}-${m}" style="font-size:0.8125rem;padding:8px 14px">${FLAG_MODE_LABELS[m]}</button>`
+      ).join('');
     }
 
     const FILTER_FIELDS = [
@@ -334,11 +366,15 @@
       };
     }
 
+    function recomputeAllEntries() {
+      filteredEntries = applyFlagMode(dbEntries, allFlagMode).filter(allFilterController.filterFn);
+    }
+
     const allFilterController = createFilterController({
       panelId: 'filter-panel-all',
       buttonId: 'filter-btn-all',
       onApply: () => {
-        filteredEntries = dbEntries.filter(allFilterController.filterFn);
+        recomputeAllEntries();
         applySort();
         currentPage = 1;
         renderTablePage();
@@ -356,10 +392,9 @@
       { key: 'sortino_ratio', label: 'Sortino', fmt: formatRatio, colored: true },
       { key: 'win_rate', label: 'Win Rate', fmt: formatPct, colored: false },
       { key: 'backtest_days', label: 'Backtest', fmt: (n) => `~${Math.round(n / 252)} years`, colored: false },
-      { key: 'last_updated', label: 'Last Updated', fmt: (d) => formatDate(d), colored: false, isDate: true },
-      // OOS (days since last logic edit) intentionally not displayed here; kept
-      // in the underlying data for use as a filter/scoring input (V1.11/V1.13),
-      // not as an All Strategies column.
+      { key: 'oos_date', label: 'OOS', colored: false, isDuration: true },
+      // refresh_date (when we last hit the API) intentionally not shown to
+      // users - no reason to advertise how stale a row's data might be.
     ];
 
     function formatMetric(n, fmt) {
@@ -440,7 +475,7 @@
             : formatMetric(val, col.fmt);
           return `<td class="${cls}">${display}</td>`;
         }).join('');
-        const warning = e.data_warnings
+        const warning = e.flag === 'caution'
           ? `<td><span class="db-warning" title="Composer flagged this backtest's data as potentially unreliable">&#9888;</span></td>`
           : '<td></td>';
         return `<tr>${cells}${warning}</tr>`;
@@ -454,11 +489,13 @@
           <div>
             <h2>All Strategies</h2>
             <span class="db-count-pill">${filteredEntries.length.toLocaleString()} results</span>
-            <button class="btn btn-outline btn-sm" id="filter-btn-all" style="margin-left:8px">
-              <span aria-hidden="true">&#9776;</span> ${filterLabel}
-            </button>
           </div>
-          <span class="text-secondary" style="font-size:0.8125rem">${filteredEntries.filter(e => typeof e.sharpe_ratio === 'number').length.toLocaleString()} with usable metrics</span>
+          <button class="btn btn-outline btn-sm" id="filter-btn-all">
+            <span aria-hidden="true">&#9776;</span> ${filterLabel}
+          </button>
+        </div>
+        <div class="db-tabs" role="tablist" aria-label="Flagged rows" style="margin-bottom:16px;border-bottom:none">
+          ${flagToggleHtml(allFlagMode, 'flagmode-all')}
         </div>
         <div id="filter-panel-all" class="filter-panel" hidden></div>
         <div class="db-table-wrap">
@@ -496,12 +533,135 @@
         });
       });
 
+      document.querySelectorAll('#content [data-flagmode]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          allFlagMode = btn.dataset.flagmode;
+          recomputeAllEntries();
+          applySort();
+          currentPage = 1;
+          renderTablePage();
+        });
+      });
+
       allFilterController.rewire();
     }
 
-    // ---- Screener tab (V1.12): reuses the Filter Panel (V1.11), adds a
-    // Finviz-style multi-view column switcher on top of the same .db-table
-    // rendering pattern used by All Strategies. ----
+    // ---- Screener tab (V1.12): Finviz-style always-visible bucketed filter
+    // grid, distinct from All Strategies' hidden specific-value Filter Panel
+    // (V1.11). Every bucket's thresholds are computed live from the actual
+    // loaded dataset's percentiles (buildBucketOptions(), called once after
+    // dbEntries loads) rather than hardcoded, so they stay meaningful as the
+    // database grows/changes instead of going stale like fixed numbers would.
+    function fmtBucketValue(v, fmt) {
+      if (fmt === 'pct') return `${(v * 100).toFixed(Math.abs(v) < 0.1 ? 1 : 0)}%`;
+      if (fmt === 'pct2') return `${(v * 100).toFixed(2)}%`;
+      if (fmt === 'ratio') return `${Math.round(v * 100) / 100}`;
+      if (fmt === 'duration') {
+        if (v < 60) return `${Math.round(v)}d`;
+        if (v < 365) return `${Math.round(v / 30)} months`;
+        const years = v / 365;
+        return `${years >= 10 ? Math.round(years) : Math.round(years * 10) / 10} years`;
+      }
+      return String(v);
+    }
+
+    // direction: which side of the threshold is "better" (higher ARR is
+    // good; lower Std Deviation is good; max_drawdown's "higher" is really
+    // "closer to zero", handled naturally since -0.1 > -0.3 numerically).
+    const BUCKET_FIELDS = [
+      { key: 'annualized_rate_of_return', label: 'ARR', direction: 'higher', fmt: 'pct' },
+      { key: 'trailing_one_year_return', label: '1Y Return', direction: 'higher', fmt: 'pct' },
+      { key: 'trailing_three_month_return', label: '3M Return', direction: 'higher', fmt: 'pct' },
+      { key: 'trailing_one_month_return', label: '1M Return', direction: 'higher', fmt: 'pct' },
+      { key: 'trailing_two_week_return', label: '2W Return', direction: 'higher', fmt: 'pct' },
+      { key: 'max_drawdown', label: 'Max Drawdown', direction: 'higher', fmt: 'pct', verb: 'Better than' },
+      { key: 'standard_deviation', label: 'Std Deviation', direction: 'lower', fmt: 'pct' },
+      { key: 'sharpe_ratio', label: 'Sharpe Ratio', direction: 'higher', fmt: 'ratio' },
+      { key: 'calmar_ratio', label: 'Calmar Ratio', direction: 'higher', fmt: 'ratio' },
+      { key: 'sortino_ratio', label: 'Sortino Ratio', direction: 'higher', fmt: 'ratio' },
+      { key: 'win_rate', label: 'Win Rate', direction: 'higher', fmt: 'pct' },
+      { key: 'median', label: 'Median Return', direction: 'higher', fmt: 'pct2' },
+      { key: 'skewness', label: 'Skewness', direction: 'higher', fmt: 'ratio' },
+      { key: 'kurtosis', label: 'Kurtosis', direction: 'lower', fmt: 'ratio' },
+      { key: 'tail_ratio', label: 'Tail Ratio', direction: 'higher', fmt: 'ratio' },
+      { key: 'top_one_day_contribution', label: 'Top 1-Day %', direction: 'lower', fmt: 'pct' },
+      { key: 'top_five_percent_day_contribution', label: 'Top 5% %', direction: 'lower', fmt: 'pct' },
+      { key: 'top_ten_percent_day_contribution', label: 'Top 10% %', direction: 'lower', fmt: 'pct' },
+      { key: 'backtest_days', label: 'Backtest', direction: 'higher', fmt: 'duration' },
+      { key: 'oos_date', label: 'OOS Date', direction: 'higher', fmt: 'duration', derived: oosDaysValue },
+    ];
+
+    let BUCKET_OPTIONS = {}; // key -> [{ label, min, max }, ...], first is always "Any"
+
+    function buildBucketOptions() {
+      BUCKET_OPTIONS = {};
+      BUCKET_FIELDS.forEach(f => {
+        const getter = f.derived || (e => e[f.key]);
+        const vals = dbEntries.map(getter).filter(v => typeof v === 'number').sort((a, b) => a - b);
+        const n = vals.length;
+        const opts = [{ label: 'Any', min: null, max: null }];
+        if (n) {
+          const at = p => vals[Math.min(n - 1, Math.max(0, Math.floor(p * n)))];
+          const verb = f.verb || (f.direction === 'higher' ? 'Over' : 'Under');
+          if (f.direction === 'higher') {
+            [0.25, 0.50, 0.75, 0.90].forEach(p => {
+              const t = at(p);
+              opts.push({ label: `${verb} ${fmtBucketValue(t, f.fmt)}`, min: t, max: null });
+            });
+          } else {
+            [0.75, 0.50, 0.25].forEach(p => {
+              const t = at(p);
+              opts.push({ label: `${verb} ${fmtBucketValue(t, f.fmt)}`, min: null, max: t });
+            });
+          }
+        }
+        BUCKET_OPTIONS[f.key] = opts;
+      });
+    }
+
+    let screenerBucketSelections = {}; // key -> selected {label,min,max} option
+    let screenerNameQuery = '';
+
+    function matchesBucketSelections(e) {
+      if (screenerNameQuery && !String(e.name || '').toLowerCase().includes(screenerNameQuery)) return false;
+      return BUCKET_FIELDS.every(f => {
+        const sel = screenerBucketSelections[f.key];
+        if (!sel || (sel.min == null && sel.max == null)) return true;
+        const getter = f.derived || (en => en[f.key]);
+        const v = getter(e);
+        if (typeof v !== 'number') return false;
+        if (sel.min != null && v < sel.min) return false;
+        if (sel.max != null && v > sel.max) return false;
+        return true;
+      });
+    }
+
+    function bucketGridHtml() {
+      const cells = BUCKET_FIELDS.map(f => {
+        const opts = BUCKET_OPTIONS[f.key] || [{ label: 'Any', min: null, max: null }];
+        const selected = screenerBucketSelections[f.key];
+        const selectedLabel = selected ? selected.label : 'Any';
+        const optionsHtml = opts.map(o =>
+          `<option value="${escapeHtml(o.label)}"${o.label === selectedLabel ? ' selected' : ''}>${escapeHtml(o.label)}</option>`
+        ).join('');
+        return `
+          <div class="screener-filter-cell">
+            <label>${f.label}</label>
+            <select class="screener-bucket-select" data-key="${f.key}">${optionsHtml}</select>
+          </div>
+        `;
+      }).join('');
+      return `
+        <div class="screener-filter-grid">
+          <div class="screener-filter-cell">
+            <label>Symphony Name</label>
+            <input type="text" id="screener-name-search" placeholder="Search..." value="${escapeHtml(screenerNameQuery)}">
+          </div>
+          ${cells}
+        </div>
+      `;
+    }
+
     const SCREENER_VIEWS = {
       overview: {
         label: 'Overview',
@@ -547,17 +707,11 @@
     let screenerSortField = null;
     let screenerSortDir = 'desc';
     let screenerView = 'overview';
+    let screenerFlagMode = 'default';
 
-    const screenerFilterController = createFilterController({
-      panelId: 'filter-panel-screener',
-      buttonId: 'filter-btn-screener',
-      onApply: () => {
-        screenerFiltered = dbEntries.filter(screenerFilterController.filterFn);
-        applyScreenerSort();
-        screenerPage = 1;
-        renderScreenerPage();
-      },
-    });
+    function recomputeScreenerEntries() {
+      screenerFiltered = applyFlagMode(dbEntries, screenerFlagMode).filter(matchesBucketSelections);
+    }
 
     function applyScreenerSort() {
       if (!screenerSortField) return;
@@ -612,20 +766,17 @@
         return `<tr>${cells}</tr>`;
       }).join('');
 
-      const filterCount = screenerFilterController.activeCount();
-      const filterLabel = filterCount ? `Filter (${filterCount})` : 'Filter';
-
       document.getElementById('screener-content').innerHTML = `
         <div class="db-toolbar">
           <div>
             <h2>Screener</h2>
             <span class="db-count-pill">${screenerFiltered.length.toLocaleString()} results</span>
-            <button class="btn btn-outline btn-sm" id="filter-btn-screener" style="margin-left:8px">
-              <span aria-hidden="true">&#9776;</span> ${filterLabel}
-            </button>
           </div>
         </div>
-        <div id="filter-panel-screener" class="filter-panel" hidden></div>
+        <div class="db-tabs" role="tablist" aria-label="Flagged rows" style="margin-bottom:16px;border-bottom:none">
+          ${flagToggleHtml(screenerFlagMode, 'flagmode-screener')}
+        </div>
+        ${bucketGridHtml()}
         <div class="db-tabs" role="tablist" aria-label="Screener column views" style="margin-bottom:16px">
           ${viewTabsHtml}
         </div>
@@ -672,7 +823,43 @@
         });
       });
 
-      screenerFilterController.rewire();
+      document.querySelectorAll('#screener-content [data-flagmode]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          screenerFlagMode = btn.dataset.flagmode;
+          recomputeScreenerEntries();
+          applyScreenerSort();
+          screenerPage = 1;
+          renderScreenerPage();
+        });
+      });
+
+      const nameSearchInput = document.getElementById('screener-name-search');
+      nameSearchInput.addEventListener('input', (e) => { screenerNameQuery = e.target.value.toLowerCase(); });
+      nameSearchInput.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        recomputeScreenerEntries();
+        applyScreenerSort();
+        screenerPage = 1;
+        renderScreenerPage();
+      });
+      nameSearchInput.addEventListener('blur', () => {
+        recomputeScreenerEntries();
+        applyScreenerSort();
+        screenerPage = 1;
+        renderScreenerPage();
+      });
+
+      document.querySelectorAll('#screener-content .screener-bucket-select').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+          const key = e.target.dataset.key;
+          const opts = BUCKET_OPTIONS[key] || [];
+          screenerBucketSelections[key] = opts.find(o => o.label === e.target.value) || null;
+          recomputeScreenerEntries();
+          applyScreenerSort();
+          screenerPage = 1;
+          renderScreenerPage();
+        });
+      });
     }
 
     // ---- Leaderboard tab (V1.13): relative-percentile scoring model. ----
@@ -682,8 +869,9 @@
     // so only the top ~22% of a metric earns full marks; missing data scores
     // a hard zero. Tiers are assigned by rank (S/A/B/C/F at 10/10/20/25/25%),
     // ties round up into the better tier, plus a special S+ for a perfect
-    // 1,000/1,000. Noise-flagged entries are NOT excluded yet (V1.14 doesn't
-    // exist yet); accepted as a known, temporary gap per the v1.10.x decision.
+    // 1,000/1,000. Noise-flagged entries are always excluded from the
+    // eligible pool (V1.14 Part B) - unlike All Strategies/Screener, this
+    // is not user-toggleable.
     const CLAMP_Q = 0.22;
     function scoreClamp(x, lo, hi) { return x < lo ? lo : (x > hi ? hi : x); }
     function pointsFromPct(p, cap) { return scoreClamp(cap * (p - CLAMP_Q) / (1 - 2 * CLAMP_Q), 0, cap); }
@@ -793,6 +981,17 @@
     let leaderboardFiltered = [];
     let leaderboardPage = 1;
 
+    // Eligibility: has been refreshed under the full schema (sharpe_ratio
+    // present is the proxy used throughout) AND is not flag-noise. Unlike
+    // All Strategies/Screener, this is not user-toggleable - the Leaderboard
+    // always excludes flagged rows from scoring, no "show all" option.
+    function recomputeLeaderboard() {
+      const refreshed = dbEntries.filter(e => typeof e.sharpe_ratio === 'number');
+      const eligible = applyFlagMode(refreshed, 'default');
+      leaderboardRanked = computeTiers(computeScores(eligible));
+      leaderboardFiltered = leaderboardRanked.filter(r => leaderboardFilterController.filterFn(r.entry));
+    }
+
     // ---- Shared modal (score breakdown + Methodology) ----
     function openModal(title, bodyHtml) {
       document.getElementById('modal-title').textContent = title;
@@ -892,6 +1091,7 @@
 
       const filterCount = leaderboardFilterController.activeCount();
       const filterLabel = filterCount ? `Filter (${filterCount})` : 'Filter';
+      const notRefreshedCount = dbEntries.length - dbEntries.filter(e => typeof e.sharpe_ratio === 'number').length;
 
       document.getElementById('leaderboard-content').innerHTML = `
         <div class="db-toolbar">
@@ -903,7 +1103,7 @@
             </button>
             <button class="btn btn-outline btn-sm" id="methodology-btn-leaderboard" style="margin-left:8px">Methodology</button>
           </div>
-          <span class="text-secondary" style="font-size:0.8125rem">Scored out of ${TOTAL_POSSIBLE}; ${(dbEntries.length - leaderboardRanked.length).toLocaleString()} not yet refreshed, excluded from ranking</span>
+          <span class="text-secondary" style="font-size:0.8125rem">Scored out of ${TOTAL_POSSIBLE}; ${notRefreshedCount.toLocaleString()} not yet refreshed and any flagged rows excluded from ranking</span>
         </div>
         <div id="filter-panel-leaderboard" class="filter-panel" hidden></div>
         <div class="db-table-wrap">
@@ -975,18 +1175,13 @@
 
     (async function () {
       dbEntries = await loadFullDatabase();
-      filteredEntries = dbEntries.slice();
+      recomputeAllEntries();
       renderTablePage();
-      screenerFiltered = dbEntries.slice();
+      buildBucketOptions();
+      recomputeScreenerEntries();
       renderScreenerPage();
 
-      // Eligibility: only score entries that have actually been refreshed
-      // under the full schema (sharpe_ratio present is the proxy used
-      // throughout this session's live scoring previews). Not yet excluding
-      // noise (V1.14 doesn't exist yet); see the render function's comment.
-      const eligible = dbEntries.filter(e => typeof e.sharpe_ratio === 'number');
-      leaderboardRanked = computeTiers(computeScores(eligible));
-      leaderboardFiltered = leaderboardRanked.slice();
+      recomputeLeaderboard();
       renderLeaderboardPage();
     })().catch(err => {
       const errorHtml = `

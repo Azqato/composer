@@ -99,6 +99,7 @@ button {
 
 .page {
   flex: 1;
+  min-width: 0;
   padding-top: var(--nav-height);
 }
 
@@ -215,14 +216,6 @@ p { color: var(--color-secondary); }
   gap: 8px;
 }
 
-.nav-cta {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .nav-cta { display: inline-flex; }
-}
-
 .nav-hamburger {
   display: flex;
   flex-direction: column;
@@ -305,6 +298,18 @@ p { color: var(--color-secondary); }
   transition: opacity 0.15s, background 0.15s, color 0.15s, border-color 0.15s;
   cursor: pointer;
   white-space: nowrap;
+}
+
+/* Must come after .btn: same specificity, this override needs to win in the
+   cascade to actually hide the CTA below 768px (a pre-existing bug fixed
+   here - .nav-cta used to sit before .btn in the file, so .btn's
+   display:inline-flex always won regardless of viewport width). */
+.nav-cta {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .nav-cta { display: inline-flex; }
 }
 
 .btn-green {
@@ -1042,6 +1047,7 @@ footer {
   gap: 4px;
   border-bottom: 1px solid var(--color-border);
   margin-bottom: 24px;
+  overflow-x: auto;
 }
 
 .db-tab {
@@ -1295,6 +1301,53 @@ footer {
 .filter-panel-buttons {
   display: flex;
   gap: 8px;
+}
+
+/* ---- Screener bucketed filter grid (database.html, V1.12 redesign) ----
+   Always-visible, Finviz-style: one label+select per field, unlike the
+   All Strategies Filter Panel above which stays hidden until opened. */
+.screener-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.screener-filter-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.screener-filter-cell label {
+  color: var(--color-secondary);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.screener-filter-cell select,
+.screener-filter-cell input {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  font-size: 0.8125rem;
+  font-family: var(--font-sans);
+  width: 100%;
+}
+
+.screener-filter-cell select:focus,
+.screener-filter-cell input:focus {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 1px;
 }
 
 /* ---- Tier badges (Leaderboard, database.html, V1.13) ---- */

@@ -16,6 +16,12 @@ refreshed row and will be picked up by the next refresh run.
 
 Safe to re-run: URLs already in database.json are skipped.
 
+WARNING: do not run this while scripts/refresh_full_database.py is running
+in the background. That script loads database.json into memory once at
+startup and periodically overwrites the whole file with that in-memory
+copy; running this script in the meantime gets silently clobbered on the
+refresh script's next checkpoint. Stop any running refresh first.
+
 Usage:
     python scripts/sync_storage_to_database.py
 """
