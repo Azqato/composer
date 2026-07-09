@@ -1681,15 +1681,18 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 | XLP | Consumer Staples Select Sector SPDR |
 | TLT | iShares 20+ Year Treasury Bond ETF |
 
-**RSI formula — Wilder's smoothing method (same method Composer uses):**
+**RSI formula — Wilder's smoothing method (industry standard; Composer's exact method unconfirmed):**
 
-1. Fetch the last ~45 trading days of daily closing prices per ticker (sufficient to seed the smoothing period and avoid initialization bias).
-2. Compute 10-period RSI using Wilder's exponential method (not simple average):
-   - First avg gain / avg loss = simple arithmetic mean of first 10 period changes (positive changes for gains, absolute negative changes for losses).
+Composer does not publicly document which RSI smoothing variant they use. What is confirmed: Composer's backtesting engine uses daily **adjusted closing prices** (accounting for dividends and splits). Alpaca is Composer's live-trading execution partner, not a price data or indicator-calculation source for backtests — Alpaca itself has no native RSI endpoint and directs users to compute indicators via TA-Lib from their market data bars. Apex Clearing is Composer's custody/clearing broker (asset settlement), unrelated to indicator math. A QuantConnect staff member, in a thread about replicating a Composer strategy, suggested using `MovingAverageType.WILDERS` to get closer to Composer's output — consistent with Wilder's being the most likely method — but Composer never officially confirmed this. All major platforms (TradingView, ThinkorSwim, Bloomberg, TA-Lib's default) use Wilder's smoothing; it is what Wilder himself specified. **Plan: use Wilder's smoothing with adjusted closes. Values may not exactly match Composer's display but will be very close for practical dip-buy signal reading. Validate a handful of values against Composer at implementation time.**
+
+1. Fetch the last ~45 trading days of daily **adjusted** closing prices per ticker (matches Composer's confirmed price source).
+2. Compute 10-period RSI using Wilder's exponential smoothing:
+   - First avg gain / avg loss = simple arithmetic mean of first 10 period changes (positive changes for gains, absolute negative changes for losses, zero for unchanged closes).
    - Subsequent values: `avg_gain = (prev_avg_gain × 9 + current_gain) / 10`; same for avg_loss.
    - `RS = avg_gain / avg_loss`; `RSI = 100 − 100 / (1 + RS)`.
    - Edge cases: `avg_loss = 0` → `RSI = 100`; `avg_gain = 0` → `RSI = 0`.
 3. The final RSI value after all 45 periods is the one displayed.
+4. **Validation step at implementation time:** cross-check computed values against what Composer shows for a few tickers on the same date; if they diverge meaningfully, try SMA-seeded RSI as the alternative.
 
 **Data source — two options, choose at implementation time:**
 
