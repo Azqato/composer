@@ -1735,21 +1735,23 @@ Composer does not publicly document which RSI smoothing variant they use. What i
 - Page title: "RSI Signals" or "Frontrunner RSI".
 - Brief explainer: one short paragraph stating what these tickers are, that they are used as dip-buy signals in Frontrunner-family strategies, and what RSI(10) oversold/overbought levels mean in that context.
 - "Last refreshed: [timestamp]" note pulled from `rsi.json.refreshed_at`, displayed below the heading.
-- **Default sort:** ascending by RSI (most oversold first) — the most actionable signal for Frontrunner dip-buy detection is a very low RSI.
+- **Default sort:** descending by RSI (highest first, matching Composer's display convention).
 - **Display:** a dense table (consistent with the Database page's `.db-table`) with columns: **Ticker** | **Name** | **RSI (10d)** | **Signal**.
-- **Signal column color coding:**
+- **Signal column color coding (our own thresholds — traditional 70/30 with extreme tiers):**
 
 | RSI Range | Label | Color |
 |---|---|---|
-| < 20 | Extreme Oversold | `--color-green` (bright) |
-| 20–30 | Oversold | `--color-green` dimmed |
-| 30–70 | Neutral | `--color-secondary` |
+| > 80 | Extreme Overbought | `--color-red` (introduce if not already defined) |
 | 70–80 | Overbought | amber / `#f0a500` |
-| > 80 | Extreme Overbought | `--color-red` (if not already defined, introduce it here) |
+| 30–70 | Neutral | `--color-secondary` |
+| 20–30 | Oversold | `--color-green` dimmed |
+| < 20 | Extreme Oversold | `--color-green` (bright) |
+
+  **Reference only — do not implement yet:** Composer's own display uses 60/40 thresholds (orange at RSI > 60, yellow at RSI < ~38) rather than the traditional 70/30. Observed live on 2026-07-09 against all 20 tickers. Worth revisiting if the 70/30 thresholds feel too quiet in practice (most tickers will sit in "Neutral" most of the time with 70/30; Composer's 60/40 gives more signal earlier).
 
 - RSI value itself also color-coded by the same scheme in the RSI column.
 - No pagination required (20 rows fits on one screen).
-- Click-to-sort column headers on Ticker and RSI columns.
+- Click-to-sort column headers on Ticker and RSI columns (clicking RSI toggles asc/desc).
 
 **CSS additions (in `css/main.css`):**
 
@@ -1773,11 +1775,13 @@ Composer does not publicly document which RSI smoothing variant they use. What i
 - `docs/PRD.md` — nav reference, new schema section for `data/rsi.json`
 - `docs/PATCHNOTES.md`
 
-**Open questions to resolve before implementation:**
-1. Page title / nav label: "RSI" vs "RSI Signals" vs "Frontrunner RSI" vs "Signals". Short is better for nav.
-2. Should `rsi.html` show the previous close's RSI (data from the prior trading day, fetched same-day) or intraday? Intraday is harder — the closing price isn't final until market close. Recommendation: use the most recent confirmed close (previous trading day after 4:30 PM ET).
-3. Should the page show any sparkline or recent RSI trend (e.g. RSI over the last 5 days)? Not in V2.3 — add in a future pass if useful.
-4. Does the refresh script belong in the deploy pipeline (GitHub Actions nightly) or stay manual? Manual is fine for V2.3; document the command to run it.
+**Decisions locked (pre-implementation):**
+1. **Nav label:** "RSI" — short wins even if slightly cryptic to a first-time visitor.
+2. **Prior close vs. intraday:** Use most recent confirmed close (previous trading day). Intraday RSI is unreliable until after 4:30 PM ET; the nightly GitHub Actions refresh handles this naturally.
+3. **Sparklines:** Skip in V2.3; add in a future pass.
+4. **Refresh cadence:** GitHub Actions nightly job. Exact run time/days TBD — prompt user at implementation time to decide.
+5. **Sort order:** Descending by RSI (highest first), matching Composer's convention.
+6. **Color thresholds:** Our own 70/30 with extreme tiers at 80/20. Composer's observed 60/40 documented as a future reference if 70/30 feels too quiet.
 
 ### V3.0: Monetization Expansion
 
