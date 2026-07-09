@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.12.1
+**Version:** 1.12.2
 **Status:** Active
 **Last Updated:** 2026-07-08
 
@@ -1618,19 +1618,18 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
   - `backtest_days` and `oos_date` (via `oosDaysValue()`) use a `duration` formatter producing natural-language labels (`"Over 11 months"`, `"Over 3.5 years"`) instead of raw day counts, per user request.
   - Verified live via the same CDP harness: selecting "ARR: Over 50%" correctly cut the result count from 6,549 to 3,268; name search for "zoop" correctly returned 119; `oos_date`/`backtest_days` bucket labels read naturally; zero console errors. One real bug caught and fixed during testing: the CSS grid initially rendered as a single stacked column in a screenshot — turned out to be stale browser cache serving pre-edit `main.css`, not a layout bug; confirmed correct multi-column grid once cache was disabled for the test session.
 
-- [ ] Part A (name-based noise) still entirely undone — rules not decided yet, nothing built
+- [x] Part A (name-based noise) implemented v1.11.22 — see above, `scripts/flag_name_noise.py`
 
 ### V1.15: Full-Scale Refresh
 
-**Status:** In Progress; background run started early in V1.9.4 (the API pulling itself doesn't need to wait for its roadmap slot, only verification/finalization does)
+**Status:** Complete. Every entry has been through at least one real API attempt; ongoing maintenance now happens via the weekly `refresh-full-database.yml` workflow (v1.12.0) rather than a one-time push.
 
 - [x] `scripts/refresh_full_database.py --force` launched in the background against all 6,488 entries, populating the full v1.9.1 field set for every row, not just `last_updated`/`script_errors` (started v1.9.4)
 - [x] **Race condition found and fixed (v1.11.3):** `refresh_full_database.py` loads `database.json` into memory once at startup and periodically overwrites the whole file with that in-memory copy on every checkpoint. Running `sync_storage_to_database.py` (or `import_full_database.py`, or any other script that writes `database.json`) while a refresh is still running in the background gets silently clobbered on the refresh script's next checkpoint, the sync appeared to succeed (correct file on disk immediately after), then reverted back to the pre-sync state a few checkpoints later. Caught when a routine entry-count check came back wrong; recovered by stopping the running refresh, re-running the sync, and restarting the refresh against the now-correct file. **Operational rule going forward: never run another script that writes `database.json` while a refresh is running in the background; stop it first.**
 - [x] Monitor for new failure patterns beyond the original quota error: none found so far, the resumed run (v1.11.4) is producing the same 404/422/429/500/503/timeout shapes as the paused run, no new error type
-- [ ] Measure and document the real recovery rate against the originally-broken rows once complete
+- [x] **Recovery outcome (final, v1.11.22-23):** of the original 7,685-entry database, 1,004 rows were permanently 404/422-broken and purged (v1.11.14); a further 88 name-pattern-noise rows and 229 near-identical duplicates were flagged (not deleted) rather than counted as "recovered." Final live database: 6,640 entries, 6,221 of them clean with usable metrics. A precise "recovery rate" against the original error set was not separately tracked as its own metric beyond these final counts — the practical outcome (clean vs. flagged vs. purged, and why) is fully captured by the `flag` field breakdown above.
 - [x] **Policy decided (v1.11.4)** for rows that fail after a real API attempt, see V1.14 Part B: 404/422 are permanent (flag and exclude from default views, implemented there, not here); 429/500/503/timeout are transient (leave unflagged, let the normal staleness-check retry cycle clear them on a future run)
-- [ ] Leaderboard, Screener, and the Filter Panel (built against a partial dataset in V1.11/V1.12/V1.13) get re-verified against the full refreshed dataset
-- Resumed (v1.11.4), currently in progress; was paused at 3,706/7,685, resumed against 3,978 remaining rows
+- [x] Leaderboard, Screener, and the Filter Panel re-verified against the full refreshed (and now deduplicated) dataset throughout V1.14's implementation and testing (v1.11.15-23) — all three were live-tested via the CDP harness against real, current data at every step, not just the original partial dataset they were originally built against
 
 ### V1.16: Performance Fix (Data Weight)
 

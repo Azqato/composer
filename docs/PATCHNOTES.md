@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.12.2] - 2026-07-08
+
+### Roadmap cleanup: closed stale V1.14/V1.15 checklist items
+
+Found while reviewing "next steps" — a few checklist items were left unchecked from before V1.14/V1.15 were actually completed. Marked Part A (name-based noise) done, marked V1.15's status Complete (was still "In Progress"), closed out the Leaderboard/Screener/Filter Panel re-verification item (covered by all the live CDP testing done throughout V1.14), and closed the recovery-rate item with the final counts rather than a separately-tracked metric that was never actually built. Documentation only, no code changes.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.12.1] - 2026-07-08
 
 ### Added "Azqato Invests" to the nav
