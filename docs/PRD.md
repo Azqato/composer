@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.12.2
+**Version:** 1.12.3
 **Status:** Active
 **Last Updated:** 2026-07-08
 
@@ -1646,7 +1646,7 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 
 ### V1.17: Leaderboard Scoring Revision
 
-**Status:** Backlog — user feedback (2026-07-08): current scoring "isn't as good as I would like it to be." Not yet scoped; no specifics on what's wrong or what a better model looks like.
+**Status:** Backlog — user feedback (2026-07-08): current scoring "isn't as good as I would like it to be." Not yet scoped; no specifics on what's wrong or what a better model looks like. Also blocked on priority: V2.3 (Live RSI Signals Page) was explicitly moved ahead of this, per user request (2026-07-08).
 
 - [ ] Get concrete feedback on what's underperforming in the current model (Section 14 V1.13: 20 metrics, 7 categories, 1,000 points, percentile-rank + clamp curve, rank-based S/A/B/C/F tiers) — which tier placements feel wrong, which metrics feel over/under-weighted, or is it the mechanism itself (percentile ranking, the clamp curve, category weights)?
 - [ ] Decide whether this is a weighting/tuning pass on the existing model or a more fundamental rework
@@ -1683,7 +1683,7 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 
 ### V2.3: Live RSI Signals Page
 
-**Status:** Planned
+**Status:** Prioritized — built next, ahead of its numbered slot (V1.17, V2.1, V2.2 all pushed behind it), per explicit user request (2026-07-08). Fully speced and locked prior to this reprioritization; nothing left to decide, only to build. Same "built ahead of schedule" pattern as V1.16.
 
 **What it is:** A new page (`rsi.html`) that displays the current 10-day RSI for a curated set of ETF tickers used as signals in Frontrunner-family strategies. The purpose is to let a user glance at the site and know — right now — which tickers are in oversold territory and which Frontrunner branches might be active.
 

@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.12.3] - 2026-07-08
+
+### Prioritized V2.3 (Live RSI Signals Page) ahead of its numbered slot
+
+Per user request, V2.3 (fully speced in a prior session, before this thread — locked ticker list, RSI formula/methodology, data source, page design, nav placement, refresh cadence) moves to the front of the build queue, ahead of V1.17 (Leaderboard scoring revision) and V2.1/V2.2. Same pattern as V1.16 being built ahead of its numbered slot. Cross-referenced the reprioritization on both V2.3's and V1.17's status lines. Documentation only — implementation not yet started.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.12.2] - 2026-07-08
 
 ### Roadmap cleanup: closed stale V1.14/V1.15 checklist items
