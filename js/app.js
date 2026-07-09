@@ -148,6 +148,7 @@ function renderNav() {
     { href: u('/strategies.html'), label: 'Strategies' },
     { href: u('/database.html'), label: 'Database' },
     { href: u('/glossary.html'), label: 'Glossary' },
+    { href: 'https://azqato.com/invests', label: 'Azqato Invests', external: true },
     { href: 'https://azqato.com/support.html', label: 'Support', external: true },
   ];
 

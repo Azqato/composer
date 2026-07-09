@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.12.1] - 2026-07-08
+
+### Added "Azqato Invests" to the nav
+
+New nav link, `https://azqato.com/invests`, positioned before "Support" in both desktop and mobile nav (both derive from the same `links` array in `js/app.js`, so one change covers both). Verified live via the CDP harness: correct position on desktop, correct position in the mobile drawer, and no regression of the mobile horizontal-overflow fix from the previous entry.
+
+**Files changed:** `js/app.js`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.12.0] - 2026-07-08
 
 ### V2.0: Full Database goes live

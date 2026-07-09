@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.12.0
+**Version:** 1.12.1
 **Status:** Active
 **Last Updated:** 2026-07-08
 
@@ -124,7 +124,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - `scripts/update_metrics.py`: reusable script to refresh all metrics and logic trees from the Composer API
 
 **Navigation & Structure**
-- Fixed top nav: About, Strategies, Database, Glossary, Support (v1.10.2; previously included direct external links to Individual Stocks and Leveraged Strategies, now presented as a "More From Azqato" section on the About page instead)
+- Fixed top nav: About, Strategies, Database, Glossary, Azqato Invests, Support (v1.12.1 added "Azqato Invests" linking to `https://azqato.com/invests`; v1.10.2 previously included direct external links to Individual Stocks and Leveraged Strategies, now presented as a "More From Azqato" section on the About page instead)
 - Mobile hamburger menu with drawer
 - Breadcrumb navigation on all sub-pages
 - Custom 404 page
