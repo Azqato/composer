@@ -147,6 +147,7 @@ function renderNav() {
     { href: u('/about.html'), label: 'About' },
     { href: u('/strategies.html'), label: 'Strategies' },
     { href: u('/database.html'), label: 'Database' },
+    { href: u('/rsi.html'), label: 'RSI' },
     { href: u('/glossary.html'), label: 'Glossary' },
     { href: 'https://azqato.com/invests', label: 'Azqato Invests', external: true },
     { href: 'https://azqato.com/support.html', label: 'Support', external: true },
@@ -212,6 +213,7 @@ function renderFooter() {
       <a href="${u('/about.html')}">About</a>
       <a href="${u('/strategies.html')}">Strategies</a>
       <a href="${u('/database.html')}">Database</a>
+      <a href="${u('/rsi.html')}">RSI</a>
       <a href="${u('/glossary.html')}">Glossary</a>
       <a href="https://azqato.com/support.html" target="_blank" rel="noopener noreferrer">Support</a>
       <a href="https://composer.trade" target="_blank" rel="noopener noreferrer">Composer.trade ↗</a>

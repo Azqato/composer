@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Live 10-day RSI for the 20 ETF tickers used as signals in Frontrunner-family Composer strategies.">
+  <title>RSI Signals: Composer Atlas</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <nav class="nav" id="nav-root"></nav>
+
+  <div class="page">
+    <div class="container py-12">
+      <div id="breadcrumb-root"></div>
+
+      <div style="max-width:600px;margin-bottom:32px">
+        <h1 style="color:var(--color-primary);margin-bottom:8px">RSI Signals</h1>
+        <p style="color:var(--color-secondary);font-size:1.0625rem">
+          Current 10-day RSI for the 20 ETF tickers used as dip-buy signals in Frontrunner-family strategies. Low RSI means a ticker is oversold and a Frontrunner branch built around it may be active; high RSI means it's overbought.
+        </p>
+        <p id="rsi-refreshed" style="color:var(--color-secondary);font-size:0.875rem"></p>
+      </div>
+
+      <div id="rsi-content">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer id="footer-root"></footer>
+
+  <script src="data/rsi.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    (function () {
+      renderBreadcrumb('breadcrumb-root', [
+        { label: 'Home', href: u('/') },
+        { label: 'RSI Signals' },
+      ]);
+
+      let sortField = 'rsi_10';
+      let sortDir = 'desc';
+      let tickers = [];
+
+      function signalInfo(rsi) {
+        if (rsi > 80) return { label: 'Extreme Overbought', cls: 'rsi-extreme-overbought' };
+        if (rsi > 70) return { label: 'Overbought', cls: 'rsi-overbought' };
+        if (rsi >= 30) return { label: 'Neutral', cls: 'rsi-neutral' };
+        if (rsi >= 20) return { label: 'Oversold', cls: 'rsi-oversold' };
+        return { label: 'Extreme Oversold', cls: 'rsi-extreme-oversold' };
+      }
+
+      function sortIndicator(key) {
+        if (sortField !== key) return '<span class="db-sort-arrow">&#8597;</span>';
+        return `<span class="db-sort-arrow active">${sortDir === 'asc' ? '&#9650;' : '&#9660;'}</span>`;
+      }
+
+      function applySort() {
+        const dir = sortDir === 'asc' ? 1 : -1;
+        tickers.sort((a, b) => {
+          const av = a[sortField];
+          const bv = b[sortField];
+          if (av < bv) return -1 * dir;
+          if (av > bv) return 1 * dir;
+          return 0;
+        });
+      }
+
+      function render() {
+        const headerCells = [
+          { key: 'symbol', label: 'Ticker' },
+          { key: 'name', label: 'Name' },
+          { key: 'rsi_10', label: 'RSI (10d)' },
+        ].map(col => `<th class="sortable" data-sort="${col.key}">${col.label} ${sortIndicator(col.key)}</th>`).join('')
+          + '<th>Signal</th>';
+
+        const rows = tickers.map(t => {
+          const sig = signalInfo(t.rsi_10);
+          return `
+            <tr>
+              <td>${t.symbol}</td>
+              <td class="text-secondary">${t.name}</td>
+              <td class="${sig.cls}">${t.rsi_10.toFixed(1)}</td>
+              <td class="${sig.cls}">${sig.label}</td>
+            </tr>
+          `;
+        }).join('');
+
+        document.getElementById('rsi-content').innerHTML = `
+          <div class="db-table-wrap">
+            <table class="db-table">
+              <thead><tr>${headerCells}</tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        `;
+
+        document.querySelectorAll('.db-table th.sortable').forEach(th => {
+          th.addEventListener('click', () => {
+            const key = th.dataset.sort;
+            if (sortField === key) {
+              sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+              sortField = key;
+              sortDir = 'asc';
+            }
+            applySort();
+            render();
+          });
+        });
+      }
+
+      async function loadRsi() {
+        if (window.RSI_DATA) return window.RSI_DATA;
+        const res = await fetch(`${BASE}/data/rsi.json`);
+        if (!res.ok) throw new Error('Failed to load rsi.json');
+        return res.json();
+      }
+
+      (async function () {
+        const payload = await loadRsi();
+        tickers = payload.tickers;
+        document.getElementById('rsi-refreshed').textContent =
+          `Last refreshed: ${new Date(payload.refreshed_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}`;
+        applySort();
+        render();
+      })().catch(err => {
+        document.getElementById('rsi-content').innerHTML = `
+          <div class="error-state">
+            <h2>Failed to load RSI data</h2>
+            <p>${err.message}</p>
+          </div>`;
+      });
+    })();
+  </script>
+</body>
+</html>

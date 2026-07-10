@@ -75,6 +75,16 @@ git commit -m "data: refresh metrics and symphony scores - YYYY-MM-DD"
 git push origin main
 ```
 
+### `scripts/refresh_rsi.py`
+
+Fetches Yahoo Finance daily bars for the 20-ticker Frontrunner signal universe and computes 10-day RSI (Wilder's smoothing), rewriting `data/rsi.json` + `data/rsi.js` (`window.RSI_DATA`), used by `rsi.html`.
+
+```bash
+python scripts/refresh_rsi.py
+```
+
+Run from the project root. No API key required. Automated 3x/day on weekdays via `.github/workflows/refresh-rsi.yml`; safe to run manually any time.
+
 ### Full Database scripts (`database.html`)
 
 Separate pipeline for the full community symphony database, not the curated 28. See `docs/PRD.md` Section 10 for the full directory listing and Section 14 for status. `refresh_full_database.py` runs automatically every Sunday via `.github/workflows/refresh-full-database.yml`; everything else in this table is manual-only by design, see each script's docstring.

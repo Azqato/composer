@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.13.0] - 2026-07-09
+
+### Shipped V2.1: Live RSI Signals Page
+
+New `rsi.html` page showing live 10-day RSI (Wilder's smoothing) for the 20-ticker Frontrunner signal universe. `scripts/refresh_rsi.py` fetches Yahoo Finance daily adjusted closes and writes `data/rsi.json`/`.js`; a new `.github/workflows/refresh-rsi.yml` runs it automatically 3x/day on weekdays (`0 15,19,22 * * 1-5`). Table is sortable by Ticker/RSI, defaults to descending RSI, and color-codes each row into five signal tiers (Extreme Oversold → Extreme Overbought) using the existing `--color-green`/`--color-yellow`/`--color-pink` tokens rather than introducing a new color. Added "RSI" to the top nav (desktop + mobile) after "Database". Built ahead of its numbered slot per explicit user request (2026-07-08/09), same pattern as V1.16.
+
+**Files changed:** `rsi.html` (new), `scripts/refresh_rsi.py` (new), `data/rsi.json`/`.js` (new), `.github/workflows/refresh-rsi.yml` (new), `js/app.js`, `css/main.css`, `README.md`, `docs/PRD.md`
+
+---
+
 ## [1.12.4] - 2026-07-09
 
 ### Renumbered roadmap now that V2.0 has shipped

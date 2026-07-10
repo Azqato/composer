@@ -1,0 +1,38 @@
+name: Refresh RSI Signals
+
+on:
+  schedule:
+    # 15:00, 19:00, 22:00 UTC, weekdays only (post-open, pre-close, post-close
+    # across both EDT/EST). See docs/PRD.md V2.1 for the full cadence rationale.
+    - cron: '0 15,19,22 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-rsi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run refresh_rsi.py
+        run: python scripts/refresh_rsi.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/rsi.json data/rsi.js
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: refresh RSI signals"
+            git push
+          fi
