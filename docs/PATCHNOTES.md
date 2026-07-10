@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.13.1] - 2026-07-09
+
+### Retuned RSI signal thresholds
+
+The 70/30 thresholds shipped in v1.13.0 rendered every one of the 20 tickers as "Neutral" on launch day (all landed between 34.7 and 65.2 RSI), making the page look inert on a typical day. Retuned to: ≥79 Extreme Overbought, 70–78 Overbought, 42–69 Neutral, 29–41 Oversold, ≤28 Extreme Oversold. No new color tokens, still reuses `--color-green`/`--color-yellow`/`--color-pink`.
+
+**Files changed:** `rsi.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.13.0] - 2026-07-09
 
 ### Shipped V2.1: Live RSI Signals Page

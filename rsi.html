@@ -45,10 +45,10 @@
       let tickers = [];
 
       function signalInfo(rsi) {
-        if (rsi > 80) return { label: 'Extreme Overbought', cls: 'rsi-extreme-overbought' };
-        if (rsi > 70) return { label: 'Overbought', cls: 'rsi-overbought' };
-        if (rsi >= 30) return { label: 'Neutral', cls: 'rsi-neutral' };
-        if (rsi >= 20) return { label: 'Oversold', cls: 'rsi-oversold' };
+        if (rsi >= 79) return { label: 'Extreme Overbought', cls: 'rsi-extreme-overbought' };
+        if (rsi >= 70) return { label: 'Overbought', cls: 'rsi-overbought' };
+        if (rsi >= 42) return { label: 'Neutral', cls: 'rsi-neutral' };
+        if (rsi >= 29) return { label: 'Oversold', cls: 'rsi-oversold' };
         return { label: 'Extreme Oversold', cls: 'rsi-extreme-oversold' };
       }
 
