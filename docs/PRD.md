@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.13.1
+**Version:** 1.13.2
 **Status:** Active
 **Last Updated:** 2026-07-09
 
@@ -1701,7 +1701,7 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 
 **RSI methodology:** Wilder's smoothing on adjusted daily closes (Composer's exact method is unconfirmed, but this is the industry-standard match — a QuantConnect staffer pointed at `MovingAverageType.WILDERS` as the closest replication of Composer's own displayed values). Formula, edge cases, and validation approach documented in `scripts/refresh_rsi.py`.
 
-**Color thresholds (revised 2026-07-09, post-launch):** the original 70/30 scheme rendered every one of the 20 tickers as "Neutral" on the day it launched (all 20 landed between 34.7 and 65.2), making the page look inert. Replaced with a narrower band, tuned against that live data: ≥79 Extreme Overbought, 70–78 Overbought, 42–69 Neutral, 29–41 Oversold, ≤28 Extreme Oversold (`.rsi-extreme-oversold` / `.rsi-oversold` / `.rsi-neutral` / `.rsi-overbought` / `.rsi-extreme-overbought` in `css/main.css`, reusing `--color-green`/`--color-yellow`/`--color-pink`, no new color token).
+**Color thresholds (revised 2026-07-09, post-launch):** the original 70/30 scheme rendered every one of the 20 tickers as "Neutral" on the day it launched (all 20 landed between 34.7 and 65.2), making the page look inert. Replaced with a narrower band, tuned against that live data: ≥79 Extreme Overbought, 70–78 Overbought, 42–69 Neutral, 29–41 Oversold, ≤28 Extreme Oversold. Colors are literal hex values in `css/main.css` (not existing design tokens; the user specified a distinct green→red gradient for this page rather than reusing `--color-green`/`--color-pink`): `.rsi-extreme-overbought` `#00ff00` bold, `.rsi-overbought` `#008900`, `.rsi-neutral` `#b0b0b0`, `.rsi-oversold` `#890000`, `.rsi-extreme-oversold` `#ff0000` bold.
 
 - [x] `scripts/refresh_rsi.py`: fetches Yahoo Finance daily bars (`v8/finance/chart`, no API key), computes Wilder's RSI(10), writes `data/rsi.json` + `data/rsi.js` atomically
 - [x] `rsi.html`: sortable table (Ticker/Name/RSI(10d)/Signal), default sort descending by RSI, "Last refreshed" timestamp, no pagination (20 rows)

@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.13.2] - 2026-07-09
+
+### Custom RSI signal color palette (user-specified, not the standard tokens)
+
+Per explicit user direction, replaced the RSI signal tier colors with a literal green (oversold)→red (overbought) gradient instead of reusing `--color-green`/`--color-yellow`/`--color-pink`: `.rsi-extreme-overbought` `#00ff00` bold, `.rsi-overbought` `#008900`, `.rsi-neutral` `#b0b0b0`, `.rsi-oversold` `#890000`, `.rsi-extreme-oversold` `#ff0000` bold. No opacity tricks; both extreme tiers bold, inner three are not. Documented as a deliberate token exception in `docs/DESIGN.md` (bumped to v1.6) since it inverts the site's usual green-good/pink-bad convention specifically for this page.
+
+**Files changed:** `css/main.css`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.13.1] - 2026-07-09
 
 ### Retuned RSI signal thresholds

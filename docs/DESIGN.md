@@ -1,8 +1,8 @@
 # Composer Atlas: Design System
 
-**Version:** 1.5
+**Version:** 1.6
 **Status:** Active
-**Last Updated:** 2026-07-07
+**Last Updated:** 2026-07-09
 
 All values in this document are derived from `css/main.css` and `js/app.js`: the source files are the ground truth.
 
@@ -601,6 +601,20 @@ A "Filter" button sits directly above each tab's result-count line. Clicking it 
 ```
 
 Six tiers (S+, S, A, B, C, F), color intensity roughly tracking favorability: S+/S green, A blue, B yellow, C neutral/secondary, F pink. S+ is visually distinguished from S by a stronger background/border opacity rather than a different hue, since both represent "top tier," S+ is just the perfect-score special case.
+
+---
+
+### RSI Signal Colors (rsi.html, V2.1)
+
+```css
+.rsi-extreme-oversold   { color: #ff0000; font-weight: 700; }
+.rsi-oversold           { color: #890000; }
+.rsi-neutral            { color: #b0b0b0; }
+.rsi-overbought         { color: #008900; }
+.rsi-extreme-overbought { color: #00ff00; font-weight: 700; }
+```
+
+Five tiers, thresholds ≥79 / 70–78 / 42–69 / 29–41 / ≤28 (see PRD.md Section 14, V2.1). These are **literal hex values, not the standard token palette** — a deliberate exception. The user specified this exact green (oversold, "buy the dip") → red (overbought) gradient for this page rather than the site's usual green-good/pink-bad convention (`--color-green`/`--color-pink`), so the colors are hardcoded rather than aliased to tokens that carry a different semantic elsewhere on the site. Both extreme tiers are bold; the three inner tiers are not.
 
 ---
 

@@ -1372,11 +1372,11 @@ footer {
 .tier-f  { color: var(--color-pink); background: rgba(255, 77, 141, 0.08); border-color: rgba(255, 77, 141, 0.25); }
 
 /* ---- RSI signal tiers (rsi.html, V2.1) ---- */
-.rsi-extreme-oversold  { color: var(--color-green); font-weight: 700; }
-.rsi-oversold          { color: var(--color-green); opacity: 0.7; }
-.rsi-neutral           { color: var(--color-secondary); }
-.rsi-overbought        { color: var(--color-yellow); }
-.rsi-extreme-overbought { color: var(--color-pink); font-weight: 700; }
+.rsi-extreme-oversold   { color: #ff0000; font-weight: 700; }
+.rsi-oversold           { color: #890000; }
+.rsi-neutral            { color: #b0b0b0; }
+.rsi-overbought         { color: #008900; }
+.rsi-extreme-overbought { color: #00ff00; font-weight: 700; }
 
 /* ---- Modal (score breakdown + methodology, database.html, V1.13) ---- */
 .modal-overlay {
