@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.13.3] - 2026-07-09
+
+### Fixed: RSI signal colors never actually rendered (CSS specificity bug)
+
+The `.rsi-*` classes added in v1.13.2 were bare single-class selectors (`.rsi-oversold { color: ... }`), which lost the cascade to `.db-table td`'s own `color` rule — a class+type selector (specificity 0,1,1) beats a single class (0,1,0) regardless of source order. Every row on `rsi.html` rendered in the default table text color; the entire signal color-coding feature silently never worked. Caught by building a temporary all-five-tiers test page to visually confirm each color. Fixed by rescoping every rule to `.db-table td.rsi-x`. Also brightened the two inner tiers (`#890000`→`#e04545`, `#008900`→`#2fb92f`) for legibility against the dark table background; both extremes (`#ff0000`/`#00ff00`) unchanged.
+
+**Files changed:** `css/main.css`, `docs/PRD.md`, `docs/DESIGN.md`
+
+---
+
 ## [1.13.2] - 2026-07-09
 
 ### Custom RSI signal color palette (user-specified, not the standard tokens)

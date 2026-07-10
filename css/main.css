@@ -1372,11 +1372,18 @@ footer {
 .tier-f  { color: var(--color-pink); background: rgba(255, 77, 141, 0.08); border-color: rgba(255, 77, 141, 0.25); }
 
 /* ---- RSI signal tiers (rsi.html, V2.1) ---- */
-.rsi-extreme-oversold   { color: #ff0000; font-weight: 700; }
-.rsi-oversold           { color: #890000; }
-.rsi-neutral            { color: #b0b0b0; }
-.rsi-overbought         { color: #008900; }
-.rsi-extreme-overbought { color: #00ff00; font-weight: 700; }
+/* Oversold/overbought use brightened mid-tones, not the user's original
+   #890000/#008900 - those were too low-contrast against the dark table
+   background (--color-surface #141414) to read at all.
+   Selectors are scoped to ".db-table td.rsi-x" (not a bare class) because
+   ".db-table td" alone (0,1,1) outranks a single class selector (0,1,0) -
+   these colors silently never applied against that background rule until
+   this fix. */
+.db-table td.rsi-extreme-oversold   { color: #ff0000; font-weight: 700; }
+.db-table td.rsi-oversold           { color: #e04545; }
+.db-table td.rsi-neutral            { color: #b0b0b0; }
+.db-table td.rsi-overbought         { color: #2fb92f; }
+.db-table td.rsi-extreme-overbought { color: #00ff00; font-weight: 700; }
 
 /* ---- Modal (score breakdown + methodology, database.html, V1.13) ---- */
 .modal-overlay {

@@ -607,14 +607,16 @@ Six tiers (S+, S, A, B, C, F), color intensity roughly tracking favorability: S+
 ### RSI Signal Colors (rsi.html, V2.1)
 
 ```css
-.rsi-extreme-oversold   { color: #ff0000; font-weight: 700; }
-.rsi-oversold           { color: #890000; }
-.rsi-neutral            { color: #b0b0b0; }
-.rsi-overbought         { color: #008900; }
-.rsi-extreme-overbought { color: #00ff00; font-weight: 700; }
+.db-table td.rsi-extreme-oversold   { color: #ff0000; font-weight: 700; }
+.db-table td.rsi-oversold           { color: #e04545; }
+.db-table td.rsi-neutral            { color: #b0b0b0; }
+.db-table td.rsi-overbought         { color: #2fb92f; }
+.db-table td.rsi-extreme-overbought { color: #00ff00; font-weight: 700; }
 ```
 
-Five tiers, thresholds ≥79 / 70–78 / 42–69 / 29–41 / ≤28 (see PRD.md Section 14, V2.1). These are **literal hex values, not the standard token palette** — a deliberate exception. The user specified this exact green (oversold, "buy the dip") → red (overbought) gradient for this page rather than the site's usual green-good/pink-bad convention (`--color-green`/`--color-pink`), so the colors are hardcoded rather than aliased to tokens that carry a different semantic elsewhere on the site. Both extreme tiers are bold; the three inner tiers are not.
+Five tiers, thresholds ≥79 / 70–78 / 42–69 / 29–41 / ≤28 (see PRD.md Section 14, V2.1). These are **literal hex values, not the standard token palette** — a deliberate exception. The user specified a green (oversold, "buy the dip") → red (overbought) gradient for this page rather than the site's usual green-good/pink-bad convention (`--color-green`/`--color-pink`), so the colors are hardcoded rather than aliased to tokens that carry a different semantic elsewhere on the site. Both extreme tiers are bold; the three inner tiers are not. The user's original inner-tier values (`#890000` / `#008900`) were too low-contrast against the dark table background (`--color-surface` `#141414`) to read at all; brightened to `#e04545` / `#2fb92f` while keeping the bright `#ff0000`/`#00ff00` extremes unchanged.
+
+**Selector specificity note:** these rules must be scoped as `.db-table td.rsi-x`, not a bare `.rsi-x` class. `.db-table td` (class+type, specificity 0,1,1) otherwise wins over a bare single-class selector (0,1,0) regardless of source order, which silently prevented any of these colors from rendering until this was caught and fixed.
 
 ---
 
