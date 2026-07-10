@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.12.4] - 2026-07-09
+
+### Renumbered roadmap now that V2.0 has shipped
+
+Since V2.0 (Full Database Goes Public) is complete, renumbered the remaining V2.x backlog to read sequentially from the next version forward: the Live RSI Signals Page is now **V2.1** (still built next, ahead of V1.17), Scale + Discovery moves to **V2.2**, and Community Signals moves to **V2.3**. No scope or priority changes, only version labels and cross-references. Documentation only.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.12.3] - 2026-07-08
 
 ### Prioritized V2.3 (Live RSI Signals Page) ahead of its numbered slot

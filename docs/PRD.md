@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.12.3
+**Version:** 1.12.4
 **Status:** Active
-**Last Updated:** 2026-07-08
+**Last Updated:** 2026-07-09
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -1646,7 +1646,7 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 
 ### V1.17: Leaderboard Scoring Revision
 
-**Status:** Backlog — user feedback (2026-07-08): current scoring "isn't as good as I would like it to be." Not yet scoped; no specifics on what's wrong or what a better model looks like. Also blocked on priority: V2.3 (Live RSI Signals Page) was explicitly moved ahead of this, per user request (2026-07-08).
+**Status:** Backlog — user feedback (2026-07-08): current scoring "isn't as good as I would like it to be." Not yet scoped; no specifics on what's wrong or what a better model looks like. Also blocked on priority: V2.1 (Live RSI Signals Page) was explicitly moved ahead of this, per user request (2026-07-08).
 
 - [ ] Get concrete feedback on what's underperforming in the current model (Section 14 V1.13: 20 metrics, 7 categories, 1,000 points, percentile-rank + clamp curve, rank-based S/A/B/C/F tiers) — which tier placements feel wrong, which metrics feel over/under-weighted, or is it the mechanism itself (percentile ranking, the clamp curve, category weights)?
 - [ ] Decide whether this is a weighting/tuning pass on the existing model or a more fundamental rework
@@ -1662,28 +1662,9 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 - [x] Pushed the data files (`database.json`/`.js`, `database_summary.json`/`.js`, `storage.csv`) live (v1.12.0)
 - [x] Update Section 6 Feature List: moved "Full Database Initiative" from "In Progress" to "Shipped" (v1.12.0)
 
-### V2.1: Scale + Discovery (Curated Library)
+### V2.1: Live RSI Signals Page
 
-**Status:** Backlog
-
-- [ ] Client-side search (Fuse.js or similar)
-- [ ] Tag-based filtering on strategy index: let visitors filter the strategy grid by the tags already generated for every strategy (signal type, e.g. `rsi`, `200d-ma`, `momentum`; asset class, e.g. `leveraged-etfs`, `inverse-etfs`; collection, e.g. `zoop`, `original`), instead of only using tags as read-only labels
-- [ ] Strategy comparison view
-- [ ] Performance chart per strategy
-- [ ] Expand strategy library toward 50+ entries
-- [ ] Expand glossary
-
-### V2.2: Community Signals
-
-**Status:** Backlog
-
-- [ ] Strategy submission form
-- [ ] Curator notes field visible on strategy pages
-- [ ] Related strategies section on each strategy page
-
-### V2.3: Live RSI Signals Page
-
-**Status:** Prioritized — built next, ahead of its numbered slot (V1.17, V2.1, V2.2 all pushed behind it), per explicit user request (2026-07-08). Fully speced and locked prior to this reprioritization; nothing left to decide, only to build. Same "built ahead of schedule" pattern as V1.16.
+**Status:** Prioritized — built next, immediately after V2.0, ahead of V1.17/V2.2/V2.3, per explicit user request (2026-07-08). Fully speced and locked; nothing left to decide, only to build. Same "built ahead of schedule" pattern as V1.16.
 
 **What it is:** A new page (`rsi.html`) that displays the current 10-day RSI for a curated set of ETF tickers used as signals in Frontrunner-family strategies. The purpose is to let a user glance at the site and know — right now — which tickers are in oversold territory and which Frontrunner branches might be active.
 
@@ -1809,13 +1790,32 @@ Composer does not publicly document which RSI smoothing variant they use. What i
 **Decisions locked (pre-implementation):**
 1. **Nav label:** "RSI" — short wins even if slightly cryptic to a first-time visitor.
 2. **Price source:** Yahoo Finance daily bars (`interval=1d`). Yahoo updates today's daily bar in real-time during market hours, so no separate intraday/1m fetch is needed — the daily adjclose already tracks the live price while the market is open and locks to the official close after 4 PM ET.
-3. **Sparklines:** Skip in V2.3; add in a future pass.
+3. **Sparklines:** Skip in V2.1; add in a future pass.
 4. **Refresh cadence:** GitHub Actions, 3×/day on weekdays only. Cron: `0 15,19,22 * * 1-5`.
    - **15:00 UTC** — 11:00 AM EDT / 10:00 AM EST — post-open (after market open in both DST zones)
    - **19:00 UTC** — 3:00 PM EDT / 2:00 PM EST — pre-close
    - **22:00 UTC** — 6:00 PM EDT / 5:00 PM EST — post-close
 5. **Sort order:** Descending by RSI (highest first), matching Composer's convention.
 6. **Color thresholds:** Our own 70/30 with extreme tiers at 80/20. Composer's observed 60/40 documented as a future reference if 70/30 feels too quiet.
+
+### V2.2: Scale + Discovery (Curated Library)
+
+**Status:** Backlog
+
+- [ ] Client-side search (Fuse.js or similar)
+- [ ] Tag-based filtering on strategy index: let visitors filter the strategy grid by the tags already generated for every strategy (signal type, e.g. `rsi`, `200d-ma`, `momentum`; asset class, e.g. `leveraged-etfs`, `inverse-etfs`; collection, e.g. `zoop`, `original`), instead of only using tags as read-only labels
+- [ ] Strategy comparison view
+- [ ] Performance chart per strategy
+- [ ] Expand strategy library toward 50+ entries
+- [ ] Expand glossary
+
+### V2.3: Community Signals
+
+**Status:** Backlog
+
+- [ ] Strategy submission form
+- [ ] Curator notes field visible on strategy pages
+- [ ] Related strategies section on each strategy page
 
 ### V3.0: Monetization Expansion
 
@@ -1856,7 +1856,7 @@ Five external repos were reviewed as candidate forks: `composer_json_fuzz_tester
 - [ ] Re-review all five repos for drift against this write-up (upstream is actively developed, especially `strategy_generation`, `quantstats-js`, and `local-maestro`)
 - [ ] Decide the batch-artifact-vs-live-backend architecture question above before writing any code
 - [ ] Start with `composer_json_fuzz_tester` only (single-strategy robustness report is the most self-contained, lowest-risk fork — no insertion/mutation of strategy JSON, read-only analysis) as a static "Robustness Report" tab per strategy, generated offline and committed like other database artifacts
-- [ ] Only after that ships and proves the batch-artifact pattern, evaluate `rsi_search` / `strategy_generation` for a "Signal Lab" / candidate-signal discovery feature feeding V2.2 Community Signals
+- [ ] Only after that ships and proves the batch-artifact pattern, evaluate `rsi_search` / `strategy_generation` for a "Signal Lab" / candidate-signal discovery feature feeding V2.3 Community Signals
 - [ ] Evaluate `quantstats-js` separately from the Signal Lab track — it's an analytics/reporting upgrade, not a discovery tool. Would require deciding whether to (a) store daily equity-curve series per strategy (schema change) to feed it properly, or (b) adapt just its metric-formula layer against Atlas's existing summary metrics without the full tearsheet/daily-series machinery
 - [ ] Evaluate `local-maestro` as a separate "portfolio builder" feature (multi-strategy correlation/CARP analysis) rather than folding it into per-strategy tooling — it answers a different question (how strategies interact) than the other four (is this one strategy robust/improvable). Would share the daily-equity-curve schema gap with `quantstats-js`; worth solving that gap once for both if both are ever pursued
 - [ ] Any strategy-JSON mutation (insertion of discovered signals) must be reviewed carefully — these tools write modified strategy JSON meant for re-import into Composer; Atlas has never mutated strategy definitions, only displayed them
