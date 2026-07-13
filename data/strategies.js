@@ -1795,5 +1795,64 @@ window.STRATEGIES_DATA = [
     ],
     "risk_profile": "Conservative. The 17.4% ARR over 27.2 years (6,862 trading days from April 1999) reflects consistent defensive positioning with a QQQ dip-buy layer. The 19.6% max drawdown is among the lowest in this library, achieved across a window that includes the dot-com crash, 2008 financial crisis, and 2022 tech bear. The 16.8% standard deviation is among the lowest in the library. The Calmar ratio of 0.89 and Sharpe of 1.04 are modest but earned over a demanding 27-year backtest covering catastrophic bear markets. The trailing 1-year return of 2.9% indicates the strategy has significantly underperformed the broader bull market in recent years, as expected for a strategy that holds unleveraged QQQ only during brief extreme oversold windows and otherwise stays in consumer staples or bonds. VBF (Invesco Bond Fund, ticker BFUGX) is an actively managed intermediate-term bond fund; investors replicating this strategy today might substitute a passive alternative like BND or AGG.",
     "author_note": "The strategy notes four versions by start date in its Composer description: V0.0 (1999), V0.1 (2007), V0.2 (2010), V0.3 (2011). The (23,19,1999) in the symphony name likely refers to a specific backtest start date of November 23 or November 19, 1999. This page covers V0.0 only."
+  },
+  {
+    "slug": "sometimes-tqqq",
+    "name": "Sometimes TQQQ (Original)",
+    "symphony_url": "https://app.composer.trade/symphony/MyRyWhvbdxTsRfzHmE1U/details",
+    "symphony_id": "MyRyWhvbdxTsRfzHmE1U",
+    "annualized_rate_of_return": 3.2650390299608283,
+    "max_drawdown": -0.4554908804460056,
+    "cumulative_return": 1900491458.4691942,
+    "calmar_ratio": 7.168176510501772,
+    "sharpe_ratio": 2.7576620101855247,
+    "standard_deviation": 0.5862676004518337,
+    "min": -0.199432378496201,
+    "mean": 0.006415586863367649,
+    "median": 0.0018283324794743372,
+    "max": 0.5731658167210465,
+    "trailing_one_month_return": 0.15946686002260924,
+    "trailing_three_month_return": 0.69407115560822,
+    "trailing_one_year_return": 1.3647787052930371,
+    "backtest_days": 3721,
+    "description": "A five-regime TQQQ framework that runs unconditional RSI dip-buy and overbought gates first, then routes the bull market through Choppy, Bull 1, and Bull 2 sub-strategies and the bear market through Bear 1 and Bear 2, using layered bond vs. equity momentum signals to decide when TQQQ exposure is warranted and when to rotate to SQQQ, GLD, PSQ, or BIL.",
+    "tags": [
+      "rsi",
+      "leveraged-etfs",
+      "inverse-etfs",
+      "200d-ma",
+      "vix-tiers",
+      "mean-reversion"
+    ],
+    "last_updated": "2026-07-13",
+    "how_it_works": [
+      "'Sometimes TQQQ' describes the strategy's core design principle: TQQQ (3x Nasdaq 100) is the preferred holding, but only under specific conditions — hence 'sometimes.' Two priority checks run before any regime analysis. If QQQ's 10-day RSI falls below 32, the strategy immediately rotates to TECL (3x technology sector ETF), entering tech recoveries slightly above the classic 30 threshold for earlier positioning. If QQQ is not that oversold but SPY's 10-day RSI falls below 30 (a broader market capitulation signal), it rotates to UPRO (3x S&P 500). These two dip-buy gates are unconditional: they fire regardless of what the SPY 200-day moving average or any other regime signal says. Their counterparts at the upper end of the RSI range are overbought exits: if QQQ RSI(10) exceeds 81 or SPY RSI(10) exceeds 80, the strategy buys UVXY (2x long VIX) as an overbought hedge, converting extreme RSI readings into volatility-long positions.",
+      "If no RSI extreme is active and SPY is above its simple moving average (bull market), the strategy enters one of three bull sub-regimes. A 60-day SPY RSI reading above 61 signals an extended or choppy bull market, routing to a sub-strategy that compares QQQ's 100-day RSI against VPU (Vanguard Utilities ETF) and uses CORP vs. BIL cumulative returns to choose between UPRO, SPY, SH (1x inverse S&P), or BIL. When the 60-day SPY RSI is below 61 (healthy trend pace), the strategy further splits on TLT vs. PSQ RSI: if TLT RSI is below PSQ RSI, it enters the Bull 1 sub-strategy; otherwise Bull 2. Both sub-strategies target TQQQ as the primary holding, using layered cumulative return comparisons (60-day BND vs. BIL, BND vs. SH RSI, BND vs. QQQ RSI) to confirm bond conditions support staying long 3x Nasdaq, and routing to PSQ (1x inverse Nasdaq), GLD, or SQQQ (3x inverse) when they do not.",
+      "When SPY falls below its moving average (bear market), the strategy routes into one of two bear sub-strategies. If QQQ has lost more than 12% over 60 days (Bear 1, deep bear), it distinguishes between a mature bear (QQQ down 20%+ over 252 days, suggesting capitulation near) and an ongoing decline, using QQQ and TQQQ moving averages plus 10-day bounce detection to choose between unleveraged QQQ, TQQQ dip-buys, and SQQQ. In the shallower bear (Bear 2, QQQ down less than 12% over 60 days), TQQQ's own moving average becomes the key gate: above it the strategy seeks exposure through TQQQ or SQQQ based on bond strength; below it the strategy rotates to GLD or SQQQ based on IEF vs. PSQ momentum. The layered architecture means the strategy almost always has a directional opinion rather than defaulting to cash."
+    ],
+    "signals": [
+      {
+        "name": "QQQ and SPY RSI(10) Dip-Buy Gates",
+        "tag": "mean-reversion",
+        "description": "Two unconditional priority gates: QQQ RSI(10) < 32 rotates to TECL (3x tech sector dip-buy, slightly above the classic 30 for early entry). SPY RSI(10) < 30 rotates to UPRO (3x S&P500 broad-market dip-buy). Both fire before any regime analysis, overriding the SPY 200d MA gate and sub-strategy routing."
+      },
+      {
+        "name": "UVXY Overbought Exits",
+        "tag": "vix-tiers",
+        "description": "QQQ RSI(10) > 81 or SPY RSI(10) > 80 triggers a rotation to UVXY (2x long VIX). Converts overbought RSI extremes into volatility-long positions, hedging against sudden reversals at market peaks. Applied in the bull market path after the dip-buy gates."
+      },
+      {
+        "name": "SPY 200d MA Bull and Bear Gate",
+        "tag": "200d-ma",
+        "description": "Primary trend gate: SPY above its simple moving average routes to bull sub-strategies (Choppy Market, Bull 1, Bull 2). Below routes to bear sub-strategies (Bear 1, Bear 2). Applied after the RSI priority gates; the five named sub-strategies only activate once this gate resolves."
+      },
+      {
+        "name": "Bond vs. Equity Momentum Router",
+        "tag": "momentum",
+        "description": "Multiple bond vs. equity momentum comparisons determine TQQQ exposure across sub-strategies: TLT RSI vs. PSQ RSI (routes Bull 1 vs. Bull 2), 60-day BND vs. BIL cumulative returns (confirms bond health supports TQQQ), IEF RSI vs. PSQ RSI (bear context), BND RSI vs. SH RSI. Strong bond momentum relative to inverse-equity signals supports TQQQ; weak bond momentum routes to PSQ, SQQQ, GLD, or BIL."
+      }
+    ],
+    "risk_profile": "Extremely Aggressive. The 326.5% ARR and approximately 1.9 billion times cumulative return over ~14.7 years (from UVXY's October 2011 launch through mid-2026) are among the highest backtest figures in this library. The 45.6% max drawdown is large in absolute terms but modest relative to these extraordinary returns, producing an exceptional 7.17 Calmar ratio and 2.76 Sharpe. The 58.6% standard deviation reflects the strategy's frequent 3x leveraged positions in TQQQ, TECL, and UPRO. The last_market_days_holdings show the strategy fully allocated to TQQQ at the time of data collection, illustrating the compounding concentration risk inherent in a $10,000-initial backtest that grew to approximately $19 trillion in the model. The trailing 1-year return of 136.5% reflects the 2025-2026 AI and tech bull market. The strategy's 14.7-year backtest covers the post-2011 secular bull market in tech, the 2020 COVID crash and recovery, and the 2022 tech bear, but misses the 2008 financial crisis. All figures should be interpreted with significant caution given the extreme compounding effect of leveraged ETFs over long periods.",
+    "author_note": "The symphony name in Composer is 'Sometimes TQQQ v2'. Authored by Guybogles (Discord: aly9923); last semantic update June 26, 2024. The backtest_days field (3721) is estimated from the API's first_day (15251) and last_market_day (20646) fields, as the size field returned None for this symphony. The backtest begins approximately October 2011 when UVXY first became available. The author notes: 'Please feel free to change the 60d SPY RSI check as well as any VIX ticker to whatever you feel comfortable with.'"
   }
 ];

@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.13.3
+**Version:** 1.13.4
 **Status:** Active
 **Last Updated:** 2026-07-09
 
@@ -108,7 +108,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 ### MVP: Shipped (V1.0–V1.2.1)
 
 **Strategy Library**
-- Index page listing all 28 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
+- Index page listing all 29 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
 - Each strategy has a dedicated page with: name, description, tags, "Open in Composer" CTA, an AI Summary (Claude-authored analysis above How It Works), plain-English logic breakdown, signals used (cross-linked to glossary), risk profile, and full metrics table
 - Strategy card titles are clickable links
 
@@ -118,7 +118,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - Concepts cross-link back to strategies that use them
 
 **Data Layer**
-- `data/strategies.json`: flat-file database of all 28 strategies
+- `data/strategies.json`: flat-file database of all 29 strategies
 - `data/glossary.json`: flat-file database of all 20 glossary concepts
 - Dual-mode loading: `window.STRATEGIES_DATA` / `window.GLOSSARY_DATA` globals for `file://` compatibility; `fetch()` fallback for HTTP
 - `scripts/update_metrics.py`: reusable script to refresh all metrics and logic trees from the Composer API
@@ -257,7 +257,7 @@ ComposerAtlas/
 ├── css/
 │   └── main.css                # Full design system: tokens, layout, components
 ├── data/
-│   ├── strategies.json         # 28 strategy entries, source of truth
+│   ├── strategies.json         # 29 strategy entries, source of truth
 │   ├── strategies.js           # Same data as window.STRATEGIES_DATA, for file:// compat
 │   ├── glossary.json           # 8 glossary concept entries, source of truth
 │   ├── glossary.js             # Same data as window.GLOSSARY_DATA, for file:// compat
@@ -1333,6 +1333,7 @@ All 24 Composer Atlas strategies with their Composer symphony IDs:
 | 10d BND vs. 10d SPHB (Original) | `0HCtnEKGw1PRt8Om77a3` |
 | Dip Buying Tech | `98cACZSS00eDg8Kv5BBV` |
 | Ob Os Staple my Bonds (Original) | `OmMmeWyyAu0IRN2yOP6k` |
+| Sometimes TQQQ (Original) | `MyRyWhvbdxTsRfzHmE1U` |
 
 Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 

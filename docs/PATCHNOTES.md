@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.13.4] - 2026-07-13
+
+### Added: Sometimes TQQQ (Original) — 29 strategies total
+
+- **Sometimes TQQQ (Original)** (`sometimes-tqqq`, symphony `MyRyWhvbdxTsRfzHmE1U`): Five-regime TQQQ framework. Two unconditional priority gates: QQQ RSI(10) < 32 rotates to TECL (3x tech dip-buy); SPY RSI(10) < 30 rotates to UPRO (3x S&P500 dip-buy). Overbought guards: QQQ RSI(10) > 81 or SPY RSI(10) > 80 rotates to UVXY. Bull market routes through three sub-strategies (Choppy Market, Bull 1, Bull 2) using SPY 60d RSI and TLT vs. PSQ momentum; bear market through two (Bear 1 deep, Bear 2 shallow). Bond vs. equity momentum comparisons (BND vs. BIL, IEF vs. PSQ, BND vs. SH) determine TQQQ vs. PSQ/SQQQ/GLD/BIL at each sub-strategy. ARR 326.5%, max DD 45.6%, Sharpe 2.76, Calmar 7.17, ~14.7-year backtest from ~October 2011 (UVXY launch). Authored by Guybogles (Discord: aly9923). Tags: `rsi`, `leveraged-etfs`, `inverse-etfs`, `200d-ma`, `vix-tiers`, `mean-reversion`.
+
+**Files changed:** `data/strategies.json`, `data/strategies.js`, `docs/PATCHNOTES.md`, `docs/PRD.md`
+
+---
+
 ## [1.13.3] - 2026-07-09
 
 ### Fixed: RSI signal colors never actually rendered (CSS specificity bug)
