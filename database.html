@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Browse the full 6,500+ symphony database with a leaderboard and screener (in progress).">
+  <meta name="description" content="Browse the full 6,500+ symphony database with a leaderboard and screener.">
   <title>Database: Composer Atlas</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/main.css">
@@ -20,9 +20,7 @@
         <p style="color:var(--color-secondary);font-size:1.0625rem">
           A community-sourced database of thousands of Composer.trade symphonies, not just the 25 curated strategies.
         </p>
-        <p style="color:var(--color-secondary);font-size:1.0625rem">
-          This section is a work in progress.
-        </p>
+        <div id="db-updated-badge" style="margin-top:12px"></div>
       </div>
 
       <div class="db-tabs" role="tablist" aria-label="Database views">
@@ -1173,8 +1171,18 @@
       return rowsFromColumnar(await res.json());
     }
 
+    function renderUpdatedBadge(entries) {
+      const dates = entries.map(e => e.refresh_date).filter(Boolean);
+      if (!dates.length) return;
+      const latest = dates.reduce((a, b) => (a > b ? a : b));
+      document.getElementById('db-updated-badge').innerHTML = `
+        <span class="updated-badge"><span class="updated-badge-dot"></span>Last database update: ${formatDate(latest)}</span>
+      `;
+    }
+
     (async function () {
       dbEntries = await loadFullDatabase();
+      renderUpdatedBadge(dbEntries);
       recomputeAllEntries();
       renderTablePage();
       buildBucketOptions();

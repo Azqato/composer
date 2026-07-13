@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.13.5] - 2026-07-13
+
+### Replaced "work in progress" text with a Last-Updated badge
+
+`database.html`'s "This section is a work in progress." line is gone, replaced with a pill badge (green dot + "Last database update: [date]") computed client-side as the max `refresh_date` across all loaded entries — same visual pattern as an equivalent badge on a sibling site. `rsi.html`'s existing "Last refreshed" line was restyled to match the same `.updated-badge` component instead of being plain text. Also dropped the stale "(in progress)" from `database.html`'s meta description.
+
+**Files changed:** `database.html`, `rsi.html`, `css/main.css`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.13.4] - 2026-07-13
 
 ### Added: Sometimes TQQQ (Original) — 29 strategies total

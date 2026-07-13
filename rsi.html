@@ -20,7 +20,7 @@
         <p style="color:var(--color-secondary);font-size:1.0625rem">
           Current 10-day RSI for the 20 ETF tickers used as dip-buy signals in Frontrunner-family strategies. Low RSI means a ticker is oversold and a Frontrunner branch built around it may be active; high RSI means it's overbought.
         </p>
-        <p id="rsi-refreshed" style="color:var(--color-secondary);font-size:0.875rem"></p>
+        <div id="rsi-refreshed" style="margin-top:12px"></div>
       </div>
 
       <div id="rsi-content">
@@ -122,8 +122,9 @@
       (async function () {
         const payload = await loadRsi();
         tickers = payload.tickers;
-        document.getElementById('rsi-refreshed').textContent =
-          `Last refreshed: ${new Date(payload.refreshed_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}`;
+        const refreshedStr = new Date(payload.refreshed_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+        document.getElementById('rsi-refreshed').innerHTML =
+          `<span class="updated-badge"><span class="updated-badge-dot"></span>Last refreshed: ${refreshedStr}</span>`;
         applySort();
         render();
       })().catch(err => {
