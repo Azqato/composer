@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.13.7
+**Version:** 1.13.8
 **Status:** Active
 **Last Updated:** 2026-07-13
 
@@ -1720,6 +1720,22 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 - [ ] Performance chart per strategy
 - [ ] Expand strategy library toward 50+ entries
 - [ ] Expand glossary
+- [ ] **Cross-link curated strategies ↔ full database (decided 2026-07-13, not yet built — see below)**
+
+#### Cross-linking the curated 29 to the full database (decided 2026-07-13)
+
+**Background:** confirmed all 29 curated strategies (`data/strategies.json`) already exist as rows in the full database (`data/database.json`/`database_summary.json`), matched exactly by `symphony_id` — they are not disjoint datasets, just two views over overlapping data. Both pipelines independently call the same Composer backtest endpoint with identical parameters (`capital: 10000`, `broker: alpaca`, same slippage/fee flags) for the same 29 symphonies, on two separate schedules (`update_metrics.py` vs. `refresh_full_database.py`), both gated by the same 7-day staleness window — genuinely redundant work computing the same numbers twice.
+
+**Two options were considered:**
+- **Option A (chosen): cross-link only.** Keep both pipelines fully independent — no schema, script, or workflow changes. Purely additive navigation between the two existing views.
+- **Option B (explicitly deferred, not rejected): single source of truth for metrics.** Have `strategies.json` stop independently backtesting the 29 curated symphonies and instead join to `database_summary.json` by `symphony_id` for its numeric metrics, keeping `strategies.json` as an editorial-only layer (`description`/`ai_summary`/`how_it_works`/`signals`/`risk_profile`/`tags`/`slug`, none of which exist in the raw database and can never be derived from it). Rejected for now specifically because it introduces a real coupling risk that needs its own decision before being safe to build: if a curated strategy's row in the full database ever gets `flag`'d (`excluded`/`caution`/`duplicate`/`retry`) or a refresh fails, the curated pages could go stale or blank with no defined fallback. Revisit this as its own future decision, not bundled into Option A.
+
+**Option A implementation plan (not yet built):**
+- [ ] Strategy detail pages (`strategies.html?slug=X`) get a "View in full database →" link to that symphony's row in `database.html`. Requires a way to deep-link to a specific `symphony_id`/row that doesn't exist today (e.g. a `?symphony_id=X` query param that pre-filters/scrolls the All Strategies table to that row) — this sub-piece needs its own small design pass at implementation time, not just a static link to `database.html`.
+- [ ] `database.html` rows whose `symphony_id` matches one of the 29 curated strategies get a small "★ Curated" badge/indicator, linking back to that strategy's `strategies.html?slug=X` detail page. Needs a client-side lookup set built from `strategies.js`'s `symphony_id`s (cheap, only 29 entries, no new data file needed).
+- [ ] No changes to `data/strategies.json`, `data/database.json`, `scripts/update_metrics.py`, or `scripts/refresh_full_database.py` — this is UI/navigation only.
+
+**Explicitly not in scope for this item:** eliminating the duplicated metrics refresh (that's Option B, deferred), any change to which fields live in which file, and any change to refresh schedules.
 
 ### V2.3: Community Signals
 

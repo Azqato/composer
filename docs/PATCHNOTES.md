@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.13.8] - 2026-07-13
+
+### Roadmap: planned cross-links between curated strategies and the full database (V2.2)
+
+Documentation only, nothing implemented. Confirmed all 29 curated strategies already exist as rows in the full database (matched by `symphony_id`), and that both pipelines redundantly backtest the same 29 symphonies via identical Composer API calls on separate schedules. Decided to add navigational cross-links only (a "View in full database" link from strategy detail pages, a "★ Curated" badge on matching `database.html` rows) rather than merging the two metrics pipelines into one source of truth — that bigger option was considered and explicitly deferred (not rejected) pending a real decision on flagged-row fallback behavior, since it introduces a coupling risk the cross-link-only approach doesn't. Full writeup added under V2.2 in Section 14.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.13.7] - 2026-07-13
 
 ### Fixed: formatDate() off-by-one day in timezones behind UTC
