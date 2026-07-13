@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.13.6] - 2026-07-13
+
+### Fixed: RSI workflow silently never fired on its first weekday test
+
+Data was last refreshed Friday 2026-07-10 23:06 UTC — all 3 of Friday's slots ran fine, but Monday's (2026-07-13) 15:00 UTC slot, the schedule's first real weekday test, never fired at all (confirmed via the GitHub Actions API: 0 runs since Friday, while sibling scheduled workflows in this repo fired normally in the same window). Root cause: `refresh-rsi.yml`'s cron was `0 15,19,22 * * 1-5`, on-the-hour — GitHub Actions' most congested scheduling slot, prone to being delayed for hours or dropped on public repos. The two sibling workflows (`refresh-full-database.yml`, `update-metrics.yml`) already avoid this by offsetting their cron minute (`:07`, `:20` respectively); `refresh-rsi.yml` was the one workflow that didn't get the same treatment when it was written. Fixed by changing to `7 15,19,22 * * 1-5`.
+
+**Files changed:** `.github/workflows/refresh-rsi.yml`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.13.5] - 2026-07-13
 
 ### Replaced "work in progress" text with a Last-Updated badge

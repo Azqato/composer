@@ -2,9 +2,14 @@ name: Refresh RSI Signals
 
 on:
   schedule:
-    # 15:00, 19:00, 22:00 UTC, weekdays only (post-open, pre-close, post-close
+    # 15:07, 19:07, 22:07 UTC, weekdays only (post-open, pre-close, post-close
     # across both EDT/EST). See docs/PRD.md V2.1 for the full cadence rationale.
-    - cron: '0 15,19,22 * * 1-5'
+    # Offset 7 minutes past the hour, same as refresh-full-database.yml -
+    # on-the-hour (:00) is GitHub Actions' most congested scheduling slot and
+    # can be delayed for hours or dropped entirely on public repos. The
+    # original `0 15,19,22 * * 1-5` never fired on its first weekday test
+    # (Mon 2026-07-13); this offset is the fix.
+    - cron: '7 15,19,22 * * 1-5'
   workflow_dispatch:
 
 permissions:

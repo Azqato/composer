@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.13.5
+**Version:** 1.13.6
 **Status:** Active
 **Last Updated:** 2026-07-13
 
@@ -1707,7 +1707,7 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 - [x] `scripts/refresh_rsi.py`: fetches Yahoo Finance daily bars (`v8/finance/chart`, no API key), computes Wilder's RSI(10), writes `data/rsi.json` + `data/rsi.js` atomically
 - [x] `rsi.html`: sortable table (Ticker/Name/RSI(10d)/Signal), default sort descending by RSI, "Last refreshed" timestamp, no pagination (20 rows)
 - [x] Nav: "RSI" link added to `js/app.js` (desktop + mobile), slotted after "Database" and before "Azqato Invests"/"Glossary"
-- [x] `.github/workflows/refresh-rsi.yml`: automated 3x/day weekdays, cron `0 15,19,22 * * 1-5` (post-open/pre-close/post-close across both EDT/EST)
+- [x] `.github/workflows/refresh-rsi.yml`: automated 3x/day weekdays, cron `7 15,19,22 * * 1-5` (post-open/pre-close/post-close across both EDT/EST). Originally `0 15,19,22 * * 1-5` (on-the-hour); never fired on its first weekday test (Mon 2026-07-13) because on-the-hour is GitHub Actions' most congested scheduling slot. Offset 7 minutes past the hour, matching `refresh-full-database.yml`'s existing pattern, to fix.
 - [ ] Sparklines: explicitly deferred to a future pass
 
 ### V2.2: Scale + Discovery (Curated Library)
