@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.13.7] - 2026-07-13
+
+### Fixed: formatDate() off-by-one day in timezones behind UTC
+
+The database Last-Updated badge showed "Jul 11, 2026" when the underlying `refresh_date` was actually `2026-07-12`. Root cause: `formatDate()` in `js/app.js` built a `Date` at UTC midnight (`iso + 'T00:00:00Z'`) but called `.toLocaleDateString()` without a `timeZone` option, so the browser rendered it in the viewer's local timezone — any timezone behind UTC (all of the Americas) shows the previous calendar day. Fixed by adding `timeZone: 'UTC'` to the formatting options. This is a shared helper used everywhere a date-only field is displayed (strategy detail pages' "Last Updated" row, the database badge, etc.), so the fix corrects all of them, not just the one badge that surfaced it.
+
+**Files changed:** `js/app.js`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.13.6] - 2026-07-13
 
 ### Fixed: RSI workflow silently never fired on its first weekday test
