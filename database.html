@@ -906,7 +906,7 @@
       { key: 'kurtosis', cap: 10, higher: false, get: e => e.kurtosis },
     ];
     const TOTAL_POSSIBLE = SCORE_METRICS.reduce((s, m) => s + m.cap, 0); // 1,000
-    const TIER_CUTS = [['S+', 0.01], ['S', 0.10], ['A', 0.20], ['B', 0.50], ['C', 0.75]]; // F = the rest
+    const TIER_CUTS = [['S+', 0.0025], ['S', 0.10], ['A', 0.20], ['B', 0.50], ['C', 0.75]]; // F = the rest
     const TIER_LABEL_CLASS = { 'S+': 'sp', S: 's', A: 'a', B: 'b', C: 'c', F: 'f' };
 
     // Category grouping + human labels, for the per-row score breakdown modal
@@ -1043,7 +1043,7 @@
       let html = `
         <p>Every strategy is scored on ${SCORE_METRICS.length} metrics grouped into ${SCORE_CATEGORIES.length} categories, ${TOTAL_POSSIBLE} points total. Each metric is scored by <strong>percentile rank</strong> among strategies with usable data, not its raw value, so a strategy is judged against its peers, not an arbitrary fixed scale. Metric weights aren't split evenly, they're set by how directly each one serves the goal of finding strategies with strong returns, long track records, and relatively low risk &mdash; Annualized Return, Max Drawdown, and Backtest Days carry the most weight; second-order shape statistics like Kurtosis carry the least.</p>
         <p>Only the top ~14% of a metric earns full marks, and the bottom ~14% earns zero, with a straight ramp in between. Missing data scores a hard zero for that one metric, the ${TOTAL_POSSIBLE}-point denominator never shrinks, so an incomplete strategy can never outscore a complete one just by having fewer things to fail.</p>
-        <p>Tiers are assigned by <strong>rank</strong>, not raw score: S+ = top 1% of scored strategies, S = next 9% (top 1-10%), A = next 10% (10-20%), B = next 30% (20-50%), C = next 25% (50-75%), F = bottom 25%.</p>
+        <p>Tiers are assigned by <strong>rank</strong>, not raw score: S+ = top 0.25% of scored strategies, S = next 9.75% (top 0.25-10%), A = next 10% (10-20%), B = next 30% (20-50%), C = next 25% (50-75%), F = bottom 25%.</p>
       `;
       SCORE_CATEGORIES.forEach(cat => {
         const catCap = cat.keys.reduce((s, k) => s + metricCap(k), 0);

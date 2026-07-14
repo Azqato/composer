@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.14.0
+**Version:** 1.14.1
 **Status:** Active
 **Last Updated:** 2026-07-13
 
@@ -1712,7 +1712,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 **Clamp constant raised from 0.22 to 0.14.** The clamp's "full marks" threshold is exactly `1 − Q` — V1.13's 0.22 meant anyone at or above the 78th percentile on a metric scored identically, with no reward for being at the 99th vs. the 80th. Tested empirically against the live pool at Q = 0.10 through 0.30: **lower Q raises the full-marks bar and pushes scores down** (Q=0.10 dropped the pool's top score to 867.6); **higher Q lowers that bar and pushes scores up** (Q=0.25 → 903.1 top score, Q=0.30 → 931.4). Landed on **0.14** — meaningfully tighter than V1.13's 0.22 (more differentiation among strong performers) without inflating the whole distribution the way Q=0.25+ started to. Confirmed this reshuffles rank order at the margins, not just score magnitude, as Q moves (different strategies benefit depending on exactly which of their metrics sit in the "almost-but-not-quite full marks" zone) — an accepted, expected side effect, not a bug.
 
-**S+ redefined as a real rank cut, not an unreachable perfect score.** New tier cuts: **S+ = top 1%**, **S = next 9% (top 1-10%)**, A = next 10% (10-20%), B = next 30% (20-50%), C = next 25% (50-75%), F = bottom 25%. This carves S+ out of what used to just be "S," rather than shifting every other tier's definition down a notch. Confirmed live: 62 entries land in S+ (≈1.0% of the 6,225 eligible pool) — a real, reachable, exclusive tier.
+**S+ redefined as a real rank cut, not an unreachable perfect score.** New tier cuts: **S+ = top 0.25%**, **S = next 9.75% (top 0.25-10%)**, A = next 10% (10-20%), B = next 30% (20-50%), C = next 25% (50-75%), F = bottom 25%. This carves S+ out of what used to just be "S," rather than shifting every other tier's definition down a notch. Initially set to top 1% (62/6,225 entries), tightened to top 0.25% after launch feedback that 1% produced too many S+ entries — confirmed live: **16 entries land in S+** (≈0.26% of the 6,225 eligible pool) at the final cut.
 
 - [x] `database.html`: `SCORE_METRICS` weights, `CLAMP_Q`, `TIER_CUTS`, `SCORE_CATEGORIES`, and `computeTiers()`'s S+ logic all updated to match
 - [x] Methodology modal narrative text rewritten to describe the new mechanics (4 categories, ~14% clamp threshold, S+/S/A/B/C/F rank cuts)

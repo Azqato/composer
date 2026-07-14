@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.1] - 2026-07-13
+
+### Tightened S+ tier from top 1% to top 0.25%
+
+Launch feedback: top 1% (62/6,225 eligible entries) produced too many S+ strategies. Tightened to top 0.25%, now 16 entries. S's band absorbs the difference (9.75% instead of 9%, keeping S+ combined with S at the same top-10% boundary); A/B/C/F unchanged.
+
+**Files changed:** `database.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.0] - 2026-07-13
 
 ### Shipped V1.17: Leaderboard scoring model revision
