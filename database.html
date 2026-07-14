@@ -860,57 +860,63 @@
       });
     }
 
-    // ---- Leaderboard tab (V1.13): relative-percentile scoring model. ----
-    // Methodology locked in docs/PRD.md Section 14 (V1.13): 20 metrics, 7
+    // ---- Leaderboard tab (V1.13, reweighted V1.17): relative-percentile scoring model. ----
+    // Methodology locked in docs/PRD.md Section 14 (V1.17): 20 metrics, 4
     // categories, 1,000 points total. Every metric is ranked by percentile
     // among eligible entries (not raw value), then run through a clamp curve
-    // so only the top ~22% of a metric earns full marks; missing data scores
-    // a hard zero. Tiers are assigned by rank (S/A/B/C/F at 10/10/20/25/25%),
-    // ties round up into the better tier, plus a special S+ for a perfect
-    // 1,000/1,000. Noise-flagged entries are always excluded from the
-    // eligible pool (V1.14 Part B) - unlike All Strategies/Screener, this
-    // is not user-toggleable.
-    const CLAMP_Q = 0.22;
+    // so only the top ~14% of a metric earns full marks; missing data scores
+    // a hard zero. Tiers are assigned by rank (S+/S/A/B/C/F at
+    // 1/9/10/20/25/25%), ties round up into the better tier. Noise-flagged
+    // entries are always excluded from the eligible pool (V1.14 Part B) -
+    // unlike All Strategies/Screener, this is not user-toggleable.
+    //
+    // V1.17 (2026-07-13): metric weights re-derived from a 1.0-10.0
+    // importance rating exercise against the site's actual goal (best
+    // return + long backtest + relatively safe), not the original
+    // category-based point allocation. Clamp constant raised from 0.22 to
+    // 0.14 so top performers separate more (a flatter clamp meant anyone
+    // above the 78th percentile on a metric scored identically). S+
+    // redefined from "literal perfect 1,000/1,000" (which never fired) to
+    // a real top-1% rank cut. See docs/PRD.md Section 14, V1.17 for the
+    // full rationale behind every weight.
+    const CLAMP_Q = 0.14;
     function scoreClamp(x, lo, hi) { return x < lo ? lo : (x > hi ? hi : x); }
     function pointsFromPct(p, cap) { return scoreClamp(cap * (p - CLAMP_Q) / (1 - 2 * CLAMP_Q), 0, cap); }
 
     const SCORE_METRICS = [
-      { key: 'arr', cap: 100, higher: true, get: e => e.annualized_rate_of_return },
-      { key: 'median', cap: 100, higher: true, get: e => e.median },
-      { key: 't1y', cap: 50, higher: true, get: e => e.trailing_one_year_return },
-      { key: 't3m', cap: 25, higher: true, get: e => e.trailing_three_month_return },
-      { key: 't1m', cap: 15, higher: true, get: e => e.trailing_one_month_return },
-      { key: 't2w', cap: 10, higher: true, get: e => e.trailing_two_week_return },
-      { key: 'sharpe', cap: 50, higher: true, get: e => e.sharpe_ratio },
-      { key: 'calmar', cap: 50, higher: true, get: e => e.calmar_ratio },
-      { key: 'sortino', cap: 50, higher: true, get: e => e.sortino_ratio },
-      { key: 'win_rate', cap: 50, higher: true, get: e => e.win_rate },
-      { key: 'max_dd', cap: 100, higher: true, get: e => e.max_drawdown },
-      { key: 'std_dev', cap: 100, higher: false, get: e => e.standard_deviation },
-      { key: 'skew', cap: 40, higher: true, get: e => e.skewness },
-      { key: 'tail_ratio', cap: 30, higher: true, get: e => e.tail_ratio },
-      { key: 'kurtosis', cap: 30, higher: false, get: e => e.kurtosis },
-      { key: 'top1day', cap: 50, higher: false, get: e => e.top_one_day_contribution },
-      { key: 'top5pct', cap: 25, higher: false, get: e => e.top_five_percent_day_contribution },
-      { key: 'top10pct', cap: 25, higher: false, get: e => e.top_ten_percent_day_contribution },
-      { key: 'backtest', cap: 75, higher: true, get: e => e.backtest_days },
+      { key: 'arr', cap: 99, higher: true, get: e => e.annualized_rate_of_return },
+      { key: 'max_dd', cap: 98, higher: true, get: e => e.max_drawdown },
+      { key: 'backtest', cap: 97, higher: true, get: e => e.backtest_days },
+      { key: 'calmar', cap: 96, higher: true, get: e => e.calmar_ratio },
+      { key: 'sharpe', cap: 85, higher: true, get: e => e.sharpe_ratio },
+      { key: 'sortino', cap: 75, higher: true, get: e => e.sortino_ratio },
+      { key: 't1y', cap: 64, higher: true, get: e => e.trailing_one_year_return },
+      { key: 'median', cap: 59, higher: true, get: e => e.median },
+      { key: 'win_rate', cap: 48, higher: true, get: e => e.win_rate },
+      { key: 'top1day', cap: 43, higher: false, get: e => e.top_one_day_contribution },
+      { key: 'skew', cap: 37, higher: true, get: e => e.skewness },
+      { key: 't3m', cap: 32, higher: true, get: e => e.trailing_three_month_return },
+      { key: 'top5pct', cap: 32, higher: false, get: e => e.top_five_percent_day_contribution },
+      { key: 'tail_ratio', cap: 27, higher: true, get: e => e.tail_ratio },
       { key: 'oos', cap: 25, higher: true, get: oosDaysValue },
+      { key: 'std_dev', cap: 25, higher: false, get: e => e.standard_deviation },
+      { key: 'top10pct', cap: 21, higher: false, get: e => e.top_ten_percent_day_contribution },
+      { key: 't1m', cap: 16, higher: true, get: e => e.trailing_one_month_return },
+      { key: 't2w', cap: 11, higher: true, get: e => e.trailing_two_week_return },
+      { key: 'kurtosis', cap: 10, higher: false, get: e => e.kurtosis },
     ];
     const TOTAL_POSSIBLE = SCORE_METRICS.reduce((s, m) => s + m.cap, 0); // 1,000
-    const TIER_CUTS = [['S', 0.10], ['A', 0.20], ['B', 0.50], ['C', 0.75]]; // F = the rest
+    const TIER_CUTS = [['S+', 0.01], ['S', 0.10], ['A', 0.20], ['B', 0.50], ['C', 0.75]]; // F = the rest
     const TIER_LABEL_CLASS = { 'S+': 'sp', S: 's', A: 'a', B: 'b', C: 'c', F: 'f' };
 
     // Category grouping + human labels, for the per-row score breakdown modal
     // and the Methodology modal. Mirrors the locked model in docs/PRD.md
-    // Section 14, V1.13, keep both in sync if the model ever changes.
+    // Section 14, V1.17, keep both in sync if the model ever changes.
     const SCORE_CATEGORIES = [
-      { label: 'A. Return', keys: ['arr', 'median'] },
-      { label: 'B. Trailing Returns', keys: ['t1y', 't3m', 't1m', 't2w'] },
-      { label: 'C. Risk-Adjusted', keys: ['sharpe', 'calmar', 'sortino', 'win_rate'] },
-      { label: 'D. Downside Risk', keys: ['max_dd', 'std_dev'] },
-      { label: 'E. Asymmetry / Shape', keys: ['skew', 'tail_ratio', 'kurtosis'] },
-      { label: 'F. Concentration / Fragility', keys: ['top1day', 'top5pct', 'top10pct'] },
-      { label: 'G. Longevity', keys: ['backtest', 'oos'] },
+      { label: 'Return', keys: ['arr', 't1y', 'median', 't3m', 't1m', 't2w'] },
+      { label: 'Risk-Adjusted / Downside Risk', keys: ['max_dd', 'calmar', 'sharpe', 'sortino', 'win_rate', 'std_dev'] },
+      { label: 'Shape & Concentration', keys: ['top1day', 'skew', 'top5pct', 'tail_ratio', 'top10pct', 'kurtosis'] },
+      { label: 'Longevity', keys: ['backtest', 'oos'] },
     ];
     const METRIC_LABELS = {
       arr: 'Annualized Rate of Return', median: 'Median Period Return',
@@ -970,7 +976,7 @@
       let ci = 0;
       ranked.forEach((r, i) => {
         while (ci < cuts.length && i >= cuts[ci]) ci++;
-        r.tier = r.score >= TOTAL_POSSIBLE ? 'S+' : (ci < TIER_CUTS.length ? TIER_CUTS[ci][0] : 'F');
+        r.tier = ci < TIER_CUTS.length ? TIER_CUTS[ci][0] : 'F';
       });
       return ranked; // already sorted by score descending
     }
@@ -1035,9 +1041,9 @@
 
     function methodologyHtml() {
       let html = `
-        <p>Every strategy is scored on ${SCORE_METRICS.length} metrics across ${SCORE_CATEGORIES.length} categories, ${TOTAL_POSSIBLE} points total. Each metric is scored by <strong>percentile rank</strong> among strategies with usable data, not its raw value, so a strategy is judged against its peers, not an arbitrary fixed scale.</p>
-        <p>Only the top ~22% of a metric earns full marks, and the bottom ~22% earns zero, with a straight ramp in between. That keeps a perfect score rare instead of common. Missing data scores a hard zero for that one metric, the ${TOTAL_POSSIBLE}-point denominator never shrinks, so an incomplete strategy can never outscore a complete one just by having fewer things to fail.</p>
-        <p>Tiers are assigned by <strong>rank</strong>, not raw score: S = top 10% of scored strategies, A = next 10%, B = next 20% (top 20-50%), C = next 25% (50-75%), F = bottom 25%. A perfect ${TOTAL_POSSIBLE}/${TOTAL_POSSIBLE} earns a special S+ tier.</p>
+        <p>Every strategy is scored on ${SCORE_METRICS.length} metrics grouped into ${SCORE_CATEGORIES.length} categories, ${TOTAL_POSSIBLE} points total. Each metric is scored by <strong>percentile rank</strong> among strategies with usable data, not its raw value, so a strategy is judged against its peers, not an arbitrary fixed scale. Metric weights aren't split evenly, they're set by how directly each one serves the goal of finding strategies with strong returns, long track records, and relatively low risk &mdash; Annualized Return, Max Drawdown, and Backtest Days carry the most weight; second-order shape statistics like Kurtosis carry the least.</p>
+        <p>Only the top ~14% of a metric earns full marks, and the bottom ~14% earns zero, with a straight ramp in between. Missing data scores a hard zero for that one metric, the ${TOTAL_POSSIBLE}-point denominator never shrinks, so an incomplete strategy can never outscore a complete one just by having fewer things to fail.</p>
+        <p>Tiers are assigned by <strong>rank</strong>, not raw score: S+ = top 1% of scored strategies, S = next 9% (top 1-10%), A = next 10% (10-20%), B = next 30% (20-50%), C = next 25% (50-75%), F = bottom 25%.</p>
       `;
       SCORE_CATEGORIES.forEach(cat => {
         const catCap = cat.keys.reduce((s, k) => s + metricCap(k), 0);

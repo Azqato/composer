@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.0] - 2026-07-13
+
+### Shipped V1.17: Leaderboard scoring model revision
+
+Reweighted all 20 existing metrics against the site's actual mission (best return + long backtest + relatively safe) instead of the original category-based point split, raised the clamp constant from 0.22 to 0.14 so top performers separate more, and redefined S+ from an unreachable "literal perfect score" into a real top-1% rank cut (confirmed live: 62 of 6,225 eligible entries now land in S+). Category display collapsed from 7 to 4 (Return / Risk-Adjusted+Downside Risk / Shape & Concentration / Longevity) in the breakdown and Methodology modals. No metrics were dropped; nothing changed about eligibility or the noise-exclusion rule. Full rationale, every metric's weight, and the clamp-constant testing that led to 0.14 are documented in `docs/PRD.md` Section 14, V1.17.
+
+**Files changed:** `database.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.13.8] - 2026-07-13
 
 ### Roadmap: planned cross-links between curated strategies and the full database (V2.2)

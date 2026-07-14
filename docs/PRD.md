@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.13.8
+**Version:** 1.14.0
 **Status:** Active
 **Last Updated:** 2026-07-13
 
@@ -166,7 +166,7 @@ reasoning). As of v1.12.0, `data/database.json`/`.js`, `data/database_summary.js
 - [x] Target schema expansion: 17 new fields locked and captured (v1.9.1)
 - [x] Filter panel (shared component for All Strategies; Screener has its own separate always-visible bucketed filter grid as of v1.11.15) (v1.10.x-v1.11.15)
 - [x] Screener tab, full multi-view column switcher (v1.10.x, redesigned v1.11.15)
-- [x] Leaderboard tab, 20-metric/1,000-point scoring model (v1.10.x) — flagged for a scoring revision, see V1.17 Roadmap
+- [x] Leaderboard tab, 20-metric/1,000-point scoring model (v1.10.x), reweighted and S+ redefined per V1.17 (2026-07-13)
 - [x] Performance Fix: columnar + float-rounded summary JSON, ~80% size reduction (v1.10.x)
 - [x] Noise filtering (test ports, "Invest Copy"/duplicate clusters, WIP builds): implemented and run (V1.14, v1.11.22-23) — permanent API failures and name-pattern noise flagged `excluded`, near-identical duplicates flagged `duplicate` via logic-tree structural comparison, all filterable via the Working/Broken/Duplicates/All toggle
 - [x] Full-scale metric refresh: complete, all entries refreshed at least once; ongoing via the weekly automated workflow above
@@ -1678,11 +1678,46 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 
 ### V1.17: Leaderboard Scoring Revision
 
-**Status:** Backlog — user feedback (2026-07-08): current scoring "isn't as good as I would like it to be." Not yet scoped; no specifics on what's wrong or what a better model looks like. V2.1 (Live RSI Signals Page), which was explicitly moved ahead of this per user request (2026-07-08), is now complete (2026-07-09); this is next once concrete feedback is available.
+**Status:** Complete (2026-07-13). Supersedes V1.13's scoring model (that section is left intact above as the historical launch record; this section is the current live methodology).
 
-- [ ] Get concrete feedback on what's underperforming in the current model (Section 14 V1.13: 20 metrics, 7 categories, 1,000 points, percentile-rank + clamp curve, rank-based S/A/B/C/F tiers) — which tier placements feel wrong, which metrics feel over/under-weighted, or is it the mechanism itself (percentile ranking, the clamp curve, category weights)?
-- [ ] Decide whether this is a weighting/tuning pass on the existing model or a more fundamental rework
-- [ ] Re-verify against the now-complete, deduplicated dataset (V1.14 excludes noise/duplicates from the eligible pool as of v1.11.22/23 — the original model was tuned before that exclusion existed)
+**Why this happened:** user feedback (2026-07-08) that the V1.13 scoring "isn't as good as I would like it to be," with no specifics initially. Rather than guess, the actual mission was established first: *identify symphonies with the best return and a long backtest, while being relatively safe, with long-term performance* — a narrower, more specific goal than V1.13's original "well-rounded across 20 stats" design. V1.13's real problems against that mission, identified before any rework began:
+
+- Longevity was only 10% of the score (100/1,000), despite "long backtest" being an explicitly named, co-equal requirement.
+- Half the model (Asymmetry/Shape + Concentration/Fragility, 200/1,000) was metrics most people don't reason about at all (Skewness, Kurtosis, Tail Ratio, three "top-day contribution" stats), heavily redundant with Max Drawdown/Standard Deviation.
+- Four separate risk-adjusted ratios (Sharpe/Calmar/Sortino/Win Rate) mostly measured the same underlying idea from slightly different angles.
+- The clamp constant (0.22) was flagged at V1.13 launch for "post-rollout re-evaluation against the actual score distribution at full scale" — that re-check never happened.
+- S+ required a literal perfect 1,000/1,000, which meant it never fired in practice — confirmed live: even the single best-scoring strategy in the entire 6,225-entry eligible pool topped out around 890-900/1,000, nowhere near a perfect score, because no strategy clears the clamp's full-marks threshold on all 20 metrics simultaneously.
+
+**Process:** rather than rebuild from a blank slate, every metric from V1.13 was individually rated 1.0-10.0 for how directly it serves the stated mission, with a written rationale per rating (self-reviewed once for internal consistency — e.g. Sortino Ratio was initially under-rated relative to Standard Deviation despite being the more mission-aligned metric, since it only penalizes downside volatility rather than symmetric swings; corrected on review). Point weights were then derived proportionally from those importance scores (`points = 1000 × score ÷ sum-of-all-scores`), not from a category-based allocation. Two real strategies (zoop's "TQQQ FOR THE LONG TERM (2026 Edition)" and "Sometimes TQQQ (2026 Edition)") were used as running test cases throughout — same backtest length and `oos_date`, very different Return/Safety profiles — to concretely observe how weight changes actually moved real scores, rather than reasoning about it in the abstract. All candidate models were validated by running them against the live `database_summary.json` (6,225 eligible entries) via a throwaway Python test script mirroring `database.html`'s exact scoring code, output to a reviewable xlsx (url/tier/score), before anything touched the live site.
+
+**Locked scoring model: same 20 metrics as V1.13, reweighted, no categories dropped:**
+
+| Metric | Points | Metric | Points |
+|---|---|---|---|
+| Annualized Rate of Return | 99 | Top 1-Day Contribution | 43 |
+| Max Drawdown | 98 | Skewness | 37 |
+| Backtest Days | 97 | 3-Month Trailing Return | 32 |
+| Calmar Ratio | 96 | Top 5% Day Contribution | 32 |
+| Sharpe Ratio | 85 | Tail Ratio | 27 |
+| Sortino Ratio | 75 | OOS Days | 25 |
+| 1-Year Trailing Return | 64 | Standard Deviation | 25 |
+| Median Period Return | 59 | Top 10% Day Contribution | 21 |
+| Win Rate | 48 | 1-Month Trailing Return | 16 |
+| | | 2-Week Trailing Return | 11 |
+| | | Kurtosis | 10 |
+
+Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_return`, `mean`, `min`, `max`, `herfindahl_index`, `total_costs`, `annualized_turnover`) — those exclusion reasons were never in question, only the weighting of what's already scored.
+
+**Category regrouping (display only, for the per-row breakdown modal and Methodology modal — doesn't affect scoring math):** V1.13's 7 categories collapsed to 4, matching the mission's actual shape rather than an arbitrary split: **Return** (6 metrics, 281 pts), **Risk-Adjusted / Downside Risk** (6 metrics, 427 pts), **Shape & Concentration** (6 metrics, 170 pts), **Longevity** (2 metrics, 122 pts).
+
+**Clamp constant raised from 0.22 to 0.14.** The clamp's "full marks" threshold is exactly `1 − Q` — V1.13's 0.22 meant anyone at or above the 78th percentile on a metric scored identically, with no reward for being at the 99th vs. the 80th. Tested empirically against the live pool at Q = 0.10 through 0.30: **lower Q raises the full-marks bar and pushes scores down** (Q=0.10 dropped the pool's top score to 867.6); **higher Q lowers that bar and pushes scores up** (Q=0.25 → 903.1 top score, Q=0.30 → 931.4). Landed on **0.14** — meaningfully tighter than V1.13's 0.22 (more differentiation among strong performers) without inflating the whole distribution the way Q=0.25+ started to. Confirmed this reshuffles rank order at the margins, not just score magnitude, as Q moves (different strategies benefit depending on exactly which of their metrics sit in the "almost-but-not-quite full marks" zone) — an accepted, expected side effect, not a bug.
+
+**S+ redefined as a real rank cut, not an unreachable perfect score.** New tier cuts: **S+ = top 1%**, **S = next 9% (top 1-10%)**, A = next 10% (10-20%), B = next 30% (20-50%), C = next 25% (50-75%), F = bottom 25%. This carves S+ out of what used to just be "S," rather than shifting every other tier's definition down a notch. Confirmed live: 62 entries land in S+ (≈1.0% of the 6,225 eligible pool) — a real, reachable, exclusive tier.
+
+- [x] `database.html`: `SCORE_METRICS` weights, `CLAMP_Q`, `TIER_CUTS`, `SCORE_CATEGORIES`, and `computeTiers()`'s S+ logic all updated to match
+- [x] Methodology modal narrative text rewritten to describe the new mechanics (4 categories, ~14% clamp threshold, S+/S/A/B/C/F rank cuts)
+- [x] Verified locally via a headless-Chrome screenshot of the live Leaderboard tab and Methodology modal before pushing — tier distribution (S+ 62 / S 560 / A 623 / B 1,868 / C 1,559 / F 1,553) and top-15 scores matched the validated Python test script exactly
+- [x] Eligibility gate unchanged from V1.13 (unflagged + `sharpe_ratio` present, not user-toggleable)
 
 ### V2.0: Full Database Goes Public
 
