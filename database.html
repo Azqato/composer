@@ -144,6 +144,7 @@
     let sortField = null;
     let sortDir = 'desc'; // 'asc' | 'desc'
     let allFlagMode = 'default';
+    let allNameQuery = '';
 
     // ---- Filter Panel component (V1.11) ----
     // Used by the All Strategies tab: hidden-by-default, specific-value
@@ -366,6 +367,9 @@
 
     function recomputeAllEntries() {
       filteredEntries = applyFlagMode(dbEntries, allFlagMode).filter(allFilterController.filterFn);
+      if (allNameQuery) {
+        filteredEntries = filteredEntries.filter(e => String(e.name || '').toLowerCase().includes(allNameQuery));
+      }
     }
 
     const allFilterController = createFilterController({
@@ -488,9 +492,12 @@
             <h2>All Strategies</h2>
             <span class="db-count-pill">${filteredEntries.length.toLocaleString()} results</span>
           </div>
-          <button class="btn btn-outline btn-sm" id="filter-btn-all">
-            <span aria-hidden="true">&#9776;</span> ${filterLabel}
-          </button>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="search-all" class="db-search-input" placeholder="Search by name..." value="${escapeHtml(allNameQuery)}">
+            <button class="btn btn-outline btn-sm" id="filter-btn-all">
+              <span aria-hidden="true">&#9776;</span> ${filterLabel}
+            </button>
+          </div>
         </div>
         <div class="db-tabs" role="tablist" aria-label="Flagged rows" style="margin-bottom:16px;border-bottom:none">
           ${flagToggleHtml(allFlagMode, 'flagmode-all')}
@@ -539,6 +546,19 @@
           currentPage = 1;
           renderTablePage();
         });
+      });
+
+      const allSearchInput = document.getElementById('search-all');
+      allSearchInput.addEventListener('input', (e) => {
+        allNameQuery = e.target.value.toLowerCase();
+        const cursorPos = e.target.selectionStart;
+        recomputeAllEntries();
+        applySort();
+        currentPage = 1;
+        renderTablePage();
+        const newInput = document.getElementById('search-all');
+        newInput.focus();
+        newInput.setSelectionRange(cursorPos, cursorPos);
       });
 
       allFilterController.rewire();
@@ -601,13 +621,17 @@
         if (n) {
           const at = p => vals[Math.min(n - 1, Math.max(0, Math.floor(p * n)))];
           const verb = f.verb || (f.direction === 'higher' ? 'Over' : 'Under');
+          // 9 deciles, loosest (matches most rows) to strictest, so the
+          // dropdown reads as a gradient from "almost everyone" to "top/
+          // bottom 10%" - same shape for every field regardless of
+          // direction, always 9 buckets + Any = 10 total options.
           if (f.direction === 'higher') {
-            [0.25, 0.50, 0.75, 0.90].forEach(p => {
+            [0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90].forEach(p => {
               const t = at(p);
               opts.push({ label: `${verb} ${fmtBucketValue(t, f.fmt)}`, min: t, max: null });
             });
           } else {
-            [0.75, 0.50, 0.25].forEach(p => {
+            [0.90, 0.80, 0.70, 0.60, 0.50, 0.40, 0.30, 0.20, 0.10].forEach(p => {
               const t = at(p);
               opts.push({ label: `${verb} ${fmtBucketValue(t, f.fmt)}`, min: null, max: t });
             });
@@ -705,10 +729,11 @@
     let screenerSortField = null;
     let screenerSortDir = 'desc';
     let screenerView = 'overview';
-    let screenerFlagMode = 'default';
 
+    // Screener always excludes flagged rows (Working only), same as
+    // Leaderboard - unlike All Strategies, this is not user-toggleable.
     function recomputeScreenerEntries() {
-      screenerFiltered = applyFlagMode(dbEntries, screenerFlagMode).filter(matchesBucketSelections);
+      screenerFiltered = applyFlagMode(dbEntries, 'default').filter(matchesBucketSelections);
     }
 
     function applyScreenerSort() {
@@ -771,9 +796,6 @@
             <span class="db-count-pill">${screenerFiltered.length.toLocaleString()} results</span>
           </div>
         </div>
-        <div class="db-tabs" role="tablist" aria-label="Flagged rows" style="margin-bottom:16px;border-bottom:none">
-          ${flagToggleHtml(screenerFlagMode, 'flagmode-screener')}
-        </div>
         ${bucketGridHtml()}
         <div class="db-tabs" role="tablist" aria-label="Screener column views" style="margin-bottom:16px">
           ${viewTabsHtml}
@@ -821,30 +843,17 @@
         });
       });
 
-      document.querySelectorAll('#screener-content [data-flagmode]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          screenerFlagMode = btn.dataset.flagmode;
-          recomputeScreenerEntries();
-          applyScreenerSort();
-          screenerPage = 1;
-          renderScreenerPage();
-        });
-      });
-
       const nameSearchInput = document.getElementById('screener-name-search');
-      nameSearchInput.addEventListener('input', (e) => { screenerNameQuery = e.target.value.toLowerCase(); });
-      nameSearchInput.addEventListener('keydown', (e) => {
-        if (e.key !== 'Enter') return;
+      nameSearchInput.addEventListener('input', (e) => {
+        screenerNameQuery = e.target.value.toLowerCase();
+        const cursorPos = e.target.selectionStart;
         recomputeScreenerEntries();
         applyScreenerSort();
         screenerPage = 1;
         renderScreenerPage();
-      });
-      nameSearchInput.addEventListener('blur', () => {
-        recomputeScreenerEntries();
-        applyScreenerSort();
-        screenerPage = 1;
-        renderScreenerPage();
+        const newInput = document.getElementById('screener-name-search');
+        newInput.focus();
+        newInput.setSelectionRange(cursorPos, cursorPos);
       });
 
       document.querySelectorAll('#screener-content .screener-bucket-select').forEach(sel => {
@@ -868,7 +877,7 @@
     // a hard zero. Tiers are assigned by rank (S+/S/A/B/C/F at
     // 1/9/10/20/25/25%), ties round up into the better tier. Noise-flagged
     // entries are always excluded from the eligible pool (V1.14 Part B) -
-    // unlike All Strategies/Screener, this is not user-toggleable.
+    // unlike All Strategies, this is not user-toggleable (same as Screener).
     //
     // V1.17 (2026-07-13): metric weights re-derived from a 1.0-10.0
     // importance rating exercise against the site's actual goal (best
@@ -984,16 +993,20 @@
     let leaderboardRanked = []; // [{ entry, score, tier, fieldsPresent, parts }], sorted by score desc
     let leaderboardFiltered = [];
     let leaderboardPage = 1;
+    let leaderboardNameQuery = '';
 
     // Eligibility: has been refreshed under the full schema (sharpe_ratio
     // present is the proxy used throughout) AND is not flag-noise. Unlike
-    // All Strategies/Screener, this is not user-toggleable - the Leaderboard
-    // always excludes flagged rows from scoring, no "show all" option.
+    // All Strategies, this is not user-toggleable (same as Screener) - the
+    // Leaderboard always excludes flagged rows from scoring, no "show all" option.
     function recomputeLeaderboard() {
       const refreshed = dbEntries.filter(e => typeof e.sharpe_ratio === 'number');
       const eligible = applyFlagMode(refreshed, 'default');
       leaderboardRanked = computeTiers(computeScores(eligible));
       leaderboardFiltered = leaderboardRanked.filter(r => leaderboardFilterController.filterFn(r.entry));
+      if (leaderboardNameQuery) {
+        leaderboardFiltered = leaderboardFiltered.filter(r => String(r.entry.name || '').toLowerCase().includes(leaderboardNameQuery));
+      }
     }
 
     // ---- Shared modal (score breakdown + Methodology) ----
@@ -1102,6 +1115,7 @@
           <div>
             <h2>Leaderboard</h2>
             <span class="db-count-pill">${leaderboardFiltered.length.toLocaleString()} ranked</span>
+            <input type="text" id="search-leaderboard" class="db-search-input" placeholder="Search by name..." value="${escapeHtml(leaderboardNameQuery)}" style="margin-left:8px">
             <button class="btn btn-outline btn-sm" id="filter-btn-leaderboard" style="margin-left:8px">
               <span aria-hidden="true">&#9776;</span> ${filterLabel}
             </button>
@@ -1150,6 +1164,18 @@
 
       document.getElementById('methodology-btn-leaderboard').addEventListener('click', () => {
         openModal('Leaderboard Methodology', methodologyHtml());
+      });
+
+      const leaderboardSearchInput = document.getElementById('search-leaderboard');
+      leaderboardSearchInput.addEventListener('input', (e) => {
+        leaderboardNameQuery = e.target.value.toLowerCase();
+        const cursorPos = e.target.selectionStart;
+        recomputeLeaderboard();
+        leaderboardPage = 1;
+        renderLeaderboardPage();
+        const newInput = document.getElementById('search-leaderboard');
+        newInput.focus();
+        newInput.setSelectionRange(cursorPos, cursorPos);
       });
 
       leaderboardFilterController.rewire();

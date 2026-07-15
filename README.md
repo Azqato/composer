@@ -1,8 +1,8 @@
 # Composer Atlas
 
-A curated strategy library and educational reference for Composer.trade users. Covers 28 symphonies with plain-English logic breakdowns, backtested metrics, and a concept glossary.
+A curated strategy library and educational reference for Composer.trade users. Covers 29 symphonies with plain-English logic breakdowns, backtested metrics, and a concept glossary.
 
-**Full Database (live):** `database.html` is a separate section covering the full community symphony database (thousands of entries, not just the 28 curated strategies), with an All Strategies table, a Screener with switchable metric views and a bucketed filter grid, and a Leaderboard with a 20-metric percentile-rank scoring model. Non-strategy noise and near-identical duplicates are flagged and filterable. Still a work in progress in the sense that the Leaderboard scoring model is due for a revision. See `docs/PRD.md` Section 14 (Roadmap) for the full status.
+**Full Database (live):** `database.html` is a separate section covering the full community symphony database (thousands of entries, not just the 29 curated strategies), with an All Strategies table (search + filter + a Working/Broken/Duplicates/All toggle), a Screener with switchable metric views and a bucketed filter grid (Working-only, no toggle), and a Leaderboard with a 20-metric percentile-rank scoring model (also Working-only). Non-strategy noise and near-identical duplicates are flagged and filterable. See `docs/PRD.md` Section 14 (Roadmap) for the full status.
 
 ## Live Site
 

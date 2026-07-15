@@ -5,6 +5,18 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.3] - 2026-07-15
+
+### Screener refinements: search box, dropped flag toggle, denser bucket options
+
+`database.html`: added a "Search by name..." textbox to the left of the Filter button on All Strategies and Leaderboard (Screener already had one); all three name-search boxes (including Screener's pre-existing one) now filter live on every keystroke instead of requiring Enter/blur, with focus/cursor position preserved across the re-render. Removed Screener's 3-state flag toggle (Default/All/Broken) entirely — Screener is now always Working-only, matching Leaderboard's existing non-toggleable behavior; only All Strategies keeps a toggle. Screener's bucket dropdowns expanded from 4-5 sparse percentile options to a uniform 9 deciles (10th-90th, 10% steps) + Any = 10 options per field, for all 20 fields.
+
+Also corrected a stale "28 curated strategies" count to 29 in two spots in `docs/PRD.md` and in `README.md` (library grew to 29 in a prior update), and removed README's now-outdated note that the Leaderboard scoring model was "due for a revision" (V1.17 shipped it 2026-07-13).
+
+**Files changed:** `database.html`, `css/main.css`, `docs/PRD.md`, `README.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.2] - 2026-07-15
 
 ### Added AI Summaries for 4 strategies; documented required add-strategy step

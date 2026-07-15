@@ -1100,6 +1100,23 @@ footer {
   font-weight: 500;
 }
 
+.db-search-input {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 0.8125rem;
+  font-family: var(--font-sans);
+  width: 200px;
+  max-width: 100%;
+}
+
+.db-search-input:focus {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 1px;
+}
+
 /* ---- Last-updated badge (database.html, rsi.html) ---- */
 .updated-badge {
   display: inline-flex;

@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.14.2
+**Version:** 1.14.3
 **Status:** Active
 **Last Updated:** 2026-07-15
 
@@ -141,7 +141,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 
 ### Shipped: Full Database Initiative (v1.12.0)
 
-Separate from the 28 curated strategies, `data/database.json` holds the full raw
+Separate from the 29 curated strategies, `data/database.json` holds the full raw
 symphony database, originally seeded by an external Google Apps Script scrape (the
 original 6,488-row scrape plus rows synced in from `data/storage.csv` over time).
 The goal was to recreate that refresh pipeline on composeratlas.com itself against
@@ -987,7 +987,7 @@ All fields in `data/strategies.json`. Both `strategies.json` and `strategies.js`
 
 All fields in `data/database.json`. This is a separate, lighter schema from
 `strategies.json`: it holds the raw ~7,700-entry database (see Section 14 Roadmap),
-not the 28 curated strategies. `data/database.js` is its `.js` twin (assigns
+not the 29 curated strategies. `data/database.js` is its `.js` twin (assigns
 `window.DATABASE_DATA`, same file:// compat pattern as `strategies.js`/`glossary.js`).
 
 | Field | Type | Description |
@@ -1657,7 +1657,7 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 - [x] **Purged (v1.11.14):** per user decision, skipped the hand spot-check and removed all 1,004 `excluded` (404/422) entries from `data/database.json` outright rather than just flagging them for UI exclusion. All 1,004 URLs were confirmed already present in `data/storage.csv` (the durable URL backup) before removal, so nothing is lost — any of them could be re-promoted back into `database.json` unrefreshed via `scripts/sync_storage_to_database.py` later. Built `scripts/purge_flagged_entries.py` (see Operational Runbook, "Purging Flagged Full-Database Entries") as a reusable tool for this and future cleanses, rather than a one-off script — takes one or more `flag` levels as arguments, enforces the storage.csv safety invariant, and regenerates every downstream export in one run. Database now has 6,681 entries (down from 7,685).
 - [x] **UI exclusion built (v1.11.15):** `isNoiseFlag(e)` (`e.flag === 'caution' || e.flag === 'excluded'`, deliberately excluding `'retry'` since transient failures aren't noise) now gates default views:
   - **All Strategies**: per user decision (overriding the earlier "keep caution visible, badge only" plan), now defaults to *excluding* flagged rows too, via a 3-state toggle — **Default** (excludes), **All** (shows everything), **Broken** (shows only flagged rows). The ⚠ badge is kept regardless of mode.
-  - **Screener**: same 3-state toggle (Default/All/Broken), independent state from All Strategies.
+  - **Screener**: same 3-state toggle (Default/All/Broken), independent state from All Strategies. **Removed 2026-07-13** — see the dated addendum at the end of this section; Screener is no longer toggleable, always Working-only.
   - **Leaderboard**: per user decision, **not** user-toggleable — always excludes flagged rows from the eligible/scoring pool, no toggle shown. Recomputes scores/tiers from the filtered pool (percentile rank depends on the pool, so this can't just be a post-hoc render filter like the other two tabs).
   - Implemented in `database.html`: `isNoiseFlag()`, `FLAG_MODES`/`FLAG_MODE_LABELS` (`{default: 'Default', all: 'All', flagged: 'Broken'}`), `applyFlagMode()`, `flagToggleHtml()`, plus per-tab `recompute*Entries()`/`recomputeLeaderboard()` functions wired into every filter/sort/toggle interaction path.
   - Verified via a headless-Chrome CDP smoke test (no `chromium-cli`/Playwright available in this environment; drove Chrome's DevTools Protocol directly over its remote-debugging websocket): All Strategies counts moved correctly across all three modes (Default 6,549 / All 6,681 / Broken 132 at test time), Leaderboard confirmed to have zero flag-toggle elements present, Screener toggle confirmed present with the "Broken" label, zero console errors.
@@ -1667,6 +1667,11 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
   - Verified live via the same CDP harness: selecting "ARR: Over 50%" correctly cut the result count from 6,549 to 3,268; name search for "zoop" correctly returned 119; `oos_date`/`backtest_days` bucket labels read naturally; zero console errors. One real bug caught and fixed during testing: the CSS grid initially rendered as a single stacked column in a screenshot — turned out to be stale browser cache serving pre-edit `main.css`, not a layout bug; confirmed correct multi-column grid once cache was disabled for the test session.
 
 - [x] Part A (name-based noise) implemented v1.11.22 — see above, `scripts/flag_name_noise.py`
+
+- [x] **Search + Screener refinements (2026-07-13):**
+  - Added a "Search by name..." textbox (`.db-search-input`) to the left of the Filter button on **All Strategies** and **Leaderboard**, filtering by symphony name substring, case-insensitive (Screener already had its own name search inside the bucket grid). All three name-search boxes, including the pre-existing Screener one, now filter **live on every keystroke** instead of requiring Enter or blur — re-rendering the table also recreates the search input itself (same innerHTML-replacement pattern as everything else in this file), which would otherwise steal focus every keystroke; fixed by restoring focus and cursor position immediately after each re-render.
+  - **Removed Screener's 3-state flag toggle** (Default/All/Broken, built v1.11.15) entirely, per user decision — Screener is now always Working-only (unflagged, non-duplicate), matching Leaderboard's existing non-toggleable behavior. Only All Strategies still has a toggle (the 4-state Working/Broken/Duplicates/All from Part A above).
+  - **Bucket dropdowns expanded** from the original 4-5 sparse options (25th/50th/75th/90th percentile for "higher is better" fields, 75th/50th/25th for "lower is better" fields) to a uniform **9 deciles (10th-90th percentile, 10% steps) + Any = 10 total options**, for all 20 fields regardless of direction, still ordered loosest-to-strictest (e.g. ARR: "Over 10%" → "Over 220%"; Std Deviation: "Under 70%" → "Under 13%"). Verified locally via a headless-Chrome DOM dump confirming exact option counts and ordering on both a "higher" and a "lower" field before shipping.
 
 ### V1.15: Full-Scale Refresh
 
