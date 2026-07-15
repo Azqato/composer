@@ -5,6 +5,20 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.2] - 2026-07-15
+
+### Added AI Summaries for 4 strategies; documented required add-strategy step
+
+Added `ai_summary` content for the 4 strategies that were missing it: `bnd-vs-sphb`, `dip-buying-tech`, `ob-os-staple-bonds`, and `sometimes-tqqq`. All 29 strategies now have AI Summaries.
+
+Updated `scripts/add_ai_summary.py` with entries for all 4 new slugs. Ran the script to write summaries into `data/strategies.json` and `data/strategies.js`.
+
+Updated `docs/PRD.md` to make adding a slug to `scripts/add_ai_summary.py` an explicit required step in both the manual and automated add-strategy workflows. The script is the canonical store for all summaries; writing `ai_summary` directly in the JSON without also updating the script means the entry is not tracked in the canonical location and will produce a warning on future script runs.
+
+**Files changed:** `data/strategies.json`, `data/strategies.js`, `scripts/add_ai_summary.py`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.1] - 2026-07-13
 
 ### Tightened S+ tier from top 1% to top 0.25%

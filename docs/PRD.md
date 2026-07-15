@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.14.1
+**Version:** 1.14.2
 **Status:** Active
-**Last Updated:** 2026-07-13
+**Last Updated:** 2026-07-15
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -527,7 +527,9 @@ Provide a Composer.trade symphony URL to Claude Code and it automates the entire
 5. Drafts all content fields: `description`, `ai_summary`, `how_it_works`, `signals`, `risk_profile`
 6. Proposes name and slug; asks for confirmation before inserting
 7. Inserts the complete entry into `data/strategies.json` and `data/strategies.js`
-8. Updates `docs/PATCHNOTES.md`
+8. Adds the `ai_summary` to `scripts/add_ai_summary.py` under the new slug
+9. Runs `python scripts/add_ai_summary.py` to write the summary into both data files
+10. Updates `docs/PATCHNOTES.md`
 
 **Example usage:**
 ```
@@ -584,19 +586,33 @@ Use when you prefer full control or the Composer API is unavailable.
 }
 ```
 
-**Step 4: Verify tags.** Confirm every tag has a matching glossary entry. See the tag vocabulary in Section 12.
+**Step 4: Add the AI Summary to the script.** Open `scripts/add_ai_summary.py` and add an entry for the new slug to the `AI_SUMMARIES` dict. This is required: the script is the canonical store for all summaries, and if you skip this step, future runs of the script will warn and may overwrite or miss the new entry. See "Generating the AI Summary" in Section 11 for format and tone guidance.
 
-**Step 5: Test locally.**
+```python
+"strategy-slug-here": [
+    "Paragraph 1: structure, assets, logic, and why someone would follow it.",
+    "Paragraph 2: metrics, backtest period, and any noteworthy characteristics.",
+],
+```
+
+Then run the script to write the summary into both data files:
+```bash
+python scripts/add_ai_summary.py
+```
+
+**Step 5: Verify tags.** Confirm every tag has a matching glossary entry. See the tag vocabulary in Section 12.
+
+**Step 6: Test locally.**
 ```bash
 python -m http.server 8000
 # Navigate to http://localhost:8000/strategies.html?slug=strategy-slug-here
 ```
 
-**Step 6: Update PATCHNOTES.md.** Add a versioned entry.
+**Step 7: Update PATCHNOTES.md.** Add a versioned entry.
 
-**Step 7: Commit and push.**
+**Step 8: Commit and push.**
 ```bash
-git add data/strategies.json data/strategies.js docs/PATCHNOTES.md
+git add data/strategies.json data/strategies.js scripts/add_ai_summary.py docs/PATCHNOTES.md
 git commit -m "feat: add [Strategy Name] strategy"
 git push origin main
 ```
@@ -857,7 +873,7 @@ From that analysis, each summary then states:
    ```
 5. Update `docs/PATCHNOTES.md`, then commit `data/strategies.json`, `data/strategies.js`, `scripts/add_ai_summary.py`, and the patch notes.
 
-When adding a brand-new strategy, you may instead author `ai_summary` directly in the JSON entry (as in the manual template above), the script is the bulk/maintenance path, not the only way to set the field.
+Every strategy must have an entry in `scripts/add_ai_summary.py` regardless of how `ai_summary` is initially written. The script is the canonical store: writing `ai_summary` directly into the JSON entry and skipping the script means the next `add_ai_summary.py` run will warn and leave the entry unchanged, but it also means the summary is not tracked in version control in the canonical location. Always keep the script and the data files in sync.
 
 ---
 
