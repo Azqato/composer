@@ -1393,19 +1393,20 @@ footer {
 .tier-c  { color: var(--color-secondary); background: var(--color-surface-raised); border-color: var(--color-border); }
 .tier-f  { color: var(--color-pink); background: rgba(255, 77, 141, 0.08); border-color: rgba(255, 77, 141, 0.25); }
 
-/* ---- RSI signal tiers (rsi.html, V2.1) ---- */
-/* Oversold/overbought use brightened mid-tones, not the user's original
-   #890000/#008900 - those were too low-contrast against the dark table
-   background (--color-surface #141414) to read at all.
+/* ---- RSI signal tiers (rsi.html, V2.2) ---- */
+/* Direction is "buy = green": oversold (low RSI, where Frontrunner dip-buy
+   branches may fire) reads green; overbought reads red. Oversold uses the
+   site's --color-green token; overbought keeps the original red values. All
+   five tiers clear WCAG AA against the table surface (--color-surface #141414);
+   the two extremes add bold weight as a second cue.
    Selectors are scoped to ".db-table td.rsi-x" (not a bare class) because
    ".db-table td" alone (0,1,1) outranks a single class selector (0,1,0) -
-   these colors silently never applied against that background rule until
-   this fix. */
-.db-table td.rsi-extreme-oversold   { color: #ff0000; font-weight: 700; }
-.db-table td.rsi-oversold           { color: #e04545; }
+   without the td these colors silently never apply against that rule. */
+.db-table td.rsi-extreme-oversold   { color: #00e676; font-weight: 700; }
+.db-table td.rsi-oversold           { color: #3aa76a; }
 .db-table td.rsi-neutral            { color: #b0b0b0; }
-.db-table td.rsi-overbought         { color: #2fb92f; }
-.db-table td.rsi-extreme-overbought { color: #00ff00; font-weight: 700; }
+.db-table td.rsi-overbought         { color: #e04545; }
+.db-table td.rsi-extreme-overbought { color: #ff0000; font-weight: 700; }
 
 /* ---- Modal (score breakdown + methodology, database.html, V1.13) ---- */
 .modal-overlay {
