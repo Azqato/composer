@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.14.3
+**Version:** 1.14.4
 **Status:** Active
 **Last Updated:** 2026-07-15
 
@@ -1770,6 +1770,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 **Status:** Backlog
 
+- [ ] **Mobile overflow bug at ~390px width (found 2026-07-15, not yet fixed)** — paragraph text and the nav hamburger appear to overflow/cut off at narrow mobile viewport widths. Confirmed via headless-Chrome screenshot on both `strategies.html` and `about.html` (identical behavior on a page not touched that session), so this is a pre-existing, sitewide issue, not specific to one page or one recent change. Needs root-cause investigation (likely another `min-width: 0`/`overflow-x` cascade gap, same family of bug as the `.nav-cta`/`.db-tabs` fixes documented under V2.0) before a fix can be scoped.
 - [ ] Client-side search (Fuse.js or similar)
 - [ ] Tag-based filtering on strategy index: let visitors filter the strategy grid by the tags already generated for every strategy (signal type, e.g. `rsi`, `200d-ma`, `momentum`; asset class, e.g. `leveraged-etfs`, `inverse-etfs`; collection, e.g. `zoop`, `original`), instead of only using tags as read-only labels
 - [ ] Strategy comparison view

@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.4] - 2026-07-15
+
+### Nav reorder, strategies.html sort/copy, homepage hero link fix
+
+Reordered the top nav to Strategies, Database, RSI, Glossary, About, Azqato Invests, Support (`js/app.js`, desktop + mobile). `strategies.html`'s listing now sorts by longest backtest first, matching the homepage grid exactly, and its intro copy now explains these are "merely a set of featured, highlighted strategies" with a link to the full Database for anyone wanting more. The homepage's "Browse Strategies" button previously jumped to an in-page `#strategies` anchor; now links to `strategies.html`, same `u()`-based pattern already used for the Glossary button. Also added a Roadmap item (V2.2) for a pre-existing mobile overflow bug at ~390px width, found while testing `strategies.html` and confirmed sitewide via `about.html` — not yet fixed, needs root-cause investigation.
+
+**Files changed:** `js/app.js`, `strategies.html`, `index.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.3] - 2026-07-15
 
 ### Screener refinements: search box, dropped flag toggle, denser bucket options

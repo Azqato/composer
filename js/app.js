@@ -144,11 +144,11 @@ function renderNav() {
   }
 
   const links = [
-    { href: u('/about.html'), label: 'About' },
     { href: u('/strategies.html'), label: 'Strategies' },
     { href: u('/database.html'), label: 'Database' },
     { href: u('/rsi.html'), label: 'RSI' },
     { href: u('/glossary.html'), label: 'Glossary' },
+    { href: u('/about.html'), label: 'About' },
     { href: 'https://azqato.com/invests', label: 'Azqato Invests', external: true },
     { href: 'https://azqato.com/support.html', label: 'Support', external: true },
   ];
