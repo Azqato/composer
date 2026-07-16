@@ -1,41 +1,41 @@
 // RSI signals data - loaded as a script tag so the site works with file:// protocol.
 // To update: run scripts/refresh_rsi.py
 window.RSI_DATA = {
-  "refreshed_at": "2026-07-16T16:22:27Z",
+  "refreshed_at": "2026-07-16T20:06:03Z",
   "tickers": [
     {
       "symbol": "XLF",
       "name": "Financial Select Sector SPDR",
-      "rsi_10": 73.0,
-      "price": 56.58,
+      "rsi_10": 74.2,
+      "price": 56.76,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "SPYV",
       "name": "SPDR Portfolio S&P 500 Value",
-      "rsi_10": 66.6,
-      "price": 62.08,
+      "rsi_10": 68.5,
+      "price": 62.23,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "VTV",
       "name": "Vanguard Value ETF",
-      "rsi_10": 53.4,
-      "price": 218.15,
+      "rsi_10": 56.8,
+      "price": 218.87,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "SPY",
       "name": "SPDR S&P 500 ETF",
-      "rsi_10": 55.5,
-      "price": 751.72,
+      "rsi_10": 54.4,
+      "price": 750.77,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "IOO",
       "name": "iShares Global 100 ETF",
-      "rsi_10": 59.7,
-      "price": 140.02,
+      "rsi_10": 56.2,
+      "price": 139.44,
       "price_date": "2026-07-16"
     },
     {
@@ -48,99 +48,99 @@ window.RSI_DATA = {
     {
       "symbol": "FXI",
       "name": "iShares China Large-Cap ETF",
-      "rsi_10": 69.7,
-      "price": 34.54,
+      "rsi_10": 69.5,
+      "price": 34.52,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "QQQE",
       "name": "Direxion NASDAQ-100 Equal Weighted",
-      "rsi_10": 42.5,
-      "price": 118.12,
+      "rsi_10": 43.9,
+      "price": 118.42,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "XLK",
       "name": "Technology Select Sector SPDR",
-      "rsi_10": 40.4,
-      "price": 177.1,
+      "rsi_10": 40.8,
+      "price": 177.46,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "QQQ",
       "name": "Invesco QQQ Trust",
-      "rsi_10": 43.6,
-      "price": 707.35,
+      "rsi_10": 42.9,
+      "price": 705.94,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "XLE",
       "name": "Energy Select Sector SPDR",
-      "rsi_10": 65.1,
-      "price": 57.22,
+      "rsi_10": 64.0,
+      "price": 57.01,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "VOX",
       "name": "Vanguard Communication Services ETF",
-      "rsi_10": 64.7,
-      "price": 194.13,
+      "rsi_10": 57.4,
+      "price": 191.85,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "TECL",
       "name": "Direxion Daily Technology Bull 3x",
-      "rsi_10": 39.1,
-      "price": 182.0,
+      "rsi_10": 39.7,
+      "price": 183.66,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "SOXX",
       "name": "iShares Semiconductor ETF",
-      "rsi_10": 38.2,
-      "price": 529.01,
+      "rsi_10": 38.4,
+      "price": 530.5,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "RETL",
       "name": "Direxion Daily Retail Bull 3x",
-      "rsi_10": 69.3,
-      "price": 9.91,
+      "rsi_10": 68.9,
+      "price": 9.88,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "XLY",
       "name": "Consumer Discretionary Select Sector SPDR",
-      "rsi_10": 54.3,
-      "price": 117.44,
+      "rsi_10": 53.9,
+      "price": 117.34,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "EEM",
       "name": "iShares MSCI Emerging Markets ETF",
-      "rsi_10": 38.7,
-      "price": 64.14,
+      "rsi_10": 38.9,
+      "price": 64.21,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "GLD",
       "name": "SPDR Gold Shares",
-      "rsi_10": 36.3,
-      "price": 365.66,
+      "rsi_10": 35.8,
+      "price": 365.01,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "XLP",
       "name": "Consumer Staples Select Sector SPDR",
-      "rsi_10": 58.7,
-      "price": 85.39,
+      "rsi_10": 60.6,
+      "price": 85.81,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "TLT",
       "name": "iShares 20+ Year Treasury Bond ETF",
-      "rsi_10": 32.5,
-      "price": 83.97,
+      "rsi_10": 35.3,
+      "price": 84.21,
       "price_date": "2026-07-16"
     }
   ]
