@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.10] - 2026-07-15
+
+### Fixed orphaned duplicate pointers; 8 more clusters swapped to most-watched member
+
+Fixed a bug from the previous "Holy Grail" override: 3 other cluster members still referenced the old (now itself flagged) kept ID instead of the new one. A one-off headless-Chrome scrape sampled 13 duplicate clusters' "Watched by N" counts (not exposed by the API) and found the current `symphony_id`-based tiebreak had picked the most-watched member in only 2 of 13 — swapped the other 8 correctly-mismatched clusters to their most-watched member, updating every cluster member's pointer consistently this time (not just the swapped pair): Mean Reversion Comparison to Python Code, TQQQ FTLT w/Sideways Market Mods (FINAL), Nuclear Energy with Feaver Frontrunner V5, S&P Symphony w/ Leverage, TQQQ or Not - Non-Degen Gambler Variant, "We know this works. We just get greedy.", Inside Nancy Pelosi's Chips- V3, Copy of Holy Grail simplified.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.9] - 2026-07-15
 
 ### Manual duplicate override: "The Holy Grail" restored as the kept entry

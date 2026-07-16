@@ -783,7 +783,7 @@ window.DATABASE_DATA = [
     "oos_date": "2022-07-20",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of 10KwXooxAbZw9GjNKt8Z"
+    "error": "Duplicate of MmQbpf2U5TMQFmr9Nt2e"
   },
   {
     "name": "Inside Nancy Pelosi's Chips- V3",
@@ -834,8 +834,8 @@ window.DATABASE_DATA = [
     "total_costs": 6314807.61,
     "oos_date": "2022-07-28",
     "refresh_date": "2026-07-08",
-    "flag": "duplicate",
-    "error": "Duplicate of 2uAeqJcD3aglnI9uckIn"
+    "flag": null,
+    "error": null
   },
   {
     "name": "Inside Nancy Pelosi's Chips- V3 (Invest Copy)",
@@ -887,7 +887,7 @@ window.DATABASE_DATA = [
     "oos_date": "2022-07-28",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of 2uAeqJcD3aglnI9uckIn"
+    "error": "Duplicate of HgK8mCeBnH4fQFNcfZ7q (manual override, 2026-07-15: most-watched member of cluster wins - 491 watchers - per user decision)"
   },
   {
     "name": "SOXX Group",
@@ -1084,8 +1084,8 @@ window.DATABASE_DATA = [
     "total_costs": 99679824.02,
     "oos_date": "2023-03-01",
     "refresh_date": "2026-07-08",
-    "flag": null,
-    "error": null
+    "flag": "duplicate",
+    "error": "Duplicate of cD2auYcXV3MNdljO10zj (manual override, 2026-07-15: most-watched member of cluster wins - 73 watchers - per user decision)"
   },
   {
     "name": "Copy of Holy Grail simplified",
@@ -1133,8 +1133,8 @@ window.DATABASE_DATA = [
     "total_costs": 99679824.02,
     "oos_date": "2023-03-01",
     "refresh_date": "2026-07-08",
-    "flag": "duplicate",
-    "error": "Duplicate of Bpq9NoCpCJfN0nrKk5dC"
+    "flag": null,
+    "error": null
   },
   {
     "name": "Copy of Copy of Holy Grail simplified",
@@ -1183,7 +1183,7 @@ window.DATABASE_DATA = [
     "oos_date": "2023-03-01",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of Bpq9NoCpCJfN0nrKk5dC"
+    "error": "Duplicate of cD2auYcXV3MNdljO10zj (manual override, 2026-07-15: most-watched member of cluster wins - 73 watchers - per user decision)"
   },
   {
     "name": "zoop's TQQQ Switcher",
@@ -2041,7 +2041,7 @@ window.DATABASE_DATA = [
     "oos_date": "2022-10-20",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of 3xlzDBafqXDJNb3dmKLi"
+    "error": "Duplicate of KJqNBGxYyyKuCcEfdHhq (manual override, 2026-07-15: most-watched member of cluster wins - 1755 watchers - per user decision)"
   },
   {
     "name": "Mean Reversion Comparison to Python Code",
@@ -2086,8 +2086,8 @@ window.DATABASE_DATA = [
     "total_costs": 1522953.47,
     "oos_date": "2022-10-20",
     "refresh_date": "2026-07-08",
-    "flag": "duplicate",
-    "error": "Duplicate of 3xlzDBafqXDJNb3dmKLi"
+    "flag": null,
+    "error": null
   },
   {
     "name": "Copy of Mean Reversion Comparison to Python Code",
@@ -2132,8 +2132,8 @@ window.DATABASE_DATA = [
     "total_costs": 1522953.47,
     "oos_date": "2022-10-19",
     "refresh_date": "2026-07-08",
-    "flag": null,
-    "error": null
+    "flag": "duplicate",
+    "error": "Duplicate of KJqNBGxYyyKuCcEfdHhq (manual override, 2026-07-15: most-watched member of cluster wins - 1755 watchers - per user decision)"
   },
   {
     "name": "TQQQ For The Long Term V2 (242% RR/46.1% Max DD) (Invest Copy)",
@@ -2803,8 +2803,8 @@ window.DATABASE_DATA = [
     "total_costs": 856217834.74,
     "oos_date": "2023-02-18",
     "refresh_date": "2026-07-08",
-    "flag": null,
-    "error": null
+    "flag": "duplicate",
+    "error": "Duplicate of h7uySGanVb1pHRbUPIhR (manual override, 2026-07-15: most-watched member of cluster wins - 655 watchers - per user decision)"
   },
   {
     "name": "TQQQ FTLT w/Sideways Market Mods (FINAL)",
@@ -2859,8 +2859,8 @@ window.DATABASE_DATA = [
     "total_costs": 856217834.74,
     "oos_date": "2023-02-18",
     "refresh_date": "2026-07-08",
-    "flag": "duplicate",
-    "error": "Duplicate of MZ2H9h9DMBctuTvEyWrS"
+    "flag": null,
+    "error": null
   },
   {
     "name": "Copy of TQQQ For The Long Term V2 (242% RR/46.1% Max DD) EDC",
@@ -13856,8 +13856,8 @@ window.DATABASE_DATA = [
     "total_costs": 37530470453.2,
     "oos_date": "2023-02-09",
     "refresh_date": "2026-07-08",
-    "flag": null,
-    "error": null
+    "flag": "duplicate",
+    "error": "Duplicate of o9QwRZ7D2kq0LHnJgwlL (manual override, 2026-07-15: most-watched member of cluster wins, per user decision)"
   },
   {
     "name": "V3.0.4.5.6 | ☢️ Beta Baller + TCCC 💊 | Deez, BrianE, HinnomTX, DereckN, Garen, DJKeyhole 🧙‍♂️, comrade, WaywardSon, zyzz, Belcampo69 | BT: 01 Nov 2011 (Invest Copy) (Invest Copy)",
@@ -14013,7 +14013,7 @@ window.DATABASE_DATA = [
     "oos_date": "2023-02-09",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of 4ejl9sqvvQDQFkxuy9Z0"
+    "error": "Duplicate of o9QwRZ7D2kq0LHnJgwlL (manual override, 2026-07-15: most-watched member of cluster wins, per user decision)"
   },
   {
     "name": "VIX up, SPY Down, Educational Content",
@@ -17446,8 +17446,8 @@ window.DATABASE_DATA = [
     "total_costs": 76670.09,
     "oos_date": "2024-10-14",
     "refresh_date": "2026-07-08",
-    "flag": null,
-    "error": null
+    "flag": "duplicate",
+    "error": "Duplicate of rJwkCH61aJBBnYPooxhx (manual override, 2026-07-15: most-watched member of cluster wins - 278 watchers - per user decision)"
   },
   {
     "name": "Nuclear Energy with Feaver Frontrunner V5 | BT 2022-03-24",
@@ -17504,8 +17504,8 @@ window.DATABASE_DATA = [
     "total_costs": 76670.09,
     "oos_date": "2024-10-14",
     "refresh_date": "2026-07-08",
-    "flag": "duplicate",
-    "error": "Duplicate of B5JGlQS1YGVFjL25i1ay"
+    "flag": null,
+    "error": null
   },
   {
     "name": "V3 BWC: Sometimes I like XXXX",
@@ -37512,8 +37512,8 @@ window.DATABASE_DATA = [
     "total_costs": 1106573.93,
     "oos_date": "2023-11-04",
     "refresh_date": "2026-07-08",
-    "flag": null,
-    "error": null
+    "flag": "duplicate",
+    "error": "Duplicate of g5nqVYJhtt3yW56bkY32 (manual override, 2026-07-15: most-watched member of cluster wins - 157 watchers - per user decision)"
   },
   {
     "name": "S&P Symphony w/ Leverage (101% RR/28.3% DD)",
@@ -37563,8 +37563,8 @@ window.DATABASE_DATA = [
     "total_costs": 1106573.93,
     "oos_date": "2023-11-04",
     "refresh_date": "2026-07-08",
-    "flag": "duplicate",
-    "error": "Duplicate of 8M0t1AKBSbnxgVO3KcyF"
+    "flag": null,
+    "error": null
   },
   {
     "name": "Leveraged Apple Long Term Investing",
@@ -108268,8 +108268,8 @@ window.DATABASE_DATA = [
     "total_costs": 3505501.66,
     "oos_date": "2023-12-08",
     "refresh_date": "2026-07-08",
-    "flag": null,
-    "error": null
+    "flag": "duplicate",
+    "error": "Duplicate of zWRdryyMk7uve4oROLY3 (manual override, 2026-07-15: most-watched member of cluster wins - 41 watchers - per user decision)"
   },
   {
     "name": "Copy of TQQQ or Not - Non-Degen Gambler Variant",
@@ -108314,7 +108314,7 @@ window.DATABASE_DATA = [
     "oos_date": "2023-12-08",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of CoMJfjLYRY4dVuXtOKOz"
+    "error": "Duplicate of zWRdryyMk7uve4oROLY3 (manual override, 2026-07-15: most-watched member of cluster wins - 41 watchers - per user decision)"
   },
   {
     "name": "TQQQ or Not - Non-Degen Gambler Variant",
@@ -108358,8 +108358,8 @@ window.DATABASE_DATA = [
     "total_costs": 3505501.66,
     "oos_date": "2023-12-08",
     "refresh_date": "2026-07-08",
-    "flag": "duplicate",
-    "error": "Duplicate of CoMJfjLYRY4dVuXtOKOz"
+    "flag": null,
+    "error": null
   },
   {
     "name": "i2 - Pop Bots + Adaptive Asset Allocation ",
@@ -158533,7 +158533,7 @@ window.DATABASE_DATA = [
     "oos_date": "2025-02-01",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of B5JGlQS1YGVFjL25i1ay"
+    "error": "Duplicate of rJwkCH61aJBBnYPooxhx (manual override, 2026-07-15: most-watched member of cluster wins - 278 watchers - per user decision)"
   },
   {
     "name": "IC Asset Focus",
@@ -205190,8 +205190,8 @@ window.DATABASE_DATA = [
     "total_costs": 61762.74,
     "oos_date": "2025-04-20",
     "refresh_date": "2026-07-08",
-    "flag": null,
-    "error": null
+    "flag": "duplicate",
+    "error": "Duplicate of FBbIYVUqrr3pemGHfaqq (manual override, 2026-07-15: most-watched member of cluster wins - 43 watchers - per user decision)"
   },
   {
     "name": "\"We know this works. We just get greedy.\"",
@@ -205237,8 +205237,8 @@ window.DATABASE_DATA = [
     "total_costs": 61762.74,
     "oos_date": "2025-04-20",
     "refresh_date": "2026-07-08",
-    "flag": "duplicate",
-    "error": "Duplicate of 8W70YxuNWKCiD0kUNJc9"
+    "flag": null,
+    "error": null
   },
   {
     "name": "Rem's Top 5 Leveraged Sorter | Anansi | 2011-01-04",
@@ -356688,7 +356688,7 @@ window.DATABASE_DATA = [
     "oos_date": "2025-02-02",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of B5JGlQS1YGVFjL25i1ay"
+    "error": "Duplicate of rJwkCH61aJBBnYPooxhx (manual override, 2026-07-15: most-watched member of cluster wins - 278 watchers - per user decision)"
   },
   {
     "name": "A - QLD For The Long Term (33% DD)",
@@ -383084,7 +383084,7 @@ window.DATABASE_DATA = [
     "oos_date": "2022-10-19",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of 3xlzDBafqXDJNb3dmKLi"
+    "error": "Duplicate of KJqNBGxYyyKuCcEfdHhq (manual override, 2026-07-15: most-watched member of cluster wins - 1755 watchers - per user decision)"
   },
   {
     "name": "TQQQ FTLT w/Sideways Market Mods (FINAL) (Invest Copy)",
@@ -383140,7 +383140,7 @@ window.DATABASE_DATA = [
     "oos_date": "2023-02-18",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of MZ2H9h9DMBctuTvEyWrS"
+    "error": "Duplicate of h7uySGanVb1pHRbUPIhR (manual override, 2026-07-15: most-watched member of cluster wins - 655 watchers - per user decision)"
   },
   {
     "name": "TQQQ FTLT w/Sideways Market Mods (FINAL) (Invest Copy)",
@@ -383196,7 +383196,7 @@ window.DATABASE_DATA = [
     "oos_date": "2023-02-18",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of MZ2H9h9DMBctuTvEyWrS"
+    "error": "Duplicate of h7uySGanVb1pHRbUPIhR (manual override, 2026-07-15: most-watched member of cluster wins - 655 watchers - per user decision)"
   },
   {
     "name": "V1b 15/15 BB + v4 Pops - K-1  Free ",
@@ -383795,7 +383795,7 @@ window.DATABASE_DATA = [
     "oos_date": "2023-02-09",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of 4ejl9sqvvQDQFkxuy9Z0"
+    "error": "Duplicate of o9QwRZ7D2kq0LHnJgwlL (manual override, 2026-07-15: most-watched member of cluster wins, per user decision)"
   },
   {
     "name": "V3.0.4.5 | ☢️ Beta Baller + TCCC 💊 | Deez, BrianE, HinnomTX, DereckN, Garen, DJKeyhole 🧙‍♂️, comrade, WaywardSon, zyzz, Belcampo69 | BT: 01 Nov 2011 (Invest Copy)",
@@ -383873,7 +383873,7 @@ window.DATABASE_DATA = [
     "oos_date": "2023-02-09",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of 4ejl9sqvvQDQFkxuy9Z0"
+    "error": "Duplicate of o9QwRZ7D2kq0LHnJgwlL (manual override, 2026-07-15: most-watched member of cluster wins, per user decision)"
   },
   {
     "name": "V3.0.4.5 | ☢️ Beta Baller + TCCC 💊 | Deez, BrianE, HinnomTX, DereckN, Garen, DJKeyhole 🧙‍♂️, comrade, WaywardSon, zyzz, Belcampo69 | BT: 01 Nov 2011",
@@ -383950,8 +383950,8 @@ window.DATABASE_DATA = [
     "total_costs": 37481281120.39,
     "oos_date": "2023-02-09",
     "refresh_date": "2026-07-08",
-    "flag": "duplicate",
-    "error": "Duplicate of 4ejl9sqvvQDQFkxuy9Z0"
+    "flag": null,
+    "error": null
   },
   {
     "name": "Drawdown Hedge - (Fund Surf 1x - Fund Surf 3x)",
@@ -388220,7 +388220,7 @@ window.DATABASE_DATA = [
     "oos_date": "2023-11-04",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of 8M0t1AKBSbnxgVO3KcyF"
+    "error": "Duplicate of g5nqVYJhtt3yW56bkY32 (manual override, 2026-07-15: most-watched member of cluster wins - 157 watchers - per user decision)"
   },
   {
     "name": "TQQQ For The Long Term (Reddit Post Link)",
@@ -389611,7 +389611,7 @@ window.DATABASE_DATA = [
     "oos_date": "2023-12-08",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of CoMJfjLYRY4dVuXtOKOz"
+    "error": "Duplicate of zWRdryyMk7uve4oROLY3 (manual override, 2026-07-15: most-watched member of cluster wins - 41 watchers - per user decision)"
   },
   {
     "name": "Simple AF",
@@ -427802,7 +427802,7 @@ window.DATABASE_DATA = [
     "oos_date": "2025-07-25",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of 10KwXooxAbZw9GjNKt8Z"
+    "error": "Duplicate of MmQbpf2U5TMQFmr9Nt2e"
   },
   {
     "name": "Copy of The Holy Grail",
@@ -427851,7 +427851,7 @@ window.DATABASE_DATA = [
     "oos_date": "2025-07-25",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of 10KwXooxAbZw9GjNKt8Z"
+    "error": "Duplicate of MmQbpf2U5TMQFmr9Nt2e"
   },
   {
     "name": "BM Magic Internet Money",
@@ -448533,8 +448533,8 @@ window.DATABASE_DATA = [
     "total_costs": 6314807.61,
     "oos_date": "2022-07-28",
     "refresh_date": "2026-07-08",
-    "flag": null,
-    "error": null
+    "flag": "duplicate",
+    "error": "Duplicate of HgK8mCeBnH4fQFNcfZ7q (manual override, 2026-07-15: most-watched member of cluster wins - 491 watchers - per user decision)"
   },
   {
     "name": "zoop's TQQQ FOR THE LONG TERM",
@@ -458995,7 +458995,7 @@ window.DATABASE_DATA = [
     "oos_date": "2023-11-04",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of 8M0t1AKBSbnxgVO3KcyF"
+    "error": "Duplicate of g5nqVYJhtt3yW56bkY32 (manual override, 2026-07-15: most-watched member of cluster wins - 157 watchers - per user decision)"
   },
   {
     "name": "NSGA-II | Calmar | 2007 Uncorrelated Mix | 4/3/26",
@@ -485368,7 +485368,7 @@ window.DATABASE_DATA = [
     "oos_date": "2025-04-20",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of 8W70YxuNWKCiD0kUNJc9"
+    "error": "Duplicate of FBbIYVUqrr3pemGHfaqq (manual override, 2026-07-15: most-watched member of cluster wins - 43 watchers - per user decision)"
   },
   {
     "name": "Copy of \"We know this works. We just get greedy.\"",
@@ -485415,7 +485415,7 @@ window.DATABASE_DATA = [
     "oos_date": "2025-04-20",
     "refresh_date": "2026-07-08",
     "flag": "duplicate",
-    "error": "Duplicate of 8W70YxuNWKCiD0kUNJc9"
+    "error": "Duplicate of FBbIYVUqrr3pemGHfaqq (manual override, 2026-07-15: most-watched member of cluster wins - 43 watchers - per user decision)"
   },
   {
     "name": "Stupidly simple QQQ",
