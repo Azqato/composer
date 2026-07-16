@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.14.11
+**Version:** 1.14.12
 **Status:** Active
 **Last Updated:** 2026-07-15
 
@@ -1790,22 +1790,24 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 **Status:** Backlog
 
-- [ ] **Replace 10 of the 12 curated "zoop's X (2026 Edition)" strategies with newer "evergreen" versions (decided 2026-07-15, added to the full database, not yet applied to the curated set)** — user authored updated, more evergreen versions of most of the curated zoop 2026-Edition strategies and submitted 10 new symphony URLs via `data/AddSymphony.csv`. All 10 refreshed with real backtest data 2026-07-15 (`data/database.json`); mapping to curated slugs identified by name once refreshed:
+- [ ] **Replace 11 of the 12 curated "zoop's X (2026 Edition)" strategies with newer "evergreen" versions; remove the 12th (decided/confirmed 2026-07-15, all source symphonies now in the full database, not yet applied to the curated set)** — user authored updated, more evergreen versions of the curated zoop 2026-Edition strategies. Full mapping, confirmed by the user:
 
-  | Curated slug (2026 Edition) | New evergreen symphony | New symphony_id |
-  |---|---|---|
-  | `zoops-2026-frontrunner` | zoop's Frontrunner | `zPBn8HkmTIQ5BEJdff0v` |
-  | `zoops-holy-grail-2026` | zoop's Holy Grail | `qnFKsfL4NDBq1Wo5nCHk` |
-  | `zoops-tqqq-long-term-2026` | zoop's TQQQ FOR THE LONG TERM | `qWe1S4jert7Wa79vu9FA` |
-  | `zoops-excellent-adventure-2026` | zoop's Excellent Adventure | `vjJPExm36O3jAod0A0sH` |
-  | `zoops-sometimes-tqqq-2026` | zoop's Sometimes TQQQ | `O5qvETvjnTxedtkNcn2N` |
-  | `zoops-safety-checks-2026` | zoop's Safety Checks | `JnaYNpe3F1uL1mlScIZZ` |
-  | `zoops-leveraged-tqqq-symphony-2026` | zoop's Leveraged TQQQ Symphony | `md0zmf8GE94tcvMRaGyr` |
-  | `zoops-tqqq-200d-ma-3x-2026` | zoop's TQQQ 200d MA 3x Leverage | `Xaxkq31xztXXs12SExKM` |
-  | `zoops-soxl-growth-2026` | zoop's SOXL Growth | `89DLODa3ARMwGUQP9cDx` |
-  | `zoops-upro-ftlt-2026` **(needs confirmation)** | zoop's SPXL FOR THE LONGTERM | `q0nwmcUDGKtg7sMydVxV` |
+  | Curated slug (2026 Edition) | Action | New evergreen symphony | New symphony_id |
+  |---|---|---|---|
+  | `zoops-2026-frontrunner` | Replace | zoop's Frontrunner | `zPBn8HkmTIQ5BEJdff0v` |
+  | `zoops-holy-grail-2026` | Replace | zoop's Holy Grail | `qnFKsfL4NDBq1Wo5nCHk` |
+  | `zoops-tqqq-long-term-2026` | Replace | zoop's TQQQ FOR THE LONG TERM | `qWe1S4jert7Wa79vu9FA` |
+  | `zoops-excellent-adventure-2026` | Replace | zoop's Excellent Adventure | `vjJPExm36O3jAod0A0sH` |
+  | `zoops-sometimes-tqqq-2026` | Replace | zoop's Sometimes TQQQ | `O5qvETvjnTxedtkNcn2N` |
+  | `zoops-safety-checks-2026` | Replace | zoop's Safety Checks | `JnaYNpe3F1uL1mlScIZZ` |
+  | `zoops-leveraged-tqqq-symphony-2026` | Replace | zoop's Leveraged TQQQ Symphony | `md0zmf8GE94tcvMRaGyr` |
+  | `zoops-tqqq-200d-ma-3x-2026` | Replace | zoop's TQQQ 200d MA 3x Leverage | `Xaxkq31xztXXs12SExKM` |
+  | `zoops-soxl-growth-2026` | Replace | zoop's SOXL Growth | `89DLODa3ARMwGUQP9cDx` |
+  | `zoops-upro-ftlt-2026` | Replace **(confirmed, ticker changed UPRO→SPXL)** | zoop's SPXL FOR THE LONGTERM | `q0nwmcUDGKtg7sMydVxV` |
+  | `zoops-kmlm-switcher-2026` | Replace | zoop's KMLM Switcher | `0SO8z4JkRVgiyhlkS2Xx` |
+  | `zoops-manhattan-project-2026` | **Remove, no replacement** | — | — |
 
-  **Two open items:** (1) `zoops-upro-ftlt-2026` → "zoop's SPXL FOR THE LONGTERM" is a probable match by strategy concept (both 3x S&P 500 ETFs, UPRO vs. SPXL) but the ticker itself changed, unlike every other pair which is a clean name match — confirm with the user before treating this as the intended replacement. (2) **`zoops-manhattan-project-2026` and `zoops-kmlm-switcher-2026` have no submitted replacement** — confirm whether evergreen versions of these two are still coming, or whether they should stay as-is.
+  All 11 new symphonies are refreshed with real backtest data in `data/database.json` as of 2026-07-15. **Applying this is still a bigger lift than a normal database addition**: replacing a curated strategy means re-running the full "Adding a Strategy from a Composer URL" workflow (logic tree, AI summary, `how_it_works`/`signals`/`risk_profile` content) for each of the 11 new symphonies, then removing all 12 old slugs (11 replaced + 1 removed outright) from `data/strategies.json`.
 
   Applying this is a bigger lift than a normal database addition: replacing a *curated* strategy means re-running the full "Adding a Strategy from a Composer URL" workflow (logic tree, AI summary, `how_it_works`/`signals`/`risk_profile` content) for each new symphony, then removing the old slug from `data/strategies.json` — not just the database rows already added.
 - [ ] **Add "Leaderboard Ranking" as an option for the Screener (decided 2026-07-15, next up, not yet built)** — surfaces the V1.17 Leaderboard score/tier (Section 14, V1.17) inside the Screener, both ways at once (decided, not an either/or):

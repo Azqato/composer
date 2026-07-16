@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.12] - 2026-07-15
+
+### Confirmed the full 2026-Edition replacement mapping; added zoop's KMLM Switcher
+
+User confirmed the SPXL/UPRO ticker-swap mapping, submitted the KMLM Switcher replacement (added to `data/database.json` and refreshed with real backtest data: +231.7% ARR, 2.36 Sharpe), and decided Manhattan Project should be removed outright rather than replaced. Full 12-strategy mapping (11 replacements + 1 removal) now locked in the Section 14 roadmap entry, ready to apply to the curated set whenever that work is picked up.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `data/storage.csv`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.11] - 2026-07-15
 
 ### Added 10 new symphonies via AddSymphony.csv; mapped to curated 2026-Edition replacements
