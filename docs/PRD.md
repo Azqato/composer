@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.14.5
+**Version:** 1.14.6
 **Status:** Active
 **Last Updated:** 2026-07-15
 
@@ -1770,6 +1770,9 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 **Status:** Backlog
 
+- [ ] **Add "Leaderboard Ranking" as an option for the Screener (decided 2026-07-15, next up, not yet built)** — surfaces the V1.17 Leaderboard score/tier (Section 14, V1.17) inside the Screener, both ways at once (decided, not an either/or):
+  - A **bucket-filter select** (matching the existing "Tier: S+/S/A/B/C/F" dropdown pattern already used for every other numeric field), letting visitors filter the Screener pool by Leaderboard tier.
+  - A **sortable Rank/Score/Tier column added to every one of the three `SCREENER_VIEWS`** (Overview, Risk-Adjusted, Distribution), not just one view, reusing `computeScores()`/`computeTiers()` (Section 14, V1.17) against the Screener's already-bucket-filtered pool rather than a separate ranking pass.
 - [x] **Homepage redesigned as a marketing/landing page (2026-07-15)** — `index.html`'s strategy grid (all 29 cards rendered inline) was removed entirely, now that `strategies.html` covers that listing on its own page (also sorted by longest backtest first, per the same-day change above). New structure: hero (rewritten copy framing the whole site, not just curated strategies; primary CTA "Browse Strategies" → `strategies.html`, secondary "Glossary" → `glossary.html`), the existing stats bar (unchanged, still 5 stats computed client-side from `strategies.json`/`glossary.json`), a new 4-card "Explore the Site" grid (Strategies / Database / RSI Signals / Glossary, each linking out), and a new 3-step "How to use this site" section (Browse a strategy → Read the breakdown → Check live signals) tying the site's pieces together narratively. Modeled structurally (hero + eyebrow-labeled card-grid sections) after a landing page built for a sibling Azqato project, adapted to Composer Atlas's own design tokens and voice, not copied verbatim. New CSS: `.grid-4` (responsive 1/2/4-column grid, mirrors `.grid-3`'s breakpoints), `.explore-icon`, `.step-num` (numbered circle badge). Verified locally via desktop and mobile headless-Chrome screenshots, and confirmed all four explore-card links resolve correctly via a DOM dump, before pushing.
 - [ ] **Mobile overflow bug at ~390px width (found 2026-07-15, not yet fixed)** — paragraph text and the nav hamburger appear to overflow/cut off at narrow mobile viewport widths. Confirmed via headless-Chrome screenshot on both `strategies.html` and `about.html` (identical behavior on a page not touched that session), so this is a pre-existing, sitewide issue, not specific to one page or one recent change. Needs root-cause investigation (likely another `min-width: 0`/`overflow-x` cascade gap, same family of bug as the `.nav-cta`/`.db-tabs` fixes documented under V2.0) before a fix can be scoped.
 - [ ] Client-side search (Fuse.js or similar)

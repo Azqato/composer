@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.6] - 2026-07-15
+
+### Roadmap: Leaderboard Ranking coming to the Screener (V2.2, next up)
+
+Documentation only, nothing built yet. Decided to surface the V1.17 Leaderboard score/tier inside the Screener both as a bucket-filter select (Tier: S+/S/A/B/C/F, matching the existing dropdown pattern) and as a sortable Rank/Score/Tier column added to all three Screener views (Overview, Risk-Adjusted, Distribution), reusing the existing `computeScores()`/`computeTiers()` logic against the Screener's already-filtered pool.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.5] - 2026-07-15
 
 ### Redesigned the homepage as a marketing/landing page
