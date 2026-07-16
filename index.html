@@ -25,29 +25,29 @@
       </div>
     </section>
 
-    <!-- Stats bar -->
+    <!-- Stats bar (static values; update by hand after each full database refresh until a small derived stats file replaces this) -->
     <section class="stats-bar">
       <div class="container">
-        <div class="stats-inner" id="stats-inner">
+        <div class="stats-inner">
           <div>
-            <p class="stat-value" id="stat-count">...</p>
+            <p class="stat-value">6,640</p>
             <p class="stat-label">Strategies</p>
           </div>
           <div>
-            <p class="stat-value" id="stat-sharpe">...</p>
-            <p class="stat-label">Best Sharpe</p>
+            <p class="stat-value">+48.7%</p>
+            <p class="stat-label">Median ARR</p>
           </div>
           <div>
-            <p class="stat-value" id="stat-arr">...</p>
-            <p class="stat-label">Top ARR</p>
+            <p class="stat-value">-34.7%</p>
+            <p class="stat-label">Median Drawdown</p>
           </div>
           <div>
-            <p class="stat-value" id="stat-concepts">...</p>
-            <p class="stat-label">Concepts</p>
+            <p class="stat-value">29</p>
+            <p class="stat-label">Curated</p>
           </div>
           <div>
-            <p class="stat-value" id="stat-backtest">...</p>
-            <p class="stat-label">Longest Backtest</p>
+            <p class="stat-value">Jul 12, 2026</p>
+            <p class="stat-label">Last Refreshed</p>
           </div>
         </div>
       </div>
@@ -113,26 +113,15 @@
 
   <footer id="footer-root"></footer>
 
-  <script src="data/strategies.js"></script>
-  <script src="data/glossary.js"></script>
   <script src="js/app.js"></script>
   <script>
-    (async function () {
+    (function () {
       document.getElementById('hero-strategies-link').href = u('/strategies.html');
       document.getElementById('hero-glossary-link').href = u('/glossary.html');
       document.getElementById('explore-strategies').href = u('/strategies.html');
       document.getElementById('explore-database').href = u('/database.html');
       document.getElementById('explore-rsi').href = u('/rsi.html');
       document.getElementById('explore-glossary').href = u('/glossary.html');
-
-      const [strategies, glossary] = await Promise.all([loadStrategies(), loadGlossary()]);
-
-      // Stats
-      document.getElementById('stat-count').textContent = strategies.length;
-      document.getElementById('stat-sharpe').textContent = Math.max(...strategies.map(s => s.sharpe_ratio)).toFixed(2);
-      document.getElementById('stat-arr').textContent = formatPct(Math.max(...strategies.map(s => s.annualized_rate_of_return)));
-      document.getElementById('stat-concepts').textContent = glossary.length;
-      document.getElementById('stat-backtest').textContent = '~' + (Math.max(...strategies.map(s => s.backtest_days)) / 252).toFixed(1) + ' years';
     })();
   </script>
 </body>

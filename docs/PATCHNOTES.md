@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.7] - 2026-07-15
+
+### Redesigned the homepage stats bar; trimmed ~331KB of dead page weight
+
+Replaced the original 5 homepage stats (Best Sharpe/Top ARR were cherry-picked maximums from the curated 29) with 5 chosen for honesty and site-wide scope after rating ~30 candidate stats for homepage importance: **6,640 Strategies** (full database), **+48.7% Median ARR** (full-DB median), **-34.7% Median Drawdown** (full-DB median), **29 Curated**, **Last Refreshed** (Jul 12, 2026). Currently hardcoded static values, to be replaced later by a small derived stats file rather than loading the full `database_summary.json` client-side (would blow the homepage's own <500KB page-weight target). Also removed `data/strategies.js`/`data/glossary.js` from `index.html` — dead weight (~331KB combined) now that the homepage no longer computes stats or renders strategies client-side.
+
+**Files changed:** `index.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.6] - 2026-07-15
 
 ### Roadmap: Leaderboard Ranking coming to the Screener (V2.2, next up)
