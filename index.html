@@ -16,8 +16,8 @@
     <section class="hero">
       <div class="container">
         <p class="hero-eyebrow">Composer Atlas</p>
-        <h1 class="hero-title">A strategy library for systematic investors.</h1>
-        <p class="hero-desc">Backtested performance data, strategy breakdowns, and concept explanations for Composer.trade investment symphonies.</p>
+        <h1 class="hero-title">A reference library for systematic Composer.trade investing.</h1>
+        <p class="hero-desc">Explore hand-picked strategies with full logic breakdowns, browse a live database of thousands of community symphonies, check daily RSI signals, and learn the concepts behind it all &mdash; free, and independent of Composer.trade.</p>
         <div class="hero-actions">
           <a id="hero-strategies-link" href="#" class="btn btn-green btn-lg">Browse Strategies</a>
           <a id="hero-glossary-link" href="#" class="btn btn-outline btn-lg">Glossary</a>
@@ -53,15 +53,59 @@
       </div>
     </section>
 
-    <!-- Strategy grid -->
-    <section id="strategies" style="padding: 48px 0">
+    <!-- Explore the site -->
+    <section style="padding: 56px 0 16px">
       <div class="container">
-        <div class="section-header">
-          <h2>Strategies</h2>
-          <span class="section-count" id="strategy-count"></span>
+        <p class="hero-eyebrow">Explore</p>
+        <h2 style="color:var(--color-primary);font-size:1.5rem;margin-bottom:8px">Everything on this site</h2>
+        <p style="color:var(--color-secondary);font-size:1rem;max-width:620px;margin-bottom:32px">Four ways to explore systematic investing on Composer.trade.</p>
+        <div class="grid-4">
+          <a href="#" class="card" id="explore-strategies">
+            <div class="explore-icon">&#x1F4DA;</div>
+            <h3 class="card-title">Strategies</h3>
+            <p class="card-desc">Hand-picked symphonies with full logic breakdowns, AI summaries, and risk profiles.</p>
+          </a>
+          <a href="#" class="card" id="explore-database">
+            <div class="explore-icon">&#x1F5C4;&#xFE0F;</div>
+            <h3 class="card-title">Database</h3>
+            <p class="card-desc">Thousands of community-submitted symphonies with a Leaderboard, Screener, and search.</p>
+          </a>
+          <a href="#" class="card" id="explore-rsi">
+            <div class="explore-icon">&#x1F4C8;</div>
+            <h3 class="card-title">RSI Signals</h3>
+            <p class="card-desc">Live 10-day RSI for the 20 tickers used as Frontrunner-family dip-buy signals.</p>
+          </a>
+          <a href="#" class="card" id="explore-glossary">
+            <div class="explore-icon">&#x1F4D6;</div>
+            <h3 class="card-title">Glossary</h3>
+            <p class="card-desc">Plain-English explanations of every indicator, ratio, and concept used on this site.</p>
+          </a>
         </div>
-        <div class="grid-3" id="strategy-grid">
-          <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section style="padding: 56px 0 64px">
+      <div class="container">
+        <p class="hero-eyebrow">Overview</p>
+        <h2 style="color:var(--color-primary);font-size:1.5rem;margin-bottom:8px">How to use this site</h2>
+        <p style="color:var(--color-secondary);font-size:1rem;max-width:620px;margin-bottom:32px">Three steps to go from browsing to understanding.</p>
+        <div class="grid-3">
+          <div class="card">
+            <div class="step-num">1</div>
+            <h3 class="card-title">Browse a strategy</h3>
+            <p class="card-desc">Start with a hand-picked strategy, or search thousands more in the full Database.</p>
+          </div>
+          <div class="card">
+            <div class="step-num">2</div>
+            <h3 class="card-title">Read the breakdown</h3>
+            <p class="card-desc">Every strategy links out to the Glossary concepts that explain its signals and risk profile.</p>
+          </div>
+          <div class="card">
+            <div class="step-num">3</div>
+            <h3 class="card-title">Check live signals</h3>
+            <p class="card-desc">See today's RSI Signals to know if a Frontrunner dip-buy trigger is active right now.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -76,6 +120,10 @@
     (async function () {
       document.getElementById('hero-strategies-link').href = u('/strategies.html');
       document.getElementById('hero-glossary-link').href = u('/glossary.html');
+      document.getElementById('explore-strategies').href = u('/strategies.html');
+      document.getElementById('explore-database').href = u('/database.html');
+      document.getElementById('explore-rsi').href = u('/rsi.html');
+      document.getElementById('explore-glossary').href = u('/glossary.html');
 
       const [strategies, glossary] = await Promise.all([loadStrategies(), loadGlossary()]);
 
@@ -85,19 +133,7 @@
       document.getElementById('stat-arr').textContent = formatPct(Math.max(...strategies.map(s => s.annualized_rate_of_return)));
       document.getElementById('stat-concepts').textContent = glossary.length;
       document.getElementById('stat-backtest').textContent = '~' + (Math.max(...strategies.map(s => s.backtest_days)) / 252).toFixed(1) + ' years';
-
-      // Strategy grid, sorted by longest backtest first
-      const sorted = [...strategies].sort((a, b) => b.backtest_days - a.backtest_days);
-      const grid = document.getElementById('strategy-grid');
-      grid.innerHTML = sorted.map(renderStrategyCard).join('');
-      document.getElementById('strategy-count').textContent = `${strategies.length} strategies`;
-    })().catch(err => {
-      document.getElementById('strategy-grid').innerHTML = `
-        <div class="error-state" style="grid-column:1/-1">
-          <h2>Could not load strategies</h2>
-          <p>${err.message}</p>
-        </div>`;
-    });
+    })();
   </script>
 </body>
 </html>

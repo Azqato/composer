@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.14.4
+**Version:** 1.14.5
 **Status:** Active
 **Last Updated:** 2026-07-15
 
@@ -283,7 +283,7 @@ ComposerAtlas/
 │   ├── export_summary.py       # Derives database_summary.json/.js from database.json (v1.16); run after every refresh
 │   ├── sync_storage_to_database.py # Adds storage.csv URLs missing from database.json as new unrefreshed rows (v1.11.1)
 │   └── refresh_rsi.py          # Fetches Yahoo Finance daily bars, computes Wilder's RSI(10) (V2.1)
-├── index.html                  # Home page (hero + strategy grid)
+├── index.html                  # Home page: marketing/landing (hero, stats, explore cards, how-it-works) (V2.2, 2026-07-15)
 ├── strategies.html             # Strategy listing + detail (?slug=X), single file
 ├── glossary.html               # Glossary listing + concept detail (?slug=X), single file
 ├── database.html                # Full-database tabs: All Strategies / Leaderboard / Screener (v1.9.0)
@@ -406,7 +406,7 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 
 | URL (GitHub Pages) | File | Rendering |
 |---|---|---|
-| `/composer/` | `index.html` | JS renders strategy grid |
+| `/composer/` | `index.html` | Static marketing/landing page: hero, stats bar, explore cards, how-it-works (V2.2, 2026-07-15) |
 | `/composer/strategies.html` | `strategies.html` | Listing view (no slug) |
 | `/composer/strategies.html?slug=foo` | `strategies.html` | Detail view for `foo` |
 | `/composer/glossary.html` | `glossary.html` | Listing view (no slug) |
@@ -1770,6 +1770,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 **Status:** Backlog
 
+- [x] **Homepage redesigned as a marketing/landing page (2026-07-15)** — `index.html`'s strategy grid (all 29 cards rendered inline) was removed entirely, now that `strategies.html` covers that listing on its own page (also sorted by longest backtest first, per the same-day change above). New structure: hero (rewritten copy framing the whole site, not just curated strategies; primary CTA "Browse Strategies" → `strategies.html`, secondary "Glossary" → `glossary.html`), the existing stats bar (unchanged, still 5 stats computed client-side from `strategies.json`/`glossary.json`), a new 4-card "Explore the Site" grid (Strategies / Database / RSI Signals / Glossary, each linking out), and a new 3-step "How to use this site" section (Browse a strategy → Read the breakdown → Check live signals) tying the site's pieces together narratively. Modeled structurally (hero + eyebrow-labeled card-grid sections) after a landing page built for a sibling Azqato project, adapted to Composer Atlas's own design tokens and voice, not copied verbatim. New CSS: `.grid-4` (responsive 1/2/4-column grid, mirrors `.grid-3`'s breakpoints), `.explore-icon`, `.step-num` (numbered circle badge). Verified locally via desktop and mobile headless-Chrome screenshots, and confirmed all four explore-card links resolve correctly via a DOM dump, before pushing.
 - [ ] **Mobile overflow bug at ~390px width (found 2026-07-15, not yet fixed)** — paragraph text and the nav hamburger appear to overflow/cut off at narrow mobile viewport widths. Confirmed via headless-Chrome screenshot on both `strategies.html` and `about.html` (identical behavior on a page not touched that session), so this is a pre-existing, sitewide issue, not specific to one page or one recent change. Needs root-cause investigation (likely another `min-width: 0`/`overflow-x` cascade gap, same family of bug as the `.nav-cta`/`.db-tabs` fixes documented under V2.0) before a fix can be scoped.
 - [ ] Client-side search (Fuse.js or similar)
 - [ ] Tag-based filtering on strategy index: let visitors filter the strategy grid by the tags already generated for every strategy (signal type, e.g. `rsi`, `200d-ma`, `momentum`; asset class, e.g. `leveraged-etfs`, `inverse-etfs`; collection, e.g. `zoop`, `original`), instead of only using tags as read-only labels

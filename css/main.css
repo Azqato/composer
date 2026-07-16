@@ -427,6 +427,28 @@ p { color: var(--color-secondary); }
   margin-top: auto;
 }
 
+/* ---- Explore/step cards (homepage) ---- */
+.explore-icon {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-green);
+  color: var(--color-bg);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
 /* ---- Tags (GlossaryTag pills) ---- */
 .tag {
   display: inline-flex;
@@ -531,6 +553,20 @@ p { color: var(--color-secondary); }
 
 @media (min-width: 1024px) {
   .grid-2 { grid-template-columns: 2fr 1fr; }
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
 }
 
 /* ---- Detail page layout ---- */

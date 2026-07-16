@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.5] - 2026-07-15
+
+### Redesigned the homepage as a marketing/landing page
+
+`index.html` no longer renders the strategy grid inline (all 29 cards) — that's `strategies.html`'s job now, and it already has its own listing sorted the same way. New homepage structure: rewritten hero copy framing the whole site (not just curated strategies), the existing stats bar unchanged, a new 4-card "Explore the Site" grid (Strategies / Database / RSI Signals / Glossary), and a new 3-step "How to use this site" section. Modeled structurally after a landing page built for a sibling project, adapted to this site's own design tokens. New CSS: `.grid-4`, `.explore-icon`, `.step-num`.
+
+**Files changed:** `index.html`, `css/main.css`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.4] - 2026-07-15
 
 ### Nav reorder, strategies.html sort/copy, homepage hero link fix
