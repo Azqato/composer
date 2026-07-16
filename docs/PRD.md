@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.14.10
+**Version:** 1.14.11
 **Status:** Active
 **Last Updated:** 2026-07-15
 
@@ -677,7 +677,8 @@ git push origin main
 1. Read every URL currently in `data/AddSymphony.csv`.
 2. Check each one against `data/storage.csv` (the durable, deduped URL backup, one row per unique symphony ever seen) to filter out anything already present.
 3. Append the surviving (genuinely new) URLs to `data/storage.csv`.
-4. Add the same new URLs to `data/database.json` as new, unrefreshed entries — either via `scripts/sync_storage_to_database.py` (since they're now in `storage.csv`) or directly, consistent with that script's existing behavior (every field null except `symphony_url`/`symphony_id`).
+4. Add the same new URLs to `data/database.json` as new, unrefreshed entries, matching `scripts/sync_storage_to_database.py`'s row shape (every field null except `symphony_url`/`symphony_id`). **Do NOT actually run `scripts/sync_storage_to_database.py` for this** — see the warning immediately below. Add the specific new rows directly instead.
+   - **⚠️ `storage.csv` is deliberately larger than `database.json`, by design, confirmed 2026-07-15:** `storage.csv` retains URLs for symphonies that were later **purged** from `database.json` (see "Purging Flagged Full-Database Entries" below — 1,004 permanently-404/422-broken rows were removed from `database.json` outright in v1.11.14, but their URLs were deliberately kept in `storage.csv` forever, per its own "never lose a URL once seen" design). Running `sync_storage_to_database.py` blindly does not distinguish "genuinely new URL" from "URL that was intentionally purged as dead" — it will resurrect every purged dead entry as a new unrefreshed row. This actually happened: running it to process 10 new `AddSymphony.csv` URLs pulled in 1,055 stale/purged entries instead of 10. Reverted (nothing was committed) and redone by adding just the specific new rows directly. **If `sync_storage_to_database.py` is ever run for real, sanity-check the entry-count delta against the number of genuinely new URLs before proceeding to refresh/commit** — a large mismatch means purged entries are being resurrected.
 5. Manually update the affected stats: run `scripts/refresh_full_database.py` (will pick up the new unrefreshed rows on its normal staleness check) or refresh just the new rows, then `scripts/export_summary.py` to regenerate `database_summary.json`/`.js`, then commit.
 6. Clear `data/AddSymphony.csv` back to just its header row once processed, so it doesn't get re-processed on the next pass.
 
@@ -1789,6 +1790,24 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 **Status:** Backlog
 
+- [ ] **Replace 10 of the 12 curated "zoop's X (2026 Edition)" strategies with newer "evergreen" versions (decided 2026-07-15, added to the full database, not yet applied to the curated set)** — user authored updated, more evergreen versions of most of the curated zoop 2026-Edition strategies and submitted 10 new symphony URLs via `data/AddSymphony.csv`. All 10 refreshed with real backtest data 2026-07-15 (`data/database.json`); mapping to curated slugs identified by name once refreshed:
+
+  | Curated slug (2026 Edition) | New evergreen symphony | New symphony_id |
+  |---|---|---|
+  | `zoops-2026-frontrunner` | zoop's Frontrunner | `zPBn8HkmTIQ5BEJdff0v` |
+  | `zoops-holy-grail-2026` | zoop's Holy Grail | `qnFKsfL4NDBq1Wo5nCHk` |
+  | `zoops-tqqq-long-term-2026` | zoop's TQQQ FOR THE LONG TERM | `qWe1S4jert7Wa79vu9FA` |
+  | `zoops-excellent-adventure-2026` | zoop's Excellent Adventure | `vjJPExm36O3jAod0A0sH` |
+  | `zoops-sometimes-tqqq-2026` | zoop's Sometimes TQQQ | `O5qvETvjnTxedtkNcn2N` |
+  | `zoops-safety-checks-2026` | zoop's Safety Checks | `JnaYNpe3F1uL1mlScIZZ` |
+  | `zoops-leveraged-tqqq-symphony-2026` | zoop's Leveraged TQQQ Symphony | `md0zmf8GE94tcvMRaGyr` |
+  | `zoops-tqqq-200d-ma-3x-2026` | zoop's TQQQ 200d MA 3x Leverage | `Xaxkq31xztXXs12SExKM` |
+  | `zoops-soxl-growth-2026` | zoop's SOXL Growth | `89DLODa3ARMwGUQP9cDx` |
+  | `zoops-upro-ftlt-2026` **(needs confirmation)** | zoop's SPXL FOR THE LONGTERM | `q0nwmcUDGKtg7sMydVxV` |
+
+  **Two open items:** (1) `zoops-upro-ftlt-2026` → "zoop's SPXL FOR THE LONGTERM" is a probable match by strategy concept (both 3x S&P 500 ETFs, UPRO vs. SPXL) but the ticker itself changed, unlike every other pair which is a clean name match — confirm with the user before treating this as the intended replacement. (2) **`zoops-manhattan-project-2026` and `zoops-kmlm-switcher-2026` have no submitted replacement** — confirm whether evergreen versions of these two are still coming, or whether they should stay as-is.
+
+  Applying this is a bigger lift than a normal database addition: replacing a *curated* strategy means re-running the full "Adding a Strategy from a Composer URL" workflow (logic tree, AI summary, `how_it_works`/`signals`/`risk_profile` content) for each new symphony, then removing the old slug from `data/strategies.json` — not just the database rows already added.
 - [ ] **Add "Leaderboard Ranking" as an option for the Screener (decided 2026-07-15, next up, not yet built)** — surfaces the V1.17 Leaderboard score/tier (Section 14, V1.17) inside the Screener, both ways at once (decided, not an either/or):
   - A **bucket-filter select** (matching the existing "Tier: S+/S/A/B/C/F" dropdown pattern already used for every other numeric field), letting visitors filter the Screener pool by Leaderboard tier.
   - A **sortable Rank/Score/Tier column added to every one of the three `SCREENER_VIEWS`** (Overview, Risk-Adjusted, Distribution), not just one view, reusing `computeScores()`/`computeTiers()` (Section 14, V1.17) against the Screener's already-bucket-filtered pool rather than a separate ranking pass.

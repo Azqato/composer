@@ -5,6 +5,20 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.11] - 2026-07-15
+
+### Added 10 new symphonies via AddSymphony.csv; mapped to curated 2026-Edition replacements
+
+Processed `data/AddSymphony.csv` per the documented workflow: added the 10 new URLs to `data/storage.csv` and `data/database.json` directly (explicitly *not* via `scripts/sync_storage_to_database.py`, per the storage.csv-divergence warning added this session), refreshed each with real backtest data, regenerated the summary export, cleared the CSV back to its header.
+
+Also documented two operational incidents from this session for future reference: (1) `sync_storage_to_database.py` pulled in 1,055 stale/purged entries instead of 10 when first tried — reverted before committing, redone by adding rows directly; (2) a background `refresh_full_database.py` run (legitimately processing the full ~6,600-row backlog, not stuck) was mistaken for a batch of zombie processes and killed via `taskkill /F /IM python.exe` — lost ~7 rows of uncheckpointed progress (harmless, picked up on a future run) but was a real mistake worth a permanent note against blind process cleanup in this environment.
+
+Once refreshed, the 10 new symphonies' real names revealed a clear mapping to 9 of the 12 curated "zoop's X (2026 Edition)" strategies (documented in Section 14, V2.2) — logged as the next roadmap item, not yet applied to `data/strategies.json`. Two open questions flagged: one probable match (SPXL vs. UPRO ticker swap) needs confirmation, and two curated strategies (Manhattan Project, KMLM Switcher) have no submitted replacement yet.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `data/storage.csv`, `data/AddSymphony.csv`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.10] - 2026-07-15
 
 ### Fixed orphaned duplicate pointers; 8 more clusters swapped to most-watched member
