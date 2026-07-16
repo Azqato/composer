@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.14.7
+**Version:** 1.14.8
 **Status:** Active
 **Last Updated:** 2026-07-15
 
@@ -268,6 +268,7 @@ ComposerAtlas/
 │   ├── database_summary.js     # Same data as window.DATABASE_SUMMARY_DATA, for file:// compat (v1.16)
 │   ├── Full Database.xlsx      # Raw source spreadsheet; database.json is generated from this
 │   ├── storage.csv             # Append-only URL backup, single `url` column, deduped (v1.10.1)
+│   ├── AddSymphony.csv         # User-submitted URL inbox, single `url` column, manual-only (added 2026-07-15)
 │   ├── rsi.json                # 10-day RSI (Wilder's smoothing) for the 20-ticker Frontrunner universe (V2.1)
 │   └── rsi.js                  # Same data as window.RSI_DATA, for file:// compat (V2.1)
 ├── js/
@@ -664,6 +665,23 @@ git push origin main
 ```
 
 **Reminder — scope boundary:** this workflow runs `refresh_full_database.py` only. `scripts/flag_name_noise.py` and `scripts/dedupe_symphonies.py` (V1.14 Part A) remain manual-only and must never be added here or to any other scheduled/CI job — see "Name-Based Noise & De-Duplication" above for why.
+
+---
+
+### Submitting New Symphonies (`data/AddSymphony.csv`)
+
+**Added 2026-07-15.** A single-column CSV (`url`, matching `storage.csv`'s existing format) where the user drops new Composer symphony URLs to submit for inclusion in the full database, outside of the original bulk-scrape/sync pipeline. Manual-only by design, same posture as `flag_name_noise.py`/`dedupe_symphonies.py` — this is never run automatically or from a scheduled workflow.
+
+**Workflow, run only when the user explicitly asks (e.g. "check AddSymphony.csv"):**
+
+1. Read every URL currently in `data/AddSymphony.csv`.
+2. Check each one against `data/storage.csv` (the durable, deduped URL backup, one row per unique symphony ever seen) to filter out anything already present.
+3. Append the surviving (genuinely new) URLs to `data/storage.csv`.
+4. Add the same new URLs to `data/database.json` as new, unrefreshed entries — either via `scripts/sync_storage_to_database.py` (since they're now in `storage.csv`) or directly, consistent with that script's existing behavior (every field null except `symphony_url`/`symphony_id`).
+5. Manually update the affected stats: run `scripts/refresh_full_database.py` (will pick up the new unrefreshed rows on its normal staleness check) or refresh just the new rows, then `scripts/export_summary.py` to regenerate `database_summary.json`/`.js`, then commit.
+6. Clear `data/AddSymphony.csv` back to just its header row once processed, so it doesn't get re-processed on the next pass.
+
+**Deliberately not automated:** matches the same reasoning already established for `flag_name_noise.py`/`dedupe_symphonies.py` — this touches `database.json` and should only ever run when explicitly invoked, never from a scheduled GitHub Actions job.
 
 ---
 

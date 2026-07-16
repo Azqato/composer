@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.8] - 2026-07-15
+
+### Added data/AddSymphony.csv: a manual symphony-submission inbox
+
+New single-column CSV (`url`), same format as `storage.csv`, where the user drops new Composer symphony URLs to submit for database inclusion. Documented the full workflow in `docs/PRD.md`'s Operational Runbook: check each URL against `storage.csv` for duplicates, append survivors to `storage.csv`, add them to `database.json` as new unrefreshed rows, refresh and regenerate the summary export, then clear the file back to its header. Manual-only by design, same posture as `flag_name_noise.py`/`dedupe_symphonies.py` — never runs automatically or from a scheduled workflow.
+
+**Files changed:** `data/AddSymphony.csv` (new), `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.7] - 2026-07-15
 
 ### Redesigned the homepage stats bar; trimmed ~331KB of dead page weight
