@@ -1,53 +1,53 @@
 {
-  "refreshed_at": "2026-07-16T20:06:03Z",
+  "refreshed_at": "2026-07-16T23:02:58Z",
   "tickers": [
     {
       "symbol": "XLF",
       "name": "Financial Select Sector SPDR",
       "rsi_10": 74.2,
-      "price": 56.76,
+      "price": 56.75,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "SPYV",
       "name": "SPDR Portfolio S&P 500 Value",
-      "rsi_10": 68.5,
-      "price": 62.23,
+      "rsi_10": 68.6,
+      "price": 62.24,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "VTV",
       "name": "Vanguard Value ETF",
-      "rsi_10": 56.8,
-      "price": 218.87,
+      "rsi_10": 56.7,
+      "price": 218.86,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "SPY",
       "name": "SPDR S&P 500 ETF",
-      "rsi_10": 54.4,
-      "price": 750.77,
+      "rsi_10": 54.3,
+      "price": 750.72,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "IOO",
       "name": "iShares Global 100 ETF",
-      "rsi_10": 56.2,
-      "price": 139.44,
+      "rsi_10": 56.3,
+      "price": 139.45,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "UUP",
       "name": "Invesco DB US Dollar Index Bullish",
-      "rsi_10": 51.8,
-      "price": 28.33,
+      "rsi_10": 52.1,
+      "price": 28.34,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "FXI",
       "name": "iShares China Large-Cap ETF",
-      "rsi_10": 69.5,
-      "price": 34.52,
+      "rsi_10": 69.6,
+      "price": 34.53,
       "price_date": "2026-07-16"
     },
     {
@@ -60,8 +60,8 @@
     {
       "symbol": "XLK",
       "name": "Technology Select Sector SPDR",
-      "rsi_10": 40.8,
-      "price": 177.46,
+      "rsi_10": 40.9,
+      "price": 177.52,
       "price_date": "2026-07-16"
     },
     {
@@ -75,21 +75,21 @@
       "symbol": "XLE",
       "name": "Energy Select Sector SPDR",
       "rsi_10": 64.0,
-      "price": 57.01,
+      "price": 57.02,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "VOX",
       "name": "Vanguard Communication Services ETF",
       "rsi_10": 57.4,
-      "price": 191.85,
+      "price": 191.86,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "TECL",
       "name": "Direxion Daily Technology Bull 3x",
-      "rsi_10": 39.7,
-      "price": 183.66,
+      "rsi_10": 39.6,
+      "price": 183.36,
       "price_date": "2026-07-16"
     },
     {
@@ -102,8 +102,8 @@
     {
       "symbol": "RETL",
       "name": "Direxion Daily Retail Bull 3x",
-      "rsi_10": 68.9,
-      "price": 9.88,
+      "rsi_10": 68.7,
+      "price": 9.86,
       "price_date": "2026-07-16"
     },
     {
@@ -116,15 +116,15 @@
     {
       "symbol": "EEM",
       "name": "iShares MSCI Emerging Markets ETF",
-      "rsi_10": 38.9,
-      "price": 64.21,
+      "rsi_10": 38.8,
+      "price": 64.19,
       "price_date": "2026-07-16"
     },
     {
       "symbol": "GLD",
       "name": "SPDR Gold Shares",
-      "rsi_10": 35.8,
-      "price": 365.01,
+      "rsi_10": 35.7,
+      "price": 364.96,
       "price_date": "2026-07-16"
     },
     {
