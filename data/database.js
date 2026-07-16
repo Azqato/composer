@@ -733,8 +733,8 @@ window.DATABASE_DATA = [
     "total_costs": 318354425.03999996,
     "oos_date": "2022-07-20",
     "refresh_date": "2026-07-08",
-    "flag": "duplicate",
-    "error": "Duplicate of 10KwXooxAbZw9GjNKt8Z"
+    "flag": null,
+    "error": null
   },
   {
     "name": "The Holy Grail (Invest Copy)",
@@ -427752,8 +427752,8 @@ window.DATABASE_DATA = [
     "total_costs": 318354425.03999996,
     "oos_date": "2022-07-20",
     "refresh_date": "2026-07-08",
-    "flag": null,
-    "error": null
+    "flag": "duplicate",
+    "error": "Duplicate of MmQbpf2U5TMQFmr9Nt2e (manual override, 2026-07-15: user preference for the plain \"The Holy Grail\" name over the tiebreak-selected \"(Buy Copy)\" variant)"
   },
   {
     "name": "The Holy Grail (Buy Copy)",

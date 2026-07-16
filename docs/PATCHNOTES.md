@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.9] - 2026-07-15
+
+### Manual duplicate override: "The Holy Grail" restored as the kept entry
+
+The dedup pipeline's deterministic tiebreak (earliest `symphony_id` when `oos_date` ties) had picked "The Holy Grail (Buy Copy)" over the plain-named "The Holy Grail" as the canonical kept row within a 5-member identical cluster — correct per the documented policy, but not what the user wanted for this specific strategy. Manually swapped which of the two carries `flag: null` vs. `flag: "duplicate"` directly in `data/database.json`, regenerated `data/database.js` and `data/database_summary.json`/`.js`. Also logged a future-state idea to the roadmap: eventually basing the dedup tiebreak on a symphony's "Watched by N" popularity count instead of `symphony_id` — not buildable yet, that count isn't exposed by the API endpoints this pipeline uses.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.8] - 2026-07-15
 
 ### Added data/AddSymphony.csv: a manual symphony-submission inbox
