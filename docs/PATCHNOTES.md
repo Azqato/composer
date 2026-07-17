@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.13] - 2026-07-17
+
+### Processed AddSymphony.csv: 3 new symphonies added and refreshed
+
+Added 3 new URLs from `data/AddSymphony.csv` to `data/storage.csv` and `data/database.json` directly (per the established narrow workflow), refreshed all 3 with real backtest data, regenerated the summary export, cleared the CSV back to its header. New entries: "L/S" (`d2IT6JJmlGr1YqtiLfz3`), "BIL+ (2x, No BTC)" (`oUF7srtPrrr5X7ipcCXM`), "BSC" (`GojyU2D4nF50GI33A7za`).
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `data/storage.csv`, `data/AddSymphony.csv`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.12] - 2026-07-15
 
 ### Confirmed the full 2026-Edition replacement mapping; added zoop's KMLM Switcher

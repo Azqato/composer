@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.14.12
+**Version:** 1.14.13
 **Status:** Active
-**Last Updated:** 2026-07-15
+**Last Updated:** 2026-07-17
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
