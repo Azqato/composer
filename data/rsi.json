@@ -1,11 +1,11 @@
 {
-  "refreshed_at": "2026-07-17T20:10:48Z",
+  "refreshed_at": "2026-07-17T22:54:58Z",
   "tickers": [
     {
       "symbol": "XLF",
       "name": "Financial Select Sector SPDR",
-      "rsi_10": 64.9,
-      "price": 56.24,
+      "rsi_10": 65.2,
+      "price": 56.26,
       "price_date": "2026-07-17"
     },
     {
@@ -19,27 +19,27 @@
       "symbol": "VTV",
       "name": "Vanguard Value ETF",
       "rsi_10": 51.4,
-      "price": 217.93,
+      "price": 217.92,
       "price_date": "2026-07-17"
     },
     {
       "symbol": "SPY",
       "name": "SPDR S&P 500 ETF",
-      "rsi_10": 45.6,
-      "price": 743.15,
+      "rsi_10": 45.8,
+      "price": 743.29,
       "price_date": "2026-07-17"
     },
     {
       "symbol": "IOO",
       "name": "iShares Global 100 ETF",
-      "rsi_10": 48.8,
-      "price": 138.1,
+      "rsi_10": 49.0,
+      "price": 138.14,
       "price_date": "2026-07-17"
     },
     {
       "symbol": "UUP",
       "name": "Invesco DB US Dollar Index Bullish",
-      "rsi_10": 51.7,
+      "rsi_10": 51.3,
       "price": 28.33,
       "price_date": "2026-07-17"
     },
@@ -61,7 +61,7 @@
       "symbol": "XLK",
       "name": "Technology Select Sector SPDR",
       "rsi_10": 38.4,
-      "price": 175.58,
+      "price": 175.59,
       "price_date": "2026-07-17"
     },
     {
@@ -88,8 +88,8 @@
     {
       "symbol": "TECL",
       "name": "Direxion Daily Technology Bull 3x",
-      "rsi_10": 37.3,
-      "price": 177.25,
+      "rsi_10": 37.5,
+      "price": 177.65,
       "price_date": "2026-07-17"
     },
     {
@@ -109,8 +109,8 @@
     {
       "symbol": "XLY",
       "name": "Consumer Discretionary Select Sector SPDR",
-      "rsi_10": 44.6,
-      "price": 115.41,
+      "rsi_10": 44.7,
+      "price": 115.44,
       "price_date": "2026-07-17"
     },
     {
@@ -124,14 +124,14 @@
       "symbol": "GLD",
       "name": "SPDR Gold Shares",
       "rsi_10": 40.6,
-      "price": 368.4,
+      "price": 368.41,
       "price_date": "2026-07-17"
     },
     {
       "symbol": "XLP",
       "name": "Consumer Staples Select Sector SPDR",
       "rsi_10": 56.3,
-      "price": 85.2,
+      "price": 85.19,
       "price_date": "2026-07-17"
     },
     {
