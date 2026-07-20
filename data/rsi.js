@@ -1,7 +1,7 @@
 // RSI signals data - loaded as a script tag so the site works with file:// protocol.
 // To update: run scripts/refresh_rsi.py
 window.RSI_DATA = {
-  "refreshed_at": "2026-07-20T20:26:17Z",
+  "refreshed_at": "2026-07-20T23:05:25Z",
   "tickers": [
     {
       "symbol": "XLF",
@@ -76,8 +76,8 @@ window.RSI_DATA = {
     {
       "symbol": "XLE",
       "name": "Energy Select Sector SPDR",
-      "rsi_10": 68.9,
-      "price": 57.96,
+      "rsi_10": 68.8,
+      "price": 57.94,
       "price_date": "2026-07-20"
     },
     {
