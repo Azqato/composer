@@ -1,7 +1,7 @@
 // RSI signals data - loaded as a script tag so the site works with file:// protocol.
 // To update: run scripts/refresh_rsi.py
 window.RSI_DATA = {
-  "refreshed_at": "2026-07-21T20:21:47Z",
+  "refreshed_at": "2026-07-21T23:02:57Z",
   "tickers": [
     {
       "symbol": "XLF",
@@ -28,7 +28,7 @@ window.RSI_DATA = {
       "symbol": "SPY",
       "name": "SPDR S&P 500 ETF",
       "rsi_10": 52.2,
-      "price": 748.32,
+      "price": 748.28,
       "price_date": "2026-07-21"
     },
     {
@@ -77,7 +77,7 @@ window.RSI_DATA = {
       "symbol": "XLE",
       "name": "Energy Select Sector SPDR",
       "rsi_10": 71.4,
-      "price": 58.51,
+      "price": 58.5,
       "price_date": "2026-07-21"
     },
     {
@@ -126,7 +126,7 @@ window.RSI_DATA = {
       "symbol": "GLD",
       "name": "SPDR Gold Shares",
       "rsi_10": 49.8,
-      "price": 374.8,
+      "price": 374.81,
       "price_date": "2026-07-21"
     },
     {
