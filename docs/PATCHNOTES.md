@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.14] - 2026-07-17
+
+### Processed AddSymphony.csv: 10 new symphonies added and refreshed
+
+Added 10 new URLs from `data/AddSymphony.csv` to `data/storage.csv` and `data/database.json` directly (per the established narrow workflow), refreshed all 10 with real backtest data, regenerated the summary export, cleared the CSV back to its header. New entries: Some Dip Buys, TECL Dip, BSC REMOVED | Single Popped, Safe Dips/Rips l 10 Jan 2011, Hi-Volume DipRip, Basic RSI OB/OS Framework, High Win Rate Test V2, FR 11/14/2025 Front Runner Current | NOVA'd | Interstellar RL, When QQQ is cheap AND world is ending buy TQQQ and some UVXY also, Nested BTD (YINN/YANG surgically removed).
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`, `data/database_summary.js`, `data/storage.csv`, `data/AddSymphony.csv`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.13] - 2026-07-17
 
 ### Processed AddSymphony.csv: 3 new symphonies added and refreshed
