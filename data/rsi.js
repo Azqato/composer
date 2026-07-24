@@ -1,7 +1,7 @@
 // RSI signals data - loaded as a script tag so the site works with file:// protocol.
 // To update: run scripts/refresh_rsi.py
 window.RSI_DATA = {
-  "refreshed_at": "2026-07-24T20:24:58Z",
+  "refreshed_at": "2026-07-24T23:07:40Z",
   "tickers": [
     {
       "symbol": "XLF",
@@ -118,8 +118,8 @@ window.RSI_DATA = {
     {
       "symbol": "EEM",
       "name": "iShares MSCI Emerging Markets ETF",
-      "rsi_10": 38.8,
-      "price": 63.36,
+      "rsi_10": 38.7,
+      "price": 63.33,
       "price_date": "2026-07-24"
     },
     {
