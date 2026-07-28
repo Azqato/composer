@@ -1,7 +1,7 @@
 // RSI signals data - loaded as a script tag so the site works with file:// protocol.
 // To update: run scripts/refresh_rsi.py
 window.RSI_DATA = {
-  "refreshed_at": "2026-07-28T20:20:39Z",
+  "refreshed_at": "2026-07-28T23:05:44Z",
   "tickers": [
     {
       "symbol": "XLF",
@@ -48,8 +48,8 @@ window.RSI_DATA = {
     {
       "symbol": "FXI",
       "name": "iShares China Large-Cap ETF",
-      "rsi_10": 72.6,
-      "price": 35.64,
+      "rsi_10": 72.7,
+      "price": 35.65,
       "price_date": "2026-07-28"
     },
     {
@@ -76,14 +76,14 @@ window.RSI_DATA = {
     {
       "symbol": "XLE",
       "name": "Energy Select Sector SPDR",
-      "rsi_10": 52.8,
-      "price": 57.55,
+      "rsi_10": 53.0,
+      "price": 57.57,
       "price_date": "2026-07-28"
     },
     {
       "symbol": "VOX",
       "name": "Vanguard Communication Services ETF",
-      "rsi_10": 47.4,
+      "rsi_10": 46.2,
       "price": 185.13,
       "price_date": "2026-07-28"
     },
@@ -118,8 +118,8 @@ window.RSI_DATA = {
     {
       "symbol": "EEM",
       "name": "iShares MSCI Emerging Markets ETF",
-      "rsi_10": 35.3,
-      "price": 62.39,
+      "rsi_10": 35.2,
+      "price": 62.36,
       "price_date": "2026-07-28"
     },
     {
@@ -133,7 +133,7 @@ window.RSI_DATA = {
       "symbol": "XLP",
       "name": "Consumer Staples Select Sector SPDR",
       "rsi_10": 64.5,
-      "price": 87.05,
+      "price": 87.06,
       "price_date": "2026-07-28"
     },
     {
