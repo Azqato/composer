@@ -1,7 +1,7 @@
 // RSI signals data - loaded as a script tag so the site works with file:// protocol.
 // To update: run scripts/refresh_rsi.py
 window.RSI_DATA = {
-  "refreshed_at": "2026-07-29T20:15:21Z",
+  "refreshed_at": "2026-07-29T23:03:29Z",
   "tickers": [
     {
       "symbol": "XLF",
@@ -13,29 +13,29 @@ window.RSI_DATA = {
     {
       "symbol": "SPYV",
       "name": "SPDR Portfolio S&P 500 Value",
-      "rsi_10": 56.6,
-      "price": 62.19,
+      "rsi_10": 56.4,
+      "price": 62.18,
       "price_date": "2026-07-29"
     },
     {
       "symbol": "VTV",
       "name": "Vanguard Value ETF",
-      "rsi_10": 52.9,
-      "price": 219.87,
+      "rsi_10": 52.6,
+      "price": 219.8,
       "price_date": "2026-07-29"
     },
     {
       "symbol": "SPY",
       "name": "SPDR S&P 500 ETF",
-      "rsi_10": 33.4,
-      "price": 729.52,
+      "rsi_10": 33.3,
+      "price": 729.46,
       "price_date": "2026-07-29"
     },
     {
       "symbol": "IOO",
       "name": "iShares Global 100 ETF",
-      "rsi_10": 40.9,
-      "price": 136.54,
+      "rsi_10": 40.4,
+      "price": 136.44,
       "price_date": "2026-07-29"
     },
     {
