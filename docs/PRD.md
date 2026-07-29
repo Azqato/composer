@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.14.14
+**Version:** 1.14.15
 **Status:** Active
-**Last Updated:** 2026-07-17
+**Last Updated:** 2026-07-29
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -108,7 +108,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 ### MVP: Shipped (V1.0–V1.2.1)
 
 **Strategy Library**
-- Index page listing all 29 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
+- Index page listing all 30 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
 - Each strategy has a dedicated page with: name, description, tags, "Open in Composer" CTA, an AI Summary (Claude-authored analysis above How It Works), plain-English logic breakdown, signals used (cross-linked to glossary), risk profile, and full metrics table
 - Strategy card titles are clickable links
 
@@ -118,7 +118,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - Concepts cross-link back to strategies that use them
 
 **Data Layer**
-- `data/strategies.json`: flat-file database of all 29 strategies
+- `data/strategies.json`: flat-file database of all 30 strategies
 - `data/glossary.json`: flat-file database of all 20 glossary concepts
 - Dual-mode loading: `window.STRATEGIES_DATA` / `window.GLOSSARY_DATA` globals for `file://` compatibility; `fetch()` fallback for HTTP
 - `scripts/update_metrics.py`: reusable script to refresh all metrics and logic trees from the Composer API
@@ -1369,6 +1369,7 @@ All 24 Composer Atlas strategies with their Composer symphony IDs:
 | Dip Buying Tech | `98cACZSS00eDg8Kv5BBV` |
 | Ob Os Staple my Bonds (Original) | `OmMmeWyyAu0IRN2yOP6k` |
 | Sometimes TQQQ (Original) | `MyRyWhvbdxTsRfzHmE1U` |
+| Triple Accelerator | `0jPwZ5Lm2Y3xH24oEijB` |
 
 Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 
@@ -1824,7 +1825,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 - [ ] Expand glossary
 - [ ] **Cross-link curated strategies ↔ full database (decided 2026-07-13, not yet built — see below)**
 
-#### Cross-linking the curated 29 to the full database (decided 2026-07-13)
+#### Cross-linking the curated 30 to the full database (decided 2026-07-13)
 
 **Background:** confirmed all 29 curated strategies (`data/strategies.json`) already exist as rows in the full database (`data/database.json`/`database_summary.json`), matched exactly by `symphony_id` — they are not disjoint datasets, just two views over overlapping data. Both pipelines independently call the same Composer backtest endpoint with identical parameters (`capital: 10000`, `broker: alpaca`, same slippage/fee flags) for the same 29 symphonies, on two separate schedules (`update_metrics.py` vs. `refresh_full_database.py`), both gated by the same 7-day staleness window — genuinely redundant work computing the same numbers twice.
 
@@ -1834,7 +1835,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 **Option A implementation plan (not yet built):**
 - [ ] Strategy detail pages (`strategies.html?slug=X`) get a "View in full database →" link to that symphony's row in `database.html`. Requires a way to deep-link to a specific `symphony_id`/row that doesn't exist today (e.g. a `?symphony_id=X` query param that pre-filters/scrolls the All Strategies table to that row) — this sub-piece needs its own small design pass at implementation time, not just a static link to `database.html`.
-- [ ] `database.html` rows whose `symphony_id` matches one of the 29 curated strategies get a small "★ Curated" badge/indicator, linking back to that strategy's `strategies.html?slug=X` detail page. Needs a client-side lookup set built from `strategies.js`'s `symphony_id`s (cheap, only 29 entries, no new data file needed).
+- [ ] `database.html` rows whose `symphony_id` matches one of the 29 curated strategies get a small "★ Curated" badge/indicator, linking back to that strategy's `strategies.html?slug=X` detail page. Needs a client-side lookup set built from `strategies.js`'s `symphony_id`s (cheap, only 30 entries, no new data file needed).
 - [ ] No changes to `data/strategies.json`, `data/database.json`, `scripts/update_metrics.py`, or `scripts/refresh_full_database.py` — this is UI/navigation only.
 
 **Explicitly not in scope for this item:** eliminating the duplicated metrics refresh (that's Option B, deferred), any change to which fields live in which file, and any change to refresh schedules.

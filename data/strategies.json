@@ -1868,5 +1868,60 @@
     ],
     "risk_profile": "Extremely Aggressive. The 326.5% ARR and approximately 1.9 billion times cumulative return over ~14.7 years (from UVXY's October 2011 launch through mid-2026) are among the highest backtest figures in this library. The 45.6% max drawdown is large in absolute terms but modest relative to these extraordinary returns, producing an exceptional 7.17 Calmar ratio and 2.76 Sharpe. The 58.6% standard deviation reflects the strategy's frequent 3x leveraged positions in TQQQ, TECL, and UPRO. The last_market_days_holdings show the strategy fully allocated to TQQQ at the time of data collection, illustrating the compounding concentration risk inherent in a $10,000-initial backtest that grew to approximately $19 trillion in the model. The trailing 1-year return of 136.5% reflects the 2025-2026 AI and tech bull market. The strategy's 14.7-year backtest covers the post-2011 secular bull market in tech, the 2020 COVID crash and recovery, and the 2022 tech bear — but misses the 2008 financial crisis. All figures should be interpreted with significant caution given the extreme compounding effect of leveraged ETFs over long periods.",
     "author_note": "The symphony name in Composer is 'Sometimes TQQQ v2'. Authored by Guybogles (Discord: aly9923); last semantic update June 26, 2024. The backtest_days field (3721) is estimated from the API's first_day (15251) and last_market_day (20646) fields, as the size field returned None for this symphony. The backtest begins approximately October 2011 when UVXY first became available. The author notes: 'Please feel free to change the 60d SPY RSI check as well as any VIX ticker to whatever you feel comfortable with.'"
+  },
+  {
+    "slug": "triple-accelerator",
+    "name": "Triple Accelerator",
+    "symphony_url": "https://app.composer.trade/symphony/0jPwZ5Lm2Y3xH24oEijB/details",
+    "symphony_id": "0jPwZ5Lm2Y3xH24oEijB",
+    "annualized_rate_of_return": 0.754445342900453,
+    "max_drawdown": -0.6166825567353839,
+    "cumulative_return": 4052.632247,
+    "calmar_ratio": 1.2233933563718142,
+    "sharpe_ratio": 1.3406828737827734,
+    "standard_deviation": 0.5181914703271173,
+    "min": -0.15039553781215198,
+    "mean": 0.002756866784158256,
+    "median": 0.003310164397392068,
+    "max": 0.5001155817697016,
+    "trailing_one_month_return": -0.20248736879231,
+    "trailing_three_month_return": -0.1653067380376333,
+    "trailing_one_year_return": 0.04843546011143873,
+    "backtest_days": 3723,
+    "description": "A three-asset rotation between TQQQ, SPY, and UVXY controlled by two nested gates: a top-level TQQQ RSI(10) overbought check that triggers a UVXY volatility hedge when RSI exceeds 79, and an SPY 200-day moving average gate that routes between TQQQ in the bull case and unleveraged SPY in the bear case.",
+    "tags": [
+      "rsi",
+      "leveraged-etfs",
+      "200d-ma",
+      "vix-tiers"
+    ],
+    "last_updated": "2026-07-29",
+    "ai_summary": [
+      "Triple Accelerator is authored by Inverteum Capital as a minimal but purposeful rotation across three assets: TQQQ, SPY, and UVXY. Over approximately 14.8 years from around October 2011 (coinciding with UVXY's inception) through July 2026, the strategy delivers 75.4% annualized returns and 4,053x cumulative growth (roughly $10,000 to $40.5 million), with a 61.7% max drawdown. The 1.34 Sharpe and 1.22 Calmar reflect a strategy that earns strong returns by staying leveraged through bull markets while managing the two main failure modes of 3x leverage: overbought reversals and trend deterioration.",
+      "The architecture is deliberately simple: a single TQQQ RSI(10) check runs first -- if RSI exceeds 79, the strategy rotates to UVXY as a volatility hedge against an overbought market. If not, an SPY 200-day moving average gate decides the allocation: TQQQ during confirmed uptrends, unleveraged SPY during downtrends. The result is a three-state machine with about 12.7 annual portfolio switches (annualized turnover). The 56.3% win rate and right-skewed return distribution (skewness 1.15, max single-day gain of 50.0%) suggest a strategy that captures large upside days while the MA gate limits prolonged drawdown exposure."
+    ],
+    "how_it_works": [
+      "Triple Accelerator uses a two-gate decision tree evaluated top-down. The first gate checks TQQQ's 10-day RSI: if it exceeds 79, the strategy allocates entirely to UVXY, a 2x long VIX ETF. This overbought hedge runs unconditionally before any trend analysis, which means the strategy can hold UVXY even in a nominal bull market when leveraged tech has become technically extreme. The intuition is that when TQQQ RSI(10) is above 79 the market has been rising hard, mean-reversion risk is elevated, and a volatility spike from a sudden reversal is the most likely near-term scenario -- UVXY profits from exactly that.",
+      "If the RSI overbought condition is not active, the strategy falls through to the second gate: SPY's current price versus its 200-day simple moving average. Above the moving average (confirmed uptrend), the strategy allocates 100% to TQQQ for maximum leveraged upside in Nasdaq. Below the moving average (downtrend), it rotates to unleveraged SPY rather than going to cash or inverse ETFs, preserving equity exposure while eliminating 3x leverage risk during bear markets. The three resulting states -- UVXY at RSI extremes, TQQQ in bull trends, SPY in bear trends -- cover the full regime space with no overlapping conditions and no default-to-cash dead zones."
+    ],
+    "signals": [
+      {
+        "name": "TQQQ RSI(10) Overbought Gate",
+        "tag": "rsi",
+        "description": "Top-level check: if TQQQ's 10-day RSI exceeds 79, the strategy immediately rotates to UVXY. This gate fires before the SPY 200d MA gate, meaning the UVXY hedge can activate even in a bull market when leveraged tech is technically stretched."
+      },
+      {
+        "name": "SPY 200d MA Bull/Bear Gate",
+        "tag": "200d-ma",
+        "description": "Secondary check (runs only when TQQQ RSI is not overbought): SPY current price vs. its 200-day moving average routes between TQQQ (above MA, confirmed uptrend) and SPY (below MA, downtrend capital preservation)."
+      },
+      {
+        "name": "UVXY Overbought Hedge",
+        "tag": "vix-tiers",
+        "description": "UVXY (2x long VIX) is held exclusively when the TQQQ RSI(10) > 79 gate fires. Unlike strategies that hold UVXY in bear markets, Triple Accelerator deploys UVXY as a mean-reversion play targeting volatility spikes off technically overbought peaks."
+      }
+    ],
+    "risk_profile": "Aggressive. The 75.4% ARR and 4,053x cumulative return over approximately 14.8 years place Triple Accelerator among the stronger strategies in this library. The 61.7% max drawdown and 51.8% annualized standard deviation reflect the inherent volatility of a strategy that holds 3x leveraged Nasdaq for the majority of bull-market time. The 1.34 Sharpe and 1.22 Calmar are solid but not exceptional, indicating real but manageable risk relative to returns. The 56.3% win rate means roughly 44% of trading days are negative. The right-skewed distribution (skewness 1.15, kurtosis 20.43) indicates that large single-day gains are more frequent than large single-day losses, with the max single-day return reaching 50.0%. As of the data collection date in late July 2026, the strategy is fully allocated to TQQQ with a modest 4.8% trailing 1-year return and negative recent months, indicating current tech market pressure. The three-state simplicity is both a strength (minimal overfitting risk) and a constraint (no intermediate sub-regimes for choppy or recovering markets).",
+    "author_note": "Strategy authored by Inverteum Capital (blog.inverteum.com). The backtest begins approximately October 2011 coinciding with UVXY's inception date, covering roughly 14.8 years of market history including the 2015-2016 volatility spikes, the February 2018 VIX spike, the 2020 COVID crash and recovery, and the 2022 tech bear market. Last semantic update per Composer: 2026-07-29. Symphony ID: 0jPwZ5Lm2Y3xH24oEijB."
   }
 ]

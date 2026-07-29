@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.14.15] - 2026-07-29
+
+### Added Triple Accelerator to curated strategies library and full database
+
+Added "Triple Accelerator" by Inverteum Capital (symphony ID `0jPwZ5Lm2Y3xH24oEijB`) to both `data/strategies.json` (curated library, now 30 entries) and `data/database.json` (full database, now 6,665 entries). The strategy is a compact three-state rotation: TQQQ RSI(10) > 79 routes to UVXY (overbought hedge), SPY above 200d MA routes to TQQQ (bull trend), and SPY below 200d MA routes to SPY (bear capital preservation). Stats: 75.4% ARR, 4,053x cumulative return over ~14.8 years, 61.7% max drawdown, 1.34 Sharpe, 1.22 Calmar. Tags: `rsi`, `leveraged-etfs`, `200d-ma`, `vix-tiers`.
+
+**Files changed:** `data/strategies.json`, `data/strategies.js`, `data/database.json`, `data/database.js`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.14.14] - 2026-07-17
 
 ### Processed AddSymphony.csv: 10 new symphonies added and refreshed
