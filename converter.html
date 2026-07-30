@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Convert a Composer.trade symphony into clean, formatted JSON and a readable IF/ELSE logic tree.">
+  <title>Symphony → JSON Converter — Composer Atlas</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .conv-panel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .conv-label { display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-primary); margin-bottom: 8px; }
+    .conv-hint { font-size: 0.8125rem; color: var(--color-secondary); margin-bottom: 12px; line-height: 1.6; }
+    #conv-in {
+      width: 100%; min-height: 140px; resize: vertical; box-sizing: border-box;
+      background: var(--color-bg); color: var(--color-primary);
+      border: 1px solid var(--color-border); border-radius: 8px; padding: 12px 14px;
+      font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.6;
+    }
+    #conv-in:focus { outline: 2px solid var(--color-blue); outline-offset: -1px; }
+    .conv-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+    .conv-opts { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-top: 14px; font-size: 0.8125rem; color: var(--color-secondary); }
+    .conv-opts label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+    .conv-msg { margin-top: 14px; font-size: 0.875rem; line-height: 1.6; }
+    .conv-msg.err { color: var(--color-pink); }
+    .conv-msg.info { color: var(--color-secondary); }
+    .conv-msg a { color: var(--color-blue); }
+
+    .conv-section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .conv-section-head h2 { color: var(--color-primary); font-size: 1rem; font-weight: 600; margin: 0; }
+    .conv-copy { font-size: 0.75rem; padding: 5px 12px; }
+
+    .conv-summary { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-bottom: 4px; }
+    .conv-summary .k { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-disabled); display: block; margin-bottom: 2px; }
+    .conv-summary .v { font-size: 0.9375rem; color: var(--color-primary); font-family: var(--font-mono); }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .chip { font-family: var(--font-mono); font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; background: var(--color-surface-raised); border: 1px solid var(--color-border); color: var(--color-secondary); }
+
+    pre.conv-json {
+      margin: 0; max-height: 520px; overflow: auto;
+      background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 8px;
+      padding: 16px; font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.65;
+      color: var(--color-secondary); white-space: pre;
+    }
+    .j-key { color: var(--color-blue); }
+    .j-str { color: var(--color-green); }
+    .j-num { color: var(--color-yellow); }
+    .j-bool { color: var(--color-pink); }
+    .j-null { color: var(--color-disabled); }
+
+    .tree {
+      background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 8px;
+      padding: 16px; overflow-x: auto; font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.7;
+    }
+    .tree .row { white-space: pre; }
+    .t-kw { color: var(--color-pink); font-weight: 600; }
+    .t-wt { color: var(--color-blue); }
+    .t-asset { color: var(--color-green); }
+    .t-cond { color: var(--color-primary); }
+    .t-fn { color: var(--color-yellow); }
+    .t-muted { color: var(--color-disabled); }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="nav-root"></nav>
+
+  <div class="page">
+    <div class="container py-12">
+      <div id="breadcrumb-root"></div>
+
+      <div style="max-width:680px;margin-bottom:28px">
+        <h1 style="color:var(--color-primary);margin-bottom:8px">Symphony → JSON Converter</h1>
+        <p style="color:var(--color-secondary);font-size:1.0625rem;line-height:1.6">
+          Paste a Composer.trade symphony <strong>URL</strong>, <strong>ID</strong>, or raw
+          <strong>JSON</strong>. Get back clean, formatted JSON plus a readable IF/ELSE logic tree.
+        </p>
+      </div>
+
+      <div class="conv-panel">
+        <label class="conv-label" for="conv-in">Symphony input</label>
+        <p class="conv-hint">
+          Examples: <code>https://app.composer.trade/symphony/4aI4kVT5cEc0XJpTLei3/details</code>,
+          a bare ID like <code>4aI4kVT5cEc0XJpTLei3</code>, or the JSON from the
+          <code>/score</code> API endpoint.
+        </p>
+        <textarea id="conv-in" spellcheck="false" placeholder="Paste a symphony URL, ID, or JSON…"></textarea>
+        <div class="conv-opts">
+          <label><input type="checkbox" id="opt-strip" checked> Strip editor metadata (ids, collapsed flags, exchange)</label>
+        </div>
+        <div class="conv-actions">
+          <button id="btn-convert" class="btn btn-green">Convert</button>
+          <button id="btn-example" class="btn btn-outline">Load example</button>
+          <button id="btn-clear" class="btn btn-outline">Clear</button>
+        </div>
+        <div id="conv-msg" class="conv-msg"></div>
+      </div>
+
+      <div id="conv-out" style="display:none">
+        <div class="conv-panel">
+          <div class="conv-section-head"><h2>Summary</h2></div>
+          <div id="conv-summary" class="conv-summary"></div>
+          <div id="conv-chips" class="chips"></div>
+        </div>
+
+        <div class="conv-panel">
+          <div class="conv-section-head">
+            <h2>Formatted JSON</h2>
+            <div style="display:flex;gap:8px">
+              <button id="btn-copy" class="btn btn-green conv-copy">Copy JSON</button>
+              <button id="btn-download" class="btn btn-outline conv-copy">Download .json</button>
+            </div>
+          </div>
+          <pre id="conv-json" class="conv-json"></pre>
+        </div>
+
+        <div class="conv-panel">
+          <div class="conv-section-head"><h2>Logic Tree</h2></div>
+          <div id="conv-tree" class="tree"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer id="footer-root"></footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    (function () {
+      renderBreadcrumb('breadcrumb-root', [
+        { label: 'Home', href: u('/') },
+        { label: 'Converter' },
+      ]);
+
+      var SCORE_URL = function (id) {
+        return 'https://api.composer.trade/api/v0.1/symphonies/' + id + '/score?score_version=v1';
+      };
+
+      var EXAMPLE = {
+        step: 'root', name: 'Example — RSI Dip Buyer', rebalance: 'daily', id: 'example',
+        children: [{
+          step: 'wt-cash-equal', children: [{
+            step: 'if', children: [
+              {
+                step: 'if-child', 'is-else-condition?': false,
+                'lhs-fn': 'relative-strength-index', 'lhs-val': 'SPY', 'lhs-fn-params': { window: 10 },
+                comparator: 'lt', 'rhs-fixed-value?': true, 'rhs-val': '30',
+                children: [{ step: 'asset', ticker: 'TQQQ', name: 'ProShares UltraPro QQQ', exchange: 'XNAS', id: 'x1' }]
+              },
+              {
+                step: 'if-child', 'is-else-condition?': true,
+                children: [{
+                  step: 'filter', 'select-fn': 'top', 'select-n': '1',
+                  'sort-by-fn': 'moving-average-return', 'sort-by-fn-params': { window: 20 },
+                  children: [
+                    { step: 'asset', ticker: 'QQQ', name: 'Invesco QQQ Trust', exchange: 'XNAS', id: 'x2' },
+                    { step: 'asset', ticker: 'BIL', name: 'SPDR Bloomberg 1-3 Month T-Bill ETF', exchange: 'ARCX', id: 'x3' }
+                  ]
+                }]
+              }
+            ]
+          }]
+        }]
+      };
+
+      // ---- label maps ----
+      var FN = {
+        'relative-strength-index': 'RSI',
+        'current-price': 'Price',
+        'moving-average-price': 'MA',
+        'exponential-moving-average-price': 'EMA',
+        'moving-average-return': 'MA Return',
+        'cumulative-return': 'Cumulative Return',
+        'standard-deviation-return': 'Std Dev',
+        'max-drawdown': 'Max Drawdown'
+      };
+      var CMP = { lt: '<', lte: '≤', gt: '>', gte: '≥', eq: '=' };
+
+      var msgEl = document.getElementById('conv-msg');
+      var outEl = document.getElementById('conv-out');
+      var rawJson = '';
+      var lastSym = null;
+
+      function esc(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+      function setMsg(html, cls) {
+        msgEl.className = 'conv-msg ' + (cls || '');
+        msgEl.innerHTML = html || '';
+      }
+      function win(node, side) {
+        var p = node[side + '-fn-params'];
+        if (p && p.window != null) return p.window;
+        if (node[side + '-window-days'] != null) return node[side + '-window-days'];
+        return null;
+      }
+      function operand(node, side) {
+        var fn = node[side + '-fn'];
+        var val = node[side + '-val'];
+        var w = win(node, side);
+        if (!fn) return val != null ? String(val) : '?';
+        var label = FN[fn] || fn;
+        return label + '(' + (val != null ? val : '') + (w != null ? ', ' + w + 'd' : '') + ')';
+      }
+      function condText(node) {
+        var lhs = operand(node, 'lhs');
+        var cmp = CMP[node.comparator] || node.comparator || '?';
+        var rhs;
+        if (node['rhs-fixed-value?']) rhs = (node['rhs-val'] != null ? node['rhs-val'] : '?');
+        else rhs = operand(node, 'rhs');
+        return lhs + ' ' + cmp + ' ' + rhs;
+      }
+      function pct(w) {
+        if (!w || w.den == null || w.num == null) return null;
+        var v = (w.num / w.den) * 100;
+        if (Math.abs(v - 100) < 0.001) return null;
+        return (Math.round(v * 10) / 10) + '%';
+      }
+
+      // ---- logic tree renderer ----
+      function renderTree(node) {
+        var out = [];
+        walk(node, 0, out);
+        return out.join('');
+      }
+      function line(depth, html) {
+        return '<div class="row">' + '  '.repeat(depth) + html + '</div>';
+      }
+      function kids(node) { return node.children || []; }
+
+      function walk(node, depth, out) {
+        if (!node || typeof node !== 'object') return;
+        var step = node.step;
+        var p = pct(node.weight);
+        var wtag = p ? ' <span class="t-muted">[' + p + ']</span>' : '';
+
+        if (step === 'root') {
+          kids(node).forEach(function (c) { walk(c, depth, out); });
+          return;
+        }
+        if (step === 'wt-cash-equal') {
+          out.push(line(depth, '<span class="t-wt">Weight equally:</span>'));
+          kids(node).forEach(function (c) { walk(c, depth + 1, out); });
+          return;
+        }
+        if (step === 'wt-cash-specified') {
+          out.push(line(depth, '<span class="t-wt">Weight (specified):</span>'));
+          kids(node).forEach(function (c) { walk(c, depth + 1, out); });
+          return;
+        }
+        if (step === 'group') {
+          out.push(line(depth, '<span class="t-wt">Group:</span> ' + esc(node.name || '') + wtag));
+          kids(node).forEach(function (c) { walk(c, depth + 1, out); });
+          return;
+        }
+        if (step === 'filter') {
+          var sfn = FN[node['sort-by-fn']] || node['sort-by-fn'] || '';
+          var sp = node['sort-by-fn-params'];
+          var sw = sp && sp.window != null ? ', ' + sp.window + 'd' : '';
+          out.push(line(depth, '<span class="t-fn">Select ' + esc(node['select-fn'] || '') + ' ' +
+            esc(node['select-n'] || '') + '</span> by ' + esc(sfn) + '(' + esc((sw || '').replace(/^, /, '')) + ') from:'));
+          kids(node).forEach(function (c) { walk(c, depth + 1, out); });
+          return;
+        }
+        if (step === 'if') {
+          var branches = kids(node);
+          branches.forEach(function (b, i) {
+            if (b['is-else-condition?']) {
+              out.push(line(depth, '<span class="t-kw">ELSE:</span>'));
+            } else {
+              var kw = i === 0 ? 'IF' : 'ELSE IF';
+              out.push(line(depth, '<span class="t-kw">' + kw + '</span> <span class="t-cond">' + esc(condText(b)) + '</span>:'));
+            }
+            kids(b).forEach(function (c) { walk(c, depth + 1, out); });
+          });
+          return;
+        }
+        if (step === 'if-child') { // safety: render standalone
+          kids(node).forEach(function (c) { walk(c, depth, out); });
+          return;
+        }
+        if (step === 'asset') {
+          var nm = node.name ? ' <span class="t-muted">— ' + esc(node.name) + '</span>' : '';
+          out.push(line(depth, '<span class="t-asset">• ' + esc(node.ticker || '?') + '</span>' + nm + wtag));
+          return;
+        }
+        // unknown step
+        out.push(line(depth, '<span class="t-muted">[' + esc(step || 'node') + ']</span>' + wtag));
+        kids(node).forEach(function (c) { walk(c, depth + 1, out); });
+      }
+
+      // ---- cleaning ----
+      var STRIP = ['id', 'collapsed?', 'suppress_incomplete_warnings', 'exchange'];
+      function clean(v) {
+        if (Array.isArray(v)) return v.map(clean);
+        if (v && typeof v === 'object') {
+          var o = {};
+          Object.keys(v).forEach(function (k) {
+            if (STRIP.indexOf(k) !== -1) return;
+            o[k] = clean(v[k]);
+          });
+          return o;
+        }
+        return v;
+      }
+
+      // ---- JSON syntax highlight ----
+      function highlight(json) {
+        json = esc(json);
+        return json.replace(
+          /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false)\b|\bnull\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+          function (m) {
+            var cls = 'j-num';
+            if (/^"/.test(m)) cls = /:\s*$/.test(m) ? 'j-key' : 'j-str';
+            else if (/true|false/.test(m)) cls = 'j-bool';
+            else if (/null/.test(m)) cls = 'j-null';
+            return '<span class="' + cls + '">' + m + '</span>';
+          }
+        );
+      }
+
+      // ---- collect summary ----
+      function collect(node, acc) {
+        if (!node || typeof node !== 'object') return;
+        if (node.step === 'asset' && node.ticker) acc.tickers[node.ticker] = 1;
+        if (node['lhs-fn']) acc.fns[FN[node['lhs-fn']] || node['lhs-fn']] = 1;
+        if (node['rhs-fn'] && !node['rhs-fixed-value?']) acc.fns[FN[node['rhs-fn']] || node['rhs-fn']] = 1;
+        if (node['sort-by-fn']) acc.fns[FN[node['sort-by-fn']] || node['sort-by-fn']] = 1;
+        (node.children || []).forEach(function (c) { collect(c, acc); });
+      }
+
+      function renderOutput(sym) {
+        lastSym = sym;
+        var toRender = document.getElementById('opt-strip').checked ? clean(sym) : sym;
+        rawJson = JSON.stringify(toRender, null, 2);
+        document.getElementById('conv-json').innerHTML = highlight(rawJson);
+        document.getElementById('conv-tree').innerHTML = renderTree(sym) || '<span class="t-muted">No renderable nodes.</span>';
+
+        var acc = { tickers: {}, fns: {} };
+        collect(sym, acc);
+        var tickers = Object.keys(acc.tickers);
+        var fns = Object.keys(acc.fns);
+        document.getElementById('conv-summary').innerHTML =
+          field('Name', sym.name || '—') +
+          field('Rebalance', sym.rebalance || '—') +
+          field('Unique tickers', String(tickers.length)) +
+          field('Indicators', fns.length ? String(fns.length) : '—');
+        document.getElementById('conv-chips').innerHTML =
+          tickers.map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join('') +
+          fns.map(function (f) { return '<span class="chip" style="color:var(--color-yellow)">' + esc(f) + '</span>'; }).join('');
+
+        outEl.style.display = 'block';
+      }
+      function field(k, v) {
+        return '<div><span class="k">' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>';
+      }
+
+      function looksLikeJson(s) { return /^[\[{]/.test(s.trim()); }
+
+      function extractId(s) {
+        var m = s.match(/symphony\/([A-Za-z0-9_-]+)/);
+        if (m) return m[1];
+        s = s.trim();
+        if (/^[A-Za-z0-9_-]{12,}$/.test(s)) return s;
+        return null;
+      }
+
+      function normalizeSymphony(parsed) {
+        if (parsed && parsed.step) return parsed;
+        // maybe a { slug: tree } map or an array — grab first tree-like value
+        if (Array.isArray(parsed)) {
+          var a = parsed.find(function (x) { return x && x.step; });
+          if (a) return a;
+        } else if (parsed && typeof parsed === 'object') {
+          var vals = Object.keys(parsed).map(function (k) { return parsed[k]; });
+          var v = vals.find(function (x) { return x && x.step; });
+          if (v) return v;
+        }
+        return null;
+      }
+
+      function convert() {
+        var raw = document.getElementById('conv-in').value;
+        if (!raw.trim()) { setMsg('Paste a symphony URL, ID, or JSON first.', 'err'); return; }
+
+        if (looksLikeJson(raw)) {
+          var parsed;
+          try { parsed = JSON.parse(raw); }
+          catch (e) { setMsg('That is not valid JSON: ' + esc(e.message), 'err'); return; }
+          var sym = normalizeSymphony(parsed);
+          if (!sym) { setMsg('Could not find a symphony tree (no "step" field) in that JSON.', 'err'); return; }
+          setMsg('', '');
+          renderOutput(sym);
+          return;
+        }
+
+        var id = extractId(raw);
+        if (!id) { setMsg('Could not find a symphony ID in that input.', 'err'); return; }
+        fetchSymphony(id);
+      }
+
+      function fetchSymphony(id) {
+        var url = SCORE_URL(id);
+        setMsg('Fetching symphony <code>' + esc(id) + '</code> from Composer…', 'info');
+        fetch(url)
+          .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(function (data) {
+            var sym = normalizeSymphony(data) || data;
+            if (!sym || !sym.step) throw new Error('Unexpected response shape');
+            setMsg('', '');
+            renderOutput(sym);
+          })
+          .catch(function (err) {
+            setMsg(
+              'Could not fetch it directly from the browser (' + esc(err.message) +
+              ') — this is usually a CORS restriction. Open the raw JSON in a new tab, copy it, and paste it above:<br>' +
+              '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(url) + '</a>',
+              'info'
+            );
+          });
+      }
+
+      document.getElementById('btn-convert').addEventListener('click', convert);
+      document.getElementById('opt-strip').addEventListener('change', function () {
+        if (lastSym) renderOutput(lastSym); // re-render from cached tree; no re-fetch
+      });
+      document.getElementById('btn-example').addEventListener('click', function () {
+        document.getElementById('conv-in').value = JSON.stringify(EXAMPLE, null, 2);
+        setMsg('Loaded a sample symphony. Click <strong>Convert</strong>.', 'info');
+      });
+      document.getElementById('btn-clear').addEventListener('click', function () {
+        document.getElementById('conv-in').value = '';
+        setMsg('', '');
+        outEl.style.display = 'none';
+      });
+      document.getElementById('btn-copy').addEventListener('click', function () {
+        var btn = this;
+        navigator.clipboard.writeText(rawJson).then(function () {
+          var t = btn.textContent; btn.textContent = 'Copied ✓';
+          setTimeout(function () { btn.textContent = t; }, 1400);
+        });
+      });
+      document.getElementById('btn-download').addEventListener('click', function () {
+        var blob = new Blob([rawJson], { type: 'application/json' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'symphony.json';
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a); URL.revokeObjectURL(a.href);
+      });
+    })();
+  </script>
+</body>
+</html>
