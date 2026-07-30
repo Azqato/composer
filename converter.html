@@ -664,6 +664,39 @@
         else rhs = operand(node, 'rhs');
         return lhs + ' ' + cmp + ' ' + rhs;
       }
+      // Nested `condition` object (compound "Any of / All of", binary, binary-compound).
+      function fnCall(fn, tick, w) {
+        if (!fn) return tick != null ? String(tick) : '?';
+        return (FN[fn] || fn) + '(' + (tick != null ? tick : '') + (w != null ? ', ' + w + 'd' : '') + ')';
+      }
+      function sideText(o) {
+        if (!o || typeof o !== 'object') return o != null ? String(o) : '?';
+        if (o.constant != null) return String(o.constant);
+        return fnCall(o.fn, o.ticker, o.params && o.params.window);
+      }
+      function binaryText(c) {
+        var tick = c.lhs && c.lhs.ticker;
+        if (c['condition-type'] === 'binary-compound' && Array.isArray(c.tickers) && c.tickers.length) {
+          tick = c.tickers.join(' / ');
+        }
+        var lhs = fnCall(c.lhs && c.lhs.fn, tick, c.lhs && c.lhs.params && c.lhs.params.window);
+        var cmp = CMP[c.comparator] || c.comparator || '?';
+        return lhs + ' ' + cmp + ' ' + sideText(c.rhs);
+      }
+      function condRep(b) {
+        var c = b.condition;
+        if (c && typeof c === 'object') {
+          var ct = c['condition-type'];
+          if (ct === 'compound' && Array.isArray(c.conditions)) {
+            return { mode: 'compound', op: (c.operator === 'all' ? 'All of' : 'Any of'),
+                     items: c.conditions.map(binaryText) };
+          }
+          if (ct === 'binary' || ct === 'binary-compound') {
+            return { mode: 'simple', text: binaryText(c) };
+          }
+        }
+        return { mode: 'simple', text: condText(b) }; // flat single-condition fallback
+      }
       function pct(w) {
         if (!w || w.den == null || w.num == null) return null;
         var v = (w.num / w.den) * 100;
@@ -717,13 +750,22 @@
           return;
         }
         if (step === 'if') {
-          var branches = kids(node);
-          branches.forEach(function (b, i) {
+          kids(node).forEach(function (b, i) {
             if (b['is-else-condition?']) {
               out.push(line(depth, '<span class="t-kw">ELSE:</span>'));
+              kids(b).forEach(function (c) { walk(c, depth + 1, out); });
+              return;
+            }
+            var kw = i === 0 ? 'IF' : 'ELSE IF';
+            var rep = condRep(b);
+            if (rep.mode === 'compound') {
+              out.push(line(depth, '<span class="t-kw">' + kw + '</span> <span class="t-cond">' + esc(rep.op) + ':</span>'));
+              rep.items.forEach(function (it) {
+                out.push(line(depth + 1, '<span class="t-muted">·</span> <span class="t-cond">' + esc(it) + '</span>'));
+              });
+              out.push(line(depth, '<span class="t-muted">THEN:</span>'));
             } else {
-              var kw = i === 0 ? 'IF' : 'ELSE IF';
-              out.push(line(depth, '<span class="t-kw">' + kw + '</span> <span class="t-cond">' + esc(condText(b)) + '</span>:'));
+              out.push(line(depth, '<span class="t-kw">' + kw + '</span> <span class="t-cond">' + esc(rep.text) + '</span>:'));
             }
             kids(b).forEach(function (c) { walk(c, depth + 1, out); });
           });
