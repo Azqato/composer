@@ -19,6 +19,22 @@ The page is `noindex` and **not linked from navigation**, reached by direct URL 
 
 ---
 
+## [1.15.3] - 2026-08-15
+
+### Formalized the navigation & linking model; footer is now a full sitemap
+
+Codified a three-surface linking model (documented in PRD Section 10, "Navigation & Linking Model") and brought the site into line with it:
+
+- **Footer = complete sitemap.** The footer now links *every* public-facing page. Added **Home** (and reordered so About sits at the end of the internal links). Only `404.html` is excluded.
+- **Homepage "Everything on this site" grid = one card per self-built tool/section.** Added a **Converter** card (🔧), so the grid now covers all six internal footer tools (Strategies, Database, RSI, Signal Lab, Glossary, Converter). The grid moved from `.grid-5` to `.grid-3` (a balanced 3x2 for six cards; the unused `.grid-5` rule was removed), and the subhead changed from "Five ways to explore" to "Six ways to explore and build."
+- **Primary nav = curated destinations.** Unchanged in this release; the converter stays out of the nav by design.
+
+Net effect: the converter, previously footer-only, now also has a homepage Explore card (it remains `noindex` and out of the nav). Going forward, every new public page must be added to the footer; tools/sections also get an Explore card; only primary destinations go in the nav.
+
+**Files changed:** `js/app.js`, `index.html`, `css/main.css`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.15.2] - 2026-08-15
 
 ### Linked Signal Lab into navigation; added "Home" nav link

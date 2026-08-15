@@ -209,13 +209,14 @@ function renderFooter() {
   const year = new Date().getFullYear();
   footer.innerHTML = `
     <nav class="footer-links">
-      <a href="${u('/about.html')}">About</a>
+      <a href="${u('/')}">Home</a>
       <a href="${u('/strategies.html')}">Strategies</a>
       <a href="${u('/database.html')}">Database</a>
       <a href="${u('/rsi.html')}">RSI</a>
       <a href="${u('/signal-lab.html')}">Signal Lab</a>
       <a href="${u('/glossary.html')}">Glossary</a>
       <a href="${u('/converter.html')}">Converter</a>
+      <a href="${u('/about.html')}">About</a>
       <a href="https://azqato.com/support.html" target="_blank" rel="noopener noreferrer">Support</a>
       <a href="https://composer.trade" target="_blank" rel="noopener noreferrer">Composer.trade ↗</a>
     </nav>

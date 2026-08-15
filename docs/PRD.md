@@ -292,7 +292,7 @@ ComposerAtlas/
 ├── glossary.html               # Glossary listing + concept detail (?slug=X), single file
 ├── database.html                # Full-database tabs: All Strategies / Leaderboard / Screener (v1.9.0)
 ├── rsi.html                     # Live RSI signals table, 20-ticker Frontrunner universe (V2.1)
-├── converter.html               # Tool: Symphony → JSON converter + logic tree; noindex, footer-linked only (v1.15.2)
+├── converter.html               # Tool: Symphony → JSON converter + logic tree; noindex, footer + homepage card, not in nav (v1.15.3)
 ├── signal-lab.html              # Tool: client-side IF/THEN signal miner + backtester; linked in nav + footer + home (v1.15.2)
 ├── about.html                   # About page
 ├── 404.html                    # Custom 404 page
@@ -420,13 +420,25 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/database.html` | `database.html` | Tabs: All Strategies (implemented), Leaderboard, Screener (both "Coming Soon") |
 | `/composer/rsi.html` | `rsi.html` | Sortable RSI signals table (V2.1) |
 | `/composer/signal-lab.html` | `signal-lab.html` | Tool: IF/THEN signal miner + backtester, runs fully client-side. Linked from nav, footer, and homepage Explore card; indexable (v1.15.2) |
-| `/composer/converter.html` | `converter.html` | Tool: Symphony → JSON converter + logic tree. `noindex`, **footer-linked only** (not in nav or homepage) (v1.15.2) |
+| `/composer/converter.html` | `converter.html` | Tool: Symphony → JSON converter + logic tree. `noindex`; in the footer sitemap + homepage Explore card, but **not in the primary nav** (v1.15.3) |
 | `/composer/about.html` | `about.html` | Static HTML |
 | `/composer/404.html` | `404.html` | GitHub Pages error page |
 
 **Listing/detail routing:** Each combined page checks `new URLSearchParams(window.location.search).get('slug')` on load. `null` → listing view; non-null → detail view for that slug.
 
-**Tool pages:** `converter.html` and `signal-lab.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). As of v1.15.2, Signal Lab is a first-class page (in the nav bar, footer, and homepage Explore grid, and indexable). The converter stays lower-profile: `<meta name="robots" content="noindex, nofollow">` and a footer link only, no nav or homepage entry.
+**Tool pages:** `converter.html` and `signal-lab.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). Signal Lab is a first-class page (nav + footer + homepage Explore grid, indexable). The converter is intentionally lower-profile: `<meta name="robots" content="noindex, nofollow">` and kept out of the primary nav, but per the linking model below it still appears in the footer sitemap and as a homepage Explore card (both live in `js/app.js` / `index.html`).
+
+### Navigation & Linking Model (v1.15.3)
+
+Three link surfaces, each with a distinct, deliberate rule. When adding a new page, decide its placement against all three:
+
+1. **Primary nav (`links` array in `renderNav`, `js/app.js`)** — *curated*, not exhaustive. Holds Home plus the main destinations most visitors want, then the external CTAs (Azqato Invests, Support). Deliberately omits lower-profile utilities (e.g. the converter) to keep the bar short. Adding a page here is an editorial choice, not automatic.
+
+2. **Footer (`renderFooter`, `js/app.js`)** — the **complete sitemap**. It must link *every* public-facing page on the site: Home and all internal pages (Strategies, Database, RSI, Signal Lab, Glossary, Converter, About), followed by external links (Support, Composer.trade). `404.html` is the only public page excluded (it is an error page, not a destination). When you add any public page, you **must** add it to the footer.
+
+3. **Homepage "Everything on this site" Explore grid (`index.html`)** — one card per **self-built tool or content section** we own. Concretely: a card for every *internal* footer link that is a tool/section we built, i.e. every internal footer link **except** Home (the page itself) and About (a static info page, not a tool). External links never get cards. Current set: Strategies, Database, RSI, Signal Lab, Glossary, Converter. The grid column count tracks the card count (currently `.grid-3` for six cards); update the count word in the section subhead ("Six ways...") when it changes.
+
+**Rule of thumb when shipping a new page:** always add it to the footer (rule 2); add an Explore card if it is a tool/section we built (rule 3); add it to the nav only if it is a primary destination (rule 1).
 
 ### GitHub Actions Deploy Pipeline
 

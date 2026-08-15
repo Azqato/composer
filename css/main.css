@@ -569,20 +569,6 @@ p { color: var(--color-secondary); }
   .grid-4 { grid-template-columns: repeat(4, 1fr); }
 }
 
-.grid-5 {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media (min-width: 640px) {
-  .grid-5 { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (min-width: 1024px) {
-  .grid-5 { grid-template-columns: repeat(5, 1fr); }
-}
-
 /* ---- Detail page layout ---- */
 .detail-main { min-width: 0; }
 
