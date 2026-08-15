@@ -19,6 +19,16 @@ The page is `noindex` and **not linked from navigation**, reached by direct URL 
 
 ---
 
+## [1.15.5] - 2026-08-15
+
+### Processed AddSymphony.csv: 2 new symphonies added
+
+Added 2 new URLs from `data/AddSymphony.csv` to `data/database.json` directly, fetched real backtest data for each, and cleared the CSV back to its header. New entries: "Pals Minor Spell of Summon Money (Core Logic)" (`zY4jRnXoFC9e1Pt97YDS`), "PP MAX TEC" (`P7RLUTtWmTjkJBaNBQT9`). Database now has 6,667 entries.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/AddSymphony.csv`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.15.4] - 2026-08-15
 
 ### Made the converter indexable
