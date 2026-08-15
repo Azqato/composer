@@ -5,6 +5,30 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.15.0] - 2026-08-15
+
+### Added Signal Lab: a client-side IF/THEN signal miner and backtester
+
+Added `signal-lab.html`, a new standalone tool that brute-forces Composer-style "IF condition THEN invest in target" signals and backtests each one, reworked from scratch from a community Google Colab notebook by IAMCAPTAINNOW. It generates all five signal families (RSI vs level, RSI vs RSI, cumulative return vs level/return, return moving-average compare, return std-dev compare), plus 2-signal AND combinations with sequential quantile pruning, and ranks the survivors in a sortable, filterable table with a copy-as-Composer button per row. A selectable minimum signal period (default 10 days) filters the window grids, which span 10d to 200d.
+
+Everything runs **entirely client-side in the browser** (in chunked passes with a progress bar so the UI never freezes); there is no server. The only input is `data/prices.json`, a committed snapshot of full daily adjusted-close history for a 37-ticker universe (the 20 Frontrunner RSI tickers plus common hedge, diversifier, and leveraged/inverse/volatility tickers, including GDXU and GDXD), fetched by the new `scripts/refresh_prices.py`. The backtest engine was validated to match an independent pandas reference to within 1e-6 on every metric.
+
+The page is `noindex` and **not linked from navigation**, reached by direct URL only (same treatment as `converter.html`). There is deliberately no scheduled refresh Action yet: Signal Lab is a research tool over multi-year history, so a stale end date barely affects results; `refresh_prices.py` can be run manually or wired to a scheduled workflow later with no rework.
+
+**Files changed:** `signal-lab.html`, `data/prices.json`, `data/prices.js`, `scripts/refresh_prices.py`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.14.16] - 2026-07-29
+
+### Added Symphony → JSON converter tool
+
+Added `converter.html`, a standalone tool that converts a Composer symphony (pasted URL or ID) into clean, formatted JSON and a readable IF/ELSE logic tree. It fetches from the Composer `/score` API with a CORS fallback (open-in-tab link), renders the full step tree including compound "Any of / All of" condition blocks, and offers copy/download plus an optional field-stripping toggle. Defaults to zoop's 2026 Frontrunner as the example on load. The page is `noindex` and **not linked from navigation**, reached by direct URL only.
+
+**Files changed:** `converter.html`
+
+---
+
 ## [1.14.15] - 2026-07-29
 
 ### Added Triple Accelerator to curated strategies library and full database
