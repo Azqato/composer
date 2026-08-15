@@ -292,8 +292,8 @@ ComposerAtlas/
 ├── glossary.html               # Glossary listing + concept detail (?slug=X), single file
 ├── database.html                # Full-database tabs: All Strategies / Leaderboard / Screener (v1.9.0)
 ├── rsi.html                     # Live RSI signals table, 20-ticker Frontrunner universe (V2.1)
-├── converter.html               # Tool: Symphony → JSON converter + logic tree; noindex, unlinked from nav
-├── signal-lab.html              # Tool: client-side IF/THEN signal miner + backtester; noindex, unlinked from nav (v1.15.0)
+├── converter.html               # Tool: Symphony → JSON converter + logic tree; noindex, footer-linked only (v1.15.2)
+├── signal-lab.html              # Tool: client-side IF/THEN signal miner + backtester; linked in nav + footer + home (v1.15.2)
 ├── about.html                   # About page
 ├── 404.html                    # Custom 404 page
 ├── favicon.svg                 # 🗺️ map emoji SVG favicon
@@ -419,14 +419,14 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/glossary.html?slug=foo` | `glossary.html` | Detail view for `foo` |
 | `/composer/database.html` | `database.html` | Tabs: All Strategies (implemented), Leaderboard, Screener (both "Coming Soon") |
 | `/composer/rsi.html` | `rsi.html` | Sortable RSI signals table (V2.1) |
-| `/composer/converter.html` | `converter.html` | Tool: Symphony → JSON converter + logic tree. `noindex`, **not linked from nav/footer** (reached by direct URL only) |
-| `/composer/signal-lab.html` | `signal-lab.html` | Tool: IF/THEN signal miner + backtester, runs fully client-side. `noindex`, **not linked from nav/footer** (v1.15.0) |
+| `/composer/signal-lab.html` | `signal-lab.html` | Tool: IF/THEN signal miner + backtester, runs fully client-side. Linked from nav, footer, and homepage Explore card; indexable (v1.15.2) |
+| `/composer/converter.html` | `converter.html` | Tool: Symphony → JSON converter + logic tree. `noindex`, **footer-linked only** (not in nav or homepage) (v1.15.2) |
 | `/composer/about.html` | `about.html` | Static HTML |
 | `/composer/404.html` | `404.html` | GitHub Pages error page |
 
 **Listing/detail routing:** Each combined page checks `new URLSearchParams(window.location.search).get('slug')` on load. `null` → listing view; non-null → detail view for that slug.
 
-**Unlinked tool pages:** `converter.html` and `signal-lab.html` are standalone utilities. They reuse `css/main.css` + `js/app.js` (so nav/footer render consistently) but are intentionally excluded from the nav/footer link lists in `js/app.js` and carry `<meta name="robots" content="noindex, nofollow">`. They are shared by direct link, not discovered through the site.
+**Tool pages:** `converter.html` and `signal-lab.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). As of v1.15.2, Signal Lab is a first-class page (in the nav bar, footer, and homepage Explore grid, and indexable). The converter stays lower-profile: `<meta name="robots" content="noindex, nofollow">` and a footer link only, no nav or homepage entry.
 
 ### GitHub Actions Deploy Pipeline
 

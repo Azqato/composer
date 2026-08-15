@@ -144,9 +144,11 @@ function renderNav() {
   }
 
   const links = [
+    { href: u('/'), label: 'Home' },
     { href: u('/strategies.html'), label: 'Strategies' },
     { href: u('/database.html'), label: 'Database' },
     { href: u('/rsi.html'), label: 'RSI' },
+    { href: u('/signal-lab.html'), label: 'Signal Lab' },
     { href: u('/glossary.html'), label: 'Glossary' },
     { href: u('/about.html'), label: 'About' },
     { href: 'https://azqato.com/invests', label: 'Azqato Invests', external: true },
@@ -157,10 +159,7 @@ function renderNav() {
     `<a href="${l.href}"${l.external ? ' target="_blank" rel="noopener noreferrer"' : ''} class="nav-link${isActive(l.href) ? ' active' : ''}">${l.label}</a>`
   ).join('');
 
-  const mobileLinks = [
-    { href: u('/'), label: 'Home' },
-    ...links,
-  ].map(l =>
+  const mobileLinks = links.map(l =>
     `<a href="${l.href}"${l.external ? ' target="_blank" rel="noopener noreferrer"' : ''} class="mobile-nav-link${isActive(l.href) ? ' active' : ''}">${l.label}</a>`
   ).join('');
 
@@ -214,7 +213,9 @@ function renderFooter() {
       <a href="${u('/strategies.html')}">Strategies</a>
       <a href="${u('/database.html')}">Database</a>
       <a href="${u('/rsi.html')}">RSI</a>
+      <a href="${u('/signal-lab.html')}">Signal Lab</a>
       <a href="${u('/glossary.html')}">Glossary</a>
+      <a href="${u('/converter.html')}">Converter</a>
       <a href="https://azqato.com/support.html" target="_blank" rel="noopener noreferrer">Support</a>
       <a href="https://composer.trade" target="_blank" rel="noopener noreferrer">Composer.trade ↗</a>
     </nav>

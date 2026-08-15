@@ -19,6 +19,18 @@ The page is `noindex` and **not linked from navigation**, reached by direct URL 
 
 ---
 
+## [1.15.2] - 2026-08-15
+
+### Linked Signal Lab into navigation; added "Home" nav link
+
+Promoted Signal Lab from a direct-URL-only tool to a first-class page: added it to the primary nav bar (between RSI and Glossary), the footer, and a new fifth homepage Explore card (with a 🧪 icon; the Explore grid moved from `.grid-4` to a new `.grid-5` layout, and the section copy changed from "Four ways" to "Five ways"). Removed its `noindex` meta so it can be indexed. The Symphony → JSON converter was given a footer link only (staying out of the nav and homepage, and keeping its `noindex`). Also added a "Home" link as the first item in the primary nav (previously only the logo and the mobile menu linked home); the mobile menu now derives from the same shared link list, so Home is no longer duplicated there.
+
+Refreshed the homepage overview now that the site is fully built out: the hero blurb now mentions mining and backtesting your own signals, and the "How to use this site" section grew from three steps to four (adding a "Mine your own signals" step for Signal Lab, `.grid-3` to `.grid-4`, "Three steps" to "Four steps").
+
+**Files changed:** `js/app.js`, `index.html`, `css/main.css`, `signal-lab.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.15.1] - 2026-08-15
 
 ### Scheduled weekly price refresh + last-refreshed display
