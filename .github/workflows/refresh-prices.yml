@@ -1,0 +1,41 @@
+name: Refresh Signal Lab Prices
+
+on:
+  schedule:
+    # 08:07 UTC every Saturday. Signal Lab is a research tool over multi-year
+    # history, so weekly is plenty; Saturday runs while markets are closed.
+    # Offset 7 minutes past the hour, same rationale as refresh-rsi.yml -
+    # on-the-hour (:00) is GitHub Actions' most congested slot and can be
+    # delayed for hours or dropped entirely on public repos.
+    - cron: '7 8 * * 6'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run refresh_prices.py
+        run: python scripts/refresh_prices.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/prices.json data/prices.js
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: refresh Signal Lab prices"
+            git push
+          fi

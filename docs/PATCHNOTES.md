@@ -13,9 +13,19 @@ Added `signal-lab.html`, a new standalone tool that brute-forces Composer-style 
 
 Everything runs **entirely client-side in the browser** (in chunked passes with a progress bar so the UI never freezes); there is no server. The only input is `data/prices.json`, a committed snapshot of full daily adjusted-close history for a 37-ticker universe (the 20 Frontrunner RSI tickers plus common hedge, diversifier, and leveraged/inverse/volatility tickers, including GDXU and GDXD), fetched by the new `scripts/refresh_prices.py`. The backtest engine was validated to match an independent pandas reference to within 1e-6 on every metric.
 
-The page is `noindex` and **not linked from navigation**, reached by direct URL only (same treatment as `converter.html`). There is deliberately no scheduled refresh Action yet: Signal Lab is a research tool over multi-year history, so a stale end date barely affects results; `refresh_prices.py` can be run manually or wired to a scheduled workflow later with no rework.
+The page is `noindex` and **not linked from navigation**, reached by direct URL only (same treatment as `converter.html`). The `prices.json` snapshot was shipped without automated refresh at first (scheduled the same day, see 1.15.1).
 
 **Files changed:** `signal-lab.html`, `data/prices.json`, `data/prices.js`, `scripts/refresh_prices.py`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.15.1] - 2026-08-15
+
+### Scheduled weekly price refresh + last-refreshed display
+
+Added `.github/workflows/refresh-prices.yml` to run `scripts/refresh_prices.py` automatically once a week (cron `7 8 * * 6`, 08:07 UTC every Saturday while markets are closed), committing any updated `data/prices.json` / `data/prices.js`. The script takes ~50 seconds to fetch all 37 tickers (a 1-second polite delay between API calls dominates); the full Action completes in roughly 75-90 seconds including checkout and Python setup. Also added a visible "Data last refreshed" indicator to the Signal Lab hero (with a green dot, the formatted `refreshed_at` date, ticker count, and latest covered trading day) and expanded the footer meta line to note the weekly cadence.
+
+**Files changed:** `.github/workflows/refresh-prices.yml`, `signal-lab.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
 
 ---
 

@@ -1135,7 +1135,7 @@ There is no `.js` twin naming inconsistency to worry about here, `data/database_
 
 `data/prices.js` is the `.js` twin, assigning `window.PRICES_DATA` to the identical payload (compact JSON), same convention as `rsi.js`. Universe is currently 37 tickers; edit the `TICKERS` list in `scripts/refresh_prices.py` to add or remove one, then re-run the script.
 
-**Refresh cadence (optional):** unlike `refresh_rsi.py`, there is no scheduled GitHub Action for `refresh_prices.py` yet. This is intentional and low-risk: Signal Lab is a research tool over multi-year history, so a slightly stale end date barely affects any signal's metrics. Run the script manually (monthly or ad hoc) to advance the history, or add a scheduled workflow later (a copy of `refresh-rsi.yml`) with no rework required. If it is never refreshed, the tool keeps working on the committed snapshot.
+**Refresh cadence:** `refresh_prices.py` runs weekly via `.github/workflows/refresh-prices.yml` (cron `7 8 * * 6`, i.e. 08:07 UTC every Saturday, while markets are closed; plus `workflow_dispatch` for manual runs). Weekly is deliberate: Signal Lab is a research tool over multi-year history, so a slightly stale end date barely affects any signal's metrics. The script takes ~50s to fetch all 37 tickers (a 1s delay between calls dominates); the full Action runs in ~75-90s. If the workflow is ever disabled, the tool keeps working on the last committed snapshot. The page surfaces the `refreshed_at` date in the hero and footer meta so staleness is always visible.
 
 ---
 

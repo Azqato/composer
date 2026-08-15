@@ -74,6 +74,8 @@
     .sl-meta { font-size: 0.75rem; color: var(--color-disabled); margin-top: 10px; }
     .btn-ghost { background: transparent; border: 1px solid var(--color-border); color: var(--color-secondary); }
     .btn-ghost:hover { border-color: var(--color-disabled); color: var(--color-primary); }
+    .sl-refreshed { margin-top: 18px; font-size: 0.8125rem; color: var(--color-secondary); font-family: var(--font-mono); display: inline-flex; align-items: center; gap: 8px; }
+    .sl-refreshed .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-green); display: inline-block; flex: none; }
   </style>
 </head>
 <body>
@@ -85,6 +87,7 @@
         <p class="hero-eyebrow">Signal Lab</p>
         <h1 class="hero-title" style="font-size:2rem">Mine IF-THEN signals across a ticker universe.</h1>
         <p class="hero-desc" style="margin-bottom:0">Pick assets to invest in and assets to check signals against. Signal Lab brute-forces thousands of Composer-style rules (RSI, returns, moving averages, and volatility), backtests each one, and ranks what worked. Everything runs in your browser on committed price history. No signal is a recommendation.</p>
+        <p class="sl-refreshed" id="sl-refreshed"><span class="dot"></span><span id="sl-refreshed-text">Loading price data...</span></p>
       </div>
     </section>
 
@@ -764,8 +767,16 @@
       const gl = document.getElementById('sl-glossary-link'); if (gl) gl.href = u('/glossary.html');
 
       const d = PD.refreshed_at ? PD.refreshed_at.slice(0, 10) : '';
+      const nice = (iso) => {
+        if (!iso) return 'unknown';
+        const dt = new Date(iso);
+        return isNaN(dt) ? iso : dt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+      };
+      const latestClose = N ? DATES[N - 1] : '';
+      document.getElementById('sl-refreshed-text').textContent =
+        `Data last refreshed ${nice(PD.refreshed_at)} · ${UNIVERSE.length} tickers through ${latestClose}`;
       document.getElementById('sl-data-meta').textContent =
-        `Price history: ${UNIVERSE.length} tickers, ${N.toLocaleString()} trading days from ${PD.start}. Last refreshed ${d}. Source: daily adjusted closes via Yahoo Finance.`;
+        `Price history: ${UNIVERSE.length} tickers, ${N.toLocaleString()} trading days from ${PD.start} through ${latestClose}. Last refreshed ${d}. Refreshed weekly (Saturdays) from Yahoo Finance daily adjusted closes.`;
     })();
   })();
   </script>
