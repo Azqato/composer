@@ -292,7 +292,7 @@ ComposerAtlas/
 ├── glossary.html               # Glossary listing + concept detail (?slug=X), single file
 ├── database.html                # Full-database tabs: All Strategies / Leaderboard / Screener (v1.9.0)
 ├── rsi.html                     # Live RSI signals table, 20-ticker Frontrunner universe (V2.1)
-├── converter.html               # Tool: Symphony → JSON converter + logic tree; noindex, footer + homepage card, not in nav (v1.15.3)
+├── converter.html               # Tool: Symphony → JSON converter + logic tree; indexable, footer + homepage card, not in nav (v1.15.4)
 ├── signal-lab.html              # Tool: client-side IF/THEN signal miner + backtester; linked in nav + footer + home (v1.15.2)
 ├── about.html                   # About page
 ├── 404.html                    # Custom 404 page
@@ -420,13 +420,13 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/database.html` | `database.html` | Tabs: All Strategies (implemented), Leaderboard, Screener (both "Coming Soon") |
 | `/composer/rsi.html` | `rsi.html` | Sortable RSI signals table (V2.1) |
 | `/composer/signal-lab.html` | `signal-lab.html` | Tool: IF/THEN signal miner + backtester, runs fully client-side. Linked from nav, footer, and homepage Explore card; indexable (v1.15.2) |
-| `/composer/converter.html` | `converter.html` | Tool: Symphony → JSON converter + logic tree. `noindex`; in the footer sitemap + homepage Explore card, but **not in the primary nav** (v1.15.3) |
+| `/composer/converter.html` | `converter.html` | Tool: Symphony → JSON converter + logic tree. Indexable; in the footer sitemap + homepage Explore card, but **not in the primary nav** (v1.15.4) |
 | `/composer/about.html` | `about.html` | Static HTML |
 | `/composer/404.html` | `404.html` | GitHub Pages error page |
 
 **Listing/detail routing:** Each combined page checks `new URLSearchParams(window.location.search).get('slug')` on load. `null` → listing view; non-null → detail view for that slug.
 
-**Tool pages:** `converter.html` and `signal-lab.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). Signal Lab is a first-class page (nav + footer + homepage Explore grid, indexable). The converter is intentionally lower-profile: `<meta name="robots" content="noindex, nofollow">` and kept out of the primary nav, but per the linking model below it still appears in the footer sitemap and as a homepage Explore card (both live in `js/app.js` / `index.html`).
+**Tool pages:** `converter.html` and `signal-lab.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). Both are indexable. Signal Lab is a first-class page (nav + footer + homepage Explore grid). The converter is slightly lower-profile: it is kept out of the primary nav, but per the linking model below it appears in the footer sitemap and as a homepage Explore card (both live in `js/app.js` / `index.html`). As of v1.15.4 no page carries a `noindex` robots meta.
 
 ### Navigation & Linking Model (v1.15.3)
 

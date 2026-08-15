@@ -19,6 +19,16 @@ The page is `noindex` and **not linked from navigation**, reached by direct URL 
 
 ---
 
+## [1.15.4] - 2026-08-15
+
+### Made the converter indexable
+
+Removed the `<meta name="robots" content="noindex, nofollow">` tag from `converter.html`. Now that the converter has a footer link and a homepage Explore card, it should be discoverable in search like every other page. No page on the site carries a `noindex` meta anymore. The converter remains out of the primary nav by design.
+
+**Files changed:** `converter.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.15.3] - 2026-08-15
 
 ### Formalized the navigation & linking model; footer is now a full sitemap
