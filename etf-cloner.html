@@ -99,11 +99,6 @@
           <button id="ec-fetch" class="btn btn-green">Fetch holdings</button>
         </div>
         <div class="ec-suggest" id="ec-suggest"></div>
-        <div class="ec-opts">
-          <span style="color:var(--color-disabled);text-transform:uppercase;font-size:0.6875rem;letter-spacing:0.04em">Weighting</span>
-          <label><input type="radio" name="ec-wt" value="specified" checked> Match ETF weights</label>
-          <label><input type="radio" name="ec-wt" value="equal"> Equal weight</label>
-        </div>
         <div id="ec-msg" class="ec-msg"></div>
       </div>
 
@@ -122,6 +117,7 @@
           <div><strong>Drop a holdings file here</strong> or click to choose</div>
           <div style="font-size:0.75rem;color:var(--color-disabled);margin-top:6px">Accepts .csv and .xlsx (Excel) from most ETF issuers</div>
         </label>
+        <p class="ec-note">The file must contain a <strong>Ticker</strong> column and a <strong>Weight</strong> column (issuer holdings files include both). Column order and extra columns do not matter, and header labels like "Symbol" or "Weight (%)" are recognized too.</p>
         <div class="ec-links">
           <span style="color:var(--color-disabled)">Get the file:</span>
           <a href="https://www.ssga.com/us/en/intermediary/library-content/products/fund-data/etfs/us/holdings-daily-us-en-spy.xlsx" target="_blank" rel="noopener">SPY (State Street .xlsx)</a>
@@ -137,7 +133,14 @@
         </div>
 
         <div class="ec-panel">
-          <div class="ec-section-head"><h2 id="ec-holdings-title">Holdings</h2></div>
+          <div class="ec-section-head">
+            <h2 id="ec-holdings-title" style="margin:0">Holdings</h2>
+            <div class="ec-opts" style="margin-top:0">
+              <span style="color:var(--color-disabled);text-transform:uppercase;font-size:0.6875rem;letter-spacing:0.04em">Weighting</span>
+              <label><input type="radio" name="ec-wt" value="specified" checked> Match ETF weights</label>
+              <label><input type="radio" name="ec-wt" value="equal"> Equal weight</label>
+            </div>
+          </div>
           <div class="ec-tablewrap"><table class="ec-table" id="ec-table"></table></div>
           <p class="ec-note" id="ec-weight-note"></p>
         </div>
