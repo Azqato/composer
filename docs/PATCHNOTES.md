@@ -5,6 +5,18 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.16.10] - 2026-08-15
+
+### Signal Miner CPU load levels renamed; monetization removed from the roadmap
+
+**CPU load levels renamed** to a single consistent intensity scale: **Max** (100% CPU), **High** (~50%), **Medium** (~25%, default), **Low** (~10%). Previously "Full speed / Balanced / Easy on CPU / Coolest", which mixed a speed scale with a heat scale. The percentages stay in the option text since the names are now abstract. The underlying option values were renamed to match (`max`/`high`/`medium`/`low`); the old values were a trap, because `eco` referred to the 25% tier and would have collided with an "Eco" label on the 10% tier. Behavior is unchanged.
+
+**Monetization removed from the product plan.** The former V3.0 "Monetization Expansion" roadmap section (premium strategy tier, newsletter integration, performance alerts) is removed entirely rather than deferred, along with the Google AdSense goal and backlog item. Composer Atlas is free and unmonetized; the only funding channel is voluntary reader donations via Buy Me a Coffee, linked as Support in the nav and footer. Non-Goals now explicitly rule out ads, paid tiers, paywalled content, sponsored placement, email capture, and any user data collection, and Tenet 7 (Independence and Integrity) records the stance and the reason behind it.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.16.9] - 2026-08-15
 
 ### Signal Miner CPU throttle reworked to a duty-cycle rate limiter with a time estimate

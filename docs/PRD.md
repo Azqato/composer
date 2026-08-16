@@ -70,7 +70,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - Require zero server infrastructure; run entirely in the browser via GitHub Pages
 - Establish a scalable JSON-based strategy database that can grow to thousands of entries
 - Educate users on the signals and logic behind each strategy, not just its returns
-- Generate passive revenue via Google AdSense (post-MVP) and direct user donations
+- Stay free and unmonetized: the only funding channel is voluntary reader donations via Buy Me a Coffee, reached through the Support link in the nav and footer. No ads, no premium tier, no paid content, and no user data collected or sold (decided 2026-08-15)
 
 ---
 
@@ -78,7 +78,9 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 
 - No user accounts or authentication
 - No community features or comments
-- No newsletter or email capture at launch
+- No newsletter or email capture
+- **No monetization beyond voluntary donations (decided 2026-08-15).** The site is funded solely by Buy Me a Coffee, linked via Support in the nav and footer. Explicitly ruled out: ads (including Google AdSense), a premium/paid strategy tier, paywalled content, affiliate or sponsored placement, and email/alert products
+- **No user data collection.** No accounts, no email capture, no personal data stored, sold, or shared. Every tool runs client-side and nothing a visitor enters or uploads leaves their browser
 - No manual metric update pipeline needed day-to-day: `scripts/update_metrics.py` runs daily via `.github/workflows/update-metrics.yml` and commits automatically; `scripts/update_metrics.py` can still be run manually for an immediate refresh
 - No mobile app
 - No light mode (dark mode only at MVP)
@@ -180,13 +182,9 @@ reasoning). As of v1.12.0, `data/database.json`/`.js`, `data/database_summary.js
 - Performance chart per strategy
 - Expand strategy library toward 50+ entries
 - Expand glossary with additional concepts
-- Google AdSense integration
 - Community strategy submission form
 - Curator notes visible on strategy pages
 - Related strategies section on each strategy page
-- Newsletter integration
-- Premium strategy tier
-- Strategy performance alerts
 
 ---
 
@@ -513,7 +511,7 @@ Chrome 100+, Firefox 100+, Safari 15+, Edge 100+. No IE11. Requires: `fetch()`, 
 | Tag filtering on index | Vanilla JS DOM filter |
 | Performance charts | Chart.js or uPlot: loaded as a module script |
 | Build system upgrade | Migrate to Astro 5.x |
-| Analytics | Plausible (privacy-friendly): post-MVP only |
+| Analytics | None currently. If ever added, it must be cookieless and collect no personal data (e.g. Plausible); per Section 4 the site collects no user data |
 
 ---
 
@@ -1915,13 +1913,9 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 - [ ] Curator notes field visible on strategy pages
 - [ ] Related strategies section on each strategy page
 
-### V3.0: Monetization Expansion
+### V3.0: Removed (2026-08-15)
 
-**Status:** Ideation
-
-- [ ] Premium strategy tier
-- [ ] Newsletter integration
-- [ ] Strategy performance alerts
+Formerly "Monetization Expansion" (premium strategy tier, newsletter integration, strategy performance alerts). **Removed entirely, not deferred.** The site will not be monetized beyond voluntary reader donations via Buy Me a Coffee, reached through the Support link in the nav and footer, and will not collect user data. See Section 3 (Goals) and Section 4 (Non-Goals). Do not reintroduce ads, paid tiers, email capture, or alert products; if the funding model is ever revisited, that is a fresh product decision, not a resumption of this section.
 
 ### V4.0: Signal Discovery & Robustness Tooling (Extreme Future State)
 
@@ -2058,6 +2052,8 @@ Every visual decision should serve the user's ability to understand information.
 ### 7. Independence and Integrity
 
 Composer Atlas is not affiliated with Composer.trade. We do not receive compensation for featuring any strategy. Our editorial choices are not for sale. If we ever establish a formal partnership or receive compensation, it will be disclosed prominently.
+
+The site is **free and unmonetized**. Its only funding channel is voluntary reader donations via Buy Me a Coffee, linked as Support in the nav and footer. No ads, no premium tier, no paywalled content, no sponsored placement, and no user data collected or sold (decided 2026-08-15; see Section 4). This is a deliberate stance, not a launch-stage limitation: keeping the site free of commercial pressure is what lets the editorial and data decisions above stay honest.
 
 *If it creates a conflict of interest, disclose it or avoid it.*
 

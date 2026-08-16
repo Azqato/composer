@@ -147,10 +147,10 @@
           <div class="sl-field">
             <label for="sl-cpu">CPU load</label>
             <select id="sl-cpu">
-              <option value="full">Full speed (100% CPU, fastest)</option>
-              <option value="balanced">Balanced (~50% CPU)</option>
-              <option value="eco" selected>Easy on CPU (~25%, default)</option>
-              <option value="cool">Coolest (~10% CPU, slowest)</option>
+              <option value="max">Max (100% CPU, fastest)</option>
+              <option value="high">High (~50% CPU)</option>
+              <option value="medium" selected>Medium (~25% CPU, default)</option>
+              <option value="low">Low (~10% CPU, slowest)</option>
             </select>
           </div>
         </div>
@@ -568,12 +568,12 @@
       // time that batch spent computing, so the processor holds a target *duty
       // cycle* (CPU-busy fraction) regardless of machine speed — heat tracks duty
       // cycle, not absolute idle time. sleep = busy * FACTOR, so duty ~= 1/(1+F):
-      // Balanced 1 -> 50%, Easy 3 -> 25%, Coolest 9 -> 10%. Full = no idle.
+      // High 1 -> 50%, Medium 3 -> 25%, Low 9 -> 10%. Max = no idle (100%).
       // The loop also measures compute time as it goes to show a live est. of
       // total run time and idle time (see the status readout below).
-      const cpu = (document.getElementById('sl-cpu') || {}).value || 'eco';
-      const FACTOR = cpu === 'full' ? 0 : cpu === 'balanced' ? 1 : cpu === 'cool' ? 9 : 3;
-      const CHUNK = cpu === 'full' ? 500 : 150;
+      const cpu = (document.getElementById('sl-cpu') || {}).value || 'medium';
+      const FACTOR = cpu === 'max' ? 0 : cpu === 'high' ? 1 : cpu === 'low' ? 9 : 3;
+      const CHUNK = cpu === 'max' ? 500 : 150;
       const DUTY = Math.round(100 / (1 + FACTOR));
       const sleep = (ms) => new Promise(r => setTimeout(r, ms));
       const fmtDur = (ms) => {
@@ -641,7 +641,7 @@
             `Backtesting ${specs.length.toLocaleString()} signals... ${s.toLocaleString()} (${Math.round(frac * 100)}%)` +
             (FACTOR
               ? ` · ~${DUTY}% CPU · est. total ${fmtDur(projTotal)} (idle ~${fmtDur(projIdle)})`
-              : ` · full speed · est. total ${fmtDur(projTotal)}`);
+              : ` · max speed · est. total ${fmtDur(projTotal)}`);
           await sleep(FACTOR ? busy * FACTOR : 0);
           batchStart = performance.now();
         }
