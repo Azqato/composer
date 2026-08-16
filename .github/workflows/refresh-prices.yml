@@ -1,8 +1,8 @@
-name: Refresh Signal Lab Prices
+name: Refresh Signal Miner Prices
 
 on:
   schedule:
-    # 08:07 UTC every Saturday. Signal Lab is a research tool over multi-year
+    # 08:07 UTC every Saturday. Signal Miner is a research tool over multi-year
     # history, so weekly is plenty; Saturday runs while markets are closed.
     # Offset 7 minutes past the hour, same rationale as refresh-rsi.yml -
     # on-the-hour (:00) is GitHub Actions' most congested slot and can be
@@ -36,6 +36,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "chore: refresh Signal Lab prices"
+            git commit -m "chore: refresh Signal Miner prices"
             git push
           fi

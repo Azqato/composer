@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-refresh_prices.py: Fetch full daily adjusted-close history for the Signal Lab
+refresh_prices.py: Fetch full daily adjusted-close history for the Signal Miner
 ticker universe and write:
   - data/prices.json
   - data/prices.js   (window.PRICES_DATA, for file:// compatibility)
 
-The Signal Lab page (signal-lab.html) reads this committed data and runs the
+The Signal Miner page (signal-miner.html) reads this committed data and runs the
 entire signal-generation + backtest in the browser. No live fetching happens
 client-side (Yahoo's chart API is CORS-blocked from browsers and rate-limits
 datacenter traffic), so this script plays the same role refresh_rsi.py plays
@@ -33,9 +33,9 @@ PRICES_JS = BASE_DIR / "data" / "prices.js"
 # have clean data.
 START_DATE = "2018-01-01"
 API_CALL_DELAY_SECONDS = 1
-USER_AGENT = "Mozilla/5.0 (compatible; composer-atlas-signal-lab/1.0)"
+USER_AGENT = "Mozilla/5.0 (compatible; composer-atlas-signal-miner/1.0)"
 
-# Signal Lab universe. The 20 Frontrunner RSI tickers (see refresh_rsi.py) plus
+# Signal Miner universe. The 20 Frontrunner RSI tickers (see refresh_rsi.py) plus
 # the common signal / hedge / leveraged tickers used across the strategy library
 # and the community IF-THEN signal miners.
 TICKERS = [
@@ -158,7 +158,7 @@ def write_output(master: list, tickers_out: dict) -> None:
     print(f"\nWrote {PRICES_JSON.name} ({len(text) // 1024} KB, {len(master)} dates, {len(tickers_out)} tickers)")
 
     comment = (
-        "// Signal Lab price history - loaded as a script tag so the page works with file:// protocol.\n"
+        "// Signal Miner price history - loaded as a script tag so the page works with file:// protocol.\n"
         "// To update: run scripts/refresh_prices.py\n"
     )
     body = f"window.PRICES_DATA = {text};\n"
@@ -167,7 +167,7 @@ def write_output(master: list, tickers_out: dict) -> None:
 
 
 if __name__ == "__main__":
-    print("-- Signal Lab Price Refresh --------------------")
+    print("-- Signal Miner Price Refresh --------------------")
     master, tickers_out = refresh()
     if not tickers_out:
         raise SystemExit("No tickers succeeded; refusing to write empty output.")

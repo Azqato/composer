@@ -152,7 +152,7 @@ function renderNav() {
     { href: u('/database.html'), label: 'Database' },
     { label: 'Tools', children: [
       { href: u('/rsi.html'), label: 'RSI Signals' },
-      { href: u('/signal-lab.html'), label: 'Signal Lab' },
+      { href: u('/signal-miner.html'), label: 'Signal Miner' },
       { href: u('/converter.html'), label: 'Converter' },
     ] },
     { href: u('/glossary.html'), label: 'Glossary' },
@@ -269,7 +269,7 @@ function renderFooter() {
       <a href="${u('/strategies.html')}">Strategies</a>
       <a href="${u('/database.html')}">Database</a>
       <a href="${u('/rsi.html')}">RSI</a>
-      <a href="${u('/signal-lab.html')}">Signal Lab</a>
+      <a href="${u('/signal-miner.html')}">Signal Miner</a>
       <a href="${u('/glossary.html')}">Glossary</a>
       <a href="${u('/converter.html')}">Converter</a>
       <a href="${u('/etf-cloner.html')}">ETF Cloner</a>

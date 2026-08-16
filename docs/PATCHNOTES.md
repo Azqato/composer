@@ -5,6 +5,18 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.16.6] - 2026-08-15
+
+### Renamed Signal Lab → Signal Miner; added a CPU-load throttle
+
+**Rename:** "Signal Lab" is now **Signal Miner** — a name that describes what the tool actually does (brute-force mine a large combinatorial space of IF/THEN rules and backtest them). The page moved to `signal-miner.html` and the label updated across the nav Tools dropdown, footer, homepage Explore card, and page copy. The old `signal-lab.html` URL now serves a `noindex` redirect stub that forwards to the new URL (preserving any query string), so existing links keep working.
+
+**CPU throttle:** Added a **CPU load** control (Easy on CPU / Balanced / Full speed, defaulting to Easy). "Easy" processes signals in smaller batches and idles briefly between them, so a big run no longer pins the processor at 100% and spins up fans; "Full speed" is the previous unthrottled behavior for anyone who wants maximum speed. This trades some wall-clock time for lower sustained CPU load and heat.
+
+**Files changed:** `signal-miner.html` (renamed from `signal-lab.html`), `signal-lab.html` (new redirect stub), `js/app.js`, `index.html`, `docs/PRD.md`
+
+---
+
 ## [1.16.5] - 2026-08-15
 
 ### Navigation: move About out of the primary nav

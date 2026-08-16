@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Brute-force miner for Composer-style IF/THEN signals. Backtests thousands of RSI, return, and volatility rules across a fixed ticker universe, entirely in your browser.">
+  <title>Signal Miner: Brute-Force IF-THEN Signals</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .sl-panel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+    .sl-panel h2 { color: var(--color-primary); font-size: 1rem; font-weight: 600; margin: 0 0 4px; }
+    .sl-panel .sl-sub { font-size: 0.8125rem; color: var(--color-secondary); margin: 0 0 14px; line-height: 1.6; }
+    .sl-label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-disabled); margin: 0 0 8px; }
+    .sl-group { margin-bottom: 20px; }
+    .sl-group:last-child { margin-bottom: 0; }
+
+    .sl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .sl-chip {
+      font-family: var(--font-mono); font-size: 0.75rem; padding: 4px 10px; border-radius: 6px;
+      background: var(--color-bg); border: 1px solid var(--color-border); color: var(--color-secondary);
+      cursor: pointer; user-select: none; transition: all .12s;
+    }
+    .sl-chip:hover { border-color: var(--color-disabled); color: var(--color-primary); }
+    .sl-chip.on-target { background: rgba(58,167,106,0.16); border-color: var(--color-green); color: var(--color-green); }
+    .sl-chip.on-compare { background: rgba(74,124,220,0.16); border-color: var(--color-blue); color: #6ea0f0; }
+
+    .sl-fams { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px 16px; }
+    .sl-check { display: inline-flex; align-items: center; gap: 8px; font-size: 0.8125rem; color: var(--color-secondary); cursor: pointer; }
+    .sl-check input { accent-color: var(--color-green); }
+
+    .sl-params { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+    .sl-field label { display: block; font-size: 0.75rem; color: var(--color-disabled); margin-bottom: 6px; }
+    .sl-field input, .sl-field select {
+      width: 100%; box-sizing: border-box; background: var(--color-bg); color: var(--color-primary);
+      border: 1px solid var(--color-border); border-radius: 8px; padding: 8px 10px;
+      font-family: var(--font-mono); font-size: 0.8125rem;
+    }
+    .sl-field input:focus, .sl-field select:focus { outline: 2px solid var(--color-blue); outline-offset: -1px; }
+
+    .sl-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 4px; }
+    .sl-est { font-size: 0.8125rem; color: var(--color-secondary); font-family: var(--font-mono); }
+    .sl-est.warn { color: var(--color-yellow); }
+    .sl-est.stop { color: var(--color-pink); }
+
+    .sl-progress { height: 8px; border-radius: 6px; background: var(--color-bg); border: 1px solid var(--color-border); overflow: hidden; margin-top: 14px; display: none; }
+    .sl-progress > div { height: 100%; width: 0; background: var(--color-green); transition: width .1s linear; }
+    .sl-status { font-size: 0.8125rem; color: var(--color-secondary); margin-top: 8px; min-height: 1.2em; font-family: var(--font-mono); }
+
+    .sl-results-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .sl-results-head h2 { margin: 0; }
+    #sl-filter { background: var(--color-bg); color: var(--color-primary); border: 1px solid var(--color-border); border-radius: 8px; padding: 7px 10px; font-family: var(--font-mono); font-size: 0.8125rem; min-width: 220px; }
+
+    .sl-table-wrap { overflow-x: auto; border: 1px solid var(--color-border); border-radius: 10px; }
+    table.sl-table { border-collapse: collapse; width: 100%; font-size: 0.8125rem; }
+    table.sl-table th, table.sl-table td { padding: 8px 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--color-border); }
+    table.sl-table th { position: sticky; top: 0; background: var(--color-surface-raised); color: var(--color-disabled); font-weight: 600; text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.04em; cursor: pointer; user-select: none; z-index: 1; }
+    table.sl-table th:hover { color: var(--color-primary); }
+    table.sl-table th.sorted::after { content: ' \25BE'; }
+    table.sl-table th.sorted.asc::after { content: ' \25B4'; }
+    table.sl-table td.sig, table.sl-table th.sig { text-align: left; white-space: normal; font-family: var(--font-mono); color: var(--color-primary); min-width: 260px; }
+    table.sl-table td.tgt { text-align: left; font-family: var(--font-mono); color: var(--color-green); }
+    table.sl-table tbody tr:hover { background: var(--color-surface); }
+    .num-pos { color: var(--color-green); }
+    .num-neg { color: var(--color-pink); }
+    .sl-copy-btn { font-size: 0.6875rem; padding: 3px 8px; }
+    .sl-combo-tag { display: inline-block; font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-yellow); border: 1px solid var(--color-yellow); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
+
+    .sl-note { font-size: 0.8125rem; color: var(--color-secondary); line-height: 1.7; }
+    .sl-warn-box { background: rgba(224,69,69,0.08); border: 1px solid rgba(224,69,69,0.35); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; }
+    .sl-warn-box strong { color: var(--color-pink); }
+    .sl-empty { padding: 40px 16px; text-align: center; color: var(--color-secondary); font-size: 0.9375rem; }
+    .sl-meta { font-size: 0.75rem; color: var(--color-disabled); margin-top: 10px; }
+    .btn-ghost { background: transparent; border: 1px solid var(--color-border); color: var(--color-secondary); }
+    .btn-ghost:hover { border-color: var(--color-disabled); color: var(--color-primary); }
+    .sl-refreshed { margin-top: 18px; font-size: 0.8125rem; color: var(--color-secondary); font-family: var(--font-mono); display: inline-flex; align-items: center; gap: 8px; }
+    .sl-refreshed .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-green); display: inline-block; flex: none; }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="nav-root"></nav>
+
+  <div class="page">
+    <section class="hero" style="padding-bottom:24px">
+      <div class="container">
+        <p class="hero-eyebrow">Signal Miner</p>
+        <h1 class="hero-title" style="font-size:2rem">Mine IF-THEN signals across a ticker universe.</h1>
+        <p class="hero-desc" style="margin-bottom:0">Pick assets to invest in and assets to check signals against. Signal Miner brute-forces thousands of Composer-style rules (RSI, returns, moving averages, and volatility), backtests each one, and ranks what worked. Everything runs in your browser on committed price history. No signal is a recommendation.</p>
+        <p class="sl-refreshed" id="sl-refreshed"><span class="dot"></span><span id="sl-refreshed-text">Loading price data...</span></p>
+      </div>
+    </section>
+
+    <div class="container" style="padding-bottom:64px">
+
+      <div class="sl-warn-box">
+        <p class="sl-note" style="margin:0"><strong>Read this first.</strong> This tool tests tens of thousands of rules at once, so some will look brilliant purely by chance. High returns on a signal that is rarely active (low Time in Market) are usually noise. Results ignore trading costs, slippage, and taxes, and use only history since 2018. Treat every row as a hypothesis to investigate, never a strategy to run. This is an educational tool and is independent of Composer.trade.</p>
+      </div>
+
+      <!-- Controls -->
+      <div class="sl-panel">
+        <h2>1. Assets</h2>
+        <p class="sl-sub">Pick <span style="color:var(--color-green)">Target</span> tickers (what you invest in when a signal fires) and <span style="color:#6ea0f0">Signal</span> tickers (what conditions are measured on). A ticker can be both. Keep the combined count small: signal counts grow with the square of the tickers used.</p>
+
+        <div class="sl-group">
+          <span class="sl-label">Target tickers <span id="sl-tgt-count" style="color:var(--color-green)"></span></span>
+          <div class="sl-chips" id="sl-targets"></div>
+        </div>
+        <div class="sl-group">
+          <span class="sl-label">Signal / comparison tickers <span id="sl-cmp-count" style="color:#6ea0f0"></span></span>
+          <div class="sl-chips" id="sl-compares"></div>
+        </div>
+      </div>
+
+      <div class="sl-panel">
+        <h2>2. Signal families</h2>
+        <p class="sl-sub">Each family maps to a native Composer condition type. Turn off the ones you do not need to shrink the search and speed things up.</p>
+        <div class="sl-fams" id="sl-families"></div>
+      </div>
+
+      <div class="sl-panel">
+        <h2>3. Filters &amp; combinations</h2>
+        <p class="sl-sub">After single signals are ranked, the survivors can be paired with AND logic (both must be true), exactly like stacking two conditions in Composer.</p>
+        <div class="sl-params">
+          <div class="sl-field">
+            <label for="sl-combo">Combine signals</label>
+            <select id="sl-combo">
+              <option value="1">Single signals only</option>
+              <option value="2" selected>Also test 2-signal AND pairs</option>
+            </select>
+          </div>
+          <div class="sl-field">
+            <label for="sl-minp">Min signal period (days)</label>
+            <select id="sl-minp"></select>
+          </div>
+          <div class="sl-field">
+            <label for="sl-tim">Min Time in Market</label>
+            <input id="sl-tim" type="number" step="0.005" min="0" max="1" value="0.05">
+          </div>
+          <div class="sl-field">
+            <label for="sl-mdd">Max Drawdown floor</label>
+            <input id="sl-mdd" type="number" step="0.05" min="-1" max="0" value="-0.8">
+          </div>
+          <div class="sl-field">
+            <label for="sl-quant">Prune quantile (0-0.9)</label>
+            <input id="sl-quant" type="number" step="0.05" min="0" max="0.9" value="0.5">
+          </div>
+          <div class="sl-field">
+            <label for="sl-cpu">CPU load</label>
+            <select id="sl-cpu">
+              <option value="eco" selected>Easy on CPU (default)</option>
+              <option value="balanced">Balanced</option>
+              <option value="full">Full speed</option>
+            </select>
+          </div>
+        </div>
+        <div class="sl-actions">
+          <button id="sl-run" class="btn btn-green">Run backtest</button>
+          <button id="sl-example" class="btn btn-ghost btn-sm">Load community V2 example</button>
+          <span id="sl-est" class="sl-est"></span>
+        </div>
+        <div class="sl-progress" id="sl-progress"><div></div></div>
+        <div class="sl-status" id="sl-status"></div>
+      </div>
+
+      <!-- Results -->
+      <div class="sl-panel" id="sl-results-panel" style="display:none">
+        <div class="sl-results-head">
+          <h2>Results <span id="sl-count" style="color:var(--color-disabled);font-weight:400"></span></h2>
+          <input id="sl-filter" type="text" placeholder="Filter by ticker or text...">
+        </div>
+        <div class="sl-table-wrap">
+          <table class="sl-table" id="sl-table">
+            <thead><tr id="sl-head"></tr></thead>
+            <tbody id="sl-body"></tbody>
+          </table>
+        </div>
+        <p class="sl-meta" id="sl-meta"></p>
+      </div>
+
+      <div class="sl-panel">
+        <h2>How to read a row</h2>
+        <p class="sl-note">A row like <span style="font-family:var(--font-mono);color:var(--color-primary)">MA-Return(10d) of KMLM &lt; MA-Return(90d) of VIXM &rarr; QQQ</span> means: on any day the 10-day average daily return of KMLM is below the 90-day average daily return of VIXM, hold QQQ the next day, otherwise hold cash. <strong style="color:var(--color-primary)">Calmar</strong> is return divided by worst drawdown, <strong style="color:var(--color-primary)">Sortino</strong> rewards return per unit of downside volatility, <strong style="color:var(--color-primary)">Profit Factor</strong> is gross gains over gross losses, and <strong style="color:var(--color-primary)">Time in Market</strong> is the share of days the signal was active. See the <a id="sl-glossary-link" href="#" style="color:var(--color-blue)">Glossary</a> for each term.</p>
+        <p class="sl-note"><strong style="color:var(--color-primary)">Copy JSON</strong> puts a complete Composer symphony on your clipboard, ready to paste straight into the Composer editor: an IF block that holds the target when the signal fires and a cash proxy (BIL) otherwise. AND-combined rows export as an "all of" compound condition. Swap the else asset or weighting inside Composer to taste.</p>
+        <p class="sl-meta" id="sl-data-meta"></p>
+        <p class="sl-meta">Reworked from a community Google Colab notebook by IAMCAPTAINNOW (shared in the Composer Discord). Rebuilt from scratch to run fully client-side with no data upload.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <footer id="footer-root"></footer>
+
+  <script src="data/prices.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    // ---- Load price data (script tag for file://, fetch fallback) ----
+    async function loadPrices() {
+      if (window.PRICES_DATA) return window.PRICES_DATA;
+      const res = await fetch(`${BASE}/data/prices.json`);
+      if (!res.ok) throw new Error('Failed to load prices.json');
+      return res.json();
+    }
+
+    const NaNv = NaN;
+    const CMP_SYM = { GT: '>', LT: '<' };
+
+    // Full parameter grids (match the community V2 notebook). The active grids
+    // are these filtered by the user-chosen minimum signal period (see activeGrids).
+    const RSI_W_ALL = [5, 10, 15, 20, 25, 30, 100, 200];
+    const CUM_W_ALL = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 100, 200];
+    const MA_W_ALL  = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200];
+    const STD_W_ALL = [10, 20, 30, 40, 50, 100, 200];
+    const RSI_LEVELS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
+    const CUM_LEVELS = [-0.10, -0.08, -0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08, 0.10];
+    const MIN_PERIOD_OPTS = [5, 10, 15, 20, 25, 30, 100, 200];
+
+    // Return the window grids filtered to periods >= minP (never empty: at least
+    // the largest window in each family is kept).
+    function activeGrids(minP) {
+      const flt = (arr) => { const f = arr.filter(p => p >= minP); return f.length ? f : [arr[arr.length - 1]]; };
+      return { RSI_W: flt(RSI_W_ALL), CUM_W: flt(CUM_W_ALL), MA_W: flt(MA_W_ALL), STD_W: flt(STD_W_ALL) };
+    }
+
+    const FAMILIES = [
+      { id: 'rsi_thresh', label: 'RSI vs level', on: true },
+      { id: 'rsi_cmp',    label: 'RSI vs RSI (two tickers)', on: true },
+      { id: 'cum_lvl',    label: 'Cumulative return vs level', on: true },
+      { id: 'cum_cmp',    label: 'Cumulative return vs return', on: true },
+      { id: 'ma_cmp',     label: 'Return moving-average compare', on: true },
+      { id: 'std_cmp',    label: 'Return std-dev compare', on: true },
+    ];
+
+    const SURV_CAP = 150;      // max single-signal survivors fed into pairing, per target
+    const DISPLAY_CAP = 500;   // max rows rendered
+    const SIGNAL_WARN_CAP = 100000;  // above this, warn-and-confirm before running (no hard limit)
+
+    let PD, DATES, N, UNIVERSE;
+    let targets = new Set();
+    let compares = new Set();
+    let lastResults = [];
+    let sortKey = 'sortino', sortAsc = false;
+
+    // ---------- math helpers ----------
+    function dailyReturns(close) {
+      const r = new Float64Array(N);
+      r[0] = NaNv;
+      for (let i = 1; i < N; i++) {
+        const a = close[i], b = close[i - 1];
+        r[i] = (a == null || b == null) ? NaNv : a / b - 1;
+      }
+      return r;
+    }
+    function logReturns(close) {
+      const r = new Float64Array(N);
+      r[0] = NaNv;
+      for (let i = 1; i < N; i++) {
+        const a = close[i], b = close[i - 1];
+        r[i] = (a == null || b == null) ? NaNv : Math.log(a / b);
+      }
+      return r;
+    }
+    // Wilder RSI via ewm(alpha=1/p, adjust=False), first p values masked NaN (ta lib parity).
+    function rsi(close, p) {
+      const out = new Float64Array(N);
+      const alpha = 1 / p;
+      let emaUp = 0, emaDn = 0;
+      for (let i = 0; i < N; i++) {
+        let up = 0, dn = 0;
+        if (i > 0 && close[i] != null && close[i - 1] != null) {
+          const d = close[i] - close[i - 1];
+          if (d > 0) up = d; else if (d < 0) dn = -d;
+        }
+        emaUp = (1 - alpha) * emaUp + alpha * up;
+        emaDn = (1 - alpha) * emaDn + alpha * dn;
+        if (i < p) { out[i] = NaNv; continue; }
+        if (emaDn === 0) out[i] = 100;
+        else out[i] = 100 - 100 / (1 + emaUp / emaDn);
+      }
+      return out;
+    }
+    // Cumulative return over p days: close[i]/close[i-p] - 1.
+    function cumret(close, p) {
+      const out = new Float64Array(N);
+      for (let i = 0; i < N; i++) {
+        if (i < p || close[i] == null || close[i - p] == null) { out[i] = NaNv; continue; }
+        out[i] = close[i] / close[i - p] - 1;
+      }
+      return out;
+    }
+    // Rolling mean of a series (requires full non-NaN window).
+    function rollMean(src, p) {
+      const out = new Float64Array(N);
+      for (let i = 0; i < N; i++) {
+        if (i < p) { out[i] = NaNv; continue; }
+        let s = 0, ok = true;
+        for (let k = i - p + 1; k <= i; k++) { const v = src[k]; if (v !== v) { ok = false; break; } s += v; }
+        out[i] = ok ? s / p : NaNv;
+      }
+      return out;
+    }
+    // Rolling sample std (ddof=1).
+    function rollStd(src, p) {
+      const out = new Float64Array(N);
+      for (let i = 0; i < N; i++) {
+        if (i < p) { out[i] = NaNv; continue; }
+        let s = 0, ok = true;
+        for (let k = i - p + 1; k <= i; k++) { const v = src[k]; if (v !== v) { ok = false; break; } s += v; }
+        if (!ok) { out[i] = NaNv; continue; }
+        const m = s / p;
+        let ss = 0;
+        for (let k = i - p + 1; k <= i; k++) { const d = src[k] - m; ss += d * d; }
+        out[i] = Math.sqrt(ss / (p - 1));
+      }
+      return out;
+    }
+    function percentile(sorted, q) {
+      const n = sorted.length;
+      if (n === 0) return NaNv;
+      if (n === 1) return sorted[0];
+      const pos = q * (n - 1);
+      const lo = Math.floor(pos), hi = Math.ceil(pos), frac = pos - lo;
+      return sorted[lo] + (sorted[hi] - sorted[lo]) * frac;
+    }
+
+    // ---------- caches ----------
+    function buildCaches(tickers, need, grids) {
+      const cache = {};
+      for (const t of tickers) {
+        const close = PD.tickers[t].closes;
+        const c = { close: close, lret: logReturns(close), rsi: {}, cum: {}, ma: {}, std: {} };
+        if (need.rsi) for (const p of grids.RSI_W) c.rsi[p] = rsi(close, p);
+        if (need.cum) for (const p of grids.CUM_W) c.cum[p] = cumret(close, p);
+        if (need.ma || need.std) {
+          const dret = dailyReturns(close);
+          if (need.ma) for (const p of grids.MA_W) c.ma[p] = rollMean(dret, p);
+          if (need.std) for (const p of grids.STD_W) c.std[p] = rollStd(dret, p);
+        }
+        cache[t] = c;
+      }
+      return cache;
+    }
+
+    // ---------- signal specs ----------
+    // A spec is plain data; evalSpec(spec, cache) builds its boolean Uint8Array.
+    function buildSpecs(tickerList, fams, grids) {
+      const specs = [];
+      const pairs = [];
+      for (const a of tickerList) for (const b of tickerList) pairs.push([a, b]);
+
+      if (fams.rsi_thresh) for (const t of tickerList) for (const p of grids.RSI_W) for (const lvl of RSI_LEVELS) {
+        specs.push({ f: 'rsi_thresh', dir: 'GT', t1: t, p1: p, level: lvl });
+        specs.push({ f: 'rsi_thresh', dir: 'LT', t1: t, p1: p, level: lvl });
+      }
+      if (fams.rsi_cmp) for (const [a, b] of pairs) for (const p1 of grids.RSI_W) for (const p2 of grids.RSI_W) {
+        specs.push({ f: 'rsi_cmp', dir: 'GT', t1: a, p1: p1, t2: b, p2: p2 });
+        specs.push({ f: 'rsi_cmp', dir: 'LT', t1: a, p1: p1, t2: b, p2: p2 });
+      }
+      if (fams.cum_lvl) for (const t of tickerList) for (const p of grids.CUM_W) for (const lvl of CUM_LEVELS) {
+        specs.push({ f: 'cum_lvl', dir: 'GT', t1: t, p1: p, level: lvl });
+        specs.push({ f: 'cum_lvl', dir: 'LT', t1: t, p1: p, level: lvl });
+      }
+      if (fams.cum_cmp) for (const [a, b] of pairs) for (const p1 of grids.CUM_W) for (const p2 of grids.CUM_W) {
+        specs.push({ f: 'cum_cmp', dir: 'GT', t1: a, p1: p1, t2: b, p2: p2 });
+        specs.push({ f: 'cum_cmp', dir: 'LT', t1: a, p1: p1, t2: b, p2: p2 });
+      }
+      if (fams.ma_cmp) for (const [a, b] of pairs) for (const p1 of grids.MA_W) for (const p2 of grids.MA_W) {
+        specs.push({ f: 'ma_cmp', dir: 'GT', t1: a, p1: p1, t2: b, p2: p2 });
+        specs.push({ f: 'ma_cmp', dir: 'LT', t1: a, p1: p1, t2: b, p2: p2 });
+      }
+      if (fams.std_cmp) for (const [a, b] of pairs) for (const p1 of grids.STD_W) for (const p2 of grids.STD_W) {
+        specs.push({ f: 'std_cmp', dir: 'GT', t1: a, p1: p1, t2: b, p2: p2 });
+        specs.push({ f: 'std_cmp', dir: 'LT', t1: a, p1: p1, t2: b, p2: p2 });
+      }
+      return specs;
+    }
+
+    function leftRight(spec, cache) {
+      const c1 = cache[spec.t1];
+      let L, R;
+      switch (spec.f) {
+        case 'rsi_thresh': L = c1.rsi[spec.p1]; return [L, spec.level];
+        case 'rsi_cmp':    return [c1.rsi[spec.p1], cache[spec.t2].rsi[spec.p2]];
+        case 'cum_lvl':    return [c1.cum[spec.p1], spec.level];
+        case 'cum_cmp':    return [c1.cum[spec.p1], cache[spec.t2].cum[spec.p2]];
+        case 'ma_cmp':     return [c1.ma[spec.p1], cache[spec.t2].ma[spec.p2]];
+        case 'std_cmp':    return [c1.std[spec.p1], cache[spec.t2].std[spec.p2]];
+      }
+    }
+    function evalSpec(spec, cache) {
+      const [L, R] = leftRight(spec, cache);
+      const arr = new Uint8Array(N);
+      const gt = spec.dir === 'GT';
+      const scalarR = typeof R === 'number';
+      for (let i = 0; i < N; i++) {
+        const a = L[i];
+        if (a !== a) { arr[i] = 0; continue; }
+        const b = scalarR ? R : R[i];
+        if (b !== b) { arr[i] = 0; continue; }
+        arr[i] = gt ? (a > b ? 1 : 0) : (a < b ? 1 : 0);
+      }
+      return arr;
+    }
+
+    // ---------- backtest one boolean signal against one target ----------
+    function backtest(arr, lret) {
+      // shifted = arr shifted +1; ret = shifted ? lret : 0 (NaN lret -> 0)
+      let cum = 0, runMax = 0, maxDD = 0;   // cum is cumulative log return; equity = exp(cum)
+      let sumRet = 0, sumNeg = 0, sumNeg2 = 0, nNeg = 0;
+      let gp = 0, gl = 0, active = 0, activeWin = 0;
+      for (let i = 1; i < N; i++) {
+        if (arr[i - 1] === 0) continue;
+        active++;
+        let r = lret[i];
+        if (r !== r) r = 0;
+        sumRet += r;
+        cum += r;
+        const eq = Math.exp(cum) - 1;
+        if (eq > runMax) runMax = eq;
+        const dd = eq - runMax;
+        if (dd < maxDD) maxDD = dd;
+        if (r > 0) { gp += r; activeWin++; }
+        else if (r < 0) { gl -= r; sumNeg += r; sumNeg2 += r * r; nNeg++; }
+      }
+      // Note: sumRet/mean is over active days only; the notebook divides by full length.
+      const total = Math.exp(cum) - 1;
+      const tim = active / N;
+      // mean over all rows (matches returns.mean() where non-active days are 0)
+      const meanAll = sumRet / N;
+      // downside deviation = std (ddof=1) of ONLY the negative returns
+      let negStd = 0;
+      if (nNeg > 1) { const mN = sumNeg / nNeg; negStd = Math.sqrt((sumNeg2 - nNeg * mN * mN) / (nNeg - 1)); }
+      else if (nNeg === 1) negStd = 0;
+      const sortino = meanAll / (negStd + 1e-9) * Math.sqrt(252);
+      const calmar = maxDD !== 0 ? total / Math.abs(maxDD) : NaNv;
+      const pf = gl !== 0 ? gp / gl : NaNv;
+      const pctProf = active > 0 ? activeWin / active : NaNv;
+      return { total, sortino, calmar, maxDD, tim, pf, pctProf };
+    }
+
+    // ---------- labels ----------
+    function specLabel(spec) {
+      const c = CMP_SYM[spec.dir];
+      switch (spec.f) {
+        case 'rsi_thresh': return `RSI(${spec.p1}) of ${spec.t1} ${c} ${spec.level}`;
+        case 'rsi_cmp':    return `RSI(${spec.p1}) of ${spec.t1} ${c} RSI(${spec.p2}) of ${spec.t2}`;
+        case 'cum_lvl':    return `CumRet(${spec.p1}d) of ${spec.t1} ${c} ${(spec.level * 100).toFixed(0)}%`;
+        case 'cum_cmp':    return `CumRet(${spec.p1}d) of ${spec.t1} ${c} CumRet(${spec.p2}d) of ${spec.t2}`;
+        case 'ma_cmp':     return `MA-Return(${spec.p1}d) of ${spec.t1} ${c} MA-Return(${spec.p2}d) of ${spec.t2}`;
+        case 'std_cmp':    return `StdDev-Return(${spec.p1}d) of ${spec.t1} ${c} StdDev-Return(${spec.p2}d) of ${spec.t2}`;
+      }
+    }
+
+    // ---------- Composer symphony JSON export ----------
+    // Maps a signal (or AND-pair) to a full Composer symphony that pastes into
+    // the app: root -> wt-cash-equal -> if -> [if-child (then asset), else asset].
+    // The else branch holds a cash proxy (BIL), matching the tool's "hold cash
+    // when the signal is off" backtest. Schema mirrors a real Composer export.
+    const COMPOSER_FN = {
+      rsi_thresh: 'relative-strength-index', rsi_cmp: 'relative-strength-index',
+      cum_lvl: 'cumulative-return', cum_cmp: 'cumulative-return',
+      ma_cmp: 'moving-average-return', std_cmp: 'standard-deviation-return',
+    };
+    const ELSE_TICKER = 'BIL';   // cash proxy for the else branch
+
+    function uid() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, ch => {
+        const r = Math.random() * 16 | 0, v = ch === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+    function shortId() {
+      const cs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let s = ''; for (let i = 0; i < 20; i++) s += cs[Math.random() * cs.length | 0];
+      return s;
+    }
+    // One binary-compound condition object for a single spec.
+    function composerCondition(spec) {
+      const fn = COMPOSER_FN[spec.f];
+      const cmp = spec.dir === 'GT' ? 'gt' : 'lt';
+      const lhs = { fn: fn, params: { window: spec.p1 }, ticker: '%' };
+      let rhs;
+      if (spec.f === 'rsi_thresh') rhs = { constant: spec.level };
+      else if (spec.f === 'cum_lvl') rhs = { constant: Number((spec.level * 100).toFixed(2)) };
+      else rhs = { fn: fn, params: { window: spec.p2 }, ticker: spec.t2 };
+      return { 'condition-type': 'binary-compound', operator: 'any', tickers: [spec.t1], lhs: lhs, comparator: cmp, rhs: rhs };
+    }
+    // Legacy flat fields Composer keeps beside `condition` (describe first spec).
+    function composerFlat(spec) {
+      const fn = COMPOSER_FN[spec.f];
+      const o = { 'lhs-fn': fn, 'lhs-fn-params': { window: spec.p1 }, 'lhs-val': spec.t1, 'comparator': spec.dir === 'GT' ? 'gt' : 'lt' };
+      if (spec.f === 'rsi_thresh') { o['rhs-fixed-value?'] = true; o['rhs-val'] = String(spec.level); }
+      else if (spec.f === 'cum_lvl') { o['rhs-fixed-value?'] = true; o['rhs-val'] = String(Number((spec.level * 100).toFixed(2))); }
+      else { o['rhs-fn'] = fn; o['rhs-fn-params'] = { window: spec.p2 }; o['rhs-val'] = spec.t2; }
+      return o;
+    }
+    function buildComposerSymphony(row) {
+      const specs = row.single ? [row.spec] : row.specs;
+      const condition = { 'condition-type': 'compound', operator: 'all', conditions: specs.map(composerCondition) };
+      const flat = composerFlat(specs[0]);
+      const thenChild = Object.assign({
+        id: uid(), step: 'if-child', name: 'If', suppress_incomplete_warnings: false,
+        children: [{ id: uid(), step: 'asset', suppress_incomplete_warnings: false, ticker: row.target }],
+        'is-else-condition?': false,
+        condition: condition,
+      }, flat);
+      const elseChild = {
+        id: uid(), step: 'if-child', name: 'Else', suppress_incomplete_warnings: true,
+        children: [{ id: uid(), step: 'asset', suppress_incomplete_warnings: false, ticker: ELSE_TICKER }],
+        'is-else-condition?': true,
+      };
+      const ifNode = {
+        id: uid(), step: 'if', name: 'Condition', suppress_incomplete_warnings: false,
+        weight: { num: 100, den: 100 }, children: [thenChild, elseChild],
+      };
+      const weight = {
+        id: uid(), step: 'wt-cash-equal', name: 'Weight', suppress_incomplete_warnings: true, children: [ifNode],
+      };
+      return {
+        id: shortId(), step: 'root', name: `IF ${row.label} THEN invest in ${row.target}`,
+        children: [weight], description: '', rebalance: 'daily',
+      };
+    }
+
+    // ---------- run ----------
+    async function run() {
+      const runBtn = document.getElementById('sl-run');
+      const status = document.getElementById('sl-status');
+      const prog = document.getElementById('sl-progress');
+      const progBar = prog.firstElementChild;
+      const tgt = [...targets], cmp = [...compares];
+      if (tgt.length === 0) { status.textContent = 'Pick at least one target ticker.'; return; }
+
+      const fams = {};
+      let anyFam = false;
+      document.querySelectorAll('#sl-families input').forEach(el => { fams[el.value] = el.checked; if (el.checked) anyFam = true; });
+      if (!anyFam) { status.textContent = 'Enable at least one signal family.'; return; }
+
+      const TIM = parseFloat(document.getElementById('sl-tim').value) || 0;
+      const MDD = parseFloat(document.getElementById('sl-mdd').value);
+      const QUANT = Math.min(0.9, Math.max(0, parseFloat(document.getElementById('sl-quant').value) || 0));
+      const comboLimit = parseInt(document.getElementById('sl-combo').value, 10);
+      const minP = parseInt(document.getElementById('sl-minp').value, 10) || 5;
+      const grids = activeGrids(minP);
+
+      const universe = [...new Set([...tgt, ...cmp])];
+      const need = {
+        rsi: fams.rsi_thresh || fams.rsi_cmp,
+        cum: fams.cum_lvl || fams.cum_cmp,
+        ma: fams.ma_cmp,
+        std: fams.std_cmp,
+      };
+
+      runBtn.disabled = true;
+      prog.style.display = 'block';
+      progBar.style.width = '0%';
+
+      // CPU throttle: process work in small batches, then idle briefly so the
+      // machine isn't pinned at 100% (keeps fans/heat down; costs wall-clock time).
+      // PACE = idle ms between batches; CHUNK = signals per batch in Pass 1.
+      const cpu = (document.getElementById('sl-cpu') || {}).value || 'eco';
+      const PACE = cpu === 'full' ? 0 : cpu === 'balanced' ? 6 : 16;
+      const CHUNK = cpu === 'full' ? 500 : cpu === 'balanced' ? 300 : 150;
+      const yield_ = () => new Promise(r => setTimeout(r, PACE));
+
+      status.textContent = 'Building indicators...';
+      await yield_();
+      const cache = buildCaches(universe, need, grids);
+
+      const specs = buildSpecs(universe, fams, grids);
+      if (specs.length > SIGNAL_WARN_CAP) {
+        const ok = window.confirm(
+          `Heads up: this run will test ${specs.length.toLocaleString()} signals.\n\n` +
+          `That's a very large batch. It can take a long time and may make your browser slow or unresponsive, ` +
+          `and use a lot of memory, while it runs.\n\n` +
+          `To lower the count, reduce tickers or disable a signal family.\n\n` +
+          `Run it anyway?`
+        );
+        if (!ok) {
+          status.textContent = `Cancelled ${specs.length.toLocaleString()} signals. Reduce tickers or disable a family to lower the count.`;
+          runBtn.disabled = false; prog.style.display = 'none'; return;
+        }
+      }
+
+      // Pass 1: single signals, backtest vs each target, keep pre-filter survivors.
+      const rows = [];
+      const survivorArr = {};                 // specIndex -> Uint8Array (only kept if a survivor)
+      const targetLret = {};
+      for (const t of tgt) targetLret[t] = cache[t].lret;
+
+      for (let s = 0; s < specs.length; s++) {
+        const spec = specs[s];
+        const arr = evalSpec(spec, cache);
+        let kept = false;
+        for (const t of tgt) {
+          const m = backtest(arr, targetLret[t]);
+          if (m.tim > TIM && m.maxDD > MDD && m.total > 0 &&
+              m.sortino === m.sortino && m.calmar === m.calmar) {
+            rows.push({ spec, single: true, target: t, label: specLabel(spec), ...m, _si: s });
+            kept = true;
+          }
+        }
+        if (kept) survivorArr[s] = arr;
+        if ((s % CHUNK) === 0) {
+          progBar.style.width = (70 * s / specs.length).toFixed(1) + '%';
+          status.textContent = `Backtesting ${specs.length.toLocaleString()} signals... ${s.toLocaleString()}`;
+          await yield_();
+        }
+      }
+
+      // Pass 2: combinations (AND), from quantile-pruned survivors, per target.
+      let comboRows = [];
+      if (comboLimit >= 2) {
+        status.textContent = 'Pairing top survivors...';
+        progBar.style.width = '72%';
+        await yield_();
+
+        const byTarget = {};
+        for (const r of rows) { (byTarget[r.target] = byTarget[r.target] || []).push(r); }
+
+        for (const t of tgt) {
+          let surv = byTarget[t] || [];
+          surv = quantilePrune(surv, QUANT);
+          surv.sort((a, b) => b.sortino - a.sortino);
+          if (surv.length > SURV_CAP) surv = surv.slice(0, SURV_CAP);
+
+          for (let i = 0; i < surv.length; i++) {
+            for (let j = i + 1; j < surv.length; j++) {
+              const A = survivorArr[surv[i]._si], B = survivorArr[surv[j]._si];
+              const arr = new Uint8Array(N);
+              for (let k = 0; k < N; k++) arr[k] = (A[k] & B[k]);
+              const m = backtest(arr, targetLret[t]);
+              if (m.tim > TIM && m.maxDD > MDD && m.total > 0 &&
+                  m.sortino === m.sortino && m.calmar === m.calmar) {
+                comboRows.push({
+                  single: false, target: t,
+                  label: surv[i].label + '  AND  ' + surv[j].label,
+                  specs: [surv[i].spec, surv[j].spec],
+                  ...m,
+                });
+              }
+            }
+            if ((i % 8) === 0) {
+              progBar.style.width = (72 + 26 * i / Math.max(1, surv.length)).toFixed(1) + '%';
+              status.textContent = `Testing combinations for ${t}... ${comboRows.length.toLocaleString()} kept`;
+              await yield_();
+            }
+          }
+        }
+      }
+
+      progBar.style.width = '100%';
+      const all = rows.concat(comboRows);
+      lastResults = all;
+      status.textContent = `Done. ${rows.length.toLocaleString()} single + ${comboRows.length.toLocaleString()} combined = ${all.length.toLocaleString()} passing signals.`;
+      runBtn.disabled = false;
+      setTimeout(() => { prog.style.display = 'none'; }, 600);
+
+      sortKey = 'sortino'; sortAsc = false;
+      renderResults();
+      document.getElementById('sl-results-panel').style.display = 'block';
+      document.getElementById('sl-results-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Sequential quantile pruning across four metrics (matches the notebook).
+    function quantilePrune(rowsIn, q) {
+      if (q <= 0) return rowsIn.slice();
+      let r = rowsIn.slice();
+      for (const key of ['total', 'pf', 'sortino', 'calmar']) {
+        if (r.length <= 2) break;
+        const vals = r.map(x => x[key]).filter(v => v === v).sort((a, b) => a - b);
+        const cut = percentile(vals, q);
+        r = r.filter(x => x[key] > cut);
+      }
+      return r;
+    }
+
+    // ---------- rendering ----------
+    const COLS = [
+      { key: 'label',   label: 'Signal', cls: 'sig' },
+      { key: 'target',  label: 'Target', cls: 'tgt' },
+      { key: 'total',   label: 'Total Return', fmt: 'pct' },
+      { key: 'sortino', label: 'Sortino', fmt: 'num' },
+      { key: 'calmar',  label: 'Calmar', fmt: 'num' },
+      { key: 'maxDD',   label: 'Max DD', fmt: 'pct' },
+      { key: 'tim',     label: 'Time in Mkt', fmt: 'pct0' },
+      { key: 'pf',      label: 'Profit Factor', fmt: 'num' },
+      { key: 'pctProf', label: '% Profitable', fmt: 'pct0' },
+      { key: '_copy',   label: '' },
+    ];
+
+    function fmtVal(v, fmt) {
+      if (v == null || v !== v) return '<span style="color:var(--color-disabled)">-</span>';
+      if (fmt === 'pct') { const s = (v * 100).toFixed(1) + '%'; return `<span class="${v >= 0 ? 'num-pos' : 'num-neg'}">${s}</span>`; }
+      if (fmt === 'pct0') return (v * 100).toFixed(1) + '%';
+      if (fmt === 'num') return v.toFixed(2);
+      return String(v);
+    }
+
+    function renderResults() {
+      const filter = (document.getElementById('sl-filter').value || '').toLowerCase();
+      let data = lastResults;
+      if (filter) data = data.filter(r => (r.label + ' ' + r.target).toLowerCase().includes(filter));
+
+      data = data.slice().sort((a, b) => {
+        let x = a[sortKey], y = b[sortKey];
+        if (sortKey === 'label' || sortKey === 'target') { x = String(x); y = String(y); return sortAsc ? (x < y ? -1 : x > y ? 1 : 0) : (x > y ? -1 : x < y ? 1 : 0); }
+        if (x !== x) x = -Infinity; if (y !== y) y = -Infinity;
+        return sortAsc ? x - y : y - x;
+      });
+
+      const total = data.length;
+      const shown = data.slice(0, DISPLAY_CAP);
+
+      const head = document.getElementById('sl-head');
+      head.innerHTML = COLS.map(c => {
+        if (c.key === '_copy') return '<th></th>';
+        const sorted = c.key === sortKey ? ' sorted' + (sortAsc ? ' asc' : '') : '';
+        return `<th class="${c.cls || ''}${sorted}" data-key="${c.key}">${c.label}</th>`;
+      }).join('');
+
+      const body = document.getElementById('sl-body');
+      if (shown.length === 0) {
+        body.innerHTML = `<tr><td colspan="${COLS.length}" class="sl-empty">No signals passed the filters. Loosen Min Time in Market or the Max Drawdown floor, or add more tickers.</td></tr>`;
+      } else {
+        body.innerHTML = shown.map((r, idx) => {
+          const cells = COLS.map(c => {
+            if (c.key === '_copy') return `<td><button class="btn sl-copy-btn btn-ghost" data-copy="${idx}" title="Copy as a Composer symphony you can paste into the app">Copy JSON</button></td>`;
+            if (c.key === 'label') {
+              const tag = r.single ? '' : '<span class="sl-combo-tag">AND</span>';
+              return `<td class="sig">${escapeHtml(r.label)}${tag}</td>`;
+            }
+            if (c.key === 'target') return `<td class="tgt">${r.target}</td>`;
+            return `<td>${fmtVal(r[c.key], c.fmt)}</td>`;
+          });
+          return '<tr>' + cells.join('') + '</tr>';
+        }).join('');
+        // attach copy handlers using the sorted+filtered view
+        body.querySelectorAll('[data-copy]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const r = shown[parseInt(btn.dataset.copy, 10)];
+            const json = JSON.stringify(buildComposerSymphony(r), null, 2);
+            navigator.clipboard.writeText(json).then(() => {
+              const old = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = old, 1400);
+            }).catch(() => { btn.textContent = 'Copy failed'; setTimeout(() => btn.textContent = 'Copy JSON', 1400); });
+          });
+        });
+      }
+
+      document.getElementById('sl-count').textContent = `(${total.toLocaleString()})`;
+      document.getElementById('sl-meta').textContent =
+        total > DISPLAY_CAP ? `Showing top ${DISPLAY_CAP} of ${total.toLocaleString()} by current sort. Refine with the filter box or a stricter Time-in-Market.` : `${total.toLocaleString()} signals shown.`;
+
+      head.querySelectorAll('th[data-key]').forEach(th => {
+        th.addEventListener('click', () => {
+          const k = th.dataset.key;
+          if (k === sortKey) sortAsc = !sortAsc; else { sortKey = k; sortAsc = (k === 'label' || k === 'target'); }
+          renderResults();
+        });
+      });
+    }
+
+    function escapeHtml(s) { return s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+
+    // ---------- estimate ----------
+    function estimate() {
+      const fams = {};
+      document.querySelectorAll('#sl-families input').forEach(el => fams[el.value] = el.checked);
+      const minP = parseInt((document.getElementById('sl-minp') || {}).value, 10) || 5;
+      const g = activeGrids(minP);
+      const n = new Set([...targets, ...compares]).size;
+      let c = 0;
+      if (fams.rsi_thresh) c += n * g.RSI_W.length * RSI_LEVELS.length * 2;
+      if (fams.rsi_cmp)    c += n * n * g.RSI_W.length * g.RSI_W.length * 2;
+      if (fams.cum_lvl)    c += n * g.CUM_W.length * CUM_LEVELS.length * 2;
+      if (fams.cum_cmp)    c += n * n * g.CUM_W.length * g.CUM_W.length * 2;
+      if (fams.ma_cmp)     c += n * n * g.MA_W.length * g.MA_W.length * 2;
+      if (fams.std_cmp)    c += n * n * g.STD_W.length * g.STD_W.length * 2;
+      const el = document.getElementById('sl-est');
+      if (n === 0 || targets.size === 0) { el.textContent = 'Pick tickers to estimate.'; el.className = 'sl-est'; return; }
+      el.textContent = `~${c.toLocaleString()} signals to test`;
+      el.className = 'sl-est' + (c > SIGNAL_WARN_CAP ? ' stop' : c > 45000 ? ' warn' : '');
+    }
+
+    // ---------- UI wiring ----------
+    function renderChips() {
+      const tEl = document.getElementById('sl-targets');
+      const cEl = document.getElementById('sl-compares');
+      tEl.innerHTML = ''; cEl.innerHTML = '';
+      for (const [sym, name] of UNIVERSE) {
+        const t = document.createElement('span');
+        t.className = 'sl-chip' + (targets.has(sym) ? ' on-target' : '');
+        t.textContent = sym; t.title = name;
+        t.addEventListener('click', () => { targets.has(sym) ? targets.delete(sym) : targets.add(sym); syncChips(); });
+        tEl.appendChild(t);
+        const c = document.createElement('span');
+        c.className = 'sl-chip' + (compares.has(sym) ? ' on-compare' : '');
+        c.textContent = sym; c.title = name;
+        c.addEventListener('click', () => { compares.has(sym) ? compares.delete(sym) : compares.add(sym); syncChips(); });
+        cEl.appendChild(c);
+      }
+    }
+    function syncChips() {
+      const tEl = document.getElementById('sl-targets').children;
+      const cEl = document.getElementById('sl-compares').children;
+      let i = 0;
+      for (const [sym] of UNIVERSE) {
+        tEl[i].className = 'sl-chip' + (targets.has(sym) ? ' on-target' : '');
+        cEl[i].className = 'sl-chip' + (compares.has(sym) ? ' on-compare' : '');
+        i++;
+      }
+      document.getElementById('sl-tgt-count').textContent = targets.size ? `(${targets.size})` : '';
+      document.getElementById('sl-cmp-count').textContent = compares.size ? `(${compares.size})` : '';
+      estimate();
+    }
+
+    function renderFamilies() {
+      const el = document.getElementById('sl-families');
+      el.innerHTML = FAMILIES.map(f =>
+        `<label class="sl-check"><input type="checkbox" value="${f.id}"${f.on ? ' checked' : ''}>${f.label}</label>`
+      ).join('');
+      el.querySelectorAll('input').forEach(i => i.addEventListener('change', estimate));
+    }
+
+    function loadExample() {
+      targets = new Set(['TQQQ', 'TMV']);
+      compares = new Set(['BTAL', 'VIXM', 'SPY', 'TLT', 'DBMF', 'XLP']);
+      document.getElementById('sl-combo').value = '2';
+      document.getElementById('sl-minp').value = '5';
+      document.getElementById('sl-tim').value = '0.05';
+      document.getElementById('sl-mdd').value = '-0.8';
+      document.getElementById('sl-quant').value = '0.5';
+      document.querySelectorAll('#sl-families input').forEach(el => el.checked = true);
+      syncChips();
+      document.getElementById('sl-status').textContent = 'Loaded the community V2 example (8 tickers). This is a heavy run; give it a few seconds.';
+    }
+
+    // ---------- init ----------
+    (async function init() {
+      try { PD = await loadPrices(); }
+      catch (e) { document.getElementById('sl-status').textContent = 'Could not load price data.'; return; }
+      DATES = PD.dates; N = DATES.length;
+      UNIVERSE = Object.keys(PD.tickers).map(sym => [sym, PD.tickers[sym].name]);
+
+      renderChips();
+      renderFamilies();
+
+      const minSel = document.getElementById('sl-minp');
+      minSel.innerHTML = MIN_PERIOD_OPTS.map(p => `<option value="${p}"${p === 10 ? ' selected' : ''}>${p}d</option>`).join('');
+      minSel.addEventListener('change', estimate);
+
+      // sensible light default
+      targets = new Set(['QQQ']);
+      compares = new Set(['KMLM', 'VIXM', 'TLT']);
+      syncChips();
+
+      document.getElementById('sl-run').addEventListener('click', run);
+      document.getElementById('sl-example').addEventListener('click', loadExample);
+      document.getElementById('sl-filter').addEventListener('input', () => { if (lastResults.length) renderResults(); });
+      const gl = document.getElementById('sl-glossary-link'); if (gl) gl.href = u('/glossary.html');
+
+      const d = PD.refreshed_at ? PD.refreshed_at.slice(0, 10) : '';
+      const nice = (iso) => {
+        if (!iso) return 'unknown';
+        const dt = new Date(iso);
+        return isNaN(dt) ? iso : dt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+      };
+      const latestClose = N ? DATES[N - 1] : '';
+      document.getElementById('sl-refreshed-text').textContent =
+        `Data last refreshed ${nice(PD.refreshed_at)} · ${UNIVERSE.length} tickers through ${latestClose}`;
+      document.getElementById('sl-data-meta').textContent =
+        `Price history: ${UNIVERSE.length} tickers, ${N.toLocaleString()} trading days from ${PD.start} through ${latestClose}. Last refreshed ${d}. Refreshed weekly (Saturdays) from Yahoo Finance daily adjusted closes.`;
+    })();
+  })();
+  </script>
+</body>
+</html>
