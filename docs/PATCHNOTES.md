@@ -29,6 +29,16 @@ Added 2 new URLs from `data/AddSymphony.csv` to `data/database.json` directly, f
 
 ---
 
+## [1.15.5] - 2026-08-15
+
+### Signal Lab "Copy" now exports a pasteable Composer symphony
+
+Changed the Signal Lab results-table copy button from a plain-English string to **"Copy JSON"**, which puts a complete Composer symphony on the clipboard, ready to paste straight into the Composer editor. The output mirrors Composer's real export schema (`root` → `wt-cash-equal` → `if` → `if-child` then/else), with the target asset in the THEN branch and a cash proxy (BIL) in the ELSE branch, matching the tool's "hold cash when the signal is off" backtest. Each condition is emitted both as the modern `condition` object (a `compound` of `binary-compound` sub-conditions, with `ticker: "%"` + a `tickers` array, cumulative-return levels as whole-number percents, and `{ "constant": ... }` for fixed levels) and the legacy flat `lhs-fn`/`comparator`/`rhs-*` fields. AND-combined rows export as an "all of" compound; single signals as a one-condition compound. Node ids are freshly generated (`crypto.randomUUID` with a fallback). Validated field-for-field against a real Composer export.
+
+**Files changed:** `signal-lab.html`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.15.4] - 2026-08-15
 
 ### Made the converter indexable

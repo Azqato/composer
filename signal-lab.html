@@ -172,6 +172,7 @@
       <div class="sl-panel">
         <h2>How to read a row</h2>
         <p class="sl-note">A row like <span style="font-family:var(--font-mono);color:var(--color-primary)">MA-Return(10d) of KMLM &lt; MA-Return(90d) of VIXM &rarr; QQQ</span> means: on any day the 10-day average daily return of KMLM is below the 90-day average daily return of VIXM, hold QQQ the next day, otherwise hold cash. <strong style="color:var(--color-primary)">Calmar</strong> is return divided by worst drawdown, <strong style="color:var(--color-primary)">Sortino</strong> rewards return per unit of downside volatility, <strong style="color:var(--color-primary)">Profit Factor</strong> is gross gains over gross losses, and <strong style="color:var(--color-primary)">Time in Market</strong> is the share of days the signal was active. See the <a id="sl-glossary-link" href="#" style="color:var(--color-blue)">Glossary</a> for each term.</p>
+        <p class="sl-note"><strong style="color:var(--color-primary)">Copy JSON</strong> puts a complete Composer symphony on your clipboard, ready to paste straight into the Composer editor: an IF block that holds the target when the signal fires and a cash proxy (BIL) otherwise. AND-combined rows export as an "all of" compound condition. Swap the else asset or weighting inside Composer to taste.</p>
         <p class="sl-meta" id="sl-data-meta"></p>
         <p class="sl-meta">Reworked from a community Google Colab notebook by IAMCAPTAINNOW (shared in the Composer Discord). Rebuilt from scratch to run fully client-side with no data upload.</p>
       </div>
@@ -444,6 +445,78 @@
       }
     }
 
+    // ---------- Composer symphony JSON export ----------
+    // Maps a signal (or AND-pair) to a full Composer symphony that pastes into
+    // the app: root -> wt-cash-equal -> if -> [if-child (then asset), else asset].
+    // The else branch holds a cash proxy (BIL), matching the tool's "hold cash
+    // when the signal is off" backtest. Schema mirrors a real Composer export.
+    const COMPOSER_FN = {
+      rsi_thresh: 'relative-strength-index', rsi_cmp: 'relative-strength-index',
+      cum_lvl: 'cumulative-return', cum_cmp: 'cumulative-return',
+      ma_cmp: 'moving-average-return', std_cmp: 'standard-deviation-return',
+    };
+    const ELSE_TICKER = 'BIL';   // cash proxy for the else branch
+
+    function uid() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, ch => {
+        const r = Math.random() * 16 | 0, v = ch === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+    function shortId() {
+      const cs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let s = ''; for (let i = 0; i < 20; i++) s += cs[Math.random() * cs.length | 0];
+      return s;
+    }
+    // One binary-compound condition object for a single spec.
+    function composerCondition(spec) {
+      const fn = COMPOSER_FN[spec.f];
+      const cmp = spec.dir === 'GT' ? 'gt' : 'lt';
+      const lhs = { fn: fn, params: { window: spec.p1 }, ticker: '%' };
+      let rhs;
+      if (spec.f === 'rsi_thresh') rhs = { constant: spec.level };
+      else if (spec.f === 'cum_lvl') rhs = { constant: Number((spec.level * 100).toFixed(2)) };
+      else rhs = { fn: fn, params: { window: spec.p2 }, ticker: spec.t2 };
+      return { 'condition-type': 'binary-compound', operator: 'any', tickers: [spec.t1], lhs: lhs, comparator: cmp, rhs: rhs };
+    }
+    // Legacy flat fields Composer keeps beside `condition` (describe first spec).
+    function composerFlat(spec) {
+      const fn = COMPOSER_FN[spec.f];
+      const o = { 'lhs-fn': fn, 'lhs-fn-params': { window: spec.p1 }, 'lhs-val': spec.t1, 'comparator': spec.dir === 'GT' ? 'gt' : 'lt' };
+      if (spec.f === 'rsi_thresh') { o['rhs-fixed-value?'] = true; o['rhs-val'] = String(spec.level); }
+      else if (spec.f === 'cum_lvl') { o['rhs-fixed-value?'] = true; o['rhs-val'] = String(Number((spec.level * 100).toFixed(2))); }
+      else { o['rhs-fn'] = fn; o['rhs-fn-params'] = { window: spec.p2 }; o['rhs-val'] = spec.t2; }
+      return o;
+    }
+    function buildComposerSymphony(row) {
+      const specs = row.single ? [row.spec] : row.specs;
+      const condition = { 'condition-type': 'compound', operator: 'all', conditions: specs.map(composerCondition) };
+      const flat = composerFlat(specs[0]);
+      const thenChild = Object.assign({
+        id: uid(), step: 'if-child', name: 'If', suppress_incomplete_warnings: false,
+        children: [{ id: uid(), step: 'asset', suppress_incomplete_warnings: false, ticker: row.target }],
+        'is-else-condition?': false,
+        condition: condition,
+      }, flat);
+      const elseChild = {
+        id: uid(), step: 'if-child', name: 'Else', suppress_incomplete_warnings: true,
+        children: [{ id: uid(), step: 'asset', suppress_incomplete_warnings: false, ticker: ELSE_TICKER }],
+        'is-else-condition?': true,
+      };
+      const ifNode = {
+        id: uid(), step: 'if', name: 'Condition', suppress_incomplete_warnings: false,
+        weight: { num: 100, den: 100 }, children: [thenChild, elseChild],
+      };
+      const weight = {
+        id: uid(), step: 'wt-cash-equal', name: 'Weight', suppress_incomplete_warnings: true, children: [ifNode],
+      };
+      return {
+        id: shortId(), step: 'root', name: `IF ${row.label} THEN invest in ${row.target}`,
+        children: [weight], description: '', rebalance: 'daily',
+      };
+    }
+
     // ---------- run ----------
     async function run() {
       const runBtn = document.getElementById('sl-run');
@@ -542,6 +615,7 @@
                 comboRows.push({
                   single: false, target: t,
                   label: surv[i].label + '  AND  ' + surv[j].label,
+                  specs: [surv[i].spec, surv[j].spec],
                   ...m,
                 });
               }
@@ -631,7 +705,7 @@
       } else {
         body.innerHTML = shown.map((r, idx) => {
           const cells = COLS.map(c => {
-            if (c.key === '_copy') return `<td><button class="btn sl-copy-btn btn-ghost" data-copy="${idx}">Copy</button></td>`;
+            if (c.key === '_copy') return `<td><button class="btn sl-copy-btn btn-ghost" data-copy="${idx}" title="Copy as a Composer symphony you can paste into the app">Copy JSON</button></td>`;
             if (c.key === 'label') {
               const tag = r.single ? '' : '<span class="sl-combo-tag">AND</span>';
               return `<td class="sig">${escapeHtml(r.label)}${tag}</td>`;
@@ -645,10 +719,10 @@
         body.querySelectorAll('[data-copy]').forEach(btn => {
           btn.addEventListener('click', () => {
             const r = shown[parseInt(btn.dataset.copy, 10)];
-            const text = `IF ${r.label} THEN invest in ${r.target}`;
-            navigator.clipboard.writeText(text).then(() => {
-              const old = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = old, 1200);
-            });
+            const json = JSON.stringify(buildComposerSymphony(r), null, 2);
+            navigator.clipboard.writeText(json).then(() => {
+              const old = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = old, 1400);
+            }).catch(() => { btn.textContent = 'Copy failed'; setTimeout(() => btn.textContent = 'Copy JSON', 1400); });
           });
         });
       }
