@@ -156,7 +156,6 @@ function renderNav() {
       { href: u('/converter.html'), label: 'Converter' },
     ] },
     { href: u('/glossary.html'), label: 'Glossary' },
-    { href: u('/about.html'), label: 'About' },
     { href: 'https://azqato.com/invests', label: 'Azqato Invests', external: true },
     { href: 'https://azqato.com/support.html', label: 'Support', external: true },
   ];

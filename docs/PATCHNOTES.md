@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.16.5] - 2026-08-15
+
+### Navigation: move About out of the primary nav
+
+Removed **About** from the primary nav to trim the top level further; it remains in the footer sitemap (its complete-sitemap role is unchanged). Nav top level is now Home, Strategies, Database, Tools, Glossary, Azqato Invests, Support.
+
+**Files changed:** `js/app.js`
+
+---
+
 ## [1.16.4] - 2026-08-15
 
 ### Signal Lab: no hard signal cap, warn-and-confirm instead; new default floors
