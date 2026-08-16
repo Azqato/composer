@@ -266,7 +266,14 @@
       function cleanSym(s) {
         if (typeof s !== 'string') return null;
         var t = s.replace(/^\$/, '').trim().toUpperCase();
-        return /^[A-Z][A-Z.\-]{0,9}$/.test(t) ? t : null;
+        if (!/^[A-Z][A-Z.\-]{0,9}$/.test(t)) return null;
+        // Composer and Crescendo want share-class tickers with a slash (BRK/B),
+        // but holdings feeds use a dot (BRK.B) or dash (BRK-B). Normalize a
+        // trailing single-letter class suffix to the slash form; a symphony
+        // containing the dot/dash form will not save or backtest on either
+        // platform. Only a trailing "<sep><one letter>" is rewritten, so plain
+        // tickers are untouched.
+        return t.replace(/[.\-]([A-Z])$/, '/$1');
       }
       // Keep only real company holdings. Issuer files list cash, futures, collateral,
       // pending dividends, currency, etc. as line items whose "ticker" can even collide

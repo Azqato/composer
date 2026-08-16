@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.16.7] - 2026-08-15
+
+### ETF Cloner ticker fix, Signal Miner live filters, mobile overflow hardening
+
+Three fixes in one pass:
+
+- **ETF Cloner share-class tickers now use Composer/Crescendo format.** Holdings feeds render multi-class tickers with a dot (`BRK.B`, `BF.B`) or dash (`BRK-B`), but Composer *and* Crescendo require the slash form `BRK/B` or the symphony will not save or backtest (community-reported and confirmed). `cleanSym()` now normalizes a trailing single-letter class suffix to `/X`, so both input paths (live fetch and file upload) and both the on-screen table and the emitted JSON use the compatible form. Plain tickers and multi-letter suffixes are left untouched; QA'd against `BRK.B`/`BRK-B`/`BF.B`/`LEN.B` (→ slash) and `VTI`/`VT`/`AAPL` (unchanged).
+
+- **Signal Miner filters update results live, no re-run.** After a backtest, changing **Min Time in Market**, **Max Drawdown floor**, **Prune quantile**, or the **AND-pairing** toggle now re-filters the results instantly (debounced) instead of forcing a full re-run. The expensive Pass 1 caches every valid single-signal result plus the arrays needed for pairing; the filters re-apply against that cache and recompute only the cheap pairing step. Changing tickers, families, or the min period still needs a fresh run (those change which signals exist).
+
+- **Mobile overflow hardening at ~390px.** Hardened `body` with `overflow-x: clip` and `overflow-wrap: break-word` so the page can no longer scroll sideways (which was clipping the nav/hamburger) and long tickers/IDs/URLs wrap instead of forcing width. `clip` does not make `<body>` a scroll container, so sticky/fixed positioning and the fixed nav are unaffected. Should still be eyeballed at ~390px on a device.
+
+**Files changed:** `etf-cloner.html`, `signal-miner.html`, `css/main.css`, `docs/PRD.md`
+
+---
+
 ## [1.16.6] - 2026-08-15
 
 ### Renamed Signal Lab → Signal Miner; added a CPU-load throttle

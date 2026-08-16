@@ -55,6 +55,13 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Narrow-screen hardening (~390px): stop any stray horizontal overflow from
+     letting the page scroll sideways and clipping the nav/hamburger, and let
+     long unbreakable tokens (tickers, IDs, URLs) wrap instead of forcing width.
+     `clip` (not `hidden`) avoids making <body> a scroll container, so it can't
+     break position:sticky/fixed; the fixed nav is unaffected. */
+  overflow-x: clip;
+  overflow-wrap: break-word;
 }
 
 a {
