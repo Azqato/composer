@@ -210,6 +210,80 @@ p { color: var(--color-secondary); }
   background: var(--color-surface);
 }
 
+/* Tools dropdown */
+.nav-dropdown {
+  position: relative;
+  display: inline-flex;
+}
+
+.nav-dropdown-toggle {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  gap: 4px;
+}
+
+.nav-caret {
+  font-size: 0.7em;
+  line-height: 1;
+  transition: transform 0.15s;
+}
+
+.nav-dropdown:hover .nav-caret,
+.nav-dropdown:focus-within .nav-caret,
+.nav-dropdown.open .nav-caret {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  min-width: 180px;
+  display: none;
+  flex-direction: column;
+  padding: 6px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  z-index: 10;
+}
+
+/* Transparent bridge so hover survives the gap between toggle and menu. */
+.nav-dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu,
+.nav-dropdown.open .nav-dropdown-menu {
+  display: flex;
+}
+
+.nav-dropdown-link {
+  display: block;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  color: var(--color-secondary);
+  white-space: nowrap;
+  transition: color 0.15s, background 0.15s;
+}
+
+.nav-dropdown-link:hover,
+.nav-dropdown-link.active {
+  color: var(--color-primary);
+  background: var(--color-surface);
+}
+
 .nav-actions {
   display: flex;
   align-items: center;
@@ -279,6 +353,20 @@ p { color: var(--color-secondary); }
 .mobile-nav-link.active {
   color: var(--color-primary);
   background: var(--color-surface);
+}
+
+.mobile-nav-group {
+  display: block;
+  padding: 12px 12px 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-disabled);
+}
+
+.mobile-nav-sublink {
+  padding-left: 24px;
 }
 
 .mobile-nav-cta {

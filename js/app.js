@@ -143,25 +143,49 @@ function renderNav() {
     return path.startsWith(hrefPath) && hrefPath !== BASE + '/';
   }
 
+  // Primary nav. `children` turns an item into a dropdown group (the tools live
+  // there to keep the top level from getting crowded). ETF Cloner is intentionally
+  // not in the nav; it's reachable from the footer and the homepage Explore grid.
   const links = [
     { href: u('/'), label: 'Home' },
     { href: u('/strategies.html'), label: 'Strategies' },
     { href: u('/database.html'), label: 'Database' },
-    { href: u('/rsi.html'), label: 'RSI' },
-    { href: u('/signal-lab.html'), label: 'Signal Lab' },
+    { label: 'Tools', children: [
+      { href: u('/rsi.html'), label: 'RSI Signals' },
+      { href: u('/signal-lab.html'), label: 'Signal Lab' },
+      { href: u('/converter.html'), label: 'Converter' },
+    ] },
     { href: u('/glossary.html'), label: 'Glossary' },
     { href: u('/about.html'), label: 'About' },
     { href: 'https://azqato.com/invests', label: 'Azqato Invests', external: true },
     { href: 'https://azqato.com/support.html', label: 'Support', external: true },
   ];
 
-  const desktopLinks = links.map(l =>
-    `<a href="${l.href}"${l.external ? ' target="_blank" rel="noopener noreferrer"' : ''} class="nav-link${isActive(l.href) ? ' active' : ''}">${l.label}</a>`
-  ).join('');
+  const ext = l => (l.external ? ' target="_blank" rel="noopener noreferrer"' : '');
 
-  const mobileLinks = links.map(l =>
-    `<a href="${l.href}"${l.external ? ' target="_blank" rel="noopener noreferrer"' : ''} class="mobile-nav-link${isActive(l.href) ? ' active' : ''}">${l.label}</a>`
-  ).join('');
+  const desktopLinks = links.map(l => {
+    if (l.children) {
+      const anyActive = l.children.some(c => isActive(c.href));
+      const menu = l.children.map(c =>
+        `<a href="${c.href}"${ext(c)} class="nav-dropdown-link${isActive(c.href) ? ' active' : ''}">${c.label}</a>`
+      ).join('');
+      return `<div class="nav-dropdown">` +
+        `<button type="button" class="nav-link nav-dropdown-toggle${anyActive ? ' active' : ''}" aria-haspopup="true" aria-expanded="false">` +
+        `${l.label}<span class="nav-caret" aria-hidden="true">▾</span></button>` +
+        `<div class="nav-dropdown-menu">${menu}</div></div>`;
+    }
+    return `<a href="${l.href}"${ext(l)} class="nav-link${isActive(l.href) ? ' active' : ''}">${l.label}</a>`;
+  }).join('');
+
+  const mobileLinks = links.map(l => {
+    if (l.children) {
+      return `<span class="mobile-nav-group">${l.label}</span>` +
+        l.children.map(c =>
+          `<a href="${c.href}"${ext(c)} class="mobile-nav-link mobile-nav-sublink${isActive(c.href) ? ' active' : ''}">${c.label}</a>`
+        ).join('');
+    }
+    return `<a href="${l.href}"${ext(l)} class="mobile-nav-link${isActive(l.href) ? ' active' : ''}">${l.label}</a>`;
+  }).join('');
 
   const nav = document.getElementById('nav-root');
   if (!nav) return;
@@ -200,6 +224,39 @@ function renderNav() {
       toggle.setAttribute('aria-expanded', String(!isOpen));
     });
   }
+
+  // Desktop Tools dropdown: hover/focus opens it via CSS; this adds click-to-open
+  // for touch/keyboard, plus outside-click and Escape to close.
+  const dropdowns = nav.querySelectorAll('.nav-dropdown');
+  dropdowns.forEach(dd => {
+    const btn = dd.querySelector('.nav-dropdown-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const willOpen = !dd.classList.contains('open');
+      dropdowns.forEach(o => { o.classList.remove('open'); o.querySelector('.nav-dropdown-toggle').setAttribute('aria-expanded', 'false'); });
+      dd.classList.toggle('open', willOpen);
+      btn.setAttribute('aria-expanded', String(willOpen));
+    });
+  });
+  if (dropdowns.length) {
+    document.addEventListener('click', e => {
+      dropdowns.forEach(dd => {
+        if (!dd.contains(e.target)) {
+          dd.classList.remove('open');
+          dd.querySelector('.nav-dropdown-toggle').setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        dropdowns.forEach(dd => {
+          dd.classList.remove('open');
+          dd.querySelector('.nav-dropdown-toggle').setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+  }
 }
 
 // ---- Footer rendering ----
@@ -216,6 +273,7 @@ function renderFooter() {
       <a href="${u('/signal-lab.html')}">Signal Lab</a>
       <a href="${u('/glossary.html')}">Glossary</a>
       <a href="${u('/converter.html')}">Converter</a>
+      <a href="${u('/etf-cloner.html')}">ETF Cloner</a>
       <a href="${u('/about.html')}">About</a>
       <a href="https://azqato.com/support.html" target="_blank" rel="noopener noreferrer">Support</a>
       <a href="https://composer.trade" target="_blank" rel="noopener noreferrer">Composer.trade ↗</a>
