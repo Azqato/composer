@@ -5,6 +5,26 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.16.4] - 2026-08-15
+
+### Signal Lab: no hard signal cap, warn-and-confirm instead; new default floors
+
+Removed the hard 120k-signal stop that blocked large runs outright. A run above 100,000 signals now shows a confirm dialog explaining that the batch is large and may make the browser slow or unresponsive, and asks whether to proceed — the user can run it anyway or cancel. Also changed two defaults: **Min Time in Market** `0.025` → `0.05` and **Max Drawdown floor** `-0.5` → `-0.8` (both in the form and the example/reset preset). The live signal-count estimate still turns red past 100k as a heads-up, but no longer implies the run is blocked.
+
+**Files changed:** `signal-lab.html`
+
+---
+
+## [1.16.3] - 2026-08-15
+
+### Navigation: Tools dropdown; ETF Cloner added to footer + homepage
+
+Reworked the primary nav to reduce top-level crowding: **RSI Signals**, **Signal Lab**, and **Converter** now live under a single **Tools** dropdown (hover or focus on desktop, click for touch/keyboard, with outside-click and Escape to close), leaving the top level as Home, Strategies, Database, Tools, Glossary, About, Azqato Invests, and Support. Added **ETF Cloner** to the footer sitemap and as a card in the homepage "Everything on this site" Explore grid; it remains intentionally out of the primary nav. This resolves the tracked footer-rule exception from 1.16.0 — every public page is once again linked from the footer.
+
+**Files changed:** `js/app.js`, `css/main.css`, `index.html`
+
+---
+
 ## [1.16.2] - 2026-08-15
 
 ### ETF Cloner: filter holdings to real companies; fully hide the file input

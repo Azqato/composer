@@ -134,11 +134,11 @@
           </div>
           <div class="sl-field">
             <label for="sl-tim">Min Time in Market</label>
-            <input id="sl-tim" type="number" step="0.005" min="0" max="1" value="0.025">
+            <input id="sl-tim" type="number" step="0.005" min="0" max="1" value="0.05">
           </div>
           <div class="sl-field">
             <label for="sl-mdd">Max Drawdown floor</label>
-            <input id="sl-mdd" type="number" step="0.05" min="-1" max="0" value="-0.5">
+            <input id="sl-mdd" type="number" step="0.05" min="-1" max="0" value="-0.8">
           </div>
           <div class="sl-field">
             <label for="sl-quant">Prune quantile (0-0.9)</label>
@@ -227,7 +227,7 @@
 
     const SURV_CAP = 150;      // max single-signal survivors fed into pairing, per target
     const DISPLAY_CAP = 500;   // max rows rendered
-    const HARD_SIGNAL_CAP = 120000;
+    const SIGNAL_WARN_CAP = 100000;  // above this, warn-and-confirm before running (no hard limit)
 
     let PD, DATES, N, UNIVERSE;
     let targets = new Set();
@@ -556,9 +556,18 @@
       const cache = buildCaches(universe, need, grids);
 
       const specs = buildSpecs(universe, fams, grids);
-      if (specs.length > HARD_SIGNAL_CAP) {
-        status.textContent = `Too many signals (${specs.length.toLocaleString()}). Reduce tickers or disable a family.`;
-        runBtn.disabled = false; prog.style.display = 'none'; return;
+      if (specs.length > SIGNAL_WARN_CAP) {
+        const ok = window.confirm(
+          `Heads up: this run will test ${specs.length.toLocaleString()} signals.\n\n` +
+          `That's a very large batch. It can take a long time and may make your browser slow or unresponsive, ` +
+          `and use a lot of memory, while it runs.\n\n` +
+          `To lower the count, reduce tickers or disable a signal family.\n\n` +
+          `Run it anyway?`
+        );
+        if (!ok) {
+          status.textContent = `Cancelled ${specs.length.toLocaleString()} signals. Reduce tickers or disable a family to lower the count.`;
+          runBtn.disabled = false; prog.style.display = 'none'; return;
+        }
       }
 
       // Pass 1: single signals, backtest vs each target, keep pre-filter survivors.
@@ -759,7 +768,7 @@
       const el = document.getElementById('sl-est');
       if (n === 0 || targets.size === 0) { el.textContent = 'Pick tickers to estimate.'; el.className = 'sl-est'; return; }
       el.textContent = `~${c.toLocaleString()} signals to test`;
-      el.className = 'sl-est' + (c > HARD_SIGNAL_CAP ? ' stop' : c > 45000 ? ' warn' : '');
+      el.className = 'sl-est' + (c > SIGNAL_WARN_CAP ? ' stop' : c > 45000 ? ' warn' : '');
     }
 
     // ---------- UI wiring ----------
@@ -807,8 +816,8 @@
       compares = new Set(['BTAL', 'VIXM', 'SPY', 'TLT', 'DBMF', 'XLP']);
       document.getElementById('sl-combo').value = '2';
       document.getElementById('sl-minp').value = '5';
-      document.getElementById('sl-tim').value = '0.025';
-      document.getElementById('sl-mdd').value = '-0.5';
+      document.getElementById('sl-tim').value = '0.05';
+      document.getElementById('sl-mdd').value = '-0.8';
       document.getElementById('sl-quant').value = '0.5';
       document.querySelectorAll('#sl-families input').forEach(el => el.checked = true);
       syncChips();
