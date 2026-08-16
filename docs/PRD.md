@@ -1919,7 +1919,7 @@ Formerly "Monetization Expansion" (premium strategy tier, newsletter integration
 
 ### V4.0: Signal Discovery & Robustness Tooling (Extreme Future State)
 
-**Status:** Ideation — extreme future state, not near-term. No implementation, forking, or architecture work should begin until V2.x/V3.0 are well underway and this section has been re-scoped with fresh eyes. Documented now (v1.11.5/v1.11.6/v1.11.7) purely so the idea isn't lost.
+**Status:** Ideation — extreme future state, not near-term. No implementation, forking, or architecture work should begin until V2.x is well underway and this section has been re-scoped with fresh eyes (V3.0 was removed 2026-08-15, so V2.x is now the gate). Documented now (v1.11.5/v1.11.6/v1.11.7) purely so the idea isn't lost.
 
 Five external repos were reviewed as candidate forks: `composer_json_fuzz_tester`, `rsi_search`, `strategy_generation` (private, all owned by GitHub user `VoxMachina1`), `quantstats-js` (public, GitHub user `whsmacon`), and `local-maestro` (public, GitHub user `Gabraham4`). The first three operate on Composer strategy JSON exports and Tiingo price data, entirely outside Composer Atlas today; the latter two are standalone portfolio-analytics/reporting tools. This section documents what each does and how they *could* eventually plug into the site — as a distinct, separately-run "Signal Miner" / analytics capability, not a rewrite of the existing static site.
 
