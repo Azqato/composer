@@ -294,6 +294,7 @@ ComposerAtlas/
 ├── rsi.html                     # Live RSI signals table, 20-ticker Frontrunner universe (V2.1)
 ├── converter.html               # Tool: Symphony → JSON converter + logic tree; indexable, footer + homepage card, not in nav (v1.15.4)
 ├── signal-lab.html              # Tool: client-side IF/THEN signal miner + backtester; linked in nav + footer + home (v1.15.2)
+├── etf-cloner.html              # Tool: type an ETF (or upload its holdings file) → Composer symphony that clones the holdings; indexable, intentionally NOT in nav/footer/home yet (v1.16.0)
 ├── about.html                   # About page
 ├── 404.html                    # Custom 404 page
 ├── favicon.svg                 # 🗺️ map emoji SVG favicon
@@ -421,12 +422,15 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/rsi.html` | `rsi.html` | Sortable RSI signals table (V2.1) |
 | `/composer/signal-lab.html` | `signal-lab.html` | Tool: IF/THEN signal miner + backtester, runs fully client-side. Linked from nav, footer, and homepage Explore card; indexable (v1.15.2) |
 | `/composer/converter.html` | `converter.html` | Tool: Symphony → JSON converter + logic tree. Indexable; in the footer sitemap + homepage Explore card, but **not in the primary nav** (v1.15.4) |
+| `/composer/etf-cloner.html` | `etf-cloner.html` | Tool: ETF → Composer holdings-clone generator. Live top-holdings fetch by ticker + full-basket upload of an issuer CSV/xlsx. Indexable, but intentionally **not** in nav, footer, or homepage yet (see Section 14, V2.2) (v1.16.0) |
 | `/composer/about.html` | `about.html` | Static HTML |
 | `/composer/404.html` | `404.html` | GitHub Pages error page |
 
 **Listing/detail routing:** Each combined page checks `new URLSearchParams(window.location.search).get('slug')` on load. `null` → listing view; non-null → detail view for that slug.
 
-**Tool pages:** `converter.html` and `signal-lab.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). Both are indexable. Signal Lab is a first-class page (nav + footer + homepage Explore grid). The converter is slightly lower-profile: it is kept out of the primary nav, but per the linking model below it appears in the footer sitemap and as a homepage Explore card (both live in `js/app.js` / `index.html`). As of v1.15.4 no page carries a `noindex` robots meta.
+**Tool pages:** `converter.html`, `signal-lab.html`, and `etf-cloner.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). All are indexable. Signal Lab is a first-class page (nav + footer + homepage Explore grid). The converter is slightly lower-profile: it is kept out of the primary nav, but per the linking model below it appears in the footer sitemap and as a homepage Explore card (both live in `js/app.js` / `index.html`). The ETF Cloner is lower-profile still: it is live and indexable but, at the user's request, is held out of all three link surfaces (nav, footer, homepage) for now — the current intentional exception to the footer rule below (tracked in Section 14, V2.2). As of v1.15.4 no page carries a `noindex` robots meta.
+
+**ETF Cloner data flow:** the tool has two independent input paths, both fully client-side. (1) **Live fetch by ticker** — reads a fund's top ~25 holdings from stockanalysis.com's SvelteKit `__data.json` route via a CORS relay (`proxy.cors.sh`, with allorigins/codetabs fallbacks), since issuer files and most holdings APIs are CORS-blocked or key-gated. (2) **Full-basket upload** — the user downloads the issuer's own holdings file (a top-level download, not a `fetch()`, so CORS never applies) and drops it in; CSV is parsed directly, and `.xlsx` is unzipped natively in the browser (`DecompressionStream('deflate-raw')` + `DOMParser`, no library) with a generic column-mapper that locates the Ticker/Weight/Name columns across issuer layouts. Both paths filter out non-company line items (cash, futures, collateral, pending dividends, currency — which can carry tickers that collide with real securities, e.g. cash "USD" vs. the USD ETF), renormalize weights across the remaining companies, and emit a Composer symphony (`root` → `wt-cash-specified` or `wt-cash-equal` → `asset` nodes). Nothing is uploaded anywhere; there is no server component and no committed data file for this tool.
 
 ### Navigation & Linking Model (v1.15.3)
 
@@ -434,7 +438,7 @@ Three link surfaces, each with a distinct, deliberate rule. When adding a new pa
 
 1. **Primary nav (`links` array in `renderNav`, `js/app.js`)** — *curated*, not exhaustive. Holds Home plus the main destinations most visitors want, then the external CTAs (Azqato Invests, Support). Deliberately omits lower-profile utilities (e.g. the converter) to keep the bar short. Adding a page here is an editorial choice, not automatic.
 
-2. **Footer (`renderFooter`, `js/app.js`)** — the **complete sitemap**. It must link *every* public-facing page on the site: Home and all internal pages (Strategies, Database, RSI, Signal Lab, Glossary, Converter, About), followed by external links (Support, Composer.trade). `404.html` is the only public page excluded (it is an error page, not a destination). When you add any public page, you **must** add it to the footer.
+2. **Footer (`renderFooter`, `js/app.js`)** — the **complete sitemap**. It must link *every* public-facing page on the site: Home and all internal pages (Strategies, Database, RSI, Signal Lab, Glossary, Converter, About), followed by external links (Support, Composer.trade). `404.html` is the only page excluded on principle (it is an error page, not a destination). When you add any public page, you **must** add it to the footer. **Current temporary exception:** `etf-cloner.html` is live and indexable but deliberately held out of the footer (and nav and homepage) at the user's request; this is a tracked deferral (Section 14, V2.2), not a standing carve-out — fold it in when that item is actioned.
 
 3. **Homepage "Everything on this site" Explore grid (`index.html`)** — one card per **self-built tool or content section** we own. Concretely: a card for every *internal* footer link that is a tool/section we built, i.e. every internal footer link **except** Home (the page itself) and About (a static info page, not a tool). External links never get cards. Current set: Strategies, Database, RSI, Signal Lab, Glossary, Converter. The grid column count tracks the card count (currently `.grid-3` for six cards); update the count word in the section subhead ("Six ways...") when it changes.
 

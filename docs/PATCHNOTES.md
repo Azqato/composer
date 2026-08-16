@@ -5,6 +5,38 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.16.2] - 2026-08-15
+
+### ETF Cloner: filter holdings to real companies; fully hide the file input
+
+Issuer holdings files (and the live feed) list cash, futures, collateral, pending dividends, and currency as holding rows, and those line items can carry a "ticker" that collides with a real security — most notably a cash row of `USD` resolving to **USD**, the ProShares Ultra Semiconductors ETF. The tool now drops all such non-company rows, both by **name** (a cash/futures/collateral/dividend/currency blocklist) and by **currency-code ticker** (`USD`, `EUR`, `JPY`, …), on both the live-fetch and uploaded-file paths; the remaining company weights renormalize to 100%. Validated against the exact junk rows seen in a real QQQ file (all excluded) plus tricky real names that must be kept (FUTU Holdings, Forward Air, Option Care Health). Also hardened the dropzone's hidden file `<input>` (visually-hidden clip pattern) so the native picker control never paints on hover.
+
+**Files changed:** `etf-cloner.html`
+
+---
+
+## [1.16.1] - 2026-08-15
+
+### ETF Cloner: weighting toggle now governs uploaded baskets; required-columns note
+
+Moved the **Match ETF weights / Equal weight** toggle out of the live-fetch panel and into the Holdings results panel, so a single control re-renders whatever result is shown (previously it read as disconnected when working from an uploaded file). Added a note to the upload panel that the imported file must contain a **Ticker** column and a **Weight** column (header labels like "Symbol" or "Weight (%)" are recognized; column order and extra columns do not matter).
+
+**Files changed:** `etf-cloner.html`
+
+---
+
+## [1.16.0] - 2026-08-15
+
+### Added ETF Cloner: turn any ETF into a Composer holdings-clone symphony
+
+Added `etf-cloner.html`, a standalone tool that generates a Composer symphony replicating an ETF's holdings. Two independent, fully client-side input paths: (1) **type a ticker** to pull the fund's top ~25 holdings live (read from stockanalysis.com's `__data.json` route through a CORS relay, since issuer files and holdings APIs are otherwise CORS-blocked or key-gated), and (2) **upload the issuer's own holdings file** for the complete basket — CSV parsed directly, and `.xlsx` unzipped **natively in the browser** (`DecompressionStream('deflate-raw')` + `DOMParser`, no library), with a generic column-mapper that finds the Ticker/Weight/Name columns across issuer layouts. Either way it outputs a Composer symphony (`root` → `wt-cash-specified` to match fund weights, or `wt-cash-equal`) with copy-to-clipboard and download. Weights use a large denominator so hundreds of tiny full-basket positions never round to a zero weight; validated end to end against a real State Street SPY file (503 holdings, weights summing exactly). Nothing is uploaded anywhere and there is no server component.
+
+The page is indexable but, at the user's request, is intentionally **not** linked from the primary nav, the footer sitemap, or the homepage Explore grid for now — the current tracked exception to the "footer links every public page" rule (see PRD Section 14, V2.2).
+
+**Files changed:** `etf-cloner.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.15.0] - 2026-08-15
 
 ### Added Signal Lab: a client-side IF/THEN signal miner and backtester
