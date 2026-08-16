@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.16.8] - 2026-08-15
+
+### Signal Miner: default Prune quantile is now 0 (show everything)
+
+Changed the default **Prune quantile** from `0.5` to `0` (in both the form and the example/reset preset), so a fresh run no longer trims any single signals before pairing them into combinations; all qualifying signals are shown by default. Raising the quantile still prunes as before for anyone who wants a smaller, more selective set of combinations.
+
+**Files changed:** `signal-miner.html`
+
+---
+
 ## [1.16.7] - 2026-08-15
 
 ### ETF Cloner ticker fix, Signal Miner live filters, mobile overflow hardening
