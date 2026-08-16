@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.16.9] - 2026-08-15
+
+### Signal Miner CPU throttle reworked to a duty-cycle rate limiter with a time estimate
+
+Reworked the **CPU load** control from fixed pauses to an adaptive **duty-cycle** limiter: after each batch the run idles for a multiple of the time that batch actually spent computing, so the processor holds a target busy fraction no matter how fast the machine is (heat tracks duty cycle, not absolute idle time). The four levels now map to a stable CPU-busy target: **Full speed (100%)**, **Balanced (~50%)**, **Easy on CPU (~25%, default)**, and a new **Coolest (~10%)** tier for maximum heat reduction. While a run is going, the status line now shows a live estimate of total run time and idle time (measured from actual compute so far), e.g. `... 12% · ~25% CPU · est. total 6m (idle ~4m)`. Results are unaffected; this only governs how hot and how fast the run goes.
+
+**Files changed:** `signal-miner.html`
+
+---
+
 ## [1.16.8] - 2026-08-15
 
 ### Signal Miner: default Prune quantile is now 0 (show everything)

@@ -147,9 +147,10 @@
           <div class="sl-field">
             <label for="sl-cpu">CPU load</label>
             <select id="sl-cpu">
-              <option value="eco" selected>Easy on CPU (default)</option>
-              <option value="balanced">Balanced</option>
-              <option value="full">Full speed</option>
+              <option value="full">Full speed (100% CPU, fastest)</option>
+              <option value="balanced">Balanced (~50% CPU)</option>
+              <option value="eco" selected>Easy on CPU (~25%, default)</option>
+              <option value="cool">Coolest (~10% CPU, slowest)</option>
             </select>
           </div>
         </div>
@@ -563,16 +564,28 @@
       prog.style.display = 'block';
       progBar.style.width = '0%';
 
-      // CPU throttle: process work in small batches, then idle briefly so the
-      // machine isn't pinned at 100% (keeps fans/heat down; costs wall-clock time).
-      // PACE = idle ms between batches; CHUNK = signals per batch in Pass 1.
+      // CPU throttle (rate limiter): after each batch, idle for a multiple of the
+      // time that batch spent computing, so the processor holds a target *duty
+      // cycle* (CPU-busy fraction) regardless of machine speed — heat tracks duty
+      // cycle, not absolute idle time. sleep = busy * FACTOR, so duty ~= 1/(1+F):
+      // Balanced 1 -> 50%, Easy 3 -> 25%, Coolest 9 -> 10%. Full = no idle.
+      // The loop also measures compute time as it goes to show a live est. of
+      // total run time and idle time (see the status readout below).
       const cpu = (document.getElementById('sl-cpu') || {}).value || 'eco';
-      const PACE = cpu === 'full' ? 0 : cpu === 'balanced' ? 6 : 16;
-      const CHUNK = cpu === 'full' ? 500 : cpu === 'balanced' ? 300 : 150;
-      const yield_ = () => new Promise(r => setTimeout(r, PACE));
+      const FACTOR = cpu === 'full' ? 0 : cpu === 'balanced' ? 1 : cpu === 'cool' ? 9 : 3;
+      const CHUNK = cpu === 'full' ? 500 : 150;
+      const DUTY = Math.round(100 / (1 + FACTOR));
+      const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+      const fmtDur = (ms) => {
+        if (!isFinite(ms) || ms < 0) return '?';
+        const s = ms / 1000;
+        if (s < 60) return Math.max(1, Math.round(s)) + 's';
+        const m = Math.floor(s / 60), r = Math.round(s % 60);
+        return r ? `${m}m ${r}s` : `${m}m`;
+      };
 
       status.textContent = 'Building indicators...';
-      await yield_();
+      await sleep(0);
       const cache = buildCaches(universe, need, grids);
 
       const specs = buildSpecs(universe, fams, grids);
@@ -601,6 +614,8 @@
       const targetLret = {};
       for (const t of tgt) targetLret[t] = cache[t].lret;
 
+      let busyTotal = 0;                       // cumulative compute time (excludes idle)
+      let batchStart = performance.now();
       for (let s = 0; s < specs.length; s++) {
         const spec = specs[s];
         const arr = evalSpec(spec, cache);
@@ -613,10 +628,22 @@
           }
         }
         if (used) survivorArr[s] = arr;
-        if ((s % CHUNK) === 0) {
-          progBar.style.width = (95 * s / specs.length).toFixed(1) + '%';
-          status.textContent = `Backtesting ${specs.length.toLocaleString()} signals... ${s.toLocaleString()}`;
-          await yield_();
+        // First boundary at s === CHUNK (not 0) so the first sample is a full batch.
+        if (s && (s % CHUNK) === 0) {
+          const busy = performance.now() - batchStart;   // compute time for this batch
+          busyTotal += busy;
+          const frac = s / specs.length;
+          const projCompute = busyTotal / frac;          // projected total compute at 100%
+          const projIdle = projCompute * FACTOR;         // projected total idle
+          const projTotal = projCompute + projIdle;      // projected wall-clock
+          progBar.style.width = (95 * frac).toFixed(1) + '%';
+          status.textContent =
+            `Backtesting ${specs.length.toLocaleString()} signals... ${s.toLocaleString()} (${Math.round(frac * 100)}%)` +
+            (FACTOR
+              ? ` · ~${DUTY}% CPU · est. total ${fmtDur(projTotal)} (idle ~${fmtDur(projIdle)})`
+              : ` · full speed · est. total ${fmtDur(projTotal)}`);
+          await sleep(FACTOR ? busy * FACTOR : 0);
+          batchStart = performance.now();
         }
       }
 
