@@ -1874,6 +1874,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 - [ ] Performance chart per strategy
 - [ ] Expand strategy library toward 50+ entries
 - [ ] Expand glossary
+- [ ] **Fold the ETF → Composer Cloner (`etf-cloner.html`) into the standard linking model (deferred by user, 2026-08-15)** — the tool shipped live and indexable at v1.16.0 but was intentionally held out of the footer sitemap and the homepage "Everything on this site" Explore grid for now. Under the Navigation & Linking Model (Section 6, and `renderFooter` in `js/app.js`), every self-built public tool belongs in both surfaces: when ready, add `etf-cloner.html` to the footer sitemap in `js/app.js` and add a homepage Explore card in `index.html`. Not planned for the primary nav (same treatment as Converter). This is the current, intentional exception to the "footer links every public page" rule (Section 6) — the exception is deliberate, not an oversight, until this item is actioned.
 - [ ] **Cross-link curated strategies ↔ full database (decided 2026-07-13, not yet built — see below)**
 
 #### Cross-linking the curated 30 to the full database (decided 2026-07-13)
