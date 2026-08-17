@@ -1154,6 +1154,27 @@ There is no `.js` twin naming inconsistency to worry about here, `data/database_
 
 **Refresh cadence:** `refresh_prices.py` runs weekly via `.github/workflows/refresh-prices.yml` (cron `7 8 * * 6`, i.e. 08:07 UTC every Saturday, while markets are closed; plus `workflow_dispatch` for manual runs). Weekly is deliberate: Signal Miner is a research tool over multi-year history, so a slightly stale end date barely affects any signal's metrics. The script takes ~50s to fetch all 37 tickers (a 1s delay between calls dominates); the full Action runs in ~75-90s. If the workflow is ever disabled, the tool keeps working on the last committed snapshot. The page surfaces the `refreshed_at` date in the hero and footer meta so staleness is always visible.
 
+### Signal Miner Runtime Behavior
+
+How the tool behaves while a run is in flight. All of this is client-side in `signal-miner.html`; there is no server component.
+
+**Two-pass model.** Pass 1 backtests every single signal against every target ticker and is the expensive part. Pass 2 pairs surviving signals with AND logic, which is `n²` over the survivors and therefore pruned first. As of v1.16.7 Pass 1 caches **every valid** result (`sigCache`) rather than only those passing the user's thresholds, which is what makes the live filters possible (see Section 14, V2.2).
+
+**CPU load throttle (v1.16.6, reworked v1.16.9, renamed v1.16.10).** Long runs would otherwise pin one core at 100% and heat the machine, since JS is single-threaded. After each batch of 150 signals the loop idles for a multiple of the time that batch actually spent computing, holding a target **duty cycle** regardless of machine speed. Heat tracks the busy *fraction*, not absolute idle seconds, which is why a fixed pause was rejected: a fast CPU clears a batch quickly and the same pause becomes a smaller share of the cycle, so the setting would mean different things on different hardware. `sleep = busy × FACTOR`, so duty ≈ `1 / (1 + FACTOR)`:
+
+| Option | `FACTOR` | Target CPU |
+|---|---|---|
+| Max | 0 (batch size 500) | 100% |
+| High | 1 | ~50% |
+| **Medium (default)** | 3 | ~25% |
+| Low | 9 | ~10% |
+
+Option values are `max`/`high`/`medium`/`low`, renamed from `full`/`balanced`/`eco`/`cool` at v1.16.10 specifically because the old `eco` value meant the ~25% tier and would have collided with an "Eco" label on the ~10% tier. The status line shows a live estimate of total and idle time, projected from compute measured so far. This only governs speed and heat; results are identical at every setting.
+
+**No hard signal cap (v1.16.4).** Large runs are warned about, not blocked. Above `SIGNAL_WARN_CAP` (100,000 signals) a `confirm()` explains that the batch is large and may make the browser slow or unresponsive, and the user can proceed or cancel. The pre-run estimate readout escalates ahead of that: a `warn` state above 45,000 signals and a `stop` state above 100,000. **Known limit:** because Pass 1 now caches an array per valid signal (one byte per trading day), runs in the seven-figure range can exhaust memory and hang the tab regardless of CPU setting. The fix is to reduce the signal count (fewer tickers, or disable a family), not a gentler throttle.
+
+**Filter defaults.** Min Time in Market `0.05`, Max Drawdown floor `-0.8` (both v1.16.4), prune quantile `0` (v1.16.8, so nothing is trimmed before pairing and all qualifying signals show by default). The example/reset preset mirrors these; keep the two in sync when changing either. Prune quantile applies within each target ticker and runs **sequentially** across total return, profit factor, Sortino, and Calmar (matching the source notebook), so its effect compounds: `0.5` does not leave half the signals, it leaves what survives the top half on each of the four metrics in turn.
+
 ---
 
 ### Metric Display Guidelines
