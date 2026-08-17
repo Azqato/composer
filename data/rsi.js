@@ -1,13 +1,13 @@
 // RSI signals data - loaded as a script tag so the site works with file:// protocol.
 // To update: run scripts/refresh_rsi.py
 window.RSI_DATA = {
-  "refreshed_at": "2026-08-17T19:33:18Z",
+  "refreshed_at": "2026-08-17T22:30:14Z",
   "tickers": [
     {
       "symbol": "XLF",
       "name": "Financial Select Sector SPDR",
-      "rsi_10": 55.8,
-      "price": 57.65,
+      "rsi_10": 54.6,
+      "price": 57.58,
       "price_date": "2026-08-17"
     },
     {
@@ -20,85 +20,85 @@ window.RSI_DATA = {
     {
       "symbol": "VTV",
       "name": "Vanguard Value ETF",
-      "rsi_10": 69.1,
-      "price": 226.68,
+      "rsi_10": 69.2,
+      "price": 226.69,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "SPY",
       "name": "SPDR S&P 500 ETF",
-      "rsi_10": 62.9,
-      "price": 772.84,
+      "rsi_10": 62.6,
+      "price": 772.67,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "IOO",
       "name": "iShares Global 100 ETF",
-      "rsi_10": 60.7,
-      "price": 144.69,
+      "rsi_10": 61.0,
+      "price": 144.73,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "UUP",
       "name": "Invesco DB US Dollar Index Bullish",
-      "rsi_10": 40.0,
+      "rsi_10": 39.7,
       "price": 28.1,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "FXI",
       "name": "iShares China Large-Cap ETF",
-      "rsi_10": 45.2,
-      "price": 35.12,
+      "rsi_10": 45.0,
+      "price": 35.1,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "QQQE",
       "name": "Direxion NASDAQ-100 Equal Weighted",
-      "rsi_10": 68.0,
-      "price": 124.06,
+      "rsi_10": 67.2,
+      "price": 123.95,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "XLK",
       "name": "Technology Select Sector SPDR",
-      "rsi_10": 64.6,
-      "price": 190.43,
+      "rsi_10": 64.5,
+      "price": 190.32,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "QQQ",
       "name": "Invesco QQQ Trust",
-      "rsi_10": 62.5,
-      "price": 729.97,
+      "rsi_10": 62.4,
+      "price": 729.87,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "XLE",
       "name": "Energy Select Sector SPDR",
-      "rsi_10": 72.9,
-      "price": 62.49,
+      "rsi_10": 73.2,
+      "price": 62.58,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "VOX",
       "name": "Vanguard Communication Services ETF",
-      "rsi_10": 48.0,
-      "price": 185.87,
+      "rsi_10": 47.9,
+      "price": 185.83,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "TECL",
       "name": "Direxion Daily Technology Bull 3x",
-      "rsi_10": 63.3,
-      "price": 219.17,
+      "rsi_10": 63.2,
+      "price": 218.9,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "SOXX",
       "name": "iShares Semiconductor ETF",
-      "rsi_10": 59.6,
-      "price": 559.67,
+      "rsi_10": 59.4,
+      "price": 559.12,
       "price_date": "2026-08-17"
     },
     {
@@ -111,36 +111,36 @@ window.RSI_DATA = {
     {
       "symbol": "XLY",
       "name": "Consumer Discretionary Select Sector SPDR",
-      "rsi_10": 49.0,
-      "price": 116.81,
+      "rsi_10": 48.7,
+      "price": 116.75,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "EEM",
       "name": "iShares MSCI Emerging Markets ETF",
       "rsi_10": 64.0,
-      "price": 67.31,
+      "price": 67.32,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "GLD",
       "name": "SPDR Gold Shares",
-      "rsi_10": 69.5,
-      "price": 405.0,
+      "rsi_10": 69.9,
+      "price": 405.49,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "XLP",
       "name": "Consumer Staples Select Sector SPDR",
-      "rsi_10": 45.1,
-      "price": 84.63,
+      "rsi_10": 45.5,
+      "price": 84.68,
       "price_date": "2026-08-17"
     },
     {
       "symbol": "TLT",
       "name": "iShares 20+ Year Treasury Bond ETF",
-      "rsi_10": 33.4,
-      "price": 81.39,
+      "rsi_10": 33.2,
+      "price": 81.35,
       "price_date": "2026-08-17"
     }
   ]
