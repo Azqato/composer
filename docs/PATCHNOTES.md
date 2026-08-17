@@ -5,6 +5,20 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.17.0] - 2026-08-15
+
+### Leaderboard ranking in the Screener + tag filtering on the strategy index
+
+Two features that make existing data usable rather than adding new data.
+
+**Leaderboard Rank / Tier / Score in the Screener.** All three Screener views (Overview, Risk-Adjusted, Distribution) now carry sortable **Rank**, **Tier**, and **Score** columns, and the filter grid gains a **Leaderboard Tier** select with cumulative options ("S+ only", "S or better", … "C or better") that match the "Over X" threshold style of every other filter. Previously the Leaderboard's scoring and the Screener's filtering ignored each other entirely; now you can filter to, say, A-or-better and then screen those by drawdown and Sharpe in one pass. Scoring runs **once globally** over the full eligible pool and both tabs read the same index, so a symphony's rank and tier mean the same thing everywhere and do not shift as you filter. (Re-scoring within the filtered subset was considered and rejected: it would make the tier filter circular, since filtering to "S or better" would immediately re-tier the survivors.) Rows awaiting a metric refresh show a dash and drop out when a tier floor is set.
+
+**Tag filtering on the strategy index.** The tags every strategy already carries are now clickable filters on `strategies.html` instead of read-only labels. They are grouped into Signal / Risk metric / Asset class / Collection, each chip shows how many strategies carry it, and only tags present in the data are offered. Selecting several combines them with **AND**, so each tag narrows the list further, and the header switches to "N of 30 strategies" while filtered. Selections are written to a **`?tags=` query param**, making a filtered view linkable and letting it survive a refresh or a back-navigation from a strategy detail page.
+
+**Files changed:** `database.html`, `strategies.html`, `css/main.css`, `docs/PRD.md`
+
+---
+
 ## [1.16.10] - 2026-08-15
 
 ### Signal Miner CPU load levels renamed; monetization removed from the roadmap

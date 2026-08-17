@@ -34,25 +34,131 @@
         // Sorted by longest backtest first, same as the homepage strategy grid.
         const strategies = await loadStrategies();
         const sorted = [...strategies].sort((a, b) => b.backtest_days - a.backtest_days);
-        document.getElementById('content').innerHTML = `
-          <div style="max-width:600px;margin-bottom:40px">
-            <h1 style="color:var(--color-primary);margin-bottom:8px">Strategies</h1>
-            <p style="color:var(--color-secondary);font-size:1.0625rem">
-              Backtested systematic investment strategies for Composer.trade, with full
-              performance metrics and logic breakdowns. These are merely a set of featured,
-              highlighted strategies. If you'd like to explore thousands more symphonies,
-              check out the full
-              <a href="${u('/database.html')}" style="color:var(--color-green)">Database</a>.
-            </p>
-          </div>
-          <div class="section-header">
-            <h2 style="color:var(--color-primary)">All Strategies</h2>
-            <span class="section-count">${strategies.length} strategies</span>
-          </div>
-          <div class="grid-3">
-            ${sorted.map(renderStrategyCard).join('')}
-          </div>
-        `;
+
+        // Tag filter. Tags already exist on every strategy and were previously
+        // read-only labels; these make them selectable. Multi-select is AND
+        // (a strategy must carry every selected tag), which is what makes
+        // combining a signal tag with an asset-class tag useful.
+        // Selections live in the ?tags= query param so a filtered view is
+        // linkable and survives a refresh or a back-navigation from a detail page.
+        const TAG_GROUPS = [
+          { label: 'Signal', tags: ['rsi', '200d-ma', 'momentum', 'macd', 'mean-reversion', 'vix-tiers'] },
+          { label: 'Risk metric', tags: ['sharpe-ratio', 'calmar-ratio', 'max-drawdown', 'standard-deviation'] },
+          { label: 'Asset class', tags: ['leveraged-etfs', 'inverse-etfs', 'managed-futures'] },
+          { label: 'Collection', tags: ['zoop', 'original'] },
+        ];
+
+        const tagCounts = {};
+        strategies.forEach(s => (s.tags || []).forEach(t => { tagCounts[t] = (tagCounts[t] || 0) + 1; }));
+
+        // Only offer tags that actually exist in the data, so the filter bar
+        // can never present a combination that returns nothing.
+        const groups = TAG_GROUPS
+          .map(g => ({ label: g.label, tags: g.tags.filter(t => tagCounts[t]) }))
+          .filter(g => g.tags.length);
+        // Anything tagged in the data but missing from the groups above still
+        // gets offered, so new tags never silently disappear from the filter.
+        const grouped = new Set(groups.flatMap(g => g.tags));
+        const ungrouped = Object.keys(tagCounts).filter(t => !grouped.has(t)).sort();
+        if (ungrouped.length) groups.push({ label: 'Other', tags: ungrouped });
+
+        const params = new URLSearchParams(window.location.search);
+        let active = (params.get('tags') || '').split(',').map(t => t.trim()).filter(t => tagCounts[t]);
+
+        function syncUrl() {
+          const p = new URLSearchParams(window.location.search);
+          if (active.length) p.set('tags', active.join(','));
+          else p.delete('tags');
+          const qs = p.toString();
+          history.replaceState(null, '', qs ? `?${qs}` : window.location.pathname);
+        }
+
+        function filterBarHtml() {
+          const groupsHtml = groups.map(g => `
+            <div class="tagfilter-group">
+              <span class="tagfilter-label">${g.label}</span>
+              <div class="tagfilter-tags">
+                ${g.tags.map(t => `
+                  <button type="button"
+                    class="tag ${tagClass(t)} tagfilter-tag${active.includes(t) ? ' active' : ''}"
+                    data-tag="${t}"
+                    aria-pressed="${active.includes(t)}">${tagLabel(t)} <span class="tagfilter-count">${tagCounts[t]}</span></button>
+                `).join('')}
+              </div>
+            </div>
+          `).join('');
+          return `
+            <div class="tagfilter">
+              <div class="tagfilter-head">
+                <span class="tagfilter-title">Filter by tag</span>
+                <button type="button" id="tagfilter-clear" class="tagfilter-clear"${active.length ? '' : ' hidden'}>Clear all</button>
+              </div>
+              ${groupsHtml}
+            </div>
+          `;
+        }
+
+        function visibleStrategies() {
+          if (!active.length) return sorted;
+          return sorted.filter(s => {
+            const t = s.tags || [];
+            return active.every(a => t.includes(a));
+          });
+        }
+
+        function render() {
+          const shown = visibleStrategies();
+          document.getElementById('content').innerHTML = `
+            <div style="max-width:600px;margin-bottom:40px">
+              <h1 style="color:var(--color-primary);margin-bottom:8px">Strategies</h1>
+              <p style="color:var(--color-secondary);font-size:1.0625rem">
+                Backtested systematic investment strategies for Composer.trade, with full
+                performance metrics and logic breakdowns. These are merely a set of featured,
+                highlighted strategies. If you'd like to explore thousands more symphonies,
+                check out the full
+                <a href="${u('/database.html')}" style="color:var(--color-green)">Database</a>.
+              </p>
+            </div>
+            ${filterBarHtml()}
+            <div class="section-header">
+              <h2 style="color:var(--color-primary)">All Strategies</h2>
+              <span class="section-count">${
+                active.length
+                  ? `${shown.length} of ${strategies.length} strategies`
+                  : `${strategies.length} strategies`
+              }</span>
+            </div>
+            ${shown.length
+              ? `<div class="grid-3">${shown.map(renderStrategyCard).join('')}</div>`
+              : `<div class="empty-state">
+                   <p class="empty-eyebrow">No matches</p>
+                   <h2 class="empty-title">No strategies carry all of those tags</h2>
+                   <p class="empty-desc text-secondary">Tags combine with AND, so each one narrows the list further. Try removing one.</p>
+                   <div class="empty-actions">
+                     <button type="button" id="tagfilter-reset" class="btn btn-green">Clear filters</button>
+                   </div>
+                 </div>`}
+          `;
+          wire();
+        }
+
+        function toggle(tag) {
+          active = active.includes(tag) ? active.filter(t => t !== tag) : active.concat(tag);
+          syncUrl();
+          render();
+        }
+
+        function wire() {
+          document.querySelectorAll('.tagfilter-tag').forEach(btn => {
+            btn.addEventListener('click', () => toggle(btn.dataset.tag));
+          });
+          ['tagfilter-clear', 'tagfilter-reset'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('click', () => { active = []; syncUrl(); render(); });
+          });
+        }
+
+        render();
         return;
       }
 

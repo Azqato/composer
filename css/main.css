@@ -568,6 +568,96 @@ p { color: var(--color-secondary); }
 .tag-original { background: rgba(148, 163, 184, 0.1); color: var(--color-secondary); border-color: rgba(148, 163, 184, 0.3); }
 .tag-default { background: var(--color-surface-raised); color: var(--color-secondary); border-color: var(--color-border-hover); }
 
+/* ---- Tag filter bar (strategies listing) ---- */
+.tagfilter {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  margin-bottom: 32px;
+}
+
+.tagfilter-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tagfilter-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-disabled);
+}
+
+.tagfilter-clear {
+  font-size: 0.75rem;
+  color: var(--color-secondary);
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tagfilter-clear:hover {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-border-hover);
+}
+
+.tagfilter-clear[hidden] { display: none; }
+
+.tagfilter-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.tagfilter-group + .tagfilter-group {
+  border-top: 1px solid var(--color-border);
+}
+
+.tagfilter-label {
+  flex: 0 0 88px;
+  font-size: 0.75rem;
+  color: var(--color-disabled);
+}
+
+.tagfilter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* Inactive filter chips read as quieter than the colored tags on cards, so the
+   selected ones clearly stand out; active restores the tag's own color. */
+.tagfilter-tag {
+  opacity: 0.62;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.tagfilter-tag:hover { opacity: 0.85; }
+
+.tagfilter-tag.active {
+  opacity: 1;
+  box-shadow: 0 0 0 1px currentColor inset;
+}
+
+.tagfilter-count {
+  margin-left: 5px;
+  opacity: 0.7;
+  font-size: 0.6875rem;
+}
+
+@media (max-width: 640px) {
+  .tagfilter-label { flex-basis: 100%; }
+}
+
 /* Category badge (ConceptCard) */
 .badge {
   display: inline-flex;

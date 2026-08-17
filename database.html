@@ -643,9 +643,30 @@
 
     let screenerBucketSelections = {}; // key -> selected {label,min,max} option
     let screenerNameQuery = '';
+    let screenerTierMax = null;        // max TIER_ORDER index allowed, null = Any
+
+    // Tier filter options. Cumulative ("or better") rather than exact-match, to
+    // match the threshold semantics every other bucket filter already uses
+    // ("Over 12%", "Better than -30%"), so the whole grid reads consistently.
+    // Built lazily because TIER_ORDER is declared further down this script.
+    function tierFilterOptions() {
+      return [
+        { label: 'Any', max: null },
+        { label: 'S+ only', max: TIER_ORDER['S+'] },
+        { label: 'S or better', max: TIER_ORDER.S },
+        { label: 'A or better', max: TIER_ORDER.A },
+        { label: 'B or better', max: TIER_ORDER.B },
+        { label: 'C or better', max: TIER_ORDER.C },
+      ];
+    }
 
     function matchesBucketSelections(e) {
       if (screenerNameQuery && !String(e.name || '').toLowerCase().includes(screenerNameQuery)) return false;
+      if (screenerTierMax != null) {
+        const r = rankBySymphonyId.get(e.symphony_id);
+        // Unscored rows can't satisfy a tier floor, so they drop out here.
+        if (!r || TIER_ORDER[r.tier] > screenerTierMax) return false;
+      }
       return BUCKET_FIELDS.every(f => {
         const sel = screenerBucketSelections[f.key];
         if (!sel || (sel.min == null && sel.max == null)) return true;
@@ -673,21 +694,40 @@
           </div>
         `;
       }).join('');
+      const tierOptionsHtml = tierFilterOptions().map(o =>
+        `<option value="${escapeHtml(o.label)}"${o.max === screenerTierMax ? ' selected' : ''}>${escapeHtml(o.label)}</option>`
+      ).join('');
       return `
         <div class="screener-filter-grid">
           <div class="screener-filter-cell">
             <label>Symphony Name</label>
             <input type="text" id="screener-name-search" placeholder="Search..." value="${escapeHtml(screenerNameQuery)}">
           </div>
+          <div class="screener-filter-cell">
+            <label>Leaderboard Tier</label>
+            <select id="screener-tier-select">${tierOptionsHtml}</select>
+          </div>
           ${cells}
         </div>
       `;
     }
 
+    // Leaderboard Rank / Tier / Score columns, shown in every Screener view so
+    // the ranking travels with whatever metrics you are looking at. These are
+    // not fields on the entry: they come from the global rankBySymphonyId index
+    // (see recomputeGlobalRanking), so both the cell renderer and
+    // screenerSortValue special-case them instead of reading e[col.key].
+    const RANK_COLUMNS = [
+      { key: '_rank', label: 'Rank', rankCol: true },
+      { key: '_tier', label: 'Tier', rankCol: true },
+      { key: '_score', label: 'Score', rankCol: true },
+    ];
+
     const SCREENER_VIEWS = {
       overview: {
         label: 'Overview',
         columns: [
+          ...RANK_COLUMNS,
           { key: 'name', label: 'Symphony', sortable: false },
           { key: 'annualized_rate_of_return', label: 'ARR', fmt: formatPct, colored: true },
           { key: 'trailing_one_year_return', label: '1Y Return', fmt: formatPct, colored: true },
@@ -700,6 +740,7 @@
       riskAdjusted: {
         label: 'Risk-Adjusted',
         columns: [
+          ...RANK_COLUMNS,
           { key: 'name', label: 'Symphony', sortable: false },
           { key: 'sharpe_ratio', label: 'Sharpe', fmt: formatRatio, colored: true },
           { key: 'calmar_ratio', label: 'Calmar', fmt: formatRatio, colored: true },
@@ -712,6 +753,7 @@
       distribution: {
         label: 'Distribution',
         columns: [
+          ...RANK_COLUMNS,
           { key: 'name', label: 'Symphony', sortable: false },
           { key: 'median', label: 'Median', fmt: formatPct, colored: true },
           { key: 'skewness', label: 'Skewness', fmt: formatRatio, colored: false },
@@ -736,12 +778,26 @@
       screenerFiltered = applyFlagMode(dbEntries, 'default').filter(matchesBucketSelections);
     }
 
+    // Sort value for a Screener column. The Rank/Tier/Score columns live in the
+    // global ranking index rather than on the entry; unranked rows return null
+    // so the existing null-last handling below pushes them to the bottom.
+    function screenerSortValue(e, field) {
+      if (field === '_rank' || field === '_tier' || field === '_score') {
+        const r = rankBySymphonyId.get(e.symphony_id);
+        if (!r) return null;
+        if (field === '_rank') return r.rank;
+        if (field === '_score') return r.score;
+        return TIER_ORDER[r.tier];
+      }
+      return e[field];
+    }
+
     function applyScreenerSort() {
       if (!screenerSortField) return;
       const dir = screenerSortDir === 'asc' ? 1 : -1;
       screenerFiltered.sort((a, b) => {
-        const av = a[screenerSortField];
-        const bv = b[screenerSortField];
+        const av = screenerSortValue(a, screenerSortField);
+        const bv = screenerSortValue(b, screenerSortField);
         const aNull = av === null || av === undefined;
         const bNull = bv === null || bv === undefined;
         if (aNull && bNull) return 0;
@@ -776,6 +832,15 @@
 
       const rows = pageRows.map(e => {
         const cells = columns.map(col => {
+          if (col.rankCol) {
+            const r = rankBySymphonyId.get(e.symphony_id);
+            // Un-refreshed rows are in the Screener pool but not the ranking.
+            if (!r) return '<td class="db-col-narrow" title="Not yet scored: awaiting a full metric refresh">&ndash;</td>';
+            if (col.key === '_rank') return `<td class="db-col-narrow">${r.rank.toLocaleString()}</td>`;
+            if (col.key === '_score') return `<td class="db-col-narrow" title="${r.score.toLocaleString()} of ${TOTAL_POSSIBLE} possible points">${r.score.toLocaleString()}</td>`;
+            const tierClass = TIER_LABEL_CLASS[r.tier] || 'f';
+            return `<td class="db-col-narrow"><span class="tier-badge tier-${tierClass}">${r.tier}</span></td>`;
+          }
           if (col.key === 'name') {
             const fullName = e.name || e.symphony_id;
             const shortName = fullName.length > 22 ? fullName.slice(0, 22) + '…' : fullName;
@@ -867,6 +932,18 @@
           renderScreenerPage();
         });
       });
+
+      const tierSelect = document.getElementById('screener-tier-select');
+      if (tierSelect) {
+        tierSelect.addEventListener('change', (e) => {
+          const opt = tierFilterOptions().find(o => o.label === e.target.value);
+          screenerTierMax = opt ? opt.max : null;
+          recomputeScreenerEntries();
+          applyScreenerSort();
+          screenerPage = 1;
+          renderScreenerPage();
+        });
+      }
     }
 
     // ---- Leaderboard tab (V1.13, reweighted V1.17): relative-percentile scoring model. ----
@@ -917,6 +994,15 @@
     const TOTAL_POSSIBLE = SCORE_METRICS.reduce((s, m) => s + m.cap, 0); // 1,000
     const TIER_CUTS = [['S+', 0.0025], ['S', 0.10], ['A', 0.20], ['B', 0.50], ['C', 0.75]]; // F = the rest
     const TIER_LABEL_CLASS = { 'S+': 'sp', S: 's', A: 'a', B: 'b', C: 'c', F: 'f' };
+    // Best-to-worst ordinal for each tier, used by the Screener's Tier column
+    // sort and its "or better" tier filter. Derived from TIER_CUTS so the two
+    // can never drift apart; F is the implicit last tier.
+    const TIER_ORDER = (() => {
+      const o = {};
+      TIER_CUTS.forEach((c, i) => { o[c[0]] = i; });
+      o.F = TIER_CUTS.length;
+      return o;
+    })();
 
     // Category grouping + human labels, for the per-row score breakdown modal
     // and the Methodology modal. Mirrors the locked model in docs/PRD.md
@@ -995,14 +1081,33 @@
     let leaderboardPage = 1;
     let leaderboardNameQuery = '';
 
+    // symphony_id -> { rank, score, tier } for the whole eligible pool.
+    let rankBySymphonyId = new Map();
+
     // Eligibility: has been refreshed under the full schema (sharpe_ratio
     // present is the proxy used throughout) AND is not flag-noise. Unlike
     // All Strategies, this is not user-toggleable (same as Screener) - the
     // Leaderboard always excludes flagged rows from scoring, no "show all" option.
-    function recomputeLeaderboard() {
+    //
+    // Scored ONCE, globally, against the full eligible pool. Both the
+    // Leaderboard and the Screener's Rank/Score/Tier columns read this same
+    // ranking, so a symphony's rank and tier mean the same thing everywhere and
+    // do not shift as the Screener is filtered. Re-scoring inside a filtered
+    // subset was rejected: it would make the Screener's tier filter circular
+    // (filtering to "S or better" would immediately re-tier the survivors, so
+    // the set could never settle) and would let the two tabs disagree about the
+    // same symphony. See PRD Section 14, V2.2.
+    function recomputeGlobalRanking() {
       const refreshed = dbEntries.filter(e => typeof e.sharpe_ratio === 'number');
       const eligible = applyFlagMode(refreshed, 'default');
       leaderboardRanked = computeTiers(computeScores(eligible));
+      rankBySymphonyId = new Map();
+      leaderboardRanked.forEach((r, i) => {
+        rankBySymphonyId.set(r.entry.symphony_id, { rank: i + 1, score: r.score, tier: r.tier });
+      });
+    }
+
+    function recomputeLeaderboard() {
       leaderboardFiltered = leaderboardRanked.filter(r => leaderboardFilterController.filterFn(r.entry));
       if (leaderboardNameQuery) {
         leaderboardFiltered = leaderboardFiltered.filter(r => String(r.entry.name || '').toLowerCase().includes(leaderboardNameQuery));
@@ -1218,6 +1323,11 @@
       recomputeAllEntries();
       renderTablePage();
       buildBucketOptions();
+
+      // Must run before the Screener renders: its Rank/Tier/Score columns and
+      // tier filter read the global ranking index this builds.
+      recomputeGlobalRanking();
+
       recomputeScreenerEntries();
       renderScreenerPage();
 
