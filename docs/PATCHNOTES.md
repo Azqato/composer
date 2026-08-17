@@ -5,6 +5,18 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.17.1] - 2026-08-16
+
+### Homepage curated count corrected, dedupe audit finding recorded
+
+The homepage stats bar read **29 Curated** while `data/strategies.json` has held **30** entries for some time. The stats bar is hardcoded by design (loading the full database client-side just for five numbers would blow the homepage's page-weight target), which is exactly how it drifted. Corrected to 30 here and in the six places the PRD still said 29.
+
+Also recorded a **known limitation of `dedupe_symphonies.py`** in the PRD: its keeper rule (longest `oos_date`, then earliest `symphony_id`) does not always keep the copy with the most watchers. A manual audit of 3 duplicate clusters found 2 agreed, but one kept an 8-watcher copy over a structurally identical 173-watcher sibling. Left as-is deliberately, since watcher count is a popularity signal rather than a correctness one and promoting it would trade away backtest length. This had been sitting in a loose spreadsheet rather than the docs; the two stray `.xlsx` working files in the repo root were removed once their contents were captured or confirmed redundant.
+
+**Files changed:** `index.html`, `docs/PRD.md`
+
+---
+
 ## [1.17.0] - 2026-08-15
 
 ### Leaderboard ranking in the Screener + tag filtering on the strategy index

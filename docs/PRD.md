@@ -143,7 +143,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 
 ### Shipped: Full Database Initiative (v1.12.0)
 
-Separate from the 29 curated strategies, `data/database.json` holds the full raw
+Separate from the 30 curated strategies, `data/database.json` holds the full raw
 symphony database, originally seeded by an external Google Apps Script scrape (the
 original 6,488-row scrape plus rows synced in from `data/storage.csv` over time).
 The goal was to recreate that refresh pipeline on composeratlas.com itself against
@@ -255,7 +255,7 @@ ComposerAtlas/
 ├── css/
 │   └── main.css                # Full design system: tokens, layout, components
 ├── data/
-│   ├── strategies.json         # 29 strategy entries, source of truth
+│   ├── strategies.json         # 30 strategy entries, source of truth
 │   ├── strategies.js           # Same data as window.STRATEGIES_DATA, for file:// compat
 │   ├── glossary.json           # 8 glossary concept entries, source of truth
 │   ├── glossary.js             # Same data as window.GLOSSARY_DATA, for file:// compat
@@ -805,6 +805,8 @@ python scripts/dedupe_symphonies.py 20  # optional LIMIT arg, for a small test r
 
 `scripts/flag_name_noise.py` (added v1.11.22) flags `TESTPORT #`/`[Work]`/`STILL BUILDING` non-strategy rows with `flag = "excluded"` (reuses the existing level rather than introducing a new one), no API calls. `scripts/dedupe_symphonies.py` (added v1.11.22) clusters the remaining clean (`flag == null`) rows by normalized name, confirms genuine duplicates via a logic-tree structural equality check (`GET /symphonies/{id}/score?score_version=v1`, one lightweight call per candidate row, falling back to metrics-tolerance comparison only if that fetch fails), and flags every loser in an identical group `flag = "duplicate"` — the keeper is chosen by longest `oos_date`, then earliest `symphony_id`. **Nothing is ever deleted by either script** — both only set `flag`/`error` on existing rows.
 
+**Known limitation — the keeper is not always the copy people actually follow.** A manual spot-check (2026-07-15, 3 clusters / 19 rows) compared each cluster's keeper against the copy with the highest `size` (watcher count). Two clusters agreed: `TQQQ For The Long Term (Reddit Post Link)` kept the 1,242-watcher copy, and `KMLM switcher (single pops)` kept the 25-watcher copy, both the most-watched in their group. One did not: in the `V3.0.4.5 | Beta Baller + TCCC` cluster the `oos_date`/`symphony_id` tiebreak kept a copy with **8 watchers** while a structurally identical sibling had **173**. So the rule optimizes for the longest backtest history, which is the right call for metric quality, but it can flag as `duplicate` the copy the community actually follows. Not changed: watcher count is a popularity signal, not a correctness one, and making it the primary tiebreak would trade away backtest length. Worth revisiting only if a well-known symphony turns up missing from the Working view. (Recorded here from a throwaway audit spreadsheet, since the finding is the part worth keeping.)
+
 Running `flag_name_noise.py` first matters: it removes `TESTPORT #`-prefixed rows from the dedup candidate pool entirely, so one can never win the `symphony_id` tiebreak and become the sole surviving "keeper" of a real strategy family. This is a sequencing choice, not special-case logic inside the dedup script itself.
 
 **MANUAL-ONLY, do not automate.** `dedupe_symphonies.py` makes roughly one live API call per candidate row (hundreds per run) against Composer's unauthenticated API, and a full pass can take 20–30+ minutes. Neither script is wired into GitHub Actions, and neither should be — the deploy workflow excludes `scripts/` entirely, `update-metrics.yml` only ever runs `update_metrics.py` (the curated 25 strategies), and `refresh-full-database.yml` (added v1.12.0, see "Updating the Full Database" above) only ever runs `refresh_full_database.py`. Running this unattended on a schedule risks hammering Composer's API far more often than a human would choose to, with no one watching for rate-limit or correctness problems. Every full-database maintenance script in `scripts/` follows this same manual-only rule except `refresh_full_database.py`, which was deliberately opted into weekly automation as a distinct decision.
@@ -1032,7 +1034,7 @@ All fields in `data/strategies.json`. Both `strategies.json` and `strategies.js`
 
 All fields in `data/database.json`. This is a separate, lighter schema from
 `strategies.json`: it holds the raw ~7,700-entry database (see Section 14 Roadmap),
-not the 29 curated strategies. `data/database.js` is its `.js` twin (assigns
+not the 30 curated strategies. `data/database.js` is its `.js` twin (assigns
 `window.DATABASE_DATA`, same file:// compat pattern as `strategies.js`/`glossary.js`).
 
 | Field | Type | Description |
@@ -1885,9 +1887,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
   | `zoops-kmlm-switcher-2026` | Replace | zoop's KMLM Switcher | `0SO8z4JkRVgiyhlkS2Xx` |
   | `zoops-manhattan-project-2026` | **Remove, no replacement** | — | — |
 
-  All 11 new symphonies are refreshed with real backtest data in `data/database.json` as of 2026-07-15. **Applying this is still a bigger lift than a normal database addition**: replacing a curated strategy means re-running the full "Adding a Strategy from a Composer URL" workflow (logic tree, AI summary, `how_it_works`/`signals`/`risk_profile` content) for each of the 11 new symphonies, then removing all 12 old slugs (11 replaced + 1 removed outright) from `data/strategies.json`.
-
-  Applying this is a bigger lift than a normal database addition: replacing a *curated* strategy means re-running the full "Adding a Strategy from a Composer URL" workflow (logic tree, AI summary, `how_it_works`/`signals`/`risk_profile` content) for each new symphony, then removing the old slug from `data/strategies.json` — not just the database rows already added.
+  All 11 new symphonies are refreshed with real backtest data in `data/database.json` as of 2026-07-15. **Applying this is still a bigger lift than a normal database addition**: replacing a curated strategy means re-running the full "Adding a Strategy from a Composer URL" workflow (logic tree, AI summary, `how_it_works`/`signals`/`risk_profile` content) for each of the 11 new symphonies, then removing all 12 old slugs (11 replaced + 1 removed outright) from `data/strategies.json` — not just adding the database rows, which are already in place.
 - [x] **Add "Leaderboard Ranking" as an option for the Screener (built 2026-08-15, v1.17.0)** — the V1.17 Leaderboard score/tier now surfaces inside the Screener, both ways as decided:
   - A **"Leaderboard Tier" select** in the filter grid, alongside the existing bucket filters. Options are cumulative ("S+ only", "S or better", … "C or better") rather than exact-match, to match the threshold semantics every other bucket filter already uses ("Over 12%", "Better than -30%") so the grid reads consistently.
   - **Sortable Rank / Tier / Score columns on all three `SCREENER_VIEWS`** (Overview, Risk-Adjusted, Distribution), via a shared `RANK_COLUMNS` spread so the three view definitions can't drift.
@@ -1915,15 +1915,15 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 #### Cross-linking the curated 30 to the full database (decided 2026-07-13)
 
-**Background:** confirmed all 29 curated strategies (`data/strategies.json`) already exist as rows in the full database (`data/database.json`/`database_summary.json`), matched exactly by `symphony_id` — they are not disjoint datasets, just two views over overlapping data. Both pipelines independently call the same Composer backtest endpoint with identical parameters (`capital: 10000`, `broker: alpaca`, same slippage/fee flags) for the same 29 symphonies, on two separate schedules (`update_metrics.py` vs. `refresh_full_database.py`), both gated by the same 7-day staleness window — genuinely redundant work computing the same numbers twice.
+**Background:** confirmed all 29 curated strategies (`data/strategies.json`) already exist as rows in the full database (`data/database.json`/`database_summary.json`), matched exactly by `symphony_id` — they are not disjoint datasets, just two views over overlapping data. Both pipelines independently call the same Composer backtest endpoint with identical parameters (`capital: 10000`, `broker: alpaca`, same slippage/fee flags) for the same 30 symphonies, on two separate schedules (`update_metrics.py` vs. `refresh_full_database.py`), both gated by the same 7-day staleness window — genuinely redundant work computing the same numbers twice.
 
 **Two options were considered:**
 - **Option A (chosen): cross-link only.** Keep both pipelines fully independent — no schema, script, or workflow changes. Purely additive navigation between the two existing views.
-- **Option B (explicitly deferred, not rejected): single source of truth for metrics.** Have `strategies.json` stop independently backtesting the 29 curated symphonies and instead join to `database_summary.json` by `symphony_id` for its numeric metrics, keeping `strategies.json` as an editorial-only layer (`description`/`ai_summary`/`how_it_works`/`signals`/`risk_profile`/`tags`/`slug`, none of which exist in the raw database and can never be derived from it). Rejected for now specifically because it introduces a real coupling risk that needs its own decision before being safe to build: if a curated strategy's row in the full database ever gets `flag`'d (`excluded`/`caution`/`duplicate`/`retry`) or a refresh fails, the curated pages could go stale or blank with no defined fallback. Revisit this as its own future decision, not bundled into Option A.
+- **Option B (explicitly deferred, not rejected): single source of truth for metrics.** Have `strategies.json` stop independently backtesting the 30 curated symphonies and instead join to `database_summary.json` by `symphony_id` for its numeric metrics, keeping `strategies.json` as an editorial-only layer (`description`/`ai_summary`/`how_it_works`/`signals`/`risk_profile`/`tags`/`slug`, none of which exist in the raw database and can never be derived from it). Rejected for now specifically because it introduces a real coupling risk that needs its own decision before being safe to build: if a curated strategy's row in the full database ever gets `flag`'d (`excluded`/`caution`/`duplicate`/`retry`) or a refresh fails, the curated pages could go stale or blank with no defined fallback. Revisit this as its own future decision, not bundled into Option A.
 
 **Option A implementation plan (not yet built):**
 - [ ] Strategy detail pages (`strategies.html?slug=X`) get a "View in full database →" link to that symphony's row in `database.html`. Requires a way to deep-link to a specific `symphony_id`/row that doesn't exist today (e.g. a `?symphony_id=X` query param that pre-filters/scrolls the All Strategies table to that row) — this sub-piece needs its own small design pass at implementation time, not just a static link to `database.html`.
-- [ ] `database.html` rows whose `symphony_id` matches one of the 29 curated strategies get a small "★ Curated" badge/indicator, linking back to that strategy's `strategies.html?slug=X` detail page. Needs a client-side lookup set built from `strategies.js`'s `symphony_id`s (cheap, only 30 entries, no new data file needed).
+- [ ] `database.html` rows whose `symphony_id` matches one of the 30 curated strategies get a small "★ Curated" badge/indicator, linking back to that strategy's `strategies.html?slug=X` detail page. Needs a client-side lookup set built from `strategies.js`'s `symphony_id`s (cheap, only 30 entries, no new data file needed).
 - [ ] No changes to `data/strategies.json`, `data/database.json`, `scripts/update_metrics.py`, or `scripts/refresh_full_database.py` — this is UI/navigation only.
 
 **Explicitly not in scope for this item:** eliminating the duplicated metrics refresh (that's Option B, deferred), any change to which fields live in which file, and any change to refresh schedules.
