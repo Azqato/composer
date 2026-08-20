@@ -398,35 +398,57 @@
 
     // ---------- signal specs ----------
     // A spec is plain data; evalSpec(spec, cache) builds its boolean Uint8Array.
+    // Emit each two-sided comparison ONCE per unordered operand pair, where an
+    // operand is a (ticker, window) tuple.
+    //
+    // `X < Y` and `Y > X` are the same condition. Before v1.18.4 this walked the
+    // full Cartesian product of tickers (both (a,b) and (b,a)) and emitted both
+    // GT and LT for every one, so every comparison signal was generated exactly
+    // twice and every AND pair four times: the results table showed four
+    // identical rows for one signal, and half of each run's compute was spent
+    // rediscovering mirror images.
+    //
+    // Canonical order loses no coverage. `Y > X` is still reachable, it just
+    // arrives spelled `X < Y`, and both directions are still emitted for every
+    // pair kept. Operands are ordered by ticker index, then by window.
+    function pushCmpSpecs(specs, fam, tickerList, windows) {
+      for (let i = 0; i < tickerList.length; i++) {
+        for (let j = i; j < tickerList.length; j++) {
+          const a = tickerList[i], b = tickerList[j];
+          for (const p1 of windows) {
+            for (const p2 of windows) {
+              // Same ticker on both sides: keep only p1 < p2. That drops the
+              // mirror (p2, p1) and the degenerate p1 === p2, which compares a
+              // series to itself and is therefore always false. Different
+              // windows on one ticker (fast vs slow) stay, they are real signals.
+              if (i === j && !(p1 < p2)) continue;
+              specs.push({ f: fam, dir: 'GT', t1: a, p1: p1, t2: b, p2: p2 });
+              specs.push({ f: fam, dir: 'LT', t1: a, p1: p1, t2: b, p2: p2 });
+            }
+          }
+        }
+      }
+    }
+
     function buildSpecs(tickerList, fams, grids) {
       const specs = [];
-      const pairs = [];
-      for (const a of tickerList) for (const b of tickerList) pairs.push([a, b]);
 
+      // Threshold families compare one series against a constant, so they have
+      // no mirror form and are unaffected by the canonical ordering above.
       if (fams.rsi_thresh) for (const t of tickerList) for (const p of grids.RSI_W) for (const lvl of RSI_LEVELS) {
         specs.push({ f: 'rsi_thresh', dir: 'GT', t1: t, p1: p, level: lvl });
         specs.push({ f: 'rsi_thresh', dir: 'LT', t1: t, p1: p, level: lvl });
-      }
-      if (fams.rsi_cmp) for (const [a, b] of pairs) for (const p1 of grids.RSI_W) for (const p2 of grids.RSI_W) {
-        specs.push({ f: 'rsi_cmp', dir: 'GT', t1: a, p1: p1, t2: b, p2: p2 });
-        specs.push({ f: 'rsi_cmp', dir: 'LT', t1: a, p1: p1, t2: b, p2: p2 });
       }
       if (fams.cum_lvl) for (const t of tickerList) for (const p of grids.CUM_W) for (const lvl of CUM_LEVELS) {
         specs.push({ f: 'cum_lvl', dir: 'GT', t1: t, p1: p, level: lvl });
         specs.push({ f: 'cum_lvl', dir: 'LT', t1: t, p1: p, level: lvl });
       }
-      if (fams.cum_cmp) for (const [a, b] of pairs) for (const p1 of grids.CUM_W) for (const p2 of grids.CUM_W) {
-        specs.push({ f: 'cum_cmp', dir: 'GT', t1: a, p1: p1, t2: b, p2: p2 });
-        specs.push({ f: 'cum_cmp', dir: 'LT', t1: a, p1: p1, t2: b, p2: p2 });
-      }
-      if (fams.ma_cmp) for (const [a, b] of pairs) for (const p1 of grids.MA_W) for (const p2 of grids.MA_W) {
-        specs.push({ f: 'ma_cmp', dir: 'GT', t1: a, p1: p1, t2: b, p2: p2 });
-        specs.push({ f: 'ma_cmp', dir: 'LT', t1: a, p1: p1, t2: b, p2: p2 });
-      }
-      if (fams.std_cmp) for (const [a, b] of pairs) for (const p1 of grids.STD_W) for (const p2 of grids.STD_W) {
-        specs.push({ f: 'std_cmp', dir: 'GT', t1: a, p1: p1, t2: b, p2: p2 });
-        specs.push({ f: 'std_cmp', dir: 'LT', t1: a, p1: p1, t2: b, p2: p2 });
-      }
+
+      if (fams.rsi_cmp) pushCmpSpecs(specs, 'rsi_cmp', tickerList, grids.RSI_W);
+      if (fams.cum_cmp) pushCmpSpecs(specs, 'cum_cmp', tickerList, grids.CUM_W);
+      if (fams.ma_cmp)  pushCmpSpecs(specs, 'ma_cmp',  tickerList, grids.MA_W);
+      if (fams.std_cmp) pushCmpSpecs(specs, 'std_cmp', tickerList, grids.STD_W);
+
       return specs;
     }
 
@@ -952,12 +974,17 @@
       const g = activeGrids(minP);
       const n = new Set([...targets, ...compares]).size;
       let c = 0;
+      // Must stay in lockstep with buildSpecs/pushCmpSpecs. A comparison family
+      // over m = n*windows distinct operands yields m*(m-1)/2 unordered pairs,
+      // each emitted in both directions: m*(m-1) specs. (Before v1.18.4 this was
+      // n*n*W*W*2, i.e. exactly twice as many, all mirror duplicates.)
+      const cmpCount = (w) => { const m = n * w; return m * (m - 1); };
       if (fams.rsi_thresh) c += n * g.RSI_W.length * RSI_LEVELS.length * 2;
-      if (fams.rsi_cmp)    c += n * n * g.RSI_W.length * g.RSI_W.length * 2;
       if (fams.cum_lvl)    c += n * g.CUM_W.length * CUM_LEVELS.length * 2;
-      if (fams.cum_cmp)    c += n * n * g.CUM_W.length * g.CUM_W.length * 2;
-      if (fams.ma_cmp)     c += n * n * g.MA_W.length * g.MA_W.length * 2;
-      if (fams.std_cmp)    c += n * n * g.STD_W.length * g.STD_W.length * 2;
+      if (fams.rsi_cmp)    c += cmpCount(g.RSI_W.length);
+      if (fams.cum_cmp)    c += cmpCount(g.CUM_W.length);
+      if (fams.ma_cmp)     c += cmpCount(g.MA_W.length);
+      if (fams.std_cmp)    c += cmpCount(g.STD_W.length);
       const el = document.getElementById('sl-est');
       if (n === 0 || targets.size === 0) { el.textContent = 'Pick tickers to estimate.'; el.className = 'sl-est'; return; }
       el.textContent = `~${c.toLocaleString()} signals to test`;

@@ -5,6 +5,31 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.18.4] - 2026-08-20
+
+### Fixed: every comparison signal was being generated twice
+
+Reported from the results table, where four rows showed the identical signal with identical metrics. They were four spellings of one condition:
+
+```
+CumRet(10d) of SOXX < CumRet(10d) of SMH   AND   StdDev-Return(50d) of VOX > StdDev-Return(30d) of QQQE
+CumRet(10d) of SOXX < CumRet(10d) of SMH   AND   StdDev-Return(30d) of QQQE < StdDev-Return(50d) of VOX
+CumRet(10d) of SMH > CumRet(10d) of SOXX   AND   StdDev-Return(50d) of VOX > StdDev-Return(30d) of QQQE
+CumRet(10d) of SMH > CumRet(10d) of SOXX   AND   StdDev-Return(30d) of QQQE < StdDev-Return(50d) of VOX
+```
+
+`X < Y` and `Y > X` say the same thing, and the signal builder was emitting both. It walked every ordered pair of tickers and emitted both directions for each, so every two-sided comparison existed twice, and every AND pair four times (two spellings per condition, squared).
+
+Comparisons are now generated once per unordered operand pair, keeping both directions, which loses nothing: `Y > X` is still found, it just gets written `X < Y`. Same-ticker comparisons keep only the shorter window on the left, which also removes the degenerate case of comparing a series to itself, always false and previously backtested anyway. Fast-versus-slow comparisons on one ticker are real signals and are untouched.
+
+**This makes runs roughly twice as fast and halves their memory**, since half of every search was spent rediscovering mirror images. At 80 tickers that is 7.47M signals down to 3.75M. The lower memory also raises the point at which a large run exhausts the tab.
+
+Verified by running the old and new builders side by side and comparing every condition in canonical form: nothing lost, nothing added, no duplicates left. The pre-run signal estimate was updated to match, so it no longer reads about 2x high.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.18.3] - 2026-08-20
 
 ### Signal Miner remembers your tickers
