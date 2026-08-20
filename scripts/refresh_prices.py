@@ -35,50 +35,101 @@ START_DATE = "2018-01-01"
 API_CALL_DELAY_SECONDS = 1
 USER_AGENT = "Mozilla/5.0 (compatible; composer-atlas-signal-miner/1.0)"
 
-# Signal Miner universe. The 20 Frontrunner RSI tickers (see refresh_rsi.py) plus
-# the common signal / hedge / leveraged tickers used across the strategy library
-# and the community IF-THEN signal miners.
+# Signal Miner universe, grouped. The third field drives the chip groups and the
+# per-group "All" buttons on signal-miner.html; it is carried through prices.json
+# so the page never needs its own copy of the grouping.
+#
+# Adding a ticker: append it here with a group, re-run this script, and commit the
+# regenerated data/prices.json and data/prices.js. Nothing in the HTML changes.
 TICKERS = [
-    # --- Frontrunner RSI signal universe ---
-    ("XLF", "Financial Select Sector SPDR"),
-    ("SPYV", "SPDR Portfolio S&P 500 Value"),
-    ("VTV", "Vanguard Value ETF"),
-    ("SPY", "SPDR S&P 500 ETF"),
-    ("IOO", "iShares Global 100 ETF"),
-    ("UUP", "Invesco DB US Dollar Index Bullish"),
-    ("FXI", "iShares China Large-Cap ETF"),
-    ("QQQE", "Direxion NASDAQ-100 Equal Weighted"),
-    ("XLK", "Technology Select Sector SPDR"),
-    ("QQQ", "Invesco QQQ Trust"),
-    ("XLE", "Energy Select Sector SPDR"),
-    ("VOX", "Vanguard Communication Services ETF"),
-    ("TECL", "Direxion Daily Technology Bull 3x"),
-    ("SOXX", "iShares Semiconductor ETF"),
-    ("RETL", "Direxion Daily Retail Bull 3x"),
-    ("XLY", "Consumer Discretionary Select Sector SPDR"),
-    ("EEM", "iShares MSCI Emerging Markets ETF"),
-    ("GLD", "SPDR Gold Shares"),
-    ("XLP", "Consumer Staples Select Sector SPDR"),
-    ("TLT", "iShares 20+ Year Treasury Bond ETF"),
-    # --- Common signal / hedge / diversifier tickers ---
-    ("VIXM", "ProShares VIX Mid-Term Futures"),
-    ("BTAL", "AGFiQ US Market Neutral Anti-Beta"),
-    ("KMLM", "KFA Mount Lucas Managed Futures"),
-    ("DBMF", "iMGP DBi Managed Futures Strategy"),
-    ("BIL", "SPDR Bloomberg 1-3 Month T-Bill"),
-    # --- Leveraged / inverse / volatility tickers ---
-    ("TQQQ", "ProShares UltraPro QQQ 3x"),
-    ("SQQQ", "ProShares UltraPro Short QQQ 3x"),
-    ("SOXL", "Direxion Daily Semiconductor Bull 3x"),
-    ("UPRO", "ProShares UltraPro S&P500 3x"),
-    ("TMF", "Direxion Daily 20+ Year Treasury Bull 3x"),
-    ("TMV", "Direxion Daily 20+ Year Treasury Bear 3x"),
-    ("UVXY", "ProShares Ultra VIX Short-Term Futures"),
-    ("VXX", "iPath Series B S&P 500 VIX Short-Term"),
-    ("SVXY", "ProShares Short VIX Short-Term Futures"),
-    ("PSQ", "ProShares Short QQQ"),
-    ("GDXU", "MicroSectors Gold Miners 3x Leveraged ETN"),
-    ("GDXD", "MicroSectors Gold Miners -3x Inverse ETN"),
+    # --- Broad market ---
+    ("SPY",  "SPDR S&P 500 ETF",                         "Broad market"),
+    ("QQQ",  "Invesco QQQ Trust",                        "Broad market"),
+    ("QQQE", "Direxion NASDAQ-100 Equal Weighted",       "Broad market"),
+    ("VTI",  "Vanguard Total Stock Market ETF",          "Broad market"),
+    ("DIA",  "SPDR Dow Jones Industrial Average ETF",    "Broad market"),
+    ("IWM",  "iShares Russell 2000 ETF",                 "Broad market"),
+    ("MDY",  "SPDR S&P MidCap 400 ETF",                  "Broad market"),
+    ("IJR",  "iShares Core S&P Small-Cap ETF",           "Broad market"),
+    ("IOO",  "iShares Global 100 ETF",                   "Broad market"),
+    # --- Factor & dividend ---
+    ("SPYV", "SPDR Portfolio S&P 500 Value",             "Factor & dividend"),
+    ("VTV",  "Vanguard Value ETF",                       "Factor & dividend"),
+    ("VIG",  "Vanguard Dividend Appreciation ETF",       "Factor & dividend"),
+    ("VIGI", "Vanguard International Dividend Apprec.",  "Factor & dividend"),
+    ("SCHD", "Schwab US Dividend Equity ETF",            "Factor & dividend"),
+    ("SCHG", "Schwab US Large-Cap Growth ETF",           "Factor & dividend"),
+    ("SPHB", "Invesco S&P 500 High Beta ETF",            "Factor & dividend"),
+    # --- Sector ---
+    ("XLK",  "Technology Select Sector SPDR",            "Sector"),
+    ("XLE",  "Energy Select Sector SPDR",                "Sector"),
+    ("XLF",  "Financial Select Sector SPDR",             "Sector"),
+    ("XLB",  "Materials Select Sector SPDR",             "Sector"),
+    ("XLI",  "Industrial Select Sector SPDR",            "Sector"),
+    ("XLY",  "Consumer Discretionary Select Sector SPDR","Sector"),
+    ("XLP",  "Consumer Staples Select Sector SPDR",      "Sector"),
+    ("VOX",  "Vanguard Communication Services ETF",      "Sector"),
+    ("SOXX", "iShares Semiconductor ETF",                "Sector"),
+    ("SMH",  "VanEck Semiconductor ETF",                 "Sector"),
+    # --- International ---
+    ("EEM",  "iShares MSCI Emerging Markets ETF",        "International"),
+    ("EFA",  "iShares MSCI EAFE ETF",                    "International"),
+    ("VXUS", "Vanguard Total International Stock ETF",   "International"),
+    ("FXI",  "iShares China Large-Cap ETF",              "International"),
+    # --- Bonds & cash ---
+    ("TLT",  "iShares 20+ Year Treasury Bond ETF",       "Bonds & cash"),
+    ("IEF",  "iShares 7-10 Year Treasury Bond ETF",      "Bonds & cash"),
+    ("IEI",  "iShares 3-7 Year Treasury Bond ETF",       "Bonds & cash"),
+    ("SHY",  "iShares 1-3 Year Treasury Bond ETF",       "Bonds & cash"),
+    ("SHV",  "iShares Short Treasury Bond ETF",          "Bonds & cash"),
+    ("LQD",  "iShares iBoxx Investment Grade Corporate", "Bonds & cash"),
+    ("BND",  "Vanguard Total Bond Market ETF",           "Bonds & cash"),
+    ("BNDW", "Vanguard Total World Bond ETF",            "Bonds & cash"),
+    ("BSV",  "Vanguard Short-Term Bond ETF",             "Bonds & cash"),
+    ("VGSH", "Vanguard Short-Term Treasury ETF",         "Bonds & cash"),
+    ("VGIT", "Vanguard Intermediate-Term Treasury ETF",  "Bonds & cash"),
+    ("VGLT", "Vanguard Long-Term Treasury ETF",          "Bonds & cash"),
+    ("BIL",  "SPDR Bloomberg 1-3 Month T-Bill",          "Bonds & cash"),
+    # --- Commodities, FX & crypto ---
+    ("GLD",  "SPDR Gold Shares",                         "Commodities, FX & crypto"),
+    ("SLV",  "iShares Silver Trust",                     "Commodities, FX & crypto"),
+    ("DBC",  "Invesco DB Commodity Index Tracking",      "Commodities, FX & crypto"),
+    ("UUP",  "Invesco DB US Dollar Index Bullish",       "Commodities, FX & crypto"),
+    ("IBIT", "iShares Bitcoin Trust ETF",                "Commodities, FX & crypto"),
+    ("ETHA", "iShares Ethereum Trust ETF",               "Commodities, FX & crypto"),
+    # --- Volatility & hedge ---
+    ("VIXM", "ProShares VIX Mid-Term Futures",           "Volatility & hedge"),
+    ("VXX",  "iPath Series B S&P 500 VIX Short-Term",    "Volatility & hedge"),
+    ("UVXY", "ProShares Ultra VIX Short-Term Futures",   "Volatility & hedge"),
+    ("SVXY", "ProShares Short VIX Short-Term Futures",   "Volatility & hedge"),
+    ("SVIX", "-1x Short VIX Futures ETF",                "Volatility & hedge"),
+    ("BTAL", "AGFiQ US Market Neutral Anti-Beta",        "Volatility & hedge"),
+    ("KMLM", "KFA Mount Lucas Managed Futures",          "Volatility & hedge"),
+    ("DBMF", "iMGP DBi Managed Futures Strategy",        "Volatility & hedge"),
+    # --- Leveraged & inverse ---
+    ("TQQQ", "ProShares UltraPro QQQ 3x",                "Leveraged & inverse"),
+    ("QLD",  "ProShares Ultra QQQ 2x",                   "Leveraged & inverse"),
+    ("SQQQ", "ProShares UltraPro Short QQQ 3x",          "Leveraged & inverse"),
+    ("PSQ",  "ProShares Short QQQ",                      "Leveraged & inverse"),
+    ("UPRO", "ProShares UltraPro S&P500 3x",             "Leveraged & inverse"),
+    ("SPXL", "Direxion Daily S&P 500 Bull 3x",           "Leveraged & inverse"),
+    ("SPXU", "ProShares UltraPro Short S&P500 3x",       "Leveraged & inverse"),
+    ("SSO",  "ProShares Ultra S&P500 2x",                "Leveraged & inverse"),
+    ("SH",   "ProShares Short S&P500",                   "Leveraged & inverse"),
+    ("UDOW", "ProShares UltraPro Dow30 3x",              "Leveraged & inverse"),
+    ("SOXL", "Direxion Daily Semiconductor Bull 3x",     "Leveraged & inverse"),
+    ("SOXS", "Direxion Daily Semiconductor Bear 3x",     "Leveraged & inverse"),
+    ("USD",  "ProShares Ultra Semiconductors 2x",        "Leveraged & inverse"),
+    ("TECL", "Direxion Daily Technology Bull 3x",        "Leveraged & inverse"),
+    ("RETL", "Direxion Daily Retail Bull 3x",            "Leveraged & inverse"),
+    ("FAS",  "Direxion Daily Financial Bull 3x",         "Leveraged & inverse"),
+    ("LABU", "Direxion Daily S&P Biotech Bull 3x",       "Leveraged & inverse"),
+    ("TNA",  "Direxion Daily Small Cap Bull 3x",         "Leveraged & inverse"),
+    ("YINN", "Direxion Daily FTSE China Bull 3x",        "Leveraged & inverse"),
+    ("TMF",  "Direxion Daily 20+ Year Treasury Bull 3x", "Leveraged & inverse"),
+    ("TMV",  "Direxion Daily 20+ Year Treasury Bear 3x", "Leveraged & inverse"),
+    ("GDXU", "MicroSectors Gold Miners 3x Leveraged",    "Leveraged & inverse"),
+    ("GDXD", "MicroSectors Gold Miners -3x Inverse",     "Leveraged & inverse"),
 ]
 
 
@@ -112,13 +163,13 @@ def refresh() -> tuple[list, dict]:
     fetched = {}
     failed = []
 
-    for i, (symbol, name) in enumerate(TICKERS):
+    for i, (symbol, name, group) in enumerate(TICKERS):
         if i > 0:
             time.sleep(API_CALL_DELAY_SECONDS)
         print(f"  {symbol} ... ", end="", flush=True)
         try:
             series = fetch_daily_closes(symbol)
-            fetched[symbol] = {"name": name, "series": series}
+            fetched[symbol] = {"name": name, "group": group, "series": series}
             first = min(series) if series else "?"
             print(f"{len(series)} rows (from {first})")
         except Exception as exc:
@@ -139,7 +190,7 @@ def refresh() -> tuple[list, dict]:
     for symbol, info in fetched.items():
         series = info["series"]
         closes = [series.get(d) for d in master]
-        tickers_out[symbol] = {"name": info["name"], "closes": closes}
+        tickers_out[symbol] = {"name": info["name"], "group": info["group"], "closes": closes}
 
     return master, tickers_out
 

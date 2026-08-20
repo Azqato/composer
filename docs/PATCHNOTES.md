@@ -5,6 +5,24 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.18.0] - 2026-08-20
+
+### Signal Miner universe more than doubles, with grouped tickers and select-all
+
+**80 tickers, up from 37.** The original list was inherited from a community tool and had real holes: one bond fund, no small caps, no developed international, no broad-market total-market fund. It now covers broad market, factor and dividend, sector, international, a full bond ladder, commodities and crypto, volatility and hedges, and leveraged and inverse, with 43 additions including SPXL, SMH, IWM, VTI, EFA, DIA, and the IEF/IEI/SHY/SHV/BND/BSV/VGSH/VGIT/VGLT bond set. Nothing was removed.
+
+**Crypto arrives as ETFs, not spot.** IBIT and ETHA are included rather than BTC-USD and ETH-USD. Spot crypto trades weekends, which would have stretched the shared date axis from ~2,170 trading days to ~2,800 calendar days and silently redefined every existing signal, since window lengths count rows: `RSI(10)` would have become 10 calendar days with 2 in 7 missing. The ETFs trade the normal NYSE calendar, so the axis is unchanged. They are also real Composer assets, so "Copy JSON" still exports a valid symphony.
+
+**Chips are grouped, with All buttons.** 80 chips in a flat row is unusable, so tickers are now grouped by asset class, each group has its own **All** toggle, and each row has a whole-universe select and a clear. Grouping is carried in `prices.json` as a new `group` field on each ticker, so the list and its grouping stay in one place.
+
+**Limited-history tickers are flagged.** Seven funds list after the 2018 start (ETHA at 24% coverage, IBIT 30%, SVIX 51%, KMLM/GDXU/GDXD 66%, DBMF 84%). Their metrics are fit to a shorter sample, and the default Min Time in Market floor of 0.05 will not screen that out, so they now render with a dashed chip border and a "limited history" tooltip.
+
+Selecting everything is heavy, by design rather than by accident: 80 tickers is roughly 8.2M signals before the target multiplier, well past the 100k warn threshold. The estimate readout and the existing confirm prompt both still apply.
+
+**Files changed:** `signal-miner.html`, `scripts/refresh_prices.py`, `data/prices.json`, `data/prices.js`, `docs/PRD.md`
+
+---
+
 ## [1.17.1] - 2026-08-16
 
 ### Homepage curated count corrected, dedupe audit finding recorded

@@ -25,6 +25,29 @@
     .sl-chip.on-target { background: rgba(58,167,106,0.16); border-color: var(--color-green); color: var(--color-green); }
     .sl-chip.on-compare { background: rgba(74,124,220,0.16); border-color: var(--color-blue); color: #6ea0f0; }
 
+    /* Ticker group blocks + select-all controls (v1.18.0). The universe grew to
+       80 tickers, so flat chip rows became unusable; chips are now grouped by
+       asset class with an "All" per group plus a row-level all/none. */
+    .sl-grouphead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 8px; }
+    .sl-rowhead { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
+    .sl-rowhead .sl-label { margin: 0; }
+    .sl-selgroup { display: flex; gap: 6px; margin-left: auto; }
+    .sl-sel {
+      background: transparent; border: 1px solid var(--color-border); color: var(--color-secondary);
+      border-radius: 6px; padding: 3px 9px; font-family: var(--font-mono); font-size: 0.6875rem;
+      cursor: pointer; line-height: 1.5; white-space: nowrap;
+    }
+    .sl-sel:hover { border-color: var(--color-disabled); color: var(--color-primary); }
+    .sl-sel.is-on { border-color: var(--color-green); color: var(--color-green); background: rgba(58,167,106,0.12); }
+    .sl-cmp .sl-sel.is-on { border-color: var(--color-blue); color: #6ea0f0; background: rgba(74,124,220,0.12); }
+    .sl-tgroup { margin-bottom: 14px; }
+    .sl-tgroup:last-child { margin-bottom: 0; }
+    .sl-tgroup-name { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.03em; color: var(--color-disabled); }
+    .sl-chip.is-short { border-style: dashed; }
+    @media (max-width: 640px) {
+      .sl-selgroup { margin-left: 0; width: 100%; }
+    }
+
     .sl-fams { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px 16px; }
     .sl-check { display: inline-flex; align-items: center; gap: 8px; font-size: 0.8125rem; color: var(--color-secondary); cursor: pointer; }
     .sl-check input { accent-color: var(--color-green); }
@@ -99,15 +122,27 @@
       <!-- Controls -->
       <div class="sl-panel">
         <h2>1. Assets</h2>
-        <p class="sl-sub">Pick <span style="color:var(--color-green)">Target</span> tickers (what you invest in when a signal fires) and <span style="color:#6ea0f0">Signal</span> tickers (what conditions are measured on). A ticker can be both. Keep the combined count small: signal counts grow with the square of the tickers used.</p>
+        <p class="sl-sub">Pick <span style="color:var(--color-green)">Target</span> tickers (what you invest in when a signal fires) and <span style="color:#6ea0f0">Signal</span> tickers (what conditions are measured on). A ticker can be both. Chips are grouped by asset class, and each group has an <strong>All</strong> toggle; the row-level button selects the whole universe. Watch the estimate below as you go: signal counts grow with the <em>square</em> of the tickers used, so selecting everything is far heavier than it looks. A <span style="border:1px dashed var(--color-disabled);border-radius:4px;padding:0 5px;font-family:var(--font-mono);font-size:0.75rem">dashed</span> chip means the fund launched after 2018, so its history is short and its metrics are fit to a smaller sample.</p>
 
-        <div class="sl-group">
-          <span class="sl-label">Target tickers <span id="sl-tgt-count" style="color:var(--color-green)"></span></span>
-          <div class="sl-chips" id="sl-targets"></div>
+        <div class="sl-group sl-tgt">
+          <div class="sl-rowhead">
+            <span class="sl-label">Target tickers <span id="sl-tgt-count" style="color:var(--color-green)"></span></span>
+            <span class="sl-selgroup">
+              <button type="button" class="sl-sel" data-all="target">Select all 80</button>
+              <button type="button" class="sl-sel" data-none="target">Clear</button>
+            </span>
+          </div>
+          <div id="sl-targets"></div>
         </div>
-        <div class="sl-group">
-          <span class="sl-label">Signal / comparison tickers <span id="sl-cmp-count" style="color:#6ea0f0"></span></span>
-          <div class="sl-chips" id="sl-compares"></div>
+        <div class="sl-group sl-cmp">
+          <div class="sl-rowhead">
+            <span class="sl-label">Signal / comparison tickers <span id="sl-cmp-count" style="color:#6ea0f0"></span></span>
+            <span class="sl-selgroup">
+              <button type="button" class="sl-sel" data-all="compare">Select all 80</button>
+              <button type="button" class="sl-sel" data-none="compare">Clear</button>
+            </span>
+          </div>
+          <div id="sl-compares"></div>
         </div>
       </div>
 
@@ -830,31 +865,118 @@
     }
 
     // ---------- UI wiring ----------
-    function renderChips() {
-      const tEl = document.getElementById('sl-targets');
-      const cEl = document.getElementById('sl-compares');
-      tEl.innerHTML = ''; cEl.innerHTML = '';
-      for (const [sym, name] of UNIVERSE) {
-        const t = document.createElement('span');
-        t.className = 'sl-chip' + (targets.has(sym) ? ' on-target' : '');
-        t.textContent = sym; t.title = name;
-        t.addEventListener('click', () => { targets.has(sym) ? targets.delete(sym) : targets.add(sym); syncChips(); });
-        tEl.appendChild(t);
-        const c = document.createElement('span');
-        c.className = 'sl-chip' + (compares.has(sym) ? ' on-compare' : '');
-        c.textContent = sym; c.title = name;
-        c.addEventListener('click', () => { compares.has(sym) ? compares.delete(sym) : compares.add(sym); syncChips(); });
-        cEl.appendChild(c);
+    // Chips are grouped by asset class (the `group` field on each ticker in
+    // prices.json). With 80 tickers a flat row is unusable, and grouping is what
+    // makes the per-group "All" buttons meaningful: "all leveraged" is a sane
+    // run, "all 80" very much is not (see the estimate readout, which warns).
+    const chipEls = { target: new Map(), compare: new Map() };
+    const groupBtns = { target: new Map(), compare: new Map() };
+    let GROUPS = [];          // [[groupName, [[sym, name], ...]], ...]
+    let SHORT = new Set();    // tickers whose history covers <90% of the date axis
+
+    function buildGroups() {
+      const byGroup = new Map();
+      for (const [sym, name, group] of UNIVERSE) {
+        if (!byGroup.has(group)) byGroup.set(group, []);
+        byGroup.get(group).push([sym, name]);
+      }
+      GROUPS = [...byGroup.entries()];
+    }
+
+    // A ticker that only started trading recently (IBIT, ETHA, SVIX...) can post
+    // spectacular metrics off a two-year sample. Flag them rather than hide them.
+    function findShortHistory() {
+      SHORT = new Set();
+      for (const [sym] of UNIVERSE) {
+        const c = PD.tickers[sym].closes;
+        let first = c.findIndex(v => v != null);
+        if (first < 0) first = c.length;
+        if ((c.length - first) / c.length < 0.9) SHORT.add(sym);
       }
     }
+
+    function setOf(kind) { return kind === 'target' ? targets : compares; }
+
+    function renderChips() {
+      buildGroups();
+      findShortHistory();
+      document.querySelectorAll('[data-all]').forEach(b => {
+        b.textContent = `Select all ${UNIVERSE.length}`;
+      });
+      for (const kind of ['target', 'compare']) {
+        const host = document.getElementById(kind === 'target' ? 'sl-targets' : 'sl-compares');
+        host.innerHTML = '';
+        chipEls[kind].clear();
+        groupBtns[kind].clear();
+        for (const [group, members] of GROUPS) {
+          const block = document.createElement('div');
+          block.className = 'sl-tgroup';
+
+          const head = document.createElement('div');
+          head.className = 'sl-grouphead';
+          const nm = document.createElement('span');
+          nm.className = 'sl-tgroup-name';
+          nm.textContent = `${group} (${members.length})`;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'sl-sel';
+          btn.textContent = 'All';
+          btn.title = `Toggle all ${members.length} ${group} tickers`;
+          btn.addEventListener('click', () => {
+            const set = setOf(kind);
+            const allOn = members.every(([sym]) => set.has(sym));
+            members.forEach(([sym]) => allOn ? set.delete(sym) : set.add(sym));
+            syncChips();
+          });
+          head.appendChild(nm); head.appendChild(btn);
+          block.appendChild(head);
+          groupBtns[kind].set(group, btn);
+
+          const row = document.createElement('div');
+          row.className = 'sl-chips';
+          for (const [sym, name] of members) {
+            const chip = document.createElement('span');
+            chip.className = 'sl-chip';
+            chip.textContent = sym;
+            chip.title = SHORT.has(sym) ? `${name} (limited history)` : name;
+            chip.addEventListener('click', () => {
+              const set = setOf(kind);
+              set.has(sym) ? set.delete(sym) : set.add(sym);
+              syncChips();
+            });
+            chipEls[kind].set(sym, chip);
+            row.appendChild(chip);
+          }
+          block.appendChild(row);
+          host.appendChild(block);
+        }
+      }
+      // Row-level all / clear.
+      document.querySelectorAll('[data-all]').forEach(b => {
+        b.addEventListener('click', () => {
+          const kind = b.dataset.all, set = setOf(kind);
+          const allOn = UNIVERSE.every(([sym]) => set.has(sym));
+          UNIVERSE.forEach(([sym]) => allOn ? set.delete(sym) : set.add(sym));
+          syncChips();
+        });
+      });
+      document.querySelectorAll('[data-none]').forEach(b => {
+        b.addEventListener('click', () => { setOf(b.dataset.none).clear(); syncChips(); });
+      });
+    }
+
     function syncChips() {
-      const tEl = document.getElementById('sl-targets').children;
-      const cEl = document.getElementById('sl-compares').children;
-      let i = 0;
-      for (const [sym] of UNIVERSE) {
-        tEl[i].className = 'sl-chip' + (targets.has(sym) ? ' on-target' : '');
-        cEl[i].className = 'sl-chip' + (compares.has(sym) ? ' on-compare' : '');
-        i++;
+      for (const kind of ['target', 'compare']) {
+        const set = setOf(kind);
+        const on = kind === 'target' ? ' on-target' : ' on-compare';
+        for (const [sym, chip] of chipEls[kind]) {
+          chip.className = 'sl-chip' + (set.has(sym) ? on : '') + (SHORT.has(sym) ? ' is-short' : '');
+        }
+        for (const [group, btn] of groupBtns[kind]) {
+          const members = (GROUPS.find(g => g[0] === group) || [null, []])[1];
+          const allOn = members.length && members.every(([sym]) => set.has(sym));
+          btn.classList.toggle('is-on', !!allOn);
+        }
       }
       document.getElementById('sl-tgt-count').textContent = targets.size ? `(${targets.size})` : '';
       document.getElementById('sl-cmp-count').textContent = compares.size ? `(${compares.size})` : '';
@@ -888,7 +1010,7 @@
       try { PD = await loadPrices(); }
       catch (e) { document.getElementById('sl-status').textContent = 'Could not load price data.'; return; }
       DATES = PD.dates; N = DATES.length;
-      UNIVERSE = Object.keys(PD.tickers).map(sym => [sym, PD.tickers[sym].name]);
+      UNIVERSE = Object.keys(PD.tickers).map(sym => [sym, PD.tickers[sym].name, PD.tickers[sym].group || 'Other']);
 
       renderChips();
       renderFamilies();
