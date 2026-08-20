@@ -49,6 +49,7 @@
        The table dims and stops accepting clicks rather than silently freezing,
        so a slow pass reads as "working" instead of "crashed". */
     .sl-table.is-busy { opacity: 0.45; pointer-events: none; transition: opacity 120ms ease; }
+    .sl-table th.is-inert { cursor: default; opacity: 0.6; }
     .sl-busy-dot {
       display: inline-block; width: 10px; height: 10px; margin-right: 7px; vertical-align: -1px;
       border: 2px solid var(--color-border); border-top-color: var(--color-green);
@@ -605,6 +606,70 @@
       };
     }
 
+    // ---------- last-run snapshot ----------
+    // The top rows of the last run are saved locally so a revisit shows the
+    // previous results instead of an empty table.
+    //
+    // Only the DISPLAYED rows are saved, always the top 100 by Sortino. The full
+    // run cannot be saved: Pass 1 holds a Uint8Array per surviving signal, which
+    // runs to hundreds of MB, far past any storage quota, and serialising it
+    // would cost more than re-running the backtest. That is why a restored view
+    // is read-only: sorting and the section-3 filters need the full cached set,
+    // and re-ranking just the saved 100 would look like it worked while quietly
+    // ranking a subset. The sort headers are disabled until a fresh run.
+    const RESULTS_STORE_KEY = 'composer-atlas.signal-miner.lastrun.v1';
+    const SNAPSHOT_ROWS = 100;
+    let restored = false;      // showing a snapshot, so sorting is off
+    let snapshotNote = '';     // meta line for a restored view, kept across re-renders
+
+    function saveResults(win) {
+      try {
+        const top = selectTop(lastResults, SNAPSHOT_ROWS, 'sortino', false, '').rows;
+        localStorage.setItem(RESULTS_STORE_KEY, JSON.stringify({
+          at: new Date().toISOString(),
+          total: lastResults.length,
+          win: win ? { start: win.start, len: win.len, binding: win.binding } : null,
+          end: DATES[N - 1],
+          rows: top.map(r => ({
+            single: r.single, target: r.target, label: r.label,
+            spec: r.spec, specs: r.specs,
+            total: r.total, sortino: r.sortino, calmar: r.calmar,
+            maxDD: r.maxDD, tim: r.tim, pf: r.pf, pctProf: r.pctProf,
+          })),
+        }));
+      } catch (e) { /* quota or disabled storage: the snapshot is a convenience, not required */ }
+    }
+
+    function loadResults() {
+      let raw = null;
+      try { raw = localStorage.getItem(RESULTS_STORE_KEY); } catch (e) { return null; }
+      if (!raw) return null;
+      try {
+        const v = JSON.parse(raw);
+        if (!v || !Array.isArray(v.rows) || !v.rows.length) return null;
+        return v;
+      } catch (e) { return null; }
+    }
+
+    function showSnapshot(snap) {
+      lastResults = snap.rows;
+      restored = true;
+      sortKey = 'sortino'; sortAsc = false;
+      const panel = document.getElementById('sl-results-panel');
+      panel.style.display = 'block';
+      renderResults();
+      const when = new Date(snap.at);
+      const nice = isNaN(when) ? 'a previous session' : when.toLocaleDateString(undefined,
+        { year: 'numeric', month: 'short', day: 'numeric' });
+      const w = snap.win;
+      snapshotNote =
+        `Saved results from ${nice}: top ${snap.rows.length} of ${(snap.total || 0).toLocaleString()} by Sortino` +
+        (w ? `, scored ${w.start} to ${snap.end} (${(w.len || 0).toLocaleString()} trading days` +
+             `${w.binding ? `, window set by ${w.binding}` : ''})` : '') +
+        `. Sorting needs the full result set, so run a backtest to re-enable it.`;
+      document.getElementById('sl-meta').textContent = snapshotNote;
+    }
+
     // ---------- common sample window ----------
     // Every ticker in a run must be scored over the same stretch of history, or
     // the numbers are not comparable. A fund that listed partway through the axis
@@ -827,6 +892,8 @@
       status.textContent = `${rows.length.toLocaleString()} single + ${comboRows.length.toLocaleString()} combined = ${lastResults.length.toLocaleString()} passing signals.`;
       const panel = document.getElementById('sl-results-panel');
       panel.style.display = 'block';
+      restored = false; snapshotNote = '';   // live results again: sorting and filters are valid
+      saveResults(win);
       // Panel is shown BEFORE the render is requested, so on a large result set
       // the busy state has somewhere visible to appear.
       requestRender();
@@ -1000,12 +1067,14 @@
       const sample = w
         ? ` Scored over ${w.start} to ${DATES[N - 1]} (${w.len.toLocaleString()} trading days${w.binding ? `, window set by ${w.binding}` : ''}).`
         : '';
-      document.getElementById('sl-meta').textContent =
-        (total > DISPLAY_CAP
-          ? `Showing top ${DISPLAY_CAP} of ${total.toLocaleString()} by current sort. Refine with the filter box or a stricter Time-in-Market.`
-          : `${total.toLocaleString()} signals shown.`) + sample;
+      document.getElementById('sl-meta').textContent = restored
+        ? snapshotNote
+        : (total > DISPLAY_CAP
+            ? `Showing top ${DISPLAY_CAP} of ${total.toLocaleString()} by current sort. Refine with the filter box or a stricter Time-in-Market.`
+            : `${total.toLocaleString()} signals shown.`) + sample;
 
       head.querySelectorAll('th[data-key]').forEach(th => {
+        if (restored) { th.classList.add('is-inert'); th.title = 'Run a backtest to sort: the full result set is not saved'; return; }
         th.addEventListener('click', () => {
           const k = th.dataset.key;
           if (k === sortKey) sortAsc = !sortAsc; else { sortKey = k; sortAsc = (k === 'label' || k === 'target'); }
@@ -1263,6 +1332,11 @@
       compares = new Set(saved ? saved.compares : DEFAULT_COMPARES);
       syncChips();
       persistReady = true;
+
+      // Show the previous run's saved top rows, if there are any, so a revisit
+      // is not an empty table. Any real run replaces this.
+      const snap = loadResults();
+      if (snap) showSnapshot(snap);
 
       document.getElementById('sl-run').addEventListener('click', run);
       document.getElementById('sl-example').addEventListener('click', loadExample);

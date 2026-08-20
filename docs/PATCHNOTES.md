@@ -5,6 +5,20 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.19.1] - 2026-08-20
+
+### Your last results are still there when you come back
+
+Signal Miner now saves the **top 100 rows by Sortino** from your last run, locally in your browser, and shows them when you return instead of an empty table. The sample window, the result count and the run date come back with them, and **Copy JSON still works** on every saved row.
+
+One deliberate limitation, stated plainly on screen rather than hidden: **sorting is disabled on restored results.** Only the rows you can see are saved, not the millions behind them, because the full run holds hundreds of megabytes of signal data that no browser will store and that would take longer to reload than to recompute. Sorting the saved 100 would look like it worked while quietly ranking a subset instead of the whole run, so the column headers are greyed out until you run a backtest. The filter box still works, since narrowing what is on screen is honest.
+
+As with the ticker selection, nothing leaves your browser.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.19.0] - 2026-08-20
 
 ### Fixed: short-history tickers were being scored unfairly
