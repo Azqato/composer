@@ -37,7 +37,6 @@ jobs:
             --exclude='docs' \
             --exclude='scripts' \
             --exclude='data/symphony_scores.json' \
-            --exclude='strategies.xlsx' \
             --exclude='README.md' \
             --exclude='.gitignore' \
             . _site/
