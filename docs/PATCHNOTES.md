@@ -5,6 +5,30 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.21.0] - 2026-08-20
+
+### Fixed: max drawdown was wrong, and it was hiding your best results
+
+**Max drawdown has been wrong since Signal Miner shipped.** It measured the gap between current and peak value in *return units* instead of as a percentage of the peak. Those are the same number only while a strategy has barely moved. Once one compounds, the gap gets denominated in the grown balance and runs straight past -100%: buy-and-hold TQQQ over the new 2010 history reported **-16761%**, where the real figure is **-81.7%**. SPY reported -133.6% against a true -33.7%.
+
+**This mattered more than it looks.** The Max Drawdown floor defaults to -0.8, and on the broken numbers anything that had compounded meaningfully fell below it. Both SPY and QQQ fail that filter on the old formula and pass on the correct one. The tool was quietly throwing away its strongest signals, and extending history to 2010 made it worse by giving returns more room to multiply. **If you have run backtests before, the results are worth running again.**
+
+**Calmar was affected too**, and separately wrong: it divided *total* return by drawdown, so it grew simply with the length of the backtest. Buy-and-hold TQQQ scored 418 on the 2010 axis. It now uses annualized return over drawdown, the standard definition, giving TQQQ 0.52. Above 1.0 now means what it should: a typical year's gain exceeds the worst peak-to-trough loss. Calmar sorting will rank differently than before.
+
+Also corrected: Time in Market was computed against a denominator one day off, showing 0.9998 instead of 1.0 for an always-active signal.
+
+### New: a buy-and-hold line to measure signals against
+
+Above the results table there is now a **buy-and-hold row for each target**, scored over the exact same window with the exact same maths. Every signal is a bet that being in the target *sometimes* beats being in it *always*, and until now there was nothing on screen to check that against. A 300% return reads like a discovery until you see that just holding the thing returned more, with no rules and no assumptions.
+
+It does not sort, does not get filtered away, and does not take up one of the 100 result slots, because a fixed reference is only useful if it stays put.
+
+Saved results from before this release are discarded rather than shown, since the drawdown and Calmar numbers in them are wrong. One run rebuilds them.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.20.1] - 2026-08-20
 
 ### Price history now goes back to 2010, not 2018
