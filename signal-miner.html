@@ -44,6 +44,18 @@
     .sl-tgroup:last-child { margin-bottom: 0; }
     .sl-tgroup-name { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.03em; color: var(--color-disabled); }
     .sl-chip.is-short { border-style: dashed; }
+
+    /* Busy state for a heavy sort/filter pass over a large cached result set.
+       The table dims and stops accepting clicks rather than silently freezing,
+       so a slow pass reads as "working" instead of "crashed". */
+    .sl-table.is-busy { opacity: 0.45; pointer-events: none; transition: opacity 120ms ease; }
+    .sl-busy-dot {
+      display: inline-block; width: 10px; height: 10px; margin-right: 7px; vertical-align: -1px;
+      border: 2px solid var(--color-border); border-top-color: var(--color-green);
+      border-radius: 50%; animation: sl-spin 0.7s linear infinite;
+    }
+    @keyframes sl-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .sl-busy-dot { animation: none; } }
     @media (max-width: 640px) {
       .sl-selgroup { margin-left: 0; width: 100%; }
     }
@@ -270,7 +282,7 @@
     ];
 
     const SURV_CAP = 150;      // max single-signal survivors fed into pairing, per target
-    const DISPLAY_CAP = 500;   // max rows rendered
+    const DISPLAY_CAP = 100;   // max rows rendered (see selectTop: never sort the full set)
     const SIGNAL_WARN_CAP = 100000;  // above this, warn-and-confirm before running (no hard limit)
 
     let PD, DATES, N, UNIVERSE;
@@ -747,9 +759,11 @@
 
       lastResults = rows.concat(comboRows);
       status.textContent = `${rows.length.toLocaleString()} single + ${comboRows.length.toLocaleString()} combined = ${lastResults.length.toLocaleString()} passing signals.`;
-      renderResults();
       const panel = document.getElementById('sl-results-panel');
       panel.style.display = 'block';
+      // Panel is shown BEFORE the render is requested, so on a large result set
+      // the busy state has somewhere visible to appear.
+      requestRender();
       if (scrollTo) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -788,20 +802,97 @@
       return String(v);
     }
 
+    // Pick the top N rows under the active sort in a single O(n) pass, applying
+    // the text filter as we go. A large run can leave millions of rows in
+    // `lastResults`; the previous implementation ran filter + slice + a full
+    // Array.sort over all of them on every sort click, which allocated several
+    // huge arrays and froze the tab for many seconds. Nothing about the cached
+    // data changes here, only how much of it gets ordered: cost now scales with
+    // the number of rows KEPT (N), not the number scanned.
+    //
+    // NaN sorts as -Infinity, matching the previous comparator exactly (first
+    // when ascending, last when descending).
+    // Case-insensitive "contains" that allocates nothing. `String.toLowerCase()`
+    // would allocate a throwaway string per row, which at millions of rows costs
+    // far more than the comparison itself. `needleLower` must already be lowercased.
+    function containsCI(hay, needleLower) {
+      const n = needleLower.length;
+      if (!n) return true;
+      const limit = hay.length - n;
+      outer: for (let i = 0; i <= limit; i++) {
+        for (let j = 0; j < n; j++) {
+          const c = hay.charCodeAt(i + j);
+          if (((c >= 65 && c <= 90) ? c + 32 : c) !== needleLower.charCodeAt(j)) continue outer;
+        }
+        return true;
+      }
+      return false;
+    }
+
+    function selectTop(rows, n, key, asc, needle) {
+      const isText = (key === 'label' || key === 'target');
+      const valOf = isText
+        ? (r) => String(r[key])
+        : (r) => { const v = r[key]; return v === v ? v : -Infinity; };
+      const before = asc ? (a, b) => a < b : (a, b) => a > b;
+
+      const out = [];    // rows, best-first, length <= n
+      const keys = [];   // parallel sort values, so we never recompute valOf
+      let total = 0;
+
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        if (needle && !containsCI(r.target, needle) && !containsCI(r.label, needle)) continue;
+        total++;
+        const k = valOf(r);
+        // Fast reject: once the buffer is full, most rows lose to the worst kept
+        // row in one comparison. This is what keeps the pass close to linear.
+        if (out.length === n && !before(k, keys[n - 1])) continue;
+        let lo = 0, hi = out.length;
+        while (lo < hi) { const mid = (lo + hi) >> 1; if (before(k, keys[mid])) hi = mid; else lo = mid + 1; }
+        out.splice(lo, 0, r); keys.splice(lo, 0, k);
+        if (out.length > n) { out.pop(); keys.pop(); }
+      }
+      return { rows: out, total };
+    }
+
+    // Above this many cached rows, a render pass is slow enough to be worth
+    // showing a busy state for. Below it, flashing one would just be noise.
+    const BUSY_ROWS = 200000;
+    let renderTimer = null;
+
+    function setBusy(on, msg) {
+      const table = document.getElementById('sl-table');
+      const meta = document.getElementById('sl-meta');
+      if (table) table.classList.toggle('is-busy', !!on);
+      if (on && meta) meta.innerHTML = '<span class="sl-busy-dot"></span>' + escapeHtml(msg || 'Working...');
+    }
+
+    // Route every re-render through here rather than calling renderResults()
+    // directly. It debounces (the filter box fires on each keystroke) and, for
+    // big result sets, paints a busy state before starting the pass. The double
+    // rAF matters: one frame lets the class land, the second lets the browser
+    // actually paint it before the main thread is occupied again.
+    function requestRender(delay) {
+      clearTimeout(renderTimer);
+      renderTimer = setTimeout(() => {
+        if (lastResults.length > BUSY_ROWS) {
+          setBusy(true, `Sorting ${lastResults.length.toLocaleString()} cached results...`);
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            renderResults();
+            setBusy(false);
+          }));
+        } else {
+          renderResults();
+        }
+      }, delay || 0);
+    }
+
     function renderResults() {
       const filter = (document.getElementById('sl-filter').value || '').toLowerCase();
-      let data = lastResults;
-      if (filter) data = data.filter(r => (r.label + ' ' + r.target).toLowerCase().includes(filter));
-
-      data = data.slice().sort((a, b) => {
-        let x = a[sortKey], y = b[sortKey];
-        if (sortKey === 'label' || sortKey === 'target') { x = String(x); y = String(y); return sortAsc ? (x < y ? -1 : x > y ? 1 : 0) : (x > y ? -1 : x < y ? 1 : 0); }
-        if (x !== x) x = -Infinity; if (y !== y) y = -Infinity;
-        return sortAsc ? x - y : y - x;
-      });
-
-      const total = data.length;
-      const shown = data.slice(0, DISPLAY_CAP);
+      const picked = selectTop(lastResults, DISPLAY_CAP, sortKey, sortAsc, filter);
+      const total = picked.total;
+      const shown = picked.rows;
 
       const head = document.getElementById('sl-head');
       head.innerHTML = COLS.map(c => {
@@ -846,7 +937,7 @@
         th.addEventListener('click', () => {
           const k = th.dataset.key;
           if (k === sortKey) sortAsc = !sortAsc; else { sortKey = k; sortAsc = (k === 'label' || k === 'target'); }
-          renderResults();
+          requestRender();
         });
       });
     }
@@ -1035,7 +1126,7 @@
 
       document.getElementById('sl-run').addEventListener('click', run);
       document.getElementById('sl-example').addEventListener('click', loadExample);
-      document.getElementById('sl-filter').addEventListener('input', () => { if (lastResults.length) renderResults(); });
+      document.getElementById('sl-filter').addEventListener('input', () => { if (lastResults.length) requestRender(250); });
 
       // Live filters: once a run is cached, changing Min Time in Market, Max
       // Drawdown floor, prune quantile, or the AND-pairing toggle re-filters the

@@ -5,6 +5,24 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.18.2] - 2026-08-20
+
+### Results table no longer freezes on huge runs
+
+Reported after a run left roughly 8 million rows cached: the browser locked up when displaying and re-sorting them.
+
+The cause was not rendering. The table only ever drew a few hundred rows, but it got there by filtering, copying, and running a **full sort over every cached row** first, then slicing off the top. On millions of rows that allocated several large arrays and blocked the main thread for seconds, and it happened again on every single sort click.
+
+Sorting is now a bounded selection: one linear pass keeps a buffer of just the rows that will be shown, rejecting most rows in a single comparison against the worst one kept. The full result set still lives in the cache and is still ranked across in its entirety, so sorting means the same thing as before; only the amount of ordering work changed. Verified against the old comparator across every sort column, both directions, with NaN values and heavy ties present.
+
+The display cap is now **100 rows** (was 500), the results filter box is debounced 250ms rather than re-running on every keystroke, and filter matching no longer builds a throwaway lowercased string per row. For result sets above 200,000 rows the table now dims and shows a spinner while a pass runs, so a slow sort reads as working rather than crashed.
+
+One known limit remains: changing the section-3 filters still rebuilds the result set synchronously, so those can still stall on a very large run.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.18.1] - 2026-08-20
 
 ### Signal Miner progress shows time remaining
