@@ -28,10 +28,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 PRICES_JSON = BASE_DIR / "data" / "prices.json"
 PRICES_JS = BASE_DIR / "data" / "prices.js"
 
-# Only keep history from this date onward. Bounds the file size and starts
-# after the youngest widely-used leveraged/vol tickers (e.g. reformed SVXY)
-# have clean data.
-START_DATE = "2018-01-01"
+# Only keep history from this date onward. This is purely a file-size bound.
+#
+# Moved from 2018-01-01 to 2010-01-01 in v1.20.1. 2010 covers the entire
+# leveraged-ETF era (TQQQ, UPRO and SPXL all launched 2008-2010), so the funds
+# most people actually mine signals on now have their full history. Going back
+# further mostly adds nulls: very few of this universe existed before 2010, and
+# Signal Miner's common sample window starts at the LATEST first-valid date
+# among the selected tickers, so one modern ticker in a selection collapses the
+# window back anyway. The cost is paid by every visitor on page load.
+#
+# KNOWN AND ACCEPTED (owner decision, 2026-08-20): a few tickers do not mean the
+# same thing this far back. SVXY was reformed in Feb 2018 from -1x to -0.5x, and
+# Yahoo's VXX is the Series B ETN that launched in 2018 after the original was
+# retired. Their pre-2018 rows therefore describe a different product. This was
+# raised and explicitly waived, so there are deliberately NO per-ticker
+# earliest-valid-date overrides here. See docs/PRD.md. If that decision is ever
+# revisited, this is the place to add them.
+START_DATE = "2010-01-01"
 API_CALL_DELAY_SECONDS = 1
 USER_AGENT = "Mozilla/5.0 (compatible; composer-atlas-signal-miner/1.0)"
 
@@ -133,11 +147,27 @@ TICKERS = [
 ]
 
 
+def _start_epoch() -> int:
+    """START_DATE as a UTC epoch second, for the chart API's period1 bound."""
+    d = datetime.strptime(START_DATE, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    return int(d.timestamp())
+
+
 def fetch_daily_closes(symbol: str) -> dict:
-    """Returns {date_iso: adjusted_close} from START_DATE onward."""
+    """Returns {date_iso: adjusted_close} from START_DATE onward.
+
+    Uses explicit period1/period2 bounds rather than a `range` shorthand. A
+    fixed `range=10y` was used until v1.20.1, which silently capped every
+    series at ten years: START_DATE could only ever narrow that window, never
+    widen it, so moving START_DATE back past the cap did nothing at all. Bugs
+    of this shape are invisible in the output (the data looks fine, there is
+    just less of it than asked for), so if you change the window, check the
+    reported first date actually moved.
+    """
     url = (
         f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
-        f"?range=10y&interval=1d&events=div,splits"
+        f"?period1={_start_epoch()}&period2={int(time.time())}"
+        f"&interval=1d&events=div,splits"
     )
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=30) as resp:

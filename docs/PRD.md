@@ -1135,8 +1135,8 @@ There is no `.js` twin naming inconsistency to worry about here, `data/database_
 ```json
 {
   "refreshed_at": "2026-08-15T18:30:00Z",
-  "start": "2018-01-01",
-  "dates": ["2018-01-02", "2018-01-03", "..."],
+  "start": "2010-01-01",
+  "dates": ["2010-01-04", "2010-01-05", "..."],
   "tickers": {
     "QQQ": { "name": "Invesco QQQ Trust", "group": "Broad market", "closes": [156.5, 157.2, "..."] },
     "GDXU": { "name": "MicroSectors Gold Miners 3x Leveraged", "group": "Leveraged & inverse", "closes": [null, null, "..."] }
@@ -1938,17 +1938,13 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
   **Consequences to handle:** metrics become dependent on the ticker selection, so results are no longer comparable *across* runs with different selections; the window in use must be shown prominently near the results. Selecting one recent ticker collapses the window for the entire run, so the UI should warn before a short-history ticker (already dashed in the chip list) drags an otherwise long sample down to two years.
 
-- [ ] **Signal Miner: consider extending price history before 2018** — `START_DATE` in `scripts/refresh_prices.py` is `2018-01-01`, chosen to bound file size and to start after reformed leveraged/vol products have clean data. The cost is that the sample contains no 2008 credit crisis and no dot-com bust, so every signal is fit to a period with one deep-but-fast crash (2020) and one grinding bear (2022).
+- [x] **Signal Miner: extend price history before 2018** (done v1.20.1) � `START_DATE` moved from `2018-01-01` to `2010-01-01`. The axis went from 2170 to **4183 trading days** (2010-01-04 onward) and `prices.json` from 1363KB to **2573KB**, close to the 2.6MB estimate. 2010 was chosen over 2000 because it covers the whole leveraged-ETF era (TQQQ, UPRO, SPXL, TNA, FAS, TMF all launched 2010 or earlier) while going further back mostly adds nulls: little of this universe existed before 2010, and the common sample window means one modern ticker in a selection collapses the window anyway. Every visitor pays the file size on load, which is what bounds it.
 
-  **This is gated on the item above**: without a per-run common window, extending the axis backward makes the dilution worse, since young tickers would carry even more dead history.
+  **A latent bug was found doing this and is the real lesson.** `fetch_daily_closes` requested a hardcoded `range=10y` and then filtered to `START_DATE`, so the start date could only ever *narrow* that ten-year window, never widen it. The first re-run returned every ticker starting 2016-08-22 (exactly ten years back) and looked completely normal: correct schema, plausible prices, no error. The script now sends explicit `period1`/`period2` epoch bounds. **When changing the window, verify the reported first date actually moved**, because this class of bug is invisible in the output.
 
-  Rough size cost, extrapolating from the current 1.36MB for 2,170 dates and 80 tickers: back to 2010 is roughly +1.1MB, back to 2000 roughly +2.2MB, so a full-history file lands near 3.5-4MB. That is a lot for a tool page but not disqualifying.
+  **Reformed funds: accepted as a known tradeoff (owner decision, 2026-08-20).** SVXY was reformed in February 2018 from -1x to -0.5x, so its earlier history describes a different product. This was raised and **explicitly waived**: no per-ticker valid-date overrides, one global `START_DATE`. Signals on SVXY spanning early 2018 are measuring a blend of two products. Post-fetch check refines the scope: this affects **SVXY only**. Yahoo's VXX is the Series B ETN with no data before 2018-01-25, so there is nothing to splice there. Fund identity does not interact with the common sample window, which keys off listing dates.
 
-  **Reformed funds: accepted as a known tradeoff (owner decision, 2026-08-20).** Several tickers do not mean the same thing before 2018. SVXY was reformed in February 2018 from -1x to -0.5x, so its earlier history describes a different product, and Yahoo's VXX is the Series B ETN that launched in 2018 after the original was retired. Extending the axis splices those two eras together under one ticker. This was raised and **explicitly waived**: per-ticker valid-date overrides are not required, a single global `START_DATE` is fine.
-
-  Concrete effect to be aware of rather than designed around: any signal using SVXY or VXX over a window crossing early 2018 is measuring a blend of two products, so its metrics describe something not tradeable today. Everything else in the universe is unaffected. This does not touch the common sample window, which is about listing dates, not fund identity.
-
-  With that waived, the remaining decision is purely **file size**, and the work is small: change `START_DATE`, re-run `refresh_prices.py`, commit the regenerated `prices.json`/`prices.js`. No code changes.
+  **Post-change data state:** 55 of 80 tickers have full coverage; the rest list partway through, so the common sample window binds more often than it used to. One known data hole: 2026-08-11 is missing a close for 7 thin-volume tickers (QQQE, VIGI, BNDW, SVIX, KMLM, DBMF, LABU), 1 row in 4183, pre-existing and treated as a zero return by `backtest`.
 
 - [ ] **Signal Miner: multi-select rows and export one combined symphony** — suggested by Haverel Mink in the Composer Discord (2026-08-20): "What if you could write the frontrunner JSON from the results table, rather than building it one-by-one?" Today each row's **Copy JSON** exports a single IF block holding one target when one signal fires, so assembling a Frontrunner-style symphony from several discovered signals means exporting each one and stitching them together by hand in the Composer editor.
 

@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.20.1] - 2026-08-20
+
+### Price history now goes back to 2010, not 2018
+
+Signal Miner's data set extends from **2018-01-02 back to 2010-01-04**: 4183 trading days instead of 2170, nearly doubling the history behind every backtest. This covers the entire leveraged-ETF era, since TQQQ, UPRO, SPXL, TNA, FAS and TMF all launched in 2010 or earlier, and adds the 2010 flash crash, the 2011 debt-ceiling selloff and the 2015-16 correction as testable regimes.
+
+**A bug turned up while doing this.** The fetch script asked Yahoo for a fixed `range=10y` and then filtered to `START_DATE`, so the start date could only ever *narrow* that ten-year window, never widen it. Moving it back would have silently done nothing: the first attempt returned every ticker starting 2016-08-22, exactly ten years back, regardless of the setting. The script now sends explicit `period1`/`period2` bounds, so the requested window is the window you get.
+
+Runs are correspondingly slower, since there is roughly twice as much history to score per signal. The page is now about 2.6MB of price data, up from 1.4MB.
+
+Two things worth knowing. Fifty-five of the eighty tickers now have full coverage, and the rest list partway through, so the **common sample window matters more than it used to**: picking one recently listed fund still shortens the whole run to that fund's history, and the meta line under the table names whichever ticker is binding it. And as previously decided, **SVXY's pre-February-2018 history describes a different product** (it was a -1x fund before being reformed to -0.5x), so signals spanning that boundary are measuring a blend. In practice this affects SVXY alone: Yahoo's VXX is the Series B ETN and simply has no data before 2018, so there is nothing there to splice.
+
+**Files changed:** `scripts/refresh_prices.py`, `data/prices.json`, `data/prices.js`, `docs/PRD.md`
+
+---
+
 ## [1.20.0] - 2026-08-20
 
 ### Annualized return added to the results table
