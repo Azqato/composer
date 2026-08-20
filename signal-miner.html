@@ -964,6 +964,46 @@
       el.className = 'sl-est' + (c > SIGNAL_WARN_CAP ? ' stop' : c > 45000 ? ' warn' : '');
     }
 
+    // ---------- selection defaults + persistence ----------
+    // The ticker selection is remembered across visits. Only the two ticker sets
+    // are stored: signal families, CPU load and the section-3 filters all reset
+    // on purpose, since those govern how heavy a run is and should stay a
+    // conscious choice rather than something inherited from a past session.
+    const TICKER_STORE_KEY = 'composer-atlas.signal-miner.tickers.v1';
+    const DEFAULT_TARGETS = ['TQQQ'];
+    const DEFAULT_COMPARES = ['QQQ', 'SPY', 'IWM', 'DIA'];
+    let persistReady = false;   // suppresses the write that init's own syncChips would make
+
+    function saveSelection() {
+      if (!persistReady) return;
+      try {
+        localStorage.setItem(TICKER_STORE_KEY, JSON.stringify({
+          targets: [...targets], compares: [...compares],
+        }));
+      } catch (e) { /* storage disabled or full: the selection just will not persist */ }
+    }
+
+    // Returns null when nothing usable is stored, so init falls back to the
+    // defaults above. A stored-but-empty selection is honoured rather than
+    // replaced: if someone hit Clear and refreshed, showing the cleared state is
+    // what they asked for. Only a total absence of storage means "first visit".
+    function loadSelection() {
+      let raw = null;
+      try { raw = localStorage.getItem(TICKER_STORE_KEY); } catch (e) { return null; }
+      if (!raw) return null;
+      try {
+        const v = JSON.parse(raw);
+        if (!v || !Array.isArray(v.targets) || !Array.isArray(v.compares)) return null;
+        // Drop anything no longer in the universe, so pruning a ticker from
+        // prices.json can never strand a stale selection in someone's browser.
+        const known = new Set(UNIVERSE.map(u => u[0]));
+        return {
+          targets: v.targets.filter(t => known.has(t)),
+          compares: v.compares.filter(t => known.has(t)),
+        };
+      } catch (e) { return null; }
+    }
+
     // ---------- UI wiring ----------
     // Chips are grouped by asset class (the `group` field on each ticker in
     // prices.json). With 80 tickers a flat row is unusable, and grouping is what
@@ -1081,6 +1121,7 @@
       document.getElementById('sl-tgt-count').textContent = targets.size ? `(${targets.size})` : '';
       document.getElementById('sl-cmp-count').textContent = compares.size ? `(${compares.size})` : '';
       sigCache = null;   // ticker change alters which signals exist; force a re-run
+      saveSelection();
       estimate();
     }
 
@@ -1119,10 +1160,14 @@
       minSel.innerHTML = MIN_PERIOD_OPTS.map(p => `<option value="${p}"${p === 10 ? ' selected' : ''}>${p}d</option>`).join('');
       minSel.addEventListener('change', () => { sigCache = null; estimate(); });
 
-      // sensible light default
-      targets = new Set(['QQQ']);
-      compares = new Set(['KMLM', 'VIXM', 'TLT']);
+      // Restore the last selection if there is one, otherwise start from the
+      // defaults. persistReady stays false until after this first syncChips so
+      // loading the page never writes back over what was restored.
+      const saved = loadSelection();
+      targets = new Set(saved ? saved.targets : DEFAULT_TARGETS);
+      compares = new Set(saved ? saved.compares : DEFAULT_COMPARES);
       syncChips();
+      persistReady = true;
 
       document.getElementById('sl-run').addEventListener('click', run);
       document.getElementById('sl-example').addEventListener('click', loadExample);

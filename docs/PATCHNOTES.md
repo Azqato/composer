@@ -5,6 +5,20 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.18.3] - 2026-08-20
+
+### Signal Miner remembers your tickers
+
+New defaults on a first visit: Target **TQQQ**, signals **QQQ, SPY, IWM, DIA**. Previously it opened on QQQ against KMLM/VIXM/TLT.
+
+More usefully, the ticker selection now survives a refresh. Whatever you had picked comes back, stored locally in your own browser. Nothing is sent anywhere, consistent with the site collecting no user data at all.
+
+Only the tickers persist. Signal families, CPU load and the filters reset each visit on purpose, since those decide how hard a run works your machine and are better as a deliberate choice than something inherited from a session you have forgotten about. Selections are checked against the current ticker list when restored, so a ticker removed from the universe later cannot leave a broken selection behind, and if you clear everything and refresh you get your cleared state back rather than having the defaults reimposed.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.18.2] - 2026-08-20
 
 ### Results table no longer freezes on huge runs
