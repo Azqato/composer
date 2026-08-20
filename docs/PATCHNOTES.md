@@ -5,6 +5,18 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.18.1] - 2026-08-20
+
+### Signal Miner progress shows time remaining
+
+Long runs previously showed only a projected *total*, which meant working out how much longer to wait required watching the percentage and doing the arithmetic. The status line now leads with time remaining: `12m 35s left of ~12m 30s total (idle ~11m 15s)`.
+
+Remaining is computed as projected total minus measured wall-clock elapsed, so the two figures always agree and the countdown is monotonic. Total itself is still projected from compute time scaled by the duty factor rather than from elapsed, which matters more than it sounds: at a batch boundary the current batch's sleep has not run yet, so projecting from elapsed would understate the total by the whole throttle factor on the first reading and then climb steadily, looking broken. Verified by simulating the loop across the Max, Medium and Low settings.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.18.0] - 2026-08-20
 
 ### Signal Miner universe more than doubles, with grouped tickers and select-all

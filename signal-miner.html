@@ -650,7 +650,8 @@
       for (const t of tgt) targetLret[t] = cache[t].lret;
 
       let busyTotal = 0;                       // cumulative compute time (excludes idle)
-      let batchStart = performance.now();
+      const runStart = performance.now();      // wall-clock start, for elapsed/remaining
+      let batchStart = runStart;
       for (let s = 0; s < specs.length; s++) {
         const spec = specs[s];
         const arr = evalSpec(spec, cache);
@@ -668,15 +669,23 @@
           const busy = performance.now() - batchStart;   // compute time for this batch
           busyTotal += busy;
           const frac = s / specs.length;
-          const projCompute = busyTotal / frac;          // projected total compute at 100%
-          const projIdle = projCompute * FACTOR;         // projected total idle
-          const projTotal = projCompute + projIdle;      // projected wall-clock
+          // Total is projected from measured COMPUTE time scaled by the duty
+          // factor, not from wall-clock elapsed. At a boundary the sleep for the
+          // current batch has not happened yet, so elapsed/frac would understate
+          // the total by the whole factor on the first reading (4x on Medium)
+          // and then climb, which reads as a broken estimate. Remaining is then
+          // the clock difference, so total = elapsed + remaining by construction.
+          const projCompute = busyTotal / frac;           // projected total compute at 100%
+          const projIdle = projCompute * FACTOR;          // projected total idle
+          const projTotal = projCompute + projIdle;       // projected wall-clock
+          const elapsed = performance.now() - runStart;
+          const remaining = Math.max(0, projTotal - elapsed);
           progBar.style.width = (95 * frac).toFixed(1) + '%';
           status.textContent =
             `Backtesting ${specs.length.toLocaleString()} signals... ${s.toLocaleString()} (${Math.round(frac * 100)}%)` +
             (FACTOR
-              ? ` · ~${DUTY}% CPU · est. total ${fmtDur(projTotal)} (idle ~${fmtDur(projIdle)})`
-              : ` · max speed · est. total ${fmtDur(projTotal)}`);
+              ? ` · ~${DUTY}% CPU · ${fmtDur(remaining)} left of ~${fmtDur(projTotal)} total (idle ~${fmtDur(projIdle)})`
+              : ` · max speed · ${fmtDur(remaining)} left of ~${fmtDur(projTotal)} total`);
           await sleep(FACTOR ? busy * FACTOR : 0);
           batchStart = performance.now();
         }
