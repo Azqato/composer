@@ -5,6 +5,24 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.19.0] - 2026-08-20
+
+### Fixed: short-history tickers were being scored unfairly
+
+Signals built on a recently listed fund were penalised for history that fund never had.
+
+Time in Market and the average return feeding Sortino were both divided by the length of the **entire** price history, back to 2018, even when the ticker involved did not list until much later. A fund with `null` prices before it existed cannot fire a signal there, so those days counted against it for nothing. IBIT covers about 30% of the history, which meant an IBIT signal could never report Time in Market above 0.30 no matter how well it actually traded.
+
+Each run now picks a **common sample window**: it starts where the most recently listed of your selected tickers begins, and every signal in that run is scored over that same stretch. On a simulated ticker with 30% coverage, Time in Market corrected from 0.166 to 0.555, its true rate of 361 firing days out of the 650 available, and **Sortino had been understated by 70%**. Total return and max drawdown do not change, since the trades were always the same; only the denominators were wrong.
+
+Two things follow from this, both now shown in the interface. Results are comparable within a run but **not between runs using different tickers**, so the window and the ticker that set it are stated with the results and in the pre-run estimate. And because one recent ticker shrinks the window for everything else, the estimate warns when your selection covers less than 60% of available history, and refuses to run below 30 shared days.
+
+If you have been running signals on IBIT, ETHA, SVIX, KMLM, GDXU, GDXD or DBMF, your earlier results understated them. Worth re-running.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.18.4] - 2026-08-20
 
 ### Fixed: every comparison signal was being generated twice

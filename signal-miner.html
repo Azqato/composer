@@ -480,12 +480,17 @@
     }
 
     // ---------- backtest one boolean signal against one target ----------
-    function backtest(arr, lret) {
+    // `s0` is the first index of the run's common sample window (see windowInfo).
+    // Everything before it is history where at least one selected ticker did not
+    // exist yet, so no signal could fire there; scoring over it would penalise a
+    // young ticker for time it could never have traded. `nw` is the window length
+    // and is what the per-day averages divide by, NOT the full axis length.
+    function backtest(arr, lret, s0, nw) {
       // shifted = arr shifted +1; ret = shifted ? lret : 0 (NaN lret -> 0)
       let cum = 0, runMax = 0, maxDD = 0;   // cum is cumulative log return; equity = exp(cum)
       let sumRet = 0, sumNeg = 0, sumNeg2 = 0, nNeg = 0;
       let gp = 0, gl = 0, active = 0, activeWin = 0;
-      for (let i = 1; i < N; i++) {
+      for (let i = Math.max(1, s0); i < N; i++) {
         if (arr[i - 1] === 0) continue;
         active++;
         let r = lret[i];
@@ -501,9 +506,9 @@
       }
       // Note: sumRet/mean is over active days only; the notebook divides by full length.
       const total = Math.exp(cum) - 1;
-      const tim = active / N;
-      // mean over all rows (matches returns.mean() where non-active days are 0)
-      const meanAll = sumRet / N;
+      const tim = active / nw;
+      // mean over all rows IN THE WINDOW (matches returns.mean() with non-active days 0)
+      const meanAll = sumRet / nw;
       // downside deviation = std (ddof=1) of ONLY the negative returns
       let negStd = 0;
       if (nNeg > 1) { const mN = sumNeg / nNeg; negStd = Math.sqrt((sumNeg2 - nNeg * mN * mN) / (nNeg - 1)); }
@@ -600,6 +605,38 @@
       };
     }
 
+    // ---------- common sample window ----------
+    // Every ticker in a run must be scored over the same stretch of history, or
+    // the numbers are not comparable. A fund that listed partway through the axis
+    // has null closes before it existed and physically cannot fire a signal
+    // there, so counting those days against it caps its Time in Market and
+    // dilutes the mean feeding Sortino. IBIT covers ~30% of the axis, so before
+    // this an IBIT signal could never show tim above 0.30 however good it was.
+    //
+    // The window therefore starts at the LATEST first-valid date among the
+    // selected tickers: the most recently listed one binds the whole run.
+    const firstValidCache = new Map();
+    function firstValidIndex(sym) {
+      if (firstValidCache.has(sym)) return firstValidCache.get(sym);
+      const c = PD.tickers[sym].closes;
+      let i = c.findIndex(v => v != null);
+      if (i < 0) i = c.length;
+      firstValidCache.set(sym, i);
+      return i;
+    }
+
+    // Returns the window for a given set of symbols, plus which ticker binds it
+    // so the UI can name the culprit rather than just showing a short sample.
+    function windowInfo(syms) {
+      let s0 = 0, binding = null;
+      for (const sym of syms) {
+        const i = firstValidIndex(sym);
+        if (i > s0) { s0 = i; binding = sym; }
+      }
+      const len = Math.max(0, N - s0);
+      return { s0, len, binding, start: DATES[Math.min(s0, N - 1)], frac: N ? len / N : 0 };
+    }
+
     // ---------- run ----------
     async function run() {
       const runBtn = document.getElementById('sl-run');
@@ -622,6 +659,13 @@
       const grids = activeGrids(minP);
 
       const universe = [...new Set([...tgt, ...cmp])];
+      // The run's common sample window. Bound by the most recently listed of the
+      // selected tickers, so every signal in this run is scored on equal footing.
+      const win = windowInfo(universe);
+      if (win.len < 30) {
+        status.textContent = `Not enough shared history: ${win.binding || 'the selection'} only has ${win.len} trading days in common with the rest. Remove it or pick tickers with longer history.`;
+        return;
+      }
       const need = {
         rsi: fams.rsi_thresh || fams.rsi_cmp,
         cum: fams.cum_lvl || fams.cum_cmp,
@@ -691,7 +735,7 @@
         const arr = evalSpec(spec, cache);
         let used = false;
         for (const t of tgt) {
-          const m = backtest(arr, targetLret[t]);
+          const m = backtest(arr, targetLret[t], win.s0, win.len);
           if (m.total > 0 && m.sortino === m.sortino && m.calmar === m.calmar) {
             allSingles.push({ spec, single: true, target: t, label: specLabel(spec), ...m, _si: s });
             used = true;
@@ -726,7 +770,7 @@
       }
 
       progBar.style.width = '100%';
-      sigCache = { allSingles, survivorArr, tgt, targetLret, N };
+      sigCache = { allSingles, survivorArr, tgt, targetLret, N, win };
       runBtn.disabled = false;
       setTimeout(() => { prog.style.display = 'none'; }, 600);
 
@@ -746,7 +790,7 @@
       const MDD = parseFloat(document.getElementById('sl-mdd').value);
       const QUANT = Math.min(0.9, Math.max(0, parseFloat(document.getElementById('sl-quant').value) || 0));
       const comboLimit = parseInt(document.getElementById('sl-combo').value, 10);
-      const { allSingles, survivorArr, tgt, targetLret, N } = sigCache;
+      const { allSingles, survivorArr, tgt, targetLret, N, win } = sigCache;
 
       const rows = allSingles.filter(r => r.tim > TIM && r.maxDD > MDD);
 
@@ -764,7 +808,7 @@
               const A = survivorArr[surv[i]._si], B = survivorArr[surv[j]._si];
               const arr = new Uint8Array(N);
               for (let k = 0; k < N; k++) arr[k] = (A[k] & B[k]);
-              const m = backtest(arr, targetLret[t]);
+              const m = backtest(arr, targetLret[t], win.s0, win.len);
               if (m.tim > TIM && m.maxDD > MDD && m.total > 0 &&
                   m.sortino === m.sortino && m.calmar === m.calmar) {
                 comboRows.push({
@@ -952,8 +996,14 @@
       }
 
       document.getElementById('sl-count').textContent = `(${total.toLocaleString()})`;
+      const w = sigCache && sigCache.win;
+      const sample = w
+        ? ` Scored over ${w.start} to ${DATES[N - 1]} (${w.len.toLocaleString()} trading days${w.binding ? `, window set by ${w.binding}` : ''}).`
+        : '';
       document.getElementById('sl-meta').textContent =
-        total > DISPLAY_CAP ? `Showing top ${DISPLAY_CAP} of ${total.toLocaleString()} by current sort. Refine with the filter box or a stricter Time-in-Market.` : `${total.toLocaleString()} signals shown.`;
+        (total > DISPLAY_CAP
+          ? `Showing top ${DISPLAY_CAP} of ${total.toLocaleString()} by current sort. Refine with the filter box or a stricter Time-in-Market.`
+          : `${total.toLocaleString()} signals shown.`) + sample;
 
       head.querySelectorAll('th[data-key]').forEach(th => {
         th.addEventListener('click', () => {
@@ -987,8 +1037,26 @@
       if (fams.std_cmp)    c += cmpCount(g.STD_W.length);
       const el = document.getElementById('sl-est');
       if (n === 0 || targets.size === 0) { el.textContent = 'Pick tickers to estimate.'; el.className = 'sl-est'; return; }
-      el.textContent = `~${c.toLocaleString()} signals to test`;
-      el.className = 'sl-est' + (c > SIGNAL_WARN_CAP ? ' stop' : c > 45000 ? ' warn' : '');
+      let txt = `~${c.toLocaleString()} signals to test`;
+      let cls = c > SIGNAL_WARN_CAP ? ' stop' : c > 45000 ? ' warn' : '';
+      // Show the sample window the current selection implies. The most recently
+      // listed ticker binds it, so name that ticker: a two-year window on an
+      // eight-year axis is usually one chip the user did not mean to include.
+      if (PD && DATES) {
+        const w = windowInfo([...targets, ...compares]);
+        if (w.len < 30) {
+          txt += ` · not enough shared history (${w.binding || 'selection'})`;
+          cls = ' stop';
+        } else {
+          txt += ` · sample ${w.start} to ${DATES[N - 1]} (${w.len.toLocaleString()} days)`;
+          if (w.binding) {
+            txt += `, limited by ${w.binding}`;
+            if (w.frac < 0.6 && !cls) cls = ' warn';
+          }
+        }
+      }
+      el.textContent = txt;
+      el.className = 'sl-est' + cls;
     }
 
     // ---------- selection defaults + persistence ----------
