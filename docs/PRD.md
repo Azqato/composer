@@ -1515,7 +1515,7 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 - [x] Fix: navigation broken on `file://` protocol: `u()` helper added (v1.0.4)
 - [x] Fix: all links broken on GitHub Pages: case-insensitive BASE detection (v1.1.2)
 - [x] Footer simplified to match azqato.github.io (v1.1.3)
-- [ ] Google AdSense integration (pending approval)
+- [~] ~~Google AdSense integration (pending approval)~~ — **dropped.** Monetization was removed from the product entirely (see Non-Goals and Tenet 7): the site takes donations through Buy Me a Coffee only, runs no ads, and collects no user data. This line survived the monetization removal because it sits in a completed historical section rather than the live backlog.
 - [ ] Performance audit and Lighthouse optimization
 
 ### V1.2: Data Tooling + Structure Refactor
