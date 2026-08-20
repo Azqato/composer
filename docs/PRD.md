@@ -1940,7 +1940,11 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
   Rough size cost, extrapolating from the current 1.36MB for 2,170 dates and 80 tickers: back to 2010 is roughly +1.1MB, back to 2000 roughly +2.2MB, so a full-history file lands near 3.5-4MB. That is a lot for a tool page but not disqualifying.
 
-  **The real blocker is data integrity, not size.** Several tickers do not mean the same thing before 2018. SVXY was reformed in February 2018 from -1x to -0.5x, so its pre-2018 history describes a different product; the current `START_DATE` comment says exactly this. Yahoo's VXX is the Series B ETN that launched in 2018, the original having been retired. Extending the axis naively would splice two different products together under one ticker and silently corrupt every signal using them. Any extension needs a per-ticker earliest-valid-date override rather than one global `START_DATE`.
+  **Reformed funds: accepted as a known tradeoff (owner decision, 2026-08-20).** Several tickers do not mean the same thing before 2018. SVXY was reformed in February 2018 from -1x to -0.5x, so its earlier history describes a different product, and Yahoo's VXX is the Series B ETN that launched in 2018 after the original was retired. Extending the axis splices those two eras together under one ticker. This was raised and **explicitly waived**: per-ticker valid-date overrides are not required, a single global `START_DATE` is fine.
+
+  Concrete effect to be aware of rather than designed around: any signal using SVXY or VXX over a window crossing early 2018 is measuring a blend of two products, so its metrics describe something not tradeable today. Everything else in the universe is unaffected. This does not touch the common sample window, which is about listing dates, not fund identity.
+
+  With that waived, the remaining decision is purely **file size**, and the work is small: change `START_DATE`, re-run `refresh_prices.py`, commit the regenerated `prices.json`/`prices.js`. No code changes.
 
 - [ ] **Signal Miner: multi-select rows and export one combined symphony** — suggested by Haverel Mink in the Composer Discord (2026-08-20): "What if you could write the frontrunner JSON from the results table, rather than building it one-by-one?" Today each row's **Copy JSON** exports a single IF block holding one target when one signal fires, so assembling a Frontrunner-style symphony from several discovered signals means exporting each one and stitching them together by hand in the Composer editor.
 
