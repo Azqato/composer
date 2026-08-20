@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.20.0] - 2026-08-20
+
+### Annualized return added to the results table
+
+The results table now has an **Annualized** column, sitting right after Total Return and sortable like every other metric. It answers the question Total Return cannot: a 400% gain reads very differently over eight years than over two.
+
+It is a true CAGR, computed over the **run's sample window** rather than over days in market. A signal that sits in cash most of the time is not credited as though the idle stretches did not happen, because that flat time is part of what you actually earned.
+
+Worth knowing before you sort by it: the sample window is the same for every row in a given run, so **Annualized ranks results in exactly the same order Total Return does.** It is there to make the size of a number readable, not to give you a second opinion on which signal is best. Sortino and Calmar remain the columns that rank differently. For the same reason it is deliberately left out of quantile pruning, where it would just apply the Total Return filter twice.
+
+The saved-results snapshot carries the new column, and the storage key moved to `v2` so a snapshot saved before this release is discarded rather than restored with an empty Annualized column. One run rebuilds it.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.19.1] - 2026-08-20
 
 ### Your last results are still there when you come back

@@ -507,6 +507,15 @@
       }
       // Note: sumRet/mean is over active days only; the notebook divides by full length.
       const total = Math.exp(cum) - 1;
+      // Annualised (CAGR) over the WINDOW, not over days in market: the strategy
+      // sits in cash when the signal is off, and that flat time is part of the
+      // return you actually earn. cum is already a log return, so this is
+      // exp(cum / years) - 1 with years = nw / 252, which avoids raising a
+      // possibly-tiny base to a fractional power. Note nw is fixed for a whole
+      // run, so within one result set this is a monotone transform of `total`
+      // and sorts identically; it is here for readable magnitude, not as a new
+      // ranking dimension, which is also why quantilePrune does not use it.
+      const annRet = nw > 0 ? Math.exp(cum * 252 / nw) - 1 : NaNv;
       const tim = active / nw;
       // mean over all rows IN THE WINDOW (matches returns.mean() with non-active days 0)
       const meanAll = sumRet / nw;
@@ -518,7 +527,7 @@
       const calmar = maxDD !== 0 ? total / Math.abs(maxDD) : NaNv;
       const pf = gl !== 0 ? gp / gl : NaNv;
       const pctProf = active > 0 ? activeWin / active : NaNv;
-      return { total, sortino, calmar, maxDD, tim, pf, pctProf };
+      return { total, annRet, sortino, calmar, maxDD, tim, pf, pctProf };
     }
 
     // ---------- labels ----------
@@ -617,7 +626,7 @@
     // is read-only: sorting and the section-3 filters need the full cached set,
     // and re-ranking just the saved 100 would look like it worked while quietly
     // ranking a subset. The sort headers are disabled until a fresh run.
-    const RESULTS_STORE_KEY = 'composer-atlas.signal-miner.lastrun.v1';
+    const RESULTS_STORE_KEY = 'composer-atlas.signal-miner.lastrun.v2';
     const SNAPSHOT_ROWS = 100;
     let restored = false;      // showing a snapshot, so sorting is off
     let snapshotNote = '';     // meta line for a restored view, kept across re-renders
@@ -633,7 +642,7 @@
           rows: top.map(r => ({
             single: r.single, target: r.target, label: r.label,
             spec: r.spec, specs: r.specs,
-            total: r.total, sortino: r.sortino, calmar: r.calmar,
+            total: r.total, annRet: r.annRet, sortino: r.sortino, calmar: r.calmar,
             maxDD: r.maxDD, tim: r.tim, pf: r.pf, pctProf: r.pctProf,
           })),
         }));
@@ -918,6 +927,7 @@
       { key: 'label',   label: 'Signal', cls: 'sig' },
       { key: 'target',  label: 'Target', cls: 'tgt' },
       { key: 'total',   label: 'Total Return', fmt: 'pct' },
+      { key: 'annRet',  label: 'Annualized', fmt: 'pct' },
       { key: 'sortino', label: 'Sortino', fmt: 'num' },
       { key: 'calmar',  label: 'Calmar', fmt: 'num' },
       { key: 'maxDD',   label: 'Max DD', fmt: 'pct' },
