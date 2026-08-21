@@ -142,7 +142,7 @@
       <div class="container">
         <p class="hero-eyebrow">Signal Miner</p>
         <h1 class="hero-title" style="font-size:2rem">Mine IF-THEN signals across a ticker universe.</h1>
-        <p class="hero-desc" style="margin-bottom:0">Pick assets to invest in and assets to check signals against. Signal Miner brute-forces thousands of Composer-style rules (RSI, returns, moving averages, and volatility), backtests each one, and ranks what worked. Everything runs in your browser on committed price history. No signal is a recommendation.</p>
+        <p class="hero-desc" style="margin-bottom:0">Pick assets to invest in and assets to check signals against. Signal Miner brute-forces millions of Composer-style rules across all nine of Composer's condition functions (price, moving averages, EMA, RSI, returns, volatility, and drawdown), backtests each one, and ranks what worked. Everything runs in your browser on committed price history. No signal is a recommendation.</p>
         <p class="sl-refreshed" id="sl-refreshed"><span class="dot"></span><span id="sl-refreshed-text">Loading price data...</span></p>
       </div>
     </section>
@@ -183,9 +183,16 @@
       </div>
 
       <div class="sl-panel">
-        <h2>2. Signal families</h2>
-        <p class="sl-sub">Each family maps to a native Composer condition type. Turn off the ones you do not need to shrink the search and speed things up.</p>
-        <div class="sl-fams" id="sl-families"></div>
+        <div class="sl-rowhead">
+          <span class="sl-label" style="font:inherit"><h2 style="margin:0">2. Signal families <span id="sl-fam-count" style="color:var(--color-green)"></span></h2></span>
+          <span class="sl-selgroup">
+            <button type="button" class="sl-sel" id="sl-fam-def">Default</button>
+            <button type="button" class="sl-sel" id="sl-fam-all">Select all</button>
+            <button type="button" class="sl-sel" id="sl-fam-none">Clear</button>
+          </span>
+        </div>
+        <p class="sl-sub">Every family maps to a native Composer condition type, built from the nine functions Composer exposes. Each group has an <strong>All</strong> toggle. Eleven are on by default; the rest are off because they are either expensive or rarely productive, not because they do not work. Watch the estimate in section 1 as you add them: the <em>compare</em> families put two (ticker, window) operands on either side, so they grow with the <em>square</em> of tickers times windows, while the <em>vs level</em> families grow only linearly.</p>
+        <div id="sl-families"></div>
       </div>
 
       <div class="sl-panel">
@@ -287,31 +294,172 @@
     const NaNv = NaN;
     const CMP_SYM = { GT: '>', LT: '<' };
 
-    // Full parameter grids (match the community V2 notebook). The active grids
-    // are these filtered by the user-chosen minimum signal period (see activeGrids).
-    const RSI_W_ALL = [5, 10, 15, 20, 25, 30, 100, 200];
-    const CUM_W_ALL = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 100, 200];
-    const MA_W_ALL  = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200];
-    const STD_W_ALL = [10, 20, 30, 40, 50, 100, 200];
-    const RSI_LEVELS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
-    const CUM_LEVELS = [-0.10, -0.08, -0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08, 0.10];
-    const MIN_PERIOD_OPTS = [5, 10, 15, 20, 25, 30, 100, 200];
+    // ONE window grid for every family (v1.23.0). Until then each family had
+    // its own, inherited from the community V2 notebook: RSI stepped by 5 to 30
+    // then jumped to 100, CumRet stepped by 5 all the way to 90, MA and StdDev
+    // stepped by 10. Nothing lined up, so no two families could be compared at
+    // the same horizon, and the CumRet grid's nineteen linear steps cost 61.5%
+    // of the entire search space to distinguish a 55-day lookback from a 60-day
+    // one, which is not a real distinction.
+    //
+    // Every value below traces to a calendar period, a named indicator default,
+    // or a published momentum specification, and the spacing is roughly
+    // log-uniform (no two windows closer than 15%), because information content
+    // scales with the ratio between windows, not the difference:
+    //
+    //     5    1 trading week
+    //     7    the short-RSI cluster common in Composer symphonies
+    //    10    2 weeks; the single most used window in the strategy library
+    //    12    MACD fast leg
+    //    14    Wilder's default (RSI, ATR, ADX, Stochastic)
+    //    21    1 month; the standard realised-volatility estimator
+    //    26    MACD slow leg
+    //    30    ~6 weeks; heavily used in practice
+    //    42    2 months
+    //    50    golden-cross fast leg
+    //    63    1 quarter; momentum formation period
+    //   100    bridges the quarter to the year
+    //   126    6 months; momentum formation period
+    //   200    the trend gate (Faber's 10-month SMA, rounded)
+    //   252    1 year; the dominant momentum window in the literature
+    //
+    // 20, 60 and 189 were dropped as near-duplicates of 21, 63 and 200 (all
+    // within 6%): they cost the same as any other window, in a family that
+    // scales with the SQUARE of the grid, while producing an almost identical
+    // daily series to a window already present.
+    const WINDOWS = [5, 7, 10, 12, 14, 21, 26, 30, 42, 50, 63, 100, 126, 200, 252];
 
-    // Return the window grids filtered to periods >= minP (never empty: at least
-    // the largest window in each family is kept).
-    function activeGrids(minP) {
-      const flt = (arr) => { const f = arr.filter(p => p >= minP); return f.length ? f : [arr[arr.length - 1]]; };
-      return { RSI_W: flt(RSI_W_ALL), CUM_W: flt(CUM_W_ALL), MA_W: flt(MA_W_ALL), STD_W: flt(STD_W_ALL) };
+    // The floor always lands on a real window, so choosing it never silently
+    // rounds to something the grid does not contain.
+    const MIN_PERIOD_OPTS = WINDOWS.slice();
+
+    // The one grid, filtered to periods >= minP. Never empty: the largest
+    // window is always kept, so a floor above every window still runs.
+    function activeWindows(minP) {
+      const f = WINDOWS.filter(p => p >= minP);
+      return f.length ? f : [WINDOWS[WINDOWS.length - 1]];
     }
 
+    // ---------- level grids (v1.23.0) ----------
+    // RSI thresholds step by 2 rather than 10. Threshold families cost
+    // tickers x windows x levels x 2, LINEAR in the level count, unlike the
+    // comparison families which square with the window count, so finer
+    // resolution here is close to free: it adds about 1.2% to a maximal run.
+    // The old 10-step grid was coarse enough that on a mid-length window only
+    // four of its nine levels ever separated anything.
+    //
+    // RSI levels are NOT window-scaled. Scaling them by sqrt(window) was tried
+    // and measured wrong: it assumes the distribution is symmetric about 50,
+    // and a trending asset sits above 50 for years at a time, so the scaled
+    // grid drifted off the part of the range that actually separates days.
+    const RSI_LEVELS = [];
+    for (let L = 10; L <= 90; L += 2) RSI_LEVELS.push(L);
+
+    // Quantities that ACCUMULATE over the window disperse as sqrt(t). A 10%
+    // move over 5 days and a 10% move over 252 days are not the same event,
+    // and one fixed grid mis-serves both ends: measured on TQQQ 2010-2026, a
+    // fixed +/-10% cumulative-return grid left only 12% of days inside the
+    // grid at 252 days, so most of its levels were pinned true (or false) for
+    // the whole sample and separated nothing. The base grids below are quoted
+    // at LEVEL_BASE_WIN days and scaled by sqrt(p / LEVEL_BASE_WIN).
+    //
+    // Rate-like quantities do NOT scale. Mean daily return and daily
+    // volatility estimate a per-day rate; a longer window makes the estimate
+    // steadier, not larger, so those keep one fixed grid across all windows.
+    const LEVEL_BASE_WIN = 21;
+    function scaleLevels(base, p, dp) {
+      const k = Math.sqrt(p / LEVEL_BASE_WIN), r = Math.pow(10, dp), out = [];
+      for (const b of base) {
+        const v = Math.round(b * k * r) / r;
+        if (out.indexOf(v) === -1) out.push(v);   // rounding can collide at short windows
+      }
+      return out;
+    }
+    const CUM_BASE = [-0.10, -0.08, -0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08, 0.10];
+    const DD_BASE = [0.02, 0.04, 0.06, 0.08, 0.10, 0.13, 0.16, 0.20];
+    const STD_R_LEVELS = [0.005, 0.0075, 0.01, 0.0125, 0.015, 0.02, 0.025, 0.03, 0.04];
+    const MA_R_LEVELS = [-0.002, -0.0015, -0.001, -0.0005, 0, 0.0005, 0.001, 0.0015, 0.002];
+
+    // ---------- indicators ----------
+    // One entry per native Composer function. `calc` builds the series for a
+    // ticker at a window; `fn` is the Composer slug the exporter emits; `pct`
+    // marks a quantity Composer states in percent, so a level stored here as a
+    // fraction is multiplied by 100 for the label and the export (the same
+    // trade cumulative return has always used). `close` is the only
+    // window-less indicator, and is what "current price" compares.
+    const INDICATORS = {
+      close: { label: 'Price',         suffix: '',  fn: 'current-price' },
+      rsi:   { label: 'RSI',           suffix: '',  fn: 'relative-strength-index',          calc: (c, p) => rsi(c.close, p) },
+      cum:   { label: 'CumRet',        suffix: 'd', fn: 'cumulative-return',                calc: (c, p) => cumret(c.close, p), pct: true },
+      ma:    { label: 'MA-Return',     suffix: 'd', fn: 'moving-average-return',            calc: (c, p) => rollMean(c.dret, p), pct: true },
+      std:   { label: 'StdDev-Return', suffix: 'd', fn: 'standard-deviation-return',        calc: (c, p) => rollStd(c.dret, p), pct: true },
+      map:   { label: 'MA-Price',      suffix: 'd', fn: 'moving-average-price',             calc: (c, p) => rollMean(c.px, p) },
+      ema:   { label: 'EMA-Price',     suffix: 'd', fn: 'exponential-moving-average-price', calc: (c, p) => ema(c.px, p) },
+      stdp:  { label: 'StdDev-Price',  suffix: 'd', fn: 'standard-deviation-price',         calc: (c, p) => rollStd(c.px, p) },
+      dd:    { label: 'MaxDD',         suffix: 'd', fn: 'max-drawdown',                     calc: (c, p) => maxDrawdown(c.px, p), pct: true },
+    };
+
+    // ---------- signal families ----------
+    // Sixteen families over the nine Composer functions, in three kinds:
+    //
+    //   lvl   one series against a constant     n * W * levels(p) * 2 specs
+    //   cmp   two (ticker, window) operands     m * (m-1), m = n * W
+    //   self  two indicators, ONE ticker, ONE   n * W * 2
+    //         window (price vs its own average)
+    //
+    // Only `cmp` squares with the grid, which is why the level families can
+    // afford fine grids and the comparison families cannot afford extra
+    // windows. Eleven are on by default: the ones that are both cheap and
+    // well attested in the strategy library. The rest stay one click away.
     const FAMILIES = [
-      { id: 'rsi_thresh', label: 'RSI vs level', on: true },
-      { id: 'rsi_cmp',    label: 'RSI vs RSI (two tickers)', on: true },
-      { id: 'cum_lvl',    label: 'Cumulative return vs level', on: true },
-      { id: 'cum_cmp',    label: 'Cumulative return vs return', on: true },
-      { id: 'ma_cmp',     label: 'Return moving-average compare', on: true },
-      { id: 'std_cmp',    label: 'Return std-dev compare', on: true },
+      // --- Price ---
+      { id: 'price_ma',   group: 'Price',  on: true,  kind: 'self', a: 'close', b: 'map',  label: 'Price vs own moving average' },
+      { id: 'price_ema',  group: 'Price',  on: true,  kind: 'self', a: 'close', b: 'ema',  label: 'Price vs own EMA' },
+      { id: 'map_cmp',    group: 'Price',  on: true,  kind: 'cmp',  a: 'map',              label: 'Moving average of price compare' },
+      { id: 'ema_cmp',    group: 'Price',  on: false, kind: 'cmp',  a: 'ema',              label: 'EMA of price compare' },
+      { id: 'ema_map',    group: 'Price',  on: false, kind: 'self', a: 'ema',   b: 'map',  label: 'EMA vs moving average (same ticker)' },
+      // --- Return / momentum ---
+      { id: 'rsi_thresh', group: 'Return', on: true,  kind: 'lvl',  a: 'rsi',   lv: () => RSI_LEVELS,                    label: 'RSI vs level' },
+      { id: 'rsi_cmp',    group: 'Return', on: true,  kind: 'cmp',  a: 'rsi',                                            label: 'RSI vs RSI' },
+      { id: 'cum_lvl',    group: 'Return', on: true,  kind: 'lvl',  a: 'cum',   lv: p => scaleLevels(CUM_BASE, p, 3),    label: 'Cumulative return vs level' },
+      { id: 'cum_cmp',    group: 'Return', on: true,  kind: 'cmp',  a: 'cum',                                            label: 'Cumulative return compare' },
+      { id: 'ma_cmp',     group: 'Return', on: true,  kind: 'cmp',  a: 'ma',                                             label: 'Moving average of return compare' },
+      { id: 'ma_lvl',     group: 'Return', on: false, kind: 'lvl',  a: 'ma',    lv: () => MA_R_LEVELS,                   label: 'Moving average of return vs level' },
+      // --- Risk ---
+      { id: 'std_cmp',    group: 'Risk',   on: true,  kind: 'cmp',  a: 'std',                                            label: 'Std dev of return compare' },
+      { id: 'std_lvl',    group: 'Risk',   on: true,  kind: 'lvl',  a: 'std',   lv: () => STD_R_LEVELS,                  label: 'Std dev of return vs level' },
+      { id: 'dd_lvl',     group: 'Risk',   on: true,  kind: 'lvl',  a: 'dd',    lv: p => scaleLevels(DD_BASE, p, 3),     label: 'Max drawdown vs level' },
+      { id: 'dd_cmp',     group: 'Risk',   on: false, kind: 'cmp',  a: 'dd',                                             label: 'Max drawdown compare' },
+      { id: 'stdp_cmp',   group: 'Risk',   on: false, kind: 'cmp',  a: 'stdp',                                           label: 'Std dev of price compare' },
     ];
+    const FAM_GROUPS = ['Price', 'Return', 'Risk'];
+    const FAM = {};                      // id -> family
+    const FAM_IX = {};                   // id -> index (what the spec store holds)
+    FAMILIES.forEach((f, i) => { FAM[f.id] = f; FAM_IX[f.id] = i; });
+
+    // Every indicator a set of enabled families needs a cache for.
+    function neededIndicators(fams) {
+      const s = new Set();
+      for (const f of FAMILIES) if (fams[f.id]) { s.add(f.a); if (f.b) s.add(f.b); }
+      s.delete('close');                 // always present, never windowed
+      return [...s];
+    }
+
+    // The single source of truth for "how many specs will this produce".
+    // estimate() and buildSpecs() both read it, so the number shown before a
+    // run and the number the run actually tests cannot drift apart.
+    function famSpecCount(f, n, W) {
+      if (f.kind === 'cmp') { const m = n * W.length; return m * (m - 1); }
+      if (f.kind === 'self') return n * W.length * 2;
+      let c = 0;
+      for (const p of W) c += f.lv(p).length;
+      return n * c * 2;
+    }
+    function countSpecs(n, fams, W) {
+      let c = 0;
+      for (const f of FAMILIES) if (fams[f.id]) c += famSpecCount(f, n, W);
+      return c;
+    }
 
     const SURV_CAP = 150;      // max single-signal survivors fed into pairing, per target
     const DISPLAY_CAP = 100;   // max rows rendered (see selectTop: never sort the full set)
@@ -371,7 +519,7 @@
     // Build the row object the table, the exporter and the snapshot expect.
     // Called for tens of rows, not millions.
     function storeRow(st, i) {
-      const spec = st.specs[st.si[i]];
+      const spec = specAt(st.specs, st.si[i]);
       const r = { single: true, target: st.tgt[st.ti[i]], spec, label: specLabel(spec) };
       for (const k of METRIC_KEYS) r[k] = st.m[k][i];
       return r;
@@ -392,7 +540,7 @@
     }
 
     function storeSet(st, idx) {
-      const lab = i => specLabel(st.specs[st.si[idx[i]]]);
+      const lab = i => specLabel(specAt(st.specs, st.si[idx[i]]));
       return {
         count: idx.length,
         get: i => storeRow(st, idx[i]),
@@ -504,6 +652,42 @@
       }
       return out;
     }
+    // Exponential moving average of price, alpha = 2/(p+1) (Composer's
+    // convention). Seeded on the first real observation and masked for the
+    // first p days so it is not reported before the window is filled, matching
+    // how rsi/rollMean mask theirs.
+    function ema(px, p) {
+      const out = new Float64Array(N);
+      const a = 2 / (p + 1);
+      let e = 0, started = false;
+      for (let i = 0; i < N; i++) {
+        const v = px[i];
+        if (v !== v) { out[i] = NaNv; started = false; continue; }
+        e = started ? e + a * (v - e) : v;
+        started = true;
+        out[i] = i < p ? NaNv : e;
+      }
+      return out;
+    }
+    // Rolling max drawdown over the trailing p days, as a POSITIVE fraction
+    // (0.2 = a 20% peak-to-trough decline inside the window). Composer states
+    // it in percent, so the exporter multiplies by 100.
+    function maxDrawdown(px, p) {
+      const out = new Float64Array(N);
+      for (let i = 0; i < N; i++) {
+        if (i < p) { out[i] = NaNv; continue; }
+        let peak = -Infinity, dd = 0, ok = true;
+        for (let k = i - p + 1; k <= i; k++) {
+          const v = px[k];
+          if (v !== v) { ok = false; break; }
+          if (v > peak) peak = v;
+          const d = 1 - v / peak;
+          if (d > dd) dd = d;
+        }
+        out[i] = ok ? dd : NaNv;
+      }
+      return out;
+    }
     function percentile(sorted, q) {
       const n = sorted.length;
       if (n === 0) return NaNv;
@@ -514,17 +698,22 @@
     }
 
     // ---------- caches ----------
-    function buildCaches(tickers, need, grids) {
+    // `need` is the indicator-key list from neededIndicators(); `W` is the one
+    // active window grid. `px` is the close series as a Float64Array with NaN
+    // for missing days: the raw `closes` array holds nulls, and the rolling
+    // helpers test for NaN, which a null slips past silently (null !== null is
+    // false, and `sum += null` adds zero). Price-based indicators read px.
+    function buildCaches(tickers, need, W) {
       const cache = {};
       for (const t of tickers) {
         const close = PD.tickers[t].closes;
-        const c = { close: close, lret: logReturns(close), rsi: {}, cum: {}, ma: {}, std: {} };
-        if (need.rsi) for (const p of grids.RSI_W) c.rsi[p] = rsi(close, p);
-        if (need.cum) for (const p of grids.CUM_W) c.cum[p] = cumret(close, p);
-        if (need.ma || need.std) {
-          const dret = dailyReturns(close);
-          if (need.ma) for (const p of grids.MA_W) c.ma[p] = rollMean(dret, p);
-          if (need.std) for (const p of grids.STD_W) c.std[p] = rollStd(dret, p);
+        const px = new Float64Array(N);
+        for (let i = 0; i < N; i++) px[i] = close[i] == null ? NaNv : close[i];
+        const c = { close: px, px: px, lret: logReturns(close) };
+        if (need.indexOf('ma') !== -1 || need.indexOf('std') !== -1) c.dret = dailyReturns(close);
+        for (const k of need) {
+          c[k] = {};
+          for (const p of W) c[k][p] = INDICATORS[k].calc(c, p);
         }
         cache[t] = c;
       }
@@ -546,10 +735,45 @@
     // Canonical order loses no coverage. `Y > X` is still reachable, it just
     // arrives spelled `X < Y`, and both directions are still emitted for every
     // pair kept. Operands are ordered by ticker index, then by window.
-    function pushCmpSpecs(specs, fam, tickerList, windows) {
-      for (let i = 0; i < tickerList.length; i++) {
-        for (let j = i; j < tickerList.length; j++) {
-          const a = tickerList[i], b = tickerList[j];
+    //
+    // Specs are stored COLUMNARLY (v1.23.0), for the same reason the Pass-1
+    // results are: a maximal run now builds well over five million of them,
+    // and as JavaScript objects that was ~300MB of the tab's ~3.5GB heap
+    // ceiling, held live for the whole run because Pass 1 indexes back into
+    // it. Seven typed arrays cost 10 bytes per spec, in one allocation per
+    // column, with nothing for the garbage collector to trace. A spec object
+    // is materialised only where one is genuinely needed: labels, the export,
+    // the <=150 survivors per target fed into pairing, and the snapshot.
+    const SPEC_COLS = [['fi', Uint8Array], ['d', Uint8Array], ['a', Uint8Array],
+                       ['b', Uint8Array], ['p', Uint16Array], ['q', Uint16Array],
+                       ['lv', Float64Array]];
+    function makeSpecStore(tickerList) {
+      const sp = { n: 0, cap: 0, tk: tickerList };
+      for (const [k, T] of SPEC_COLS) sp[k] = new T(0);
+      return sp;
+    }
+    function growSpecs(sp) {
+      const cap = sp.cap ? sp.cap * 2 : 65536;
+      for (const [k, T] of SPEC_COLS) { const arr = new T(cap); arr.set(sp[k]); sp[k] = arr; }
+      sp.cap = cap;
+    }
+    // dir is 0 for GT, 1 for LT. b/q are the second operand and are left at
+    // zero for the kinds that do not have one.
+    function pushSpec(sp, fi, dir, ai, p1, bi, p2, lv) {
+      if (sp.n === sp.cap) growSpecs(sp);
+      const i = sp.n++;
+      sp.fi[i] = fi; sp.d[i] = dir; sp.a[i] = ai; sp.p[i] = p1;
+      sp.b[i] = bi; sp.q[i] = p2; sp.lv[i] = lv;
+    }
+    function specAt(sp, i) {
+      return { f: FAMILIES[sp.fi[i]].id, dir: sp.d[i] ? 'LT' : 'GT',
+               t1: sp.tk[sp.a[i]], p1: sp.p[i],
+               t2: sp.tk[sp.b[i]], p2: sp.q[i], level: sp.lv[i] };
+    }
+
+    function pushCmpSpecs(sp, fi, nT, windows) {
+      for (let i = 0; i < nT; i++) {
+        for (let j = i; j < nT; j++) {
           for (const p1 of windows) {
             for (const p2 of windows) {
               // Same ticker on both sides: keep only p1 < p2. That drops the
@@ -557,52 +781,68 @@
               // series to itself and is therefore always false. Different
               // windows on one ticker (fast vs slow) stay, they are real signals.
               if (i === j && !(p1 < p2)) continue;
-              specs.push({ f: fam, dir: 'GT', t1: a, p1: p1, t2: b, p2: p2 });
-              specs.push({ f: fam, dir: 'LT', t1: a, p1: p1, t2: b, p2: p2 });
+              pushSpec(sp, fi, 0, i, p1, j, p2, 0);
+              pushSpec(sp, fi, 1, i, p1, j, p2, 0);
             }
           }
         }
       }
     }
 
-    function buildSpecs(tickerList, fams, grids) {
-      const specs = [];
-
-      // Threshold families compare one series against a constant, so they have
-      // no mirror form and are unaffected by the canonical ordering above.
-      if (fams.rsi_thresh) for (const t of tickerList) for (const p of grids.RSI_W) for (const lvl of RSI_LEVELS) {
-        specs.push({ f: 'rsi_thresh', dir: 'GT', t1: t, p1: p, level: lvl });
-        specs.push({ f: 'rsi_thresh', dir: 'LT', t1: t, p1: p, level: lvl });
+    function buildSpecs(tickerList, fams, W) {
+      if (tickerList.length > 255) throw new Error('ticker index is a byte; more than 255 signal tickers needs a wider array');
+      const sp = makeSpecStore(tickerList);
+      const nT = tickerList.length;
+      for (const f of FAMILIES) {
+        if (!fams[f.id]) continue;
+        const fi = FAM_IX[f.id];
+        if (f.kind === 'cmp') { pushCmpSpecs(sp, fi, nT, W); continue; }
+        for (let i = 0; i < nT; i++) {
+          for (const p of W) {
+            // Threshold families compare one series against a constant, so
+            // they have no mirror form and are unaffected by the canonical
+            // ordering above. `self` families pin both operands to one ticker
+            // and one window, so they have no mirror either.
+            if (f.kind === 'self') {
+              pushSpec(sp, fi, 0, i, p, i, p, 0);
+              pushSpec(sp, fi, 1, i, p, i, p, 0);
+            } else {
+              for (const lvl of f.lv(p)) {
+                pushSpec(sp, fi, 0, i, p, 0, 0, lvl);
+                pushSpec(sp, fi, 1, i, p, 0, 0, lvl);
+              }
+            }
+          }
+        }
       }
-      if (fams.cum_lvl) for (const t of tickerList) for (const p of grids.CUM_W) for (const lvl of CUM_LEVELS) {
-        specs.push({ f: 'cum_lvl', dir: 'GT', t1: t, p1: p, level: lvl });
-        specs.push({ f: 'cum_lvl', dir: 'LT', t1: t, p1: p, level: lvl });
-      }
-
-      if (fams.rsi_cmp) pushCmpSpecs(specs, 'rsi_cmp', tickerList, grids.RSI_W);
-      if (fams.cum_cmp) pushCmpSpecs(specs, 'cum_cmp', tickerList, grids.CUM_W);
-      if (fams.ma_cmp)  pushCmpSpecs(specs, 'ma_cmp',  tickerList, grids.MA_W);
-      if (fams.std_cmp) pushCmpSpecs(specs, 'std_cmp', tickerList, grids.STD_W);
-
-      return specs;
+      return sp;
     }
 
+    // The series an (indicator, window) operand resolves to. `close` is the
+    // only window-less one.
+    function seriesOf(c, ind, p) { return ind === 'close' ? c.close : c[ind][p]; }
+
+    // Two ways in, one shape out: [leftSeries, rightSeriesOrConstant].
+    // leftRight takes a materialised spec (the pairing path, which works from
+    // survivor row objects); leftRightAt reads the columnar store directly, so
+    // Pass 1 never allocates an object per spec.
     function leftRight(spec, cache) {
-      const c1 = cache[spec.t1];
-      let L, R;
-      switch (spec.f) {
-        case 'rsi_thresh': L = c1.rsi[spec.p1]; return [L, spec.level];
-        case 'rsi_cmp':    return [c1.rsi[spec.p1], cache[spec.t2].rsi[spec.p2]];
-        case 'cum_lvl':    return [c1.cum[spec.p1], spec.level];
-        case 'cum_cmp':    return [c1.cum[spec.p1], cache[spec.t2].cum[spec.p2]];
-        case 'ma_cmp':     return [c1.ma[spec.p1], cache[spec.t2].ma[spec.p2]];
-        case 'std_cmp':    return [c1.std[spec.p1], cache[spec.t2].std[spec.p2]];
-      }
+      const f = FAM[spec.f], c1 = cache[spec.t1];
+      if (f.kind === 'lvl') return [seriesOf(c1, f.a, spec.p1), spec.level];
+      if (f.kind === 'self') return [seriesOf(c1, f.a, spec.p1), seriesOf(c1, f.b, spec.p1)];
+      return [seriesOf(c1, f.a, spec.p1), seriesOf(cache[spec.t2], f.a, spec.p2)];
     }
-    function evalSpec(spec, cache) {
-      const [L, R] = leftRight(spec, cache);
-      const arr = new Uint8Array(N);
-      const gt = spec.dir === 'GT';
+    function leftRightAt(sp, i, cache) {
+      const f = FAMILIES[sp.fi[i]], c1 = cache[sp.tk[sp.a[i]]], p1 = sp.p[i];
+      if (f.kind === 'lvl') return [seriesOf(c1, f.a, p1), sp.lv[i]];
+      if (f.kind === 'self') return [seriesOf(c1, f.a, p1), seriesOf(c1, f.b, p1)];
+      return [seriesOf(c1, f.a, p1), seriesOf(cache[sp.tk[sp.b[i]]], f.a, sp.q[i])];
+    }
+    // `out` lets Pass 1 hand in one reusable buffer instead of allocating an
+    // N-byte array per spec. backtest() consumes it synchronously, so reuse is
+    // safe there; the pairing path omits it and gets a fresh array to keep.
+    function boolInto(L, R, gt, out) {
+      const arr = out || new Uint8Array(N);
       const scalarR = typeof R === 'number';
       for (let i = 0; i < N; i++) {
         const a = L[i];
@@ -612,6 +852,14 @@
         arr[i] = gt ? (a > b ? 1 : 0) : (a < b ? 1 : 0);
       }
       return arr;
+    }
+    function evalSpec(spec, cache) {
+      const [L, R] = leftRight(spec, cache);
+      return boolInto(L, R, spec.dir === 'GT', null);
+    }
+    function evalSpecAt(sp, i, cache, out) {
+      const [L, R] = leftRightAt(sp, i, cache);
+      return boolInto(L, R, sp.d[i] === 0, out);
     }
 
     // ---------- backtest one boolean signal against one target ----------
@@ -724,16 +972,28 @@
     }
 
     // ---------- labels ----------
+    // "RSI(21) of SPY" / "MA-Price(50d) of SPY" / "Price of SPY".
+    function indText(ind, p) {
+      const I = INDICATORS[ind];
+      return ind === 'close' ? I.label : `${I.label}(${p}${I.suffix})`;
+    }
+    // Levels are stored as the indicator's native unit: a fraction for the
+    // percent-quoted ones, a plain number otherwise. trimNum keeps a scaled
+    // grid readable (3.5% rather than 3.50%) without dropping real precision.
+    function trimNum(v, dp) {
+      let s = v.toFixed(dp);
+      if (s.indexOf('.') !== -1) { while (s.endsWith('0')) s = s.slice(0, -1); if (s.endsWith('.')) s = s.slice(0, -1); }
+      return s;
+    }
+    function levelText(ind, v) {
+      return INDICATORS[ind].pct ? trimNum(v * 100, 2) + '%' : trimNum(v, 4);
+    }
     function specLabel(spec) {
-      const c = CMP_SYM[spec.dir];
-      switch (spec.f) {
-        case 'rsi_thresh': return `RSI(${spec.p1}) of ${spec.t1} ${c} ${spec.level}`;
-        case 'rsi_cmp':    return `RSI(${spec.p1}) of ${spec.t1} ${c} RSI(${spec.p2}) of ${spec.t2}`;
-        case 'cum_lvl':    return `CumRet(${spec.p1}d) of ${spec.t1} ${c} ${(spec.level * 100).toFixed(0)}%`;
-        case 'cum_cmp':    return `CumRet(${spec.p1}d) of ${spec.t1} ${c} CumRet(${spec.p2}d) of ${spec.t2}`;
-        case 'ma_cmp':     return `MA-Return(${spec.p1}d) of ${spec.t1} ${c} MA-Return(${spec.p2}d) of ${spec.t2}`;
-        case 'std_cmp':    return `StdDev-Return(${spec.p1}d) of ${spec.t1} ${c} StdDev-Return(${spec.p2}d) of ${spec.t2}`;
-      }
+      const f = FAM[spec.f], c = CMP_SYM[spec.dir];
+      const left = `${indText(f.a, spec.p1)} of ${spec.t1}`;
+      if (f.kind === 'lvl') return `${left} ${c} ${levelText(f.a, spec.level)}`;
+      if (f.kind === 'self') return `${left} ${c} ${indText(f.b, spec.p1)} of ${spec.t1}`;
+      return `${left} ${c} ${indText(f.a, spec.p2)} of ${spec.t2}`;
     }
 
     // ---------- Composer symphony JSON export ----------
@@ -741,11 +1001,6 @@
     // the app: root -> wt-cash-equal -> if -> [if-child (then asset), else asset].
     // The else branch holds a cash proxy (BIL), matching the tool's "hold cash
     // when the signal is off" backtest. Schema mirrors a real Composer export.
-    const COMPOSER_FN = {
-      rsi_thresh: 'relative-strength-index', rsi_cmp: 'relative-strength-index',
-      cum_lvl: 'cumulative-return', cum_cmp: 'cumulative-return',
-      ma_cmp: 'moving-average-return', std_cmp: 'standard-deviation-return',
-    };
     const ELSE_TICKER = 'BIL';   // cash proxy for the else branch
 
     function uid() {
@@ -760,24 +1015,44 @@
       let s = ''; for (let i = 0; i < 20; i++) s += cs[Math.random() * cs.length | 0];
       return s;
     }
+    // Composer states the percent-quoted functions in percent, so a level held
+    // here as a fraction is multiplied by 100 on the way out.
+    function composerConst(ind, v) {
+      return INDICATORS[ind].pct ? Number((v * 100).toFixed(4)) : Number(v.toFixed(4));
+    }
+    // One operand. `current-price` takes no window, so it emits no params.
+    function composerOperand(ind, p, ticker) {
+      const I = INDICATORS[ind];
+      const o = { fn: I.fn, ticker: ticker };
+      if (ind !== 'close') o.params = { window: p };
+      return o;
+    }
     // One binary-compound condition object for a single spec.
     function composerCondition(spec) {
-      const fn = COMPOSER_FN[spec.f];
+      const f = FAM[spec.f];
       const cmp = spec.dir === 'GT' ? 'gt' : 'lt';
-      const lhs = { fn: fn, params: { window: spec.p1 }, ticker: '%' };
+      const lhs = composerOperand(f.a, spec.p1, '%');
       let rhs;
-      if (spec.f === 'rsi_thresh') rhs = { constant: spec.level };
-      else if (spec.f === 'cum_lvl') rhs = { constant: Number((spec.level * 100).toFixed(2)) };
-      else rhs = { fn: fn, params: { window: spec.p2 }, ticker: spec.t2 };
+      if (f.kind === 'lvl') rhs = { constant: composerConst(f.a, spec.level) };
+      else if (f.kind === 'self') rhs = composerOperand(f.b, spec.p1, spec.t1);
+      else rhs = composerOperand(f.a, spec.p2, spec.t2);
       return { 'condition-type': 'binary-compound', operator: 'any', tickers: [spec.t1], lhs: lhs, comparator: cmp, rhs: rhs };
     }
     // Legacy flat fields Composer keeps beside `condition` (describe first spec).
     function composerFlat(spec) {
-      const fn = COMPOSER_FN[spec.f];
-      const o = { 'lhs-fn': fn, 'lhs-fn-params': { window: spec.p1 }, 'lhs-val': spec.t1, 'comparator': spec.dir === 'GT' ? 'gt' : 'lt' };
-      if (spec.f === 'rsi_thresh') { o['rhs-fixed-value?'] = true; o['rhs-val'] = String(spec.level); }
-      else if (spec.f === 'cum_lvl') { o['rhs-fixed-value?'] = true; o['rhs-val'] = String(Number((spec.level * 100).toFixed(2))); }
-      else { o['rhs-fn'] = fn; o['rhs-fn-params'] = { window: spec.p2 }; o['rhs-val'] = spec.t2; }
+      const f = FAM[spec.f];
+      const o = { 'lhs-fn': INDICATORS[f.a].fn, 'lhs-val': spec.t1, 'comparator': spec.dir === 'GT' ? 'gt' : 'lt' };
+      if (f.a !== 'close') o['lhs-fn-params'] = { window: spec.p1 };
+      if (f.kind === 'lvl') {
+        o['rhs-fixed-value?'] = true;
+        o['rhs-val'] = String(composerConst(f.a, spec.level));
+      } else {
+        const rInd = f.kind === 'self' ? f.b : f.a;
+        const rWin = f.kind === 'self' ? spec.p1 : spec.p2;
+        o['rhs-fn'] = INDICATORS[rInd].fn;
+        if (rInd !== 'close') o['rhs-fn-params'] = { window: rWin };
+        o['rhs-val'] = f.kind === 'self' ? spec.t1 : spec.t2;
+      }
       return o;
     }
     // One "if" branch: this row's condition, holding this row's target.
@@ -990,7 +1265,7 @@
       // live after the run without re-backtesting. Only inputs that change which
       // signals exist (tickers, families, min period) are read in this pass.
       const minP = parseInt(document.getElementById('sl-minp').value, 10) || 5;
-      const grids = activeGrids(minP);
+      const W = activeWindows(minP);
 
       const universe = [...new Set([...tgt, ...cmp])];
       // The run's common sample window. Bound by the most recently listed of the
@@ -1000,12 +1275,7 @@
         status.textContent = `Not enough shared history: ${win.binding || 'the selection'} only has ${win.len} trading days in common with the rest. Remove it or pick tickers with longer history.`;
         return;
       }
-      const need = {
-        rsi: fams.rsi_thresh || fams.rsi_cmp,
-        cum: fams.cum_lvl || fams.cum_cmp,
-        ma: fams.ma_cmp,
-        std: fams.std_cmp,
-      };
+      const need = neededIndicators(fams);
 
       runBtn.disabled = true;
       prog.style.display = 'block';
@@ -1046,7 +1316,7 @@
 
       status.textContent = 'Building indicators...';
       await sleep(0);
-      const cache = buildCaches(universe, need, grids);
+      const cache = buildCaches(universe, need, W);
 
       // Conditions are built from the SIGNAL set only, not the union with the
       // targets. Until v1.21.1 this passed `universe`, which silently forced
@@ -1060,17 +1330,17 @@
       // `universe` is still right for windowInfo and buildCaches above: the
       // target's listing date bounds the sample window, and targetLret reads
       // cache[t].lret, so its price data is required either way.
-      const specs = buildSpecs(cmp, fams, grids);
-      if (specs.length > SIGNAL_WARN_CAP) {
+      const specs = buildSpecs(cmp, fams, W);
+      if (specs.n > SIGNAL_WARN_CAP) {
         const ok = window.confirm(
-          `Heads up: this run will test ${specs.length.toLocaleString()} signals.\n\n` +
+          `Heads up: this run will test ${specs.n.toLocaleString()} signals.\n\n` +
           `That's a very large batch. It can take a long time and may make your browser slow or unresponsive, ` +
           `and use a lot of memory, while it runs.\n\n` +
           `To lower the count, reduce tickers or disable a signal family.\n\n` +
           `Run it anyway?`
         );
         if (!ok) {
-          status.textContent = `Cancelled ${specs.length.toLocaleString()} signals. Reduce tickers or disable a family to lower the count.`;
+          status.textContent = `Cancelled ${specs.n.toLocaleString()} signals. Reduce tickers or disable a family to lower the count.`;
           runBtn.disabled = false; prog.style.display = 'none'; return;
         }
       }
@@ -1100,9 +1370,9 @@
       const WARMUP_BATCHES = 5;                // batches before the estimate is shown
       const runStart = performance.now();      // wall-clock start, for elapsed/remaining
       let batchStart = runStart;
-      for (let s = 0; s < specs.length; s++) {
-        const spec = specs[s];
-        const arr = evalSpec(spec, cache);
+      const sigBuf = new Uint8Array(N);   // reused every spec; backtest reads it at once
+      for (let s = 0; s < specs.n; s++) {
+        const arr = evalSpecAt(specs, s, cache, sigBuf);
         for (let ti = 0; ti < tgt.length; ti++) {
           const m = backtest(arr, targetLret[tgt[ti]], win.s0, win.len);
           if (m.total > 0 && m.sortino === m.sortino && m.calmar === m.calmar) {
@@ -1113,7 +1383,7 @@
         if (s && (s % CHUNK) === 0) {
           const busy = performance.now() - batchStart;   // compute time for this batch
           const batchNo = s / CHUNK;
-          const frac = s / specs.length;
+          const frac = s / specs.n;
           const elapsed = performance.now() - runStart;
           // Project from WALL-CLOCK throughput. This previously projected from
           // measured compute scaled by the duty factor, on the reasoning that
@@ -1130,7 +1400,7 @@
           const remaining = elapsed * (1 - frac) / frac;
           progBar.style.width = (95 * frac).toFixed(1) + '%';
           status.textContent =
-            `Backtesting ${specs.length.toLocaleString()} signals... ${s.toLocaleString()} (${Math.round(frac * 100)}%)` +
+            `Backtesting ${specs.n.toLocaleString()} signals... ${s.toLocaleString()} (${Math.round(frac * 100)}%)` +
             ` · ~${DUTY}% CPU · ` +
             (batchNo < WARMUP_BATCHES ? 'estimating...' : `${fmtDur(remaining)} left`);
           await sleep(busy * FACTOR);
@@ -1512,22 +1782,13 @@
       const fams = {};
       document.querySelectorAll('#sl-families input').forEach(el => fams[el.value] = el.checked);
       const minP = parseInt((document.getElementById('sl-minp') || {}).value, 10) || 5;
-      const g = activeGrids(minP);
-      // Lockstep with buildSpecs: conditions come from the Signal set only, so
-      // the target count does not enter the spec count (v1.21.1).
+      // Lockstep with buildSpecs by construction: both call countSpecs /
+      // famSpecCount, so the figure shown here and the figure the run tests
+      // are the same arithmetic, not two copies of it that can drift.
+      // Conditions come from the Signal set only, so the target count does not
+      // enter the spec count (v1.21.1).
       const n = compares.size;
-      let c = 0;
-      // Must stay in lockstep with buildSpecs/pushCmpSpecs. A comparison family
-      // over m = n*windows distinct operands yields m*(m-1)/2 unordered pairs,
-      // each emitted in both directions: m*(m-1) specs. (Before v1.18.4 this was
-      // n*n*W*W*2, i.e. exactly twice as many, all mirror duplicates.)
-      const cmpCount = (w) => { const m = n * w; return m * (m - 1); };
-      if (fams.rsi_thresh) c += n * g.RSI_W.length * RSI_LEVELS.length * 2;
-      if (fams.cum_lvl)    c += n * g.CUM_W.length * CUM_LEVELS.length * 2;
-      if (fams.rsi_cmp)    c += cmpCount(g.RSI_W.length);
-      if (fams.cum_cmp)    c += cmpCount(g.CUM_W.length);
-      if (fams.ma_cmp)     c += cmpCount(g.MA_W.length);
-      if (fams.std_cmp)    c += cmpCount(g.STD_W.length);
+      const c = countSpecs(n, fams, activeWindows(minP));
       const el = document.getElementById('sl-est');
       if (targets.size === 0 || n === 0) { el.textContent = 'Pick at least one target and one signal ticker to estimate.'; el.className = 'sl-est'; return; }
       let txt = `~${c.toLocaleString()} signals to test`;
@@ -1713,12 +1974,59 @@
       estimate();
     }
 
+    // Grouped Price / Return / Risk blocks with a per-group All toggle and
+    // row-level Default / Select all / Clear, deliberately the same shape and
+    // the same classes as the ticker chips above, so the two panels behave
+    // alike rather than each inventing its own idiom.
     function renderFamilies() {
       const el = document.getElementById('sl-families');
-      el.innerHTML = FAMILIES.map(f =>
-        `<label class="sl-check"><input type="checkbox" value="${f.id}"${f.on ? ' checked' : ''}>${f.label}</label>`
-      ).join('');
-      el.querySelectorAll('input').forEach(i => i.addEventListener('change', () => { sigCache = null; estimate(); }));
+      el.innerHTML = FAM_GROUPS.map(g => {
+        const members = FAMILIES.filter(f => f.group === g);
+        return `<div class="sl-tgroup">
+          <div class="sl-grouphead">
+            <span class="sl-tgroup-name">${g} (${members.length})</span>
+            <button type="button" class="sl-sel" data-famgroup="${g}">All</button>
+          </div>
+          <div class="sl-fams">` + members.map(f =>
+            `<label class="sl-check" title="${escapeHtml(famHint(f))}"><input type="checkbox" value="${f.id}"${f.on ? ' checked' : ''}>${f.label}</label>`
+          ).join('') + `</div></div>`;
+      }).join('');
+
+      el.querySelectorAll('input').forEach(i => i.addEventListener('change', syncFamilies));
+      el.querySelectorAll('[data-famgroup]').forEach(btn => btn.addEventListener('click', () => {
+        const members = FAMILIES.filter(f => f.group === btn.dataset.famgroup).map(f => f.id);
+        const boxes = [...el.querySelectorAll('input')].filter(i => members.indexOf(i.value) !== -1);
+        const allOn = boxes.every(i => i.checked);
+        boxes.forEach(i => i.checked = !allOn);
+        syncFamilies();
+      }));
+      const setAll = fn => () => { el.querySelectorAll('input').forEach(i => i.checked = fn(i.value)); syncFamilies(); };
+      document.getElementById('sl-fam-all').addEventListener('click', setAll(() => true));
+      document.getElementById('sl-fam-none').addEventListener('click', setAll(() => false));
+      document.getElementById('sl-fam-def').addEventListener('click', setAll(id => !!FAM[id].on));
+      syncFamilies();
+    }
+
+    // Tooltip: what the family actually compares, and how its cost scales.
+    function famHint(f) {
+      const kind = f.kind === 'cmp' ? 'two tickers or two windows; cost grows with the square of tickers x windows'
+                 : f.kind === 'self' ? 'one ticker, both sides at the same window'
+                 : 'against a constant; cost grows only linearly with the level count';
+      return `${indText(f.a, 'p')} vs ${f.kind === 'lvl' ? 'a level' : indText(f.b || f.a, 'q')} · ${kind}`;
+    }
+
+    function syncFamilies() {
+      const el = document.getElementById('sl-families');
+      const boxes = [...el.querySelectorAll('input')];
+      const on = boxes.filter(i => i.checked).length;
+      document.getElementById('sl-fam-count').textContent = on ? `(${on}/${boxes.length})` : '';
+      el.querySelectorAll('[data-famgroup]').forEach(btn => {
+        const members = FAMILIES.filter(f => f.group === btn.dataset.famgroup).map(f => f.id);
+        const mine = boxes.filter(i => members.indexOf(i.value) !== -1);
+        btn.classList.toggle('is-on', mine.length > 0 && mine.every(i => i.checked));
+      });
+      sigCache = null;   // family change alters which signals exist; force a re-run
+      estimate();
     }
 
     function loadExample() {
@@ -1729,8 +2037,8 @@
       document.getElementById('sl-tim').value = '0.05';
       document.getElementById('sl-mdd').value = '-0.8';
       document.getElementById('sl-quant').value = '0';
-      document.querySelectorAll('#sl-families input').forEach(el => el.checked = true);
-      sigCache = null;   // ticker change: the cached run no longer applies
+      document.querySelectorAll('#sl-families input').forEach(el => el.checked = !!FAM[el.value].on);
+      syncFamilies();    // also clears sigCache and re-estimates
       syncChips();
       document.getElementById('sl-status').textContent = 'Loaded the community V2 example (8 tickers). This is a heavy run; give it a few seconds.';
     }
@@ -1747,8 +2055,8 @@
       document.getElementById('sl-tim').value = '0.05';
       document.getElementById('sl-mdd').value = '-0.8';
       document.getElementById('sl-quant').value = '0';
-      document.querySelectorAll('#sl-families input').forEach(el => el.checked = true);
-      sigCache = null;   // ticker change: the cached run no longer applies
+      document.querySelectorAll('#sl-families input').forEach(el => el.checked = !!FAM[el.value].on);
+      syncFamilies();    // also clears sigCache and re-estimates
       syncChips();
       document.getElementById('sl-status').textContent =
         'Reset to defaults: ' + DEFAULT_TARGETS.join(', ') + ' against ' + DEFAULT_COMPARES.join(', ') + '.';

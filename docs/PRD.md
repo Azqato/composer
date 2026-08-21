@@ -1177,6 +1177,53 @@ There is no `.js` twin naming inconsistency to worry about here, `data/database_
 
 How the tool behaves while a run is in flight. All of this is client-side in `signal-miner.html`; there is no server component.
 
+**The search space: one window grid, sixteen families (v1.23.0).** What the miner enumerates is the cross product of *families* x *tickers* x *windows* x *levels* x *directions*. Before v1.23.0 each family carried its own inherited window list, four lists that had drifted apart for no stated reason, and only six families existed.
+
+*One grid.* Every family now reads the same fifteen windows: **5, 7, 10, 12, 14, 21, 26, 30, 42, 50, 63, 100, 126, 200, 252**. They are log-uniform, no two closer than 15%, because a window's information content scales with the *ratio* to its neighbour rather than the difference. Each earns its place: 5 (one week), 7 (the short-RSI cluster common in Composer symphonies), 10 (two weeks, and the single most used window in the strategy library at 137 occurrences), 12 and 26 (the MACD legs), 14 (Wilder's default for RSI, ATR, ADX and Stochastic), 21 (one month, the standard realised-volatility estimator), 30, 42 (two months), 50 (golden-cross fast leg), 63 (one quarter), 100, 126 (six months), 200 (Faber's 10-month trend gate, rounded) and 252 (one year, the dominant momentum window in the literature). **20, 60 and 189 were dropped** as near-duplicates of 21, 63 and 200, all within 6%: a comparison family costs the same for any window while scaling with the *square* of the grid, so a window producing an almost identical daily series to one already present is pure cost. `MIN_PERIOD_OPTS` is now exactly this list, so choosing a floor can never silently round to a window the grid does not contain.
+
+*Level grids are scaled or fixed, per quantity, and the difference was measured.* Quantities that **accumulate** over the window disperse as sqrt(t): a 10% move over 5 days and a 10% move over 252 days are not the same event. Measured on TQQQ 2010-2026, the old fixed +/-10% cumulative-return grid left only **12% of days inside the grid at 252 days**, so most of its levels were pinned true (or false) across the whole sample and separated nothing. Cumulative return and max drawdown therefore quote a base grid at 21 days and scale it by `sqrt(p / 21)`: CumRet runs +/-10% at 21 days, +/-4.9% at 5 days and +/-34.6% at 252. Quantities that are **rate-like** do not scale, because a longer window makes the estimate steadier rather than larger, so mean daily return and daily volatility keep one fixed grid at every window.
+
+*RSI levels step by 2, and are deliberately not scaled.* 10 to 90 in steps of 2 is **41 levels**, up from nine. Threshold families cost `tickers x windows x levels x 2`, **linear** in the level count, unlike the comparison families which square with the window count, so the finer grid adds about 1.2% to a maximal run. sqrt-scaling RSI was tried and **measured wrong**: it assumes the distribution is symmetric about 50, and a trending asset sits above 50 for years, so the scaled grid drifted off the part of the range that actually separates days. Retracted in favour of the fixed fine grid. A separate earlier claim, that levels below 26 and above 80 never separate anything, is also **wrong** and corrected here: they do produce distinct series at short windows, they are simply more than 95% true, which is near buy-and-hold.
+
+*Sixteen families over all nine Composer functions.* Every function in Composer's condition dropdown is now reachable: `current-price`, `cumulative-return`, `relative-strength-index`, `moving-average-price`, `moving-average-return`, `exponential-moving-average-price`, `standard-deviation-price`, `standard-deviation-return`, `max-drawdown`. Families come in three kinds, and the kind is what governs cost:
+
+| Kind | Shape | Specs |
+|---|---|---|
+| `lvl` | one series against a constant | `n x W x levels(p) x 2` |
+| `cmp` | two (ticker, window) operands | `m x (m-1)`, `m = n x W` |
+| `self` | two indicators, one ticker, one window | `n x W x 2` |
+
+| Group | Family | Kind | Default |
+|---|---|---|---|
+| Price | Price vs own moving average | `self` | on |
+| Price | Price vs own EMA | `self` | on |
+| Price | Moving average of price compare | `cmp` | on |
+| Price | EMA of price compare | `cmp` | off |
+| Price | EMA vs moving average (same ticker) | `self` | off |
+| Return | RSI vs level | `lvl` | on |
+| Return | RSI vs RSI | `cmp` | on |
+| Return | Cumulative return vs level | `lvl` | on |
+| Return | Cumulative return compare | `cmp` | on |
+| Return | Moving average of return compare | `cmp` | on |
+| Return | Moving average of return vs level | `lvl` | off |
+| Risk | Std dev of return compare | `cmp` | on |
+| Risk | Std dev of return vs level | `lvl` | on |
+| Risk | Max drawdown vs level | `lvl` | on |
+| Risk | Max drawdown compare | `cmp` | off |
+| Risk | Std dev of price compare | `cmp` | off |
+
+The five that are off by default are off because they are expensive or rarely productive, not because they are broken. Cross-ticker price-scale comparisons in particular (`stdp_cmp`, and the cross-ticker half of `map_cmp` / `ema_cmp`) compare dollar magnitudes, so many of those specs are constant-false and drop out in Pass 1 for having no trades. The *same-ticker* fast-versus-slow half of those families is the golden-cross signal, and is the reason they exist.
+
+*Sizing.* At 72 signal tickers with the 10-day floor (13 active windows), the eleven default families produce **4,508,712 specs**; all sixteen produce 7,152,912; dropping the floor to 5 days (15 windows) takes the default set to 5,979,960. The previous six families on their inherited grids produced 3,042,720 at the same settings, so standardising the grid roughly paid for the new families.
+
+*One counter, not two.* `estimate()` used to hand-mirror the arithmetic in `buildSpecs()`, two copies kept in lockstep by hand. Both now call `countSpecs()` / `famSpecCount()`, so the figure shown before a run and the figure the run tests are the same arithmetic rather than two versions of it. Verified across 99 cases (every family, three floors, several ticker counts, plus all families at once) with zero mismatches.
+
+**Specs are stored as columns (v1.23.0).** The same change v1.22.15 made to Pass-1 results, applied to the spec list, which v1.22.15 named as the next largest item. A maximal run now builds over five million specs, and as JavaScript objects that was roughly 300 MB of the tab's ~3.5GB ceiling, held live for the entire run because each stored row indexes back into it. Seven typed arrays (`fi`, `d`, `a`, `b`, `p`, `q`, `lv`) cost **10 bytes per spec**, one allocation per column, with nothing for the garbage collector to trace. A spec object is materialised only where one is genuinely needed: labels, the Composer export, the at-most-150 survivors per target fed into pairing, and the snapshot. Two paths exist by design, `leftRight(spec, cache)` for the pairing path which works from materialised row objects, and `leftRightAt(store, i, cache)` which reads the columns directly so Pass 1 never allocates an object per spec; both funnel into one `boolInto()`. Pass 1 also hands `evalSpecAt` a single reusable `Uint8Array`, since `backtest()` consumes it synchronously, instead of allocating an N-byte array per spec.
+
+**One more correctness fix that came with it.** Price-based indicators (`moving-average-price`, `standard-deviation-price`, `exponential-moving-average-price`, `max-drawdown`) read a `Float64Array` copy of the close series with `NaN` for missing days, not the raw `closes` array. The raw array holds `null` before a ticker listed, and the rolling helpers guard with `v !== v`, which a `null` slips straight past (`null !== null` is false, and `sum += null` adds zero). The existing return-based indicators were never exposed to this because `dailyReturns`/`logReturns` already convert `null` to `NaN` on the way out.
+
+**Verification (2026-08-20).** Headless Edge, driven end to end. `countSpecs` versus `buildSpecs().n` across 99 cases: exact. For all sixteen families the object path and the columnar path (`evalSpec` versus `evalSpecAt`) produce **identical boolean series**, and each emits a well-formed label, `binary-compound` condition and legacy flat block. The grouped family UI, its per-group All toggles and the row-level Default / Select all / Clear were exercised and report the right counts. A live run and a snapshot round trip (run, then reload against the same profile so `localStorage` survives) both render correctly, with sorting correctly inert on the restored view.
+
 **Ticker selection (v1.18.0).** The universe is 72 tickers, which is too many for a flat chip row, so chips render in asset-class groups driven by the `group` field in `prices.json` (see the schema above). Each group carries an **All** toggle, and each of the two rows (Targets, Signals) carries a whole-universe select plus a Clear. The group toggle is a true toggle: if every member is already selected it deselects the group, otherwise it selects all of them. `renderChips()` builds the blocks once at init and holds element maps (`chipEls`, `groupBtns`) keyed by symbol and group name, so `syncChips()` updates state without re-rendering the DOM.
 
 **Why selecting everything is dangerous, and why it is still allowed.** Signal count grows with the square of the **Signal set** (the union, until v1.21.1), and total backtests are `specs × targets`, while the estimate readout shows only `specs`. All 72 tickers as signals is roughly 6.6M before the target multiplier, down from ~8.2M at 80 tickers. This is deliberately not blocked (see the no-hard-cap decision below); the estimate's `warn`/`stop` states and the run confirm are the only guardrails, and a run that large will likely exhaust memory. The per-group buttons exist so that the *useful* bulk selections ("all leveraged", "all bonds") are one click while the pathological one is still a conscious choice.
@@ -1277,7 +1324,7 @@ The heap figure is the one that matters, since that is what the 3,586 MB ceiling
 
 **Verified against the previous build**, both driven through an identical scripted session over 47,163 results covering the default sort, sorting by a text column and by a numeric one, two text filters, a live Time-in-Market re-filter, the single-row export, the combined ladder export and the baseline row. Output **byte-for-byte identical**, 25,088 characters. The snapshot round trip was tested separately (run once, reload against the same profile so `localStorage` survives) because that path builds the result set from a plain array rather than the store and the first test never reached it. Also identical, with sorting correctly still disabled on the restored view.
 
-**Known remaining cost.** The `specs` array is now the largest single item, roughly **300 MB of the remaining 527 MB**: about 3M small objects built up front by `buildSpecs` and retained for the whole run so a row's `si` index can resolve back to one. Packing those into typed arrays the same way would take the heap to roughly 230 MB, another ~2.3x, but it touches `evalSpec`, `leftRight`, `specLabel` and the exporter, all of which take a spec object today. Deliberately left out of v1.22.15 rather than bundled into it.
+**Known remaining cost.** The `specs` array is now the largest single item, roughly **300 MB of the remaining 527 MB**: about 3M small objects built up front by `buildSpecs` and retained for the whole run so a row's `si` index can resolve back to one. Packing those into typed arrays the same way would take the heap to roughly 230 MB, another ~2.3x, but it touches `evalSpec`, `leftRight`, `specLabel` and the exporter, all of which take a spec object today. Deliberately left out of v1.22.15 rather than bundled into it. **Done in v1.23.0** (see below), which was also what made the sixteen-family expansion affordable.
 
 **The `ti` column is a `Uint8Array`,** which caps a run at 255 targets. The universe is 72 tickers, so this cannot bind today; Pass 1 throws explicitly rather than silently truncating if it ever does.
 

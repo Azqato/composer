@@ -5,6 +5,46 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.23.0] - 2026-08-20
+
+### The Signal Miner searches a much larger, and much more evenly spaced, space
+
+Three changes that belong together: one window grid instead of four, finer level grids, and every Composer function now reachable as a family.
+
+**One window grid.** Each family used to carry its own inherited list of periods, four lists that had quietly drifted apart. Every family now reads the same fifteen windows: **5, 7, 10, 12, 14, 21, 26, 30, 42, 50, 63, 100, 126, 200, 252**. They are log-uniform, no two closer than 15%, because what a window tells you scales with its *ratio* to the next one, not the gap. Every value earns its place: one week, the short-RSI cluster, two weeks (the most used window in the strategy library, 137 occurrences), the two MACD legs, Wilder's 14, one month, two months, the golden-cross leg, one quarter, six months, Faber's 200-day trend gate and one year.
+
+20, 60 and 189 were considered and dropped: they sit within 6% of 21, 63 and 200, produce an almost identical daily series, and cost exactly as much as any other window in a family that scales with the *square* of the grid. The Min signal period dropdown is now exactly this list, so picking a floor can no longer round you to a window the grid does not contain.
+
+**RSI levels step by 2 instead of 10.** 10 to 90 in twos is 41 levels, up from nine. This is close to free: a "vs level" family costs `tickers x windows x levels x 2`, which is **linear** in the level count, unlike the compare families which square with the window count. The finer grid adds about 1.2% to a maximal run and removes the case where seven identical-looking rows were really the same signal at levels that never separated.
+
+**Level grids for cumulative return and drawdown now scale with the window.** A 10% move over 5 days and a 10% move over 252 days are not the same event. Measured on TQQQ 2010-2026, the old fixed +/-10% cumulative-return grid left only **12% of days inside the grid at 252 days**, meaning most of its levels were pinned true or false for the whole sample and tested nothing. Those two grids are now quoted at 21 days and scaled by `sqrt(window / 21)`: +/-4.9% at 5 days, +/-10% at 21, +/-34.6% at 252. Mean daily return and daily volatility are *not* scaled, because they estimate a per-day rate that a longer window measures more steadily rather than larger.
+
+RSI is not scaled either. It was tried, and it failed for a stated reason: scaling assumes the distribution is symmetric about 50, and a trending asset sits above 50 for years at a time, so the scaled grid drifted off the part of the range that actually separates days.
+
+**Six families became sixteen, covering all nine Composer functions.** Every function in Composer's condition dropdown is now mineable: current price, cumulative return, RSI, moving average of price, moving average of return, exponential moving average of price, standard deviation of price, standard deviation of return, and max drawdown.
+
+Eleven are on by default: RSI vs level, RSI vs RSI, cumulative return vs level, cumulative return compare, moving average of return compare, std dev of return compare, std dev of return vs level, price vs its own moving average, moving average of price compare, price vs its own EMA, and max drawdown vs level. The other five (EMA of price compare, EMA vs moving average, moving average of return vs level, max drawdown compare, std dev of price compare) are off because they are expensive or rarely productive, not because they do not work.
+
+Section 2 is now grouped **Price / Return / Risk**, each group with an **All** toggle, plus row-level Default, Select all and Clear, deliberately the same shape as the ticker chips in section 1. A counter shows how many of the sixteen are on, and every checkbox carries a tooltip saying what it compares and how its cost scales.
+
+**Sizing, so you can plan a run.** At 72 signal tickers with the 10-day floor, the eleven default families produce **4,508,712 signals**; all sixteen produce 7,152,912; dropping the floor to 5 days takes the default set to 5,979,960. The old six families produced 3,042,720 at the same settings, so standardising the grid roughly paid for the ten new families.
+
+### Under the hood
+
+**Specs are stored as columns.** v1.22.15 did this to the results and named the spec list as the next largest item; this is that. Five million specs as JavaScript objects was roughly 300 MB of the tab's ~3.5GB ceiling, held for the whole run. Seven typed arrays cost 10 bytes per spec instead, with nothing for the garbage collector to trace, and a spec object is built only where one is genuinely needed: labels, the Composer export, the survivors fed into pairing, and the snapshot. Pass 1 also reuses one signal buffer rather than allocating an array per spec.
+
+**The pre-run estimate and the run now share one counter.** `estimate()` used to hand-mirror the arithmetic inside `buildSpecs()`, two copies that had to be kept in step by hand. They are one function now, so the number shown before a run and the number the run tests cannot drift.
+
+**A latent bug fixed on the way in.** The new price-based indicators read a `NaN`-filled copy of the close series rather than the raw one. The raw array holds `null` before a ticker listed, and the rolling helpers guard with a NaN test that a `null` slips straight past, which would have made a moving average of price silently treat pre-listing days as zero. Return-based indicators were never exposed to this.
+
+### Verified
+
+Driven end to end in headless Edge. The shared counter matched `buildSpecs` exactly across 99 cases (every family, three period floors, several ticker counts, and all families at once). For all sixteen families, the object path and the columnar path produce identical boolean series, and each emits a well-formed label, condition and legacy flat block. The grouped family controls were exercised and report the right counts. A live run and a snapshot round trip both render correctly.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.22.15] - 2026-08-20
 
 ### Results are stored as columns, so a large run holds half the memory
