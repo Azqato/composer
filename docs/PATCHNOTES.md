@@ -5,6 +5,18 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.2] - 2026-08-20
+
+### Hotfix: Signal Miner would not load
+
+A stray apostrophe in the text under the buy-and-hold benchmarks ("Ignore BIL's Sortino...") closed a JavaScript string early, which is a syntax error, which stopped the entire page script from running. The page rendered its static text and then did nothing: no ticker chips, no signal families, an empty min-period dropdown, and a status line stuck on "Loading price data...".
+
+Introduced in v1.22.1 and fixed here. The wording now avoids the apostrophe entirely and is less preachy about it, since BIL posting a Calmar of 402 is funny and correct rather than something to scold the reader about.
+
+**Files changed:** `signal-miner.html`
+
+---
+
 ## [1.22.1] - 2026-08-20
 
 ### AND pairs are now built from the Calmar-ranked survivors
