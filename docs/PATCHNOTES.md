@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.21.2] - 2026-08-20
+
+### Eight duplicate ETFs removed from the ticker universe
+
+The universe drops from **80 to 72 tickers**, making a select-all run about **19% lighter** in both compute and memory. Removed: **UPRO, VGSH, VGLT, VGIT, SOXX, VTV, SVIX, IJR**.
+
+Every removal was a pair where two funds track the same thing, and in each case the **older fund was kept**: SPXL over UPRO, SHY over VGSH, TLT over VGLT, IEF over VGIT, SMH over SOXX, SPYV over VTV, SVXY over SVIX, and IWM over IJR. Redundant tickers are worse here than in an ordinary list, because signal count grows with the *square* of your selection and two near-identical funds produce near-identical "discoveries" that look like independent confirmation but are not.
+
+**Several funds that look like duplicates were deliberately kept**, because they are not: SPY and VTI (S&P 500 vs total market), IEF and IEI (7-10 year vs 3-7 year treasuries), BND and BNDW (US vs world bonds), and QQQ and QQQE (cap-weighted vs equal-weighted). These move together day to day but hold genuinely different things, and that difference is exactly what a signal miner might be looking for.
+
+If you had any of the removed tickers selected, your saved selection drops them automatically on next load. Nothing else changes, and the page is about 250KB lighter.
+
+**Files changed:** `scripts/refresh_prices.py`, `data/prices.json`, `data/prices.js`, `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.21.1] - 2026-08-20
 
 ### Fixed: target tickers were forced into your signal conditions

@@ -31,7 +31,7 @@ PRICES_JS = BASE_DIR / "data" / "prices.js"
 # Only keep history from this date onward. This is purely a file-size bound.
 #
 # Moved from 2018-01-01 to 2010-01-01 in v1.20.1. 2010 covers the entire
-# leveraged-ETF era (TQQQ, UPRO and SPXL all launched 2008-2010), so the funds
+# leveraged-ETF era (SPXL 2008, TQQQ 2010, TNA and FAS 2008), so the funds
 # most people actually mine signals on now have their full history. Going back
 # further mostly adds nulls: very few of this universe existed before 2010, and
 # Signal Miner's common sample window starts at the LATEST first-valid date
@@ -64,11 +64,9 @@ TICKERS = [
     ("DIA",  "SPDR Dow Jones Industrial Average ETF",    "Broad market"),
     ("IWM",  "iShares Russell 2000 ETF",                 "Broad market"),
     ("MDY",  "SPDR S&P MidCap 400 ETF",                  "Broad market"),
-    ("IJR",  "iShares Core S&P Small-Cap ETF",           "Broad market"),
     ("IOO",  "iShares Global 100 ETF",                   "Broad market"),
     # --- Factor & dividend ---
     ("SPYV", "SPDR Portfolio S&P 500 Value",             "Factor & dividend"),
-    ("VTV",  "Vanguard Value ETF",                       "Factor & dividend"),
     ("VIG",  "Vanguard Dividend Appreciation ETF",       "Factor & dividend"),
     ("VIGI", "Vanguard International Dividend Apprec.",  "Factor & dividend"),
     ("SCHD", "Schwab US Dividend Equity ETF",            "Factor & dividend"),
@@ -83,7 +81,6 @@ TICKERS = [
     ("XLY",  "Consumer Discretionary Select Sector SPDR","Sector"),
     ("XLP",  "Consumer Staples Select Sector SPDR",      "Sector"),
     ("VOX",  "Vanguard Communication Services ETF",      "Sector"),
-    ("SOXX", "iShares Semiconductor ETF",                "Sector"),
     ("SMH",  "VanEck Semiconductor ETF",                 "Sector"),
     # --- International ---
     ("EEM",  "iShares MSCI Emerging Markets ETF",        "International"),
@@ -100,9 +97,6 @@ TICKERS = [
     ("BND",  "Vanguard Total Bond Market ETF",           "Bonds & cash"),
     ("BNDW", "Vanguard Total World Bond ETF",            "Bonds & cash"),
     ("BSV",  "Vanguard Short-Term Bond ETF",             "Bonds & cash"),
-    ("VGSH", "Vanguard Short-Term Treasury ETF",         "Bonds & cash"),
-    ("VGIT", "Vanguard Intermediate-Term Treasury ETF",  "Bonds & cash"),
-    ("VGLT", "Vanguard Long-Term Treasury ETF",          "Bonds & cash"),
     ("BIL",  "SPDR Bloomberg 1-3 Month T-Bill",          "Bonds & cash"),
     # --- Commodities, FX & crypto ---
     ("GLD",  "SPDR Gold Shares",                         "Commodities, FX & crypto"),
@@ -116,7 +110,6 @@ TICKERS = [
     ("VXX",  "iPath Series B S&P 500 VIX Short-Term",    "Volatility & hedge"),
     ("UVXY", "ProShares Ultra VIX Short-Term Futures",   "Volatility & hedge"),
     ("SVXY", "ProShares Short VIX Short-Term Futures",   "Volatility & hedge"),
-    ("SVIX", "-1x Short VIX Futures ETF",                "Volatility & hedge"),
     ("BTAL", "AGFiQ US Market Neutral Anti-Beta",        "Volatility & hedge"),
     ("KMLM", "KFA Mount Lucas Managed Futures",          "Volatility & hedge"),
     ("DBMF", "iMGP DBi Managed Futures Strategy",        "Volatility & hedge"),
@@ -125,7 +118,6 @@ TICKERS = [
     ("QLD",  "ProShares Ultra QQQ 2x",                   "Leveraged & inverse"),
     ("SQQQ", "ProShares UltraPro Short QQQ 3x",          "Leveraged & inverse"),
     ("PSQ",  "ProShares Short QQQ",                      "Leveraged & inverse"),
-    ("UPRO", "ProShares UltraPro S&P500 3x",             "Leveraged & inverse"),
     ("SPXL", "Direxion Daily S&P 500 Bull 3x",           "Leveraged & inverse"),
     ("SPXU", "ProShares UltraPro Short S&P500 3x",       "Leveraged & inverse"),
     ("SSO",  "ProShares Ultra S&P500 2x",                "Leveraged & inverse"),

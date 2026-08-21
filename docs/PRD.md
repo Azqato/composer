@@ -1153,19 +1153,19 @@ There is no `.js` twin naming inconsistency to worry about here, `data/database_
 | `tickers[sym].group` | string | Asset-class group (v1.18.0), drives the chip groups and per-group "All" buttons on `signal-miner.html`. One of: Broad market, Factor & dividend, Sector, International, Bonds & cash, Commodities FX & crypto, Volatility & hedge, Leveraged & inverse. The page falls back to `"Other"` if absent, so the field is additive and safe |
 | `tickers[sym].closes` | (number\|null)[] | Adjusted closes aligned to `dates`; `null` before listing or on a missing bar |
 
-`data/prices.js` is the `.js` twin, assigning `window.PRICES_DATA` to the identical payload (compact JSON), same convention as `rsi.js`. Universe is currently **80 tickers** (37 before v1.18.0); edit the `TICKERS` list in `scripts/refresh_prices.py` to add or remove one, then re-run the script and commit both regenerated files. Each entry is a `(symbol, name, group)` triple, so grouping lives with the ticker list and the page never keeps its own copy.
+`data/prices.js` is the `.js` twin, assigning `window.PRICES_DATA` to the identical payload (compact JSON), same convention as `rsi.js`. Universe is currently **72 tickers** (37 before v1.18.0, 80 before the v1.21.2 duplicate prune); edit the `TICKERS` list in `scripts/refresh_prices.py` to add or remove one, then re-run the script and commit both regenerated files. Each entry is a `(symbol, name, group)` triple, so grouping lives with the ticker list and the page never keeps its own copy.
 
 **Partial-history tickers.** Seven funds list after the 2018 start and so carry `null` for their early rows: ETHA (24% coverage), IBIT (30%), SVIX (51%), KMLM, GDXU, GDXD (66% each) and DBMF (84%). They are kept deliberately, but any signal built on them is fit to a shorter sample, and the default Min Time in Market floor of 0.05 is far too low to screen that out. `signal-miner.html` marks anything below 90% coverage with a dashed chip border and a "limited history" tooltip.
 
-**Refresh cadence:** `refresh_prices.py` runs weekly via `.github/workflows/refresh-prices.yml` (cron `7 8 * * 6`, i.e. 08:07 UTC every Saturday, while markets are closed; plus `workflow_dispatch` for manual runs). Weekly is deliberate: Signal Miner is a research tool over multi-year history, so a slightly stale end date barely affects any signal's metrics. The script takes ~90s to fetch all 80 tickers (a 1s delay between calls dominates); the full Action runs in ~75-90s. If the workflow is ever disabled, the tool keeps working on the last committed snapshot. The page surfaces the `refreshed_at` date in the hero and footer meta so staleness is always visible.
+**Refresh cadence:** `refresh_prices.py` runs weekly via `.github/workflows/refresh-prices.yml` (cron `7 8 * * 6`, i.e. 08:07 UTC every Saturday, while markets are closed; plus `workflow_dispatch` for manual runs). Weekly is deliberate: Signal Miner is a research tool over multi-year history, so a slightly stale end date barely affects any signal's metrics. The script takes ~80s to fetch all 72 tickers (a 1s delay between calls dominates); the full Action runs in ~75-90s. If the workflow is ever disabled, the tool keeps working on the last committed snapshot. The page surfaces the `refreshed_at` date in the hero and footer meta so staleness is always visible.
 
 ### Signal Miner Runtime Behavior
 
 How the tool behaves while a run is in flight. All of this is client-side in `signal-miner.html`; there is no server component.
 
-**Ticker selection (v1.18.0).** The universe is 80 tickers, which is too many for a flat chip row, so chips render in asset-class groups driven by the `group` field in `prices.json` (see the schema above). Each group carries an **All** toggle, and each of the two rows (Targets, Signals) carries a whole-universe select plus a Clear. The group toggle is a true toggle: if every member is already selected it deselects the group, otherwise it selects all of them. `renderChips()` builds the blocks once at init and holds element maps (`chipEls`, `groupBtns`) keyed by symbol and group name, so `syncChips()` updates state without re-rendering the DOM.
+**Ticker selection (v1.18.0).** The universe is 72 tickers, which is too many for a flat chip row, so chips render in asset-class groups driven by the `group` field in `prices.json` (see the schema above). Each group carries an **All** toggle, and each of the two rows (Targets, Signals) carries a whole-universe select plus a Clear. The group toggle is a true toggle: if every member is already selected it deselects the group, otherwise it selects all of them. `renderChips()` builds the blocks once at init and holds element maps (`chipEls`, `groupBtns`) keyed by symbol and group name, so `syncChips()` updates state without re-rendering the DOM.
 
-**Why selecting everything is dangerous, and why it is still allowed.** Signal count grows with the square of the *union* of Targets and Signals, and total backtests are `specs × targets`, while the estimate readout shows only `specs`. All 80 tickers is roughly 8.2M signals before the target multiplier. This is deliberately not blocked (see the no-hard-cap decision below); the estimate's `warn`/`stop` states and the run confirm are the only guardrails, and a run that large will likely exhaust memory. The per-group buttons exist so that the *useful* bulk selections ("all leveraged", "all bonds") are one click while the pathological one is still a conscious choice.
+**Why selecting everything is dangerous, and why it is still allowed.** Signal count grows with the square of the **Signal set** (the union, until v1.21.1), and total backtests are `specs × targets`, while the estimate readout shows only `specs`. All 72 tickers as signals is roughly 6.6M before the target multiplier, down from ~8.2M at 80 tickers. This is deliberately not blocked (see the no-hard-cap decision below); the estimate's `warn`/`stop` states and the run confirm are the only guardrails, and a run that large will likely exhaust memory. The per-group buttons exist so that the *useful* bulk selections ("all leveraged", "all bonds") are one click while the pathological one is still a conscious choice.
 
 **Crypto is held as ETFs, never spot.** IBIT and ETHA are in the universe; BTC-USD and ETH-USD are deliberately excluded. Spot crypto trades seven days a week, and since the master date axis is the sorted union of every ticker's trading days, adding it would stretch the axis from ~2,170 trading days to ~2,800 calendar days and insert `null` weekends into every equity series. Indicator windows count **rows**, not calendar days, so `RSI(10)` would silently become 10 calendar days with 2 of 7 missing and a 200-day MA would span ~280 calendar days. That would corrupt every existing signal, not just crypto ones. The ETFs keep the NYSE calendar and, unlike spot, are valid Composer assets, so the "Copy JSON" export stays runnable. Any future non-equity-calendar asset needs the same scrutiny.
 
@@ -1964,7 +1964,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
   **Reformed funds: accepted as a known tradeoff (owner decision, 2026-08-20).** SVXY was reformed in February 2018 from -1x to -0.5x, so its earlier history describes a different product. This was raised and **explicitly waived**: no per-ticker valid-date overrides, one global `START_DATE`. Signals on SVXY spanning early 2018 are measuring a blend of two products. Post-fetch check refines the scope: this affects **SVXY only**. Yahoo's VXX is the Series B ETN with no data before 2018-01-25, so there is nothing to splice there. Fund identity does not interact with the common sample window, which keys off listing dates.
 
-  **Post-change data state:** 55 of 80 tickers have full coverage; the rest list partway through, so the common sample window binds more often than it used to. One known data hole: 2026-08-11 is missing a close for 7 thin-volume tickers (QQQE, VIGI, BNDW, SVIX, KMLM, DBMF, LABU), 1 row in 4183, pre-existing and treated as a zero return by `backtest`.
+  **Post-change data state (as of v1.20.1, before the v1.21.2 prune):** 55 of 80 tickers had full coverage; the rest list partway through, so the common sample window binds more often than it used to. One known data hole: 2026-08-11 is missing a close for 6 thin-volume tickers in the current universe (QQQE, VIGI, BNDW, KMLM, DBMF, LABU; SVIX was a seventh before it was pruned), 1 row in 4183, pre-existing and treated as a zero return by `backtest`.
 
 - [ ] **Signal Miner: multi-select rows and export one combined symphony** — suggested by Haverel Mink in the Composer Discord (2026-08-20): "What if you could write the frontrunner JSON from the results table, rather than building it one-by-one?" Today each row's **Copy JSON** exports a single IF block holding one target when one signal fires, so assembling a Frontrunner-style symphony from several discovered signals means exporting each one and stitching them together by hand in the Composer editor.
 
@@ -1987,25 +1987,36 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
   **Statistical caveat to surface in the UI when this ships:** pointing tens of thousands of tested conditions at a single target makes the multiple-comparisons problem *sharper*, not softer. The top of a per-target leaderboard is selected for luck as much as skill. The existing warning box covers this generically; a per-target ranking deserves its own note.
 
-- [ ] **Prune duplicate ETFs from the Signal Miner universe, by inception date** — the v1.18.0 expansion to 80 tickers was additive and deliberately did not de-duplicate, so the universe now carries several funds tracking effectively the same exposure. This matters more here than in a normal list: signal count grows with the **square** of the selected tickers, so every redundant fund costs compute without adding information, and two near-identical tickers will surface near-identical "discoveries" that look like independent confirmation but are not.
+- [x] **Prune duplicate ETFs from the Signal Miner universe, by inception date** (done v1.21.2) � 80 to **72 tickers**, ~19% fewer signals on a select-all run. Removed: **UPRO, VGSH, VGLT, VGIT, SOXX, VTV, SVIX, IJR**. Kept the older listing in every pair, per owner preference for the inception rule over usage.
 
-  **Rule: when two tickers track the same thing, keep the one with the earlier inception date**, since a longer history means more out-of-sample evidence and fewer `null` rows on the shared date axis. Break ties on liquidity, then on which one Composer strategies actually reference. Dates below are month-resolution, taken from Yahoo's first available bar rather than the prospectus.
+  **Method correction, and the main lesson.** The first pass ranked candidates by daily-return correlation. That was the wrong instrument: it measures whether two funds move together, not whether they hold the same thing, and large caps dominate the variance in nearly every pair here. It scored SPY/VTI at 0.9961 and called them duplicates, when one is the S&P 500 and the other is the total market including mid and small caps. Corrected approach: **compare stated mandates first**, use correlation only as a supporting signal. Several pairs were reclassified as genuinely different and kept in full:
 
-  Known overlap groups to review (not yet decided, needs a pass):
-  | Exposure | Candidates | Earliest |
-  |---|---|---|
-  | Semiconductors | SOXX (2001-08), SMH (2000-07) | SMH |
-  | Small cap | IWM (2000-06), IJR (2000-06) | tie, check liquidity |
-  | Short-term treasuries | SHY (2002-08), VGSH (2009-12), BSV (2007-05), SHV (2007-02) | SHY |
-  | Intermediate treasuries | IEF (2002-08), IEI (2007-02), VGIT (2009-12) | IEF |
-  | Long treasuries | TLT (2002-08), VGLT (2010-02) | TLT |
-  | Total bond | BND (2007-05), BNDW (2018-09) | BND |
-  | Broad US equity | SPY (1993-02), VTI (2001-07) | keep both, different weighting |
-  | S&P 500 3x long | UPRO (2009-07), SPXL (2008-12) | SPXL |
-  | Value | SPYV (2000-11), VTV (2004-02) | SPYV |
-  | Short VIX | SVXY (2011-11), SVIX (2022-03) | SVXY |
+  | Kept both | Why they are not duplicates |
+  |---|---|
+  | SPY / VTI | S&P 500 vs total market incl. mid and small caps |
+  | IEF / IEI | "7-10 Year" vs "3-7 Year" Treasury: different duration bucket |
+  | BND / BNDW | "Total Bond Market" vs "Total **World** Bond": different geography |
+  | QQQ / QQQE | Cap-weighted vs equal-weighted; corr 0.9360, the lowest pair measured |
 
-  Note that "same exposure" is not always "same behavior": UPRO and SPXL differ in fee and rebalancing, and SVXY was reformed in 2018 to -0.5x while SVIX is -1x, so a few of these are genuine distinctions rather than duplicates. Verify before removing. Removing a ticker is a one-line edit to `TICKERS` in `scripts/refresh_prices.py` plus a re-run.
+  **Decisions applied** (inception dates are Yahoo's first traded bar, fetched per ticker with `period1=0`, not the prospectus date):
+
+  | Exposure | Kept | Inception | Dropped | Inception |
+  |---|---|---|---|---|
+  | S&P 500 3x daily | SPXL | 2008-11-05 | UPRO | 2009-06-25 |
+  | 1-3yr US Treasury | SHY | 2002-07-30 | VGSH | 2009-11-23 |
+  | Long treasuries | TLT | 2002-07-30 | VGLT | 2010-01-04 |
+  | Intermediate treasuries | IEF | 2002-07-30 | VGIT | 2009-11-23 |
+  | Semiconductors | SMH | 2000-06-05 | SOXX | 2001-07-13 |
+  | Large value | SPYV | 2000-10-02 | VTV | 2004-01-30 |
+  | Short VIX | SVXY | 2011-10-04 | SVIX | 2022-03-30 |
+  | US small cap | IWM | 2000-05-26 | IJR | 2000-05-26 |
+
+  Two rows are worth remembering. **SPXL over UPRO and SMH over SOXX both go against usage** (UPRO 2,148 vs SPXL 1,508; SOXX 528 vs SMH 499 in the 6,322 clean symphonies of `database.json`), chosen for consistency with the stated inception rule. **IWM/IJR list on the same day**, so inception could not break that tie and usage decided it (218 vs 7). SVIX and IJR were reclassified as "different exposure" but pruned anyway on owner call, SVIX partly because its 2022 listing truncated any run including it to ~26% of history.
+
+  **The prior version of this table in this document was wrong in three ways** and is preserved here only as a caution: 21 of 23 dates were a month late (SPY listed 1993-01-29, recorded as 1993-02); it grouped SHY/SHV/BSV/VGSH/BIL as one "short-term treasuries" cluster to prune down to SHY, when those are different durations (SHY/SHV correlate at 0.37, SHY/BIL at 0.096); and acting on that entry **would have deleted BIL**, which is hardcoded as the cash proxy in `buildComposerSymphony` and is also the single most-held ticker in the entire dataset at 3,304 uses. Verify mandates and check for code dependencies before removing any ticker.
+
+  **Inception is now largely inert as a tiebreak.** With `START_DATE` at 2010-01-01, any fund listing before then has 100% coverage regardless of how much earlier it launched, so the rule only discriminates for post-2010 listings. Every pair in the table above except SVIX had 100% coverage on both sides.
+
 
 - [ ] Client-side search (Fuse.js or similar)
 - [x] **Tag-based filtering on the strategy index (built 2026-08-15, v1.17.0)** — the tags already carried by every strategy are now selectable filters on `strategies.html`, not just read-only labels. A filter bar above the grid groups them into **Signal** / **Risk metric** / **Asset class** / **Collection** (plus an automatic "Other" group so any new tag in the data can never silently go missing from the UI), each chip showing its match count. Only tags actually present in the data are offered, so the bar can never present a combination that returns nothing. **Multiple tags combine with AND** (a strategy must carry every selected tag), which is what makes pairing a signal tag with an asset-class tag useful; the count line switches to "N of 30 strategies" while filtered, and an empty result explains the AND behavior and offers a reset. Selections are mirrored into a **`?tags=` query param** via `history.replaceState`, so a filtered view is linkable and survives a refresh or a back-navigation from a detail page. New CSS: `.tagfilter*` (inactive chips are dimmed so selected ones clearly stand out).
