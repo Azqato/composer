@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.8] - 2026-08-20
+
+### Lowercase "calmar" in the exported description
+
+The combined export's `description` now reads "ordered by the calmar ratio each signal scored standalone". Only the capital C changed. The column header in the table is untouched.
+
+**Files changed:** `signal-miner.html`
+
+---
+
 ## [1.22.7] - 2026-08-20
 
 ### The deploy now refuses to publish a broken page
