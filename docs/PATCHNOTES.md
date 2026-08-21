@@ -5,6 +5,29 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.11] - 2026-08-20
+
+### Lower CPU ceilings; Max no longer means 100%
+
+Reported by the owner: the Max setting was crashing browsers. It ran with no throttle at all and, less obviously, on a batch of 500 signals where every other level used 150.
+
+New targets, with the throttle factor derived from each one as `100/duty - 1` and checked to round-trip:
+
+| Option | Was | Now | `FACTOR` |
+|---|---|---|---|
+| Max | 100% | ~80% | 0.25 |
+| High | ~50% | ~40% | 1.5 |
+| Medium (default) | ~25% | ~20% | 4 |
+| Low | ~10% | ~10% | 9 |
+
+Batch size is now a uniform 150 at every level. That matters as much as the percentage: the batch boundary is the only point the run yields to the browser, so the old 500 held the main thread for over three times as long between breaths.
+
+Results are identical at every setting. Only speed and heat change.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.22.10] - 2026-08-20
 
 ### Shorter progress line
