@@ -5,6 +5,30 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.24.1] - 2026-08-21
+
+### Indicator warm-up is charged to the sample window, so every row is scored on the same days
+
+Every indicator needs `p` days of history before it produces a value. A 252-day signal is therefore blank, and so out of the market, for its first 252 days, while a 5-day signal is live after five. Until now all of them were scored over the same nominal span regardless.
+
+**That was not a rounding error, it was a ranking bias.** A 252-day signal had 247 fewer days than a 5-day signal in which to earn return, against the same target, competing for the same leaderboard slot. Long windows were systematically penalised and the leaderboard tilted short. Since v1.23.0 standardised every family onto one grid reaching 252 days, this applied to all sixteen families rather than the two it used to.
+
+The sample window now starts after the longest window in the active grid. A default run over tickers with full history goes from starting 2010-02-11 to starting **2011-01-03**, and from 4,183 scored days to **3,931**: a cost of 252 days, about **6.0%** of the sample, in exchange for rows that are actually comparable.
+
+**The cost is shown, not hidden.** The estimate line now reads `sample 2011-01-03 to 2026-08-20 (3,931 days, 252 lost to warm-up)`, and the results meta line says `after 252 days of indicator warm-up so every row is scored on the same days`. The "not enough shared history" error also accounts for it, so a short-history ticker now fails with an explanation that names the warm-up rather than an unexplained day count.
+
+**The alternative was considered and rejected.** Starting each spec at its own first valid day wastes no data, but it makes rows non-comparable in a different way, since each would be scored over a different period, and it would push a per-spec branch into the hottest loop in the tool. Comparability is what a leaderboard needs.
+
+One deliberate detail: the `frac` figure behind the "limited by TICKER" hint still measures the ticker-driven share of the axis and excludes the warm-up, so that hint keeps pointing at the chip the user did not mean to include rather than firing on every run.
+
+### Verified
+
+Two live end-to-end runs in headless Edge at min periods 10 and 252. In both, `win.warm` equals the longest active window, `s0` equals the listing index plus the warm-up, `len` equals `N - s0`, 100 rows render, and both the estimate line and the meta line name the warm-up cost.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.24.0] - 2026-08-21
 
 ### The three price-scale comparison families no longer pair across tickers

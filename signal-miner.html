@@ -1257,7 +1257,7 @@
           at: new Date().toISOString(),
           total: lastResults.count,
           baselines: lastBaselines,
-          win: win ? { start: win.start, len: win.len, binding: win.binding } : null,
+          win: win ? { start: win.start, len: win.len, binding: win.binding, warm: win.warm } : null,
           end: DATES[N - 1],
           rows: top.map(r => ({
             single: r.single, target: r.target, label: r.label,
@@ -1322,14 +1322,44 @@
 
     // Returns the window for a given set of symbols, plus which ticker binds it
     // so the UI can name the culprit rather than just showing a short sample.
-    function windowInfo(syms) {
-      let s0 = 0, binding = null;
+    // INDICATOR WARM-UP IS CHARGED TO THE WINDOW START (v1.24.1).
+    //
+    // Every indicator needs `p` days of history before its first valid value,
+    // so a 252-day signal is NaN (and therefore out of the market) for its
+    // first 252 days while a 5-day signal is live after five. Before this, all
+    // of them were scored over the same nominal span regardless, which is not
+    // a rounding error: it is a RANKING BIAS. A 252-day signal had 247 fewer
+    // days than a 5-day signal in which to earn return, against the same
+    // target, competing for the same leaderboard slot. Long windows were
+    // systematically penalised and the leaderboard tilted short.
+    //
+    // The fix is to start the window after the LONGEST window in the active
+    // grid, so every row is scored on an identical set of days and the numbers
+    // are comparable again. It costs up to 252 days out of roughly 4,150, about
+    // 6% of the sample, and the cost is shown in the estimate line and the
+    // results meta rather than hidden.
+    //
+    // The alternative, starting each spec at its own first valid day, wastes no
+    // data but makes rows non-comparable in a different way (each scored over a
+    // different period) and would push a per-spec branch into the hottest loop
+    // in the tool. Comparability is what a leaderboard needs.
+    //
+    // `frac` deliberately still measures the TICKER-driven share of the axis,
+    // not the warm-up, so the "limited by X" hint keeps pointing at the chip
+    // the user did not mean to include.
+    function windowInfo(syms, warm) {
+      let list = 0, binding = null;
       for (const sym of syms) {
         const i = firstValidIndex(sym);
-        if (i > s0) { s0 = i; binding = sym; }
+        if (i > list) { list = i; binding = sym; }
       }
+      const w = warm || 0;
+      const s0 = Math.min(N, list + w);
       const len = Math.max(0, N - s0);
-      return { s0, len, binding, start: DATES[Math.min(s0, N - 1)], frac: N ? len / N : 0 };
+      return { s0, len, binding, warm: w,
+               listStart: DATES[Math.min(list, N - 1)],
+               start: DATES[Math.min(s0, N - 1)],
+               frac: N ? (N - list) / N : 0 };
     }
 
     // ---------- run ----------
@@ -1357,9 +1387,11 @@
       const universe = [...new Set([...tgt, ...cmp])];
       // The run's common sample window. Bound by the most recently listed of the
       // selected tickers, so every signal in this run is scored on equal footing.
-      const win = windowInfo(universe);
+      // WINDOWS is ascending, so the last entry of the active grid is the
+      // longest warm-up any spec in this run can need.
+      const win = windowInfo(universe, W[W.length - 1]);
       if (win.len < 30) {
-        status.textContent = `Not enough shared history: ${win.binding || 'the selection'} only has ${win.len} trading days in common with the rest. Remove it or pick tickers with longer history.`;
+        status.textContent = `Not enough shared history: after ${win.warm} days of indicator warm-up, ${win.binding || 'the selection'} leaves only ${win.len} scored trading days. Remove it, pick tickers with longer history, or raise the min signal period.`;
         return;
       }
       const need = neededIndicators(fams);
@@ -1782,7 +1814,7 @@
       document.getElementById('sl-count').textContent = `(${total.toLocaleString()})`;
       const w = sigCache && sigCache.win;
       const sample = w
-        ? ` Scored over ${w.start} to ${DATES[N - 1]} (${w.len.toLocaleString()} trading days${w.binding ? `, window set by ${w.binding}` : ''}).`
+        ? ` Scored over ${w.start} to ${DATES[N - 1]} (${w.len.toLocaleString()} trading days${w.binding ? `, window set by ${w.binding}` : ''}${w.warm ? `, after ${w.warm} days of indicator warm-up so every row is scored on the same days` : ''}).`
         : '';
       document.getElementById('sl-meta').textContent = restored
         ? snapshotNote
@@ -1884,12 +1916,14 @@
       // listed ticker binds it, so name that ticker: a two-year window on an
       // eight-year axis is usually one chip the user did not mean to include.
       if (PD && DATES) {
-        const w = windowInfo([...targets, ...compares]);
+        const W2 = activeWindows(minP);
+        const w = windowInfo([...targets, ...compares], W2[W2.length - 1]);
         if (w.len < 30) {
           txt += ` · not enough shared history (${w.binding || 'selection'})`;
           cls = ' stop';
         } else {
-          txt += ` · sample ${w.start} to ${DATES[N - 1]} (${w.len.toLocaleString()} days)`;
+          txt += ` · sample ${w.start} to ${DATES[N - 1]} (${w.len.toLocaleString()} days`;
+          txt += w.warm ? `, ${w.warm} lost to warm-up)` : ')';
           if (w.binding) {
             txt += `, limited by ${w.binding}`;
             if (w.frac < 0.6 && !cls) cls = ' warn';
