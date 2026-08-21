@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.13] - 2026-08-20
+
+### Large runs no longer fill memory, and the countdown stops lying
+
+Two owner reports: the machine bogs down after about 2,000,000 signals, and the status line read "1 second left" at 2,100,585 of 3,050,000.
+
+**Memory.** Pass 1 kept the day-by-day array of every surviving signal so pairing could AND them together later. At 4,183 bytes each, a 3,000,000-signal run held around 4GB at a 50% survival rate, which is where a browser tab's heap runs out. It also turned out to be almost entirely unused: pairing only ever reads the top 150 survivors per target, so on a run that size over 99.9% of what was retained was never read. Nothing is cached now. The handful of arrays pairing needs are rebuilt on the spot, which takes under a millisecond.
+
+Re-filtering is still instant and results are unchanged. Retention was the cost, not the work.
+
+**Countdown.** The estimate came from measured compute scaled by the CPU factor, which assumed idle time exactly matched what the throttle asked for. When real idle ran longer, through timer clamping, a backgrounded tab, or garbage collection, elapsed time overtook the projection and the countdown stuck at zero with a third of the run left. It now projects from actual throughput and shows "estimating..." for the first five batches.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.22.12] - 2026-08-20
 
 ### Batch size scales with the CPU level

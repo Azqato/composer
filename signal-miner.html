@@ -984,46 +984,57 @@
       // applyFilters(), so tweaking them later re-filters instantly with no
       // re-backtest. "Valid" = a real, finite result (positive total, finite
       // Sortino/Calmar); the user-tunable thresholds are not applied here.
+      // Pass 1 used to keep a Uint8Array per surviving signal here, for pairing
+      // to AND together later. That was the tool's real scaling limit: 4,183
+      // bytes each, so a 3M-signal run at a 50% survival rate held over 4GB,
+      // hit the tab's heap ceiling around 2M signals, and spent the rest of the
+      // run in GC and swap. The cache was also almost entirely dead weight,
+      // because pairing only ever reads the top SURV_CAP (150) survivors PER
+      // TARGET, so on a large run over 99.9% of it was never touched.
+      //
+      // Nothing is cached now. applyFilters regenerates the handful of arrays
+      // it needs with evalSpec, which is sub-millisecond for 150 signals, so
+      // re-filtering stays instant and the memory ceiling goes away.
       const allSingles = [];
-      const survivorArr = {};                 // specIndex -> Uint8Array (for pairing)
       const targetLret = {};
       for (const t of tgt) targetLret[t] = cache[t].lret;
 
-      let busyTotal = 0;                       // cumulative compute time (excludes idle)
+      const WARMUP_BATCHES = 5;                // batches before the estimate is shown
       const runStart = performance.now();      // wall-clock start, for elapsed/remaining
       let batchStart = runStart;
       for (let s = 0; s < specs.length; s++) {
         const spec = specs[s];
         const arr = evalSpec(spec, cache);
-        let used = false;
         for (const t of tgt) {
           const m = backtest(arr, targetLret[t], win.s0, win.len);
           if (m.total > 0 && m.sortino === m.sortino && m.calmar === m.calmar) {
-            allSingles.push({ spec, single: true, target: t, label: specLabel(spec), ...m, _si: s });
-            used = true;
+            allSingles.push({ spec, single: true, target: t, label: specLabel(spec), ...m });
           }
         }
-        if (used) survivorArr[s] = arr;
         // First boundary at s === CHUNK (not 0) so the first sample is a full batch.
         if (s && (s % CHUNK) === 0) {
           const busy = performance.now() - batchStart;   // compute time for this batch
-          busyTotal += busy;
+          const batchNo = s / CHUNK;
           const frac = s / specs.length;
-          // Total is projected from measured COMPUTE time scaled by the duty
-          // factor, not from wall-clock elapsed. At a boundary the sleep for the
-          // current batch has not happened yet, so elapsed/frac would understate
-          // the total by the whole factor on the first reading (4x on Medium)
-          // and then climb, which reads as a broken estimate. Remaining is then
-          // the clock difference, so total = elapsed + remaining by construction.
-          const projCompute = busyTotal / frac;           // projected total compute at 100%
-          const projIdle = projCompute * FACTOR;          // projected total idle
-          const projTotal = projCompute + projIdle;       // projected wall-clock
           const elapsed = performance.now() - runStart;
-          const remaining = Math.max(0, projTotal - elapsed);
+          // Project from WALL-CLOCK throughput. This previously projected from
+          // measured compute scaled by the duty factor, on the reasoning that
+          // at a boundary the current batch's sleep has not happened yet, so
+          // elapsed/frac understates the total on the first reading. True, but
+          // the shortfall is one batch's sleep out of `batchNo`, so it is gone
+          // within a handful of batches; a run of any size has thousands. The
+          // compute-scaled version assumed idle equals busy * FACTOR exactly,
+          // and when real idle ran longer than that (timer clamping, a
+          // backgrounded tab, GC pauses) elapsed overtook the projection and
+          // the countdown pinned itself at zero with a third of the run left.
+          // Suppressing the readout for WARMUP_BATCHES avoids the early error
+          // without inheriting that failure mode.
+          const remaining = elapsed * (1 - frac) / frac;
           progBar.style.width = (95 * frac).toFixed(1) + '%';
           status.textContent =
             `Backtesting ${specs.length.toLocaleString()} signals... ${s.toLocaleString()} (${Math.round(frac * 100)}%)` +
-            ` · ~${DUTY}% CPU · ${fmtDur(remaining)} left`;
+            ` · ~${DUTY}% CPU · ` +
+            (batchNo < WARMUP_BATCHES ? 'estimating...' : `${fmtDur(remaining)} left`);
           await sleep(busy * FACTOR);
           batchStart = performance.now();
         }
@@ -1032,7 +1043,9 @@
       progBar.style.width = '100%';
       selectedRows.clear();   // rows from the previous run no longer exist
       lastBaselines = computeBaselines(win);
-      sigCache = { allSingles, survivorArr, tgt, targetLret, N, win };
+      // `cache` replaces the old per-signal survivor arrays: ~30MB of shared
+      // indicator series that pairing re-derives its handful of arrays from.
+      sigCache = { allSingles, cache, tgt, targetLret, N, win };
       runBtn.disabled = false;
       setTimeout(() => { prog.style.display = 'none'; }, 600);
 
@@ -1052,7 +1065,7 @@
       const MDD = parseFloat(document.getElementById('sl-mdd').value);
       const QUANT = Math.min(0.9, Math.max(0, parseFloat(document.getElementById('sl-quant').value) || 0));
       const comboLimit = parseInt(document.getElementById('sl-combo').value, 10);
-      const { allSingles, survivorArr, tgt, targetLret, N, win } = sigCache;
+      const { allSingles, cache, tgt, targetLret, N, win } = sigCache;
 
       const rows = allSingles.filter(r => r.tim > TIM && r.maxDD > MDD);
 
@@ -1074,9 +1087,14 @@
             return cb - ca;
           });
           if (surv.length > SURV_CAP) surv = surv.slice(0, SURV_CAP);
+          // Rebuild only the capped survivors' arrays, once each, here rather
+          // than carrying every survivor's array through Pass 1. At most
+          // SURV_CAP per target, so this is ~150 evalSpec calls and about a
+          // megabyte, against the gigabytes the old cache held.
+          const arrs = surv.map(r => evalSpec(r.spec, cache));
           for (let i = 0; i < surv.length; i++) {
             for (let j = i + 1; j < surv.length; j++) {
-              const A = survivorArr[surv[i]._si], B = survivorArr[surv[j]._si];
+              const A = arrs[i], B = arrs[j];
               const arr = new Uint8Array(N);
               for (let k = 0; k < N; k++) arr[k] = (A[k] & B[k]);
               const m = backtest(arr, targetLret[t], win.s0, win.len);
