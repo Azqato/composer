@@ -1651,7 +1651,7 @@
       };
       const latestClose = N ? DATES[N - 1] : '';
       document.getElementById('sl-refreshed-text').textContent =
-        `Data last refreshed ${nice(PD.refreshed_at)} · ${UNIVERSE.length} tickers through ${latestClose}`;
+        `Data last refreshed ${nice(PD.refreshed_at)} · ${UNIVERSE.length} tickers`;
       document.getElementById('sl-data-meta').textContent =
         `Price history: ${UNIVERSE.length} tickers, ${N.toLocaleString()} trading days from ${PD.start} through ${latestClose}. Last refreshed ${d}. Refreshed weekly (Saturdays) from Yahoo Finance daily adjusted closes.`;
     })();

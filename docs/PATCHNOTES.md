@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.6] - 2026-08-20
+
+### Shorter data-refresh line
+
+The line under the Signal Miner heading now reads "Data last refreshed Aug 20, 2026 · 72 tickers" and drops the trailing "through 2026-08-20". The full range, including the last close, is still spelled out in the data note further down the page.
+
+**Files changed:** `signal-miner.html`
+
+---
+
 ## [1.22.5] - 2026-08-20
 
 ### Fix: the combined JSON export produced a symphony Composer would not take
