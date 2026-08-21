@@ -1038,7 +1038,16 @@
         for (const t of tgt) {
           let surv = byTarget[t] || [];
           surv = quantilePrune(surv, QUANT);
-          surv.sort((a, b) => b.sortino - a.sortino);
+          // Rank survivors by the same metric the table ranks by, so the pool
+          // fed into pairing matches what the user is actually looking at
+          // (v1.22.1; was Sortino, left behind when Calmar became the default
+          // sort in v1.22.0). NaN sorts last rather than unpredictably, so a
+          // row with no finite Calmar cannot displace a real one from the cap.
+          surv.sort((a, b) => {
+            const ca = a.calmar === a.calmar ? a.calmar : -Infinity;
+            const cb = b.calmar === b.calmar ? b.calmar : -Infinity;
+            return cb - ca;
+          });
           if (surv.length > SURV_CAP) surv = surv.slice(0, SURV_CAP);
           for (let i = 0; i < surv.length; i++) {
             for (let j = i + 1; j < surv.length; j++) {

@@ -5,6 +5,20 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.1] - 2026-08-20
+
+### AND pairs are now built from the Calmar-ranked survivors
+
+When Calmar became the default ranking in v1.22.0, one place still ranked by Sortino: the cut that decides which single signals get fed into AND pairing. Only the top 150 survivors per target are paired, so that cut was choosing candidates on one metric while the table ranked them on another.
+
+It now ranks by Calmar, matching the table.
+
+**This changes your results, not just their order.** A different set of survivors reaches the cap, so different AND pairs get generated in the first place, and some pairs that existed before will not appear. Single-signal rows are unaffected. This shipped as its own release rather than folded into v1.22.0 precisely so the change is visible.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.22.0] - 2026-08-20
 
 ### Select several signals and export them as one symphony
