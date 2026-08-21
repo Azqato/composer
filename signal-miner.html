@@ -148,7 +148,7 @@
       <!-- Controls -->
       <div class="sl-panel">
         <h2>1. Assets</h2>
-        <p class="sl-sub">Pick <span style="color:var(--color-green)">Target</span> tickers (what you invest in when a signal fires) and <span style="color:#6ea0f0">Signal</span> tickers (what conditions are measured on). A ticker can be both. Chips are grouped by asset class, and each group has an <strong>All</strong> toggle; the row-level button selects the whole universe. Watch the estimate below as you go: signal counts grow with the <em>square</em> of the tickers used, so selecting everything is far heavier than it looks. A <span style="border:1px dashed var(--color-disabled);border-radius:4px;padding:0 5px;font-family:var(--font-mono);font-size:0.75rem">dashed</span> chip means the fund launched after 2018, so its history is short and its metrics are fit to a smaller sample.</p>
+        <p class="sl-sub">Pick <span style="color:var(--color-green)">Target</span> tickers (what you invest in when a signal fires) and <span style="color:#6ea0f0">Signal</span> tickers (what conditions are measured on). <strong>Conditions are built only from the Signal set</strong>, so a target is not measured unless you also add it there. To test a rule that reads its own target, like <em>if RSI(TECL) &gt; 79 then hold TECL</em>, put that ticker in <em>both</em> boxes. Chips are grouped by asset class, and each group has an <strong>All</strong> toggle; the row-level button selects the whole universe. Watch the estimate below as you go: signal counts grow with the <em>square</em> of the tickers used, so selecting everything is far heavier than it looks. A <span style="border:1px dashed var(--color-disabled);border-radius:4px;padding:0 5px;font-family:var(--font-mono);font-size:0.75rem">dashed</span> chip means the fund covers less than 90% of the price history, so it both shortens the sample window for the whole run and has its metrics fit to fewer days.</p>
 
         <div class="sl-group sl-tgt">
           <div class="sl-rowhead">
@@ -779,6 +779,7 @@
       const progBar = prog.firstElementChild;
       const tgt = [...targets], cmp = [...compares];
       if (tgt.length === 0) { status.textContent = 'Pick at least one target ticker.'; return; }
+      if (cmp.length === 0) { status.textContent = 'Pick at least one signal ticker. Conditions are built only from the Signal set, so add the target there too if you want it to condition on itself.'; return; }
 
       const fams = {};
       let anyFam = false;
@@ -835,7 +836,19 @@
       await sleep(0);
       const cache = buildCaches(universe, need, grids);
 
-      const specs = buildSpecs(universe, fams, grids);
+      // Conditions are built from the SIGNAL set only, not the union with the
+      // targets. Until v1.21.1 this passed `universe`, which silently forced
+      // every target into the condition pool: choosing TECL as a target and
+      // XLK/KMLM as signals still produced TECL conditions, with no way to opt
+      // out. Self-referential rules ("if RSI(TECL) > 79, hold TECL") are a real
+      // and common Composer pattern, so they stay reachable, but by ASKING for
+      // them: put the ticker in both boxes. That is strictly more expressive
+      // than the old union, since the union could only ever add.
+      //
+      // `universe` is still right for windowInfo and buildCaches above: the
+      // target's listing date bounds the sample window, and targetLret reads
+      // cache[t].lret, so its price data is required either way.
+      const specs = buildSpecs(cmp, fams, grids);
       if (specs.length > SIGNAL_WARN_CAP) {
         const ok = window.confirm(
           `Heads up: this run will test ${specs.length.toLocaleString()} signals.\n\n` +
@@ -1185,7 +1198,9 @@
       document.querySelectorAll('#sl-families input').forEach(el => fams[el.value] = el.checked);
       const minP = parseInt((document.getElementById('sl-minp') || {}).value, 10) || 5;
       const g = activeGrids(minP);
-      const n = new Set([...targets, ...compares]).size;
+      // Lockstep with buildSpecs: conditions come from the Signal set only, so
+      // the target count does not enter the spec count (v1.21.1).
+      const n = compares.size;
       let c = 0;
       // Must stay in lockstep with buildSpecs/pushCmpSpecs. A comparison family
       // over m = n*windows distinct operands yields m*(m-1)/2 unordered pairs,
@@ -1199,7 +1214,7 @@
       if (fams.ma_cmp)     c += cmpCount(g.MA_W.length);
       if (fams.std_cmp)    c += cmpCount(g.STD_W.length);
       const el = document.getElementById('sl-est');
-      if (n === 0 || targets.size === 0) { el.textContent = 'Pick tickers to estimate.'; el.className = 'sl-est'; return; }
+      if (targets.size === 0 || n === 0) { el.textContent = 'Pick at least one target and one signal ticker to estimate.'; el.className = 'sl-est'; return; }
       let txt = `~${c.toLocaleString()} signals to test`;
       let cls = c > SIGNAL_WARN_CAP ? ' stop' : c > 45000 ? ' warn' : '';
       // Show the sample window the current selection implies. The most recently

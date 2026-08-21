@@ -1222,6 +1222,16 @@ Supporting changes: the results text filter is debounced 250ms (it fired on ever
 
 **Buy-and-hold baseline (v1.21.0).** Each run backtests the degenerate always-on signal for every selected target over the identical window, rendered as a strip above the results table. Every signal is a bet that being in the target *sometimes* beats being in it *always*, and without that reference the table has no scale. It reuses `backtest()` unchanged rather than deriving the numbers separately, so any difference from a signal row is attributable to the strategy and not to differing arithmetic. Rendered outside the table deliberately: baselines must not sort, must not be filtered away, and must not consume one of the 100 display slots. Carried in the snapshot; an older snapshot without them simply hides the strip.
 
+**Conditions come from the Signal set only (v1.21.1).** `run()` passes `cmp` to `buildSpecs`, not the `universe` union of targets and signals. Before this, selecting TECL as a target and XLK/KMLM as signals still generated TECL conditions with no way to opt out: the Signal set could only add tickers, never restrict them, which made the two boxes' labels misleading.
+
+Self-referential rules (`if RSI(TECL) > 79 then hold TECL`) remain fully reachable by putting the ticker in **both** boxes, which reproduces the old spec set exactly (verified: 708 specs either way on the reported case). The union could only ever add, so this is strictly more expressive, not a reduction in coverage.
+
+`universe` is still correct for the two calls above it and must not be changed: `windowInfo(universe)` because a target's listing date bounds the common sample window, and `buildCaches(universe, ...)` because `targetLret` reads `cache[t].lret`. Only the `buildSpecs` call moved.
+
+`estimate()` keeps its own copy of the count formula and now uses `compares.size` rather than the union size. **This is the third time that duplicate formula has needed a matching edit** (v1.18.4, v1.20.0, v1.21.1); it is a standing drift risk and worth collapsing into one shared function if it needs touching again. Verified in lockstep across four selection shapes, with an added assertion that no condition references a ticker outside the Signal set.
+
+A run with an empty Signal set is now rejected with an explanatory message rather than silently producing nothing.
+
 **Filter defaults.** Min Time in Market `0.05`, Max Drawdown floor `-0.8` (both v1.16.4), prune quantile `0` (v1.16.8, so nothing is trimmed before pairing and all qualifying signals show by default). The example/reset preset mirrors these; keep the two in sync when changing either. Prune quantile applies within each target ticker and runs **sequentially** across total return, profit factor, Sortino, and Calmar (matching the source notebook), so its effect compounds: `0.5` does not leave half the signals, it leaves what survives the top half on each of the four metrics in turn.
 
 ---

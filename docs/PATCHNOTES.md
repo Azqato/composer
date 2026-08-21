@@ -5,6 +5,24 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.21.1] - 2026-08-20
+
+### Fixed: target tickers were forced into your signal conditions
+
+Choosing TECL as a target and XLK plus KMLM as signals still produced conditions measured on **TECL**, and there was no way to stop it. Signal Miner merged the two boxes into one pool before generating conditions, so the Signal set could only ever add tickers, never restrict them.
+
+**Conditions now come from the Signal set only.** The Target set says what you hold; the Signal set says what gets measured. That is what the labels always implied.
+
+Rules that read their own target, like *if RSI(TECL) > 79 then hold TECL*, are a common and legitimate Composer pattern and are **not** lost. You now ask for them by putting the ticker in **both** boxes, which produces exactly the same signals the old behavior did. The difference is that it is now your choice.
+
+Two side effects worth expecting. Runs get **smaller**, sometimes a lot: three targets against two signals drops from 1,560 signals to 396, because targets no longer multiply into the condition pool. And if your Signal set is empty the run now stops with a message instead of silently scoring nothing.
+
+The starting selection is unchanged: Target TQQQ with signals QQQ, SPY, IWM, DIA. Note this means the default no longer generates TQQQ-on-TQQQ conditions. Add TQQQ to the signal box if you want those back.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.21.0] - 2026-08-20
 
 ### Fixed: max drawdown was wrong, and it was hiding your best results
