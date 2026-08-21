@@ -105,7 +105,6 @@
     .sl-baseline-row > span em { font-style: normal; font-family: var(--font-body, inherit);
       font-size: .68rem; text-transform: uppercase; letter-spacing: .04em; color: var(--color-disabled); }
     .sl-baseline-row > .tgt { font-weight: 700; color: var(--color-primary); align-self: center; min-width: 3.5rem; }
-    .sl-baseline-note { margin: .7rem 0 0; font-size: .8rem; color: var(--color-disabled); line-height: 1.5; }
 
     .sl-table-wrap { overflow-x: auto; border: 1px solid var(--color-border); border-radius: 10px; }
     table.sl-table { border-collapse: collapse; width: 100%; font-size: 0.8125rem; }
@@ -1295,11 +1294,7 @@
           (b.short ? '<em style="text-transform:none;letter-spacing:0">from ' + escapeHtml(b.start) + '</em>' : '') + '</span>' +
           cols.map(c => '<span><em>' + escapeHtml(c.label) + '</em>' + fmtVal(b[c.key], c.fmt) + '</span>').join('') +
           '</div>').join('') +
-        '</div>' +
-        '<p class="sl-baseline-note">A signal is only interesting where it beats these on the measure you care about. ' +
-        'Most will not, and a higher Total Return alone is not enough: check it did not come from a deeper drawdown. ' +
-        '<strong>BIL is the cash floor</strong>, what a signal earns while switched off, so anything that cannot beat its <em>return</em> is not paying for its complexity. ' +
-        'Its Sortino and Calmar look absurd because cash has almost no drawdown and both ratios divide by drawdown. The arithmetic is correct; the ranking is not meaningful.</p>';
+        '</div>';
     }
 
     function renderCombineBar() {

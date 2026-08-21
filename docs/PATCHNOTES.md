@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.3] - 2026-08-20
+
+### Buy-and-hold benchmarks lose their explanatory paragraph
+
+The block of text under the benchmark row is gone. The numbers and the heading speak for themselves, and BIL posting a Calmar of 402 because cash has no drawdown is worth noticing on its own rather than being explained away.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.22.2] - 2026-08-20
 
 ### Hotfix: Signal Miner would not load
