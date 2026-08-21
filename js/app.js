@@ -108,7 +108,7 @@ function tagLabel(slug) {
     'standard-deviation': 'Std Deviation',
     'managed-futures': 'Managed Futures',
     'inverse-etfs': 'Inverse ETFs',
-    'zoop': "Zoop's Strategies",
+    'zoop': "zoop's Strategies",
     'original': 'Original Strategies',
   };
   return labels[slug] || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
