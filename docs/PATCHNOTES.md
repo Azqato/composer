@@ -5,6 +5,42 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.0] - 2026-08-20
+
+### Select several signals and export them as one symphony
+
+Requested by Haverel Mink in the Composer Discord: *"What if you could write the frontrunner JSON from the results table, rather than building it one-by-one?"*
+
+Every result row now has a **checkbox**. Tick as many as you like and hit **Copy combined JSON** to get a single Frontrunner-shaped symphony: one `if` block with a branch per signal and a cash fallback, ready to paste into Composer. No more exporting rows one at a time and stitching them together by hand.
+
+**Branches are ordered by Calmar, highest first.** Ladder position is a real strategy decision, since the top branch pre-empts every branch below it on any day several fire, so the order is derived from the metric rather than from the order you happened to tick the boxes. That makes the export deterministic and means there is no list to drag around. A row with no finite Calmar sorts to the bottom instead of landing somewhere arbitrary.
+
+Your selection survives sorting, filtering and the 100-row display cap, so a row can scroll out of view and still export.
+
+**One thing to be clear about, and it is stated on screen too: the combined symphony has not been backtested.** Every row's metrics come from testing that signal alone, holding cash when it was off. Chaining several together produces a strategy nobody has measured, and a ladder of individually strong signals can easily be worse than any one of its parts. Treat the export as a starting point to test in Composer, not a finished strategy.
+
+### Calmar is now the default ranking
+
+The results table now sorts by **Calmar** instead of Sortino on load, and the saved snapshot keeps the top 100 by Calmar to match. Following the v1.21.0 fix, Calmar is annualized return over worst drawdown, so it is comparable across runs of different lengths and reads the way the term normally does: above 1.0 means a typical year's gain exceeds the worst peak-to-trough loss.
+
+Snapshots saved before this release are discarded, since they were ranked by a different metric. One run rebuilds them.
+
+### Buy-and-hold now compares against fixed benchmarks
+
+The buy-and-hold strip used to show one row per target you had selected, so the yardstick moved every time you changed the selection and two runs could not be compared to each other. It now always shows the same four: **TQQQ, QQQ, SPY and BIL**.
+
+BIL is there as the cash floor. It is what a signal earns while it is switched off, so anything that cannot beat it is not paying for its own complexity. One caveat now stated on screen: **ignore BIL's Sortino and Calmar.** Cash has almost no drawdown, and both ratios divide by drawdown, which inflates them to meaningless numbers (BIL scores a Calmar of 402 on a short window). Compare BIL on Total Return and Annualized only.
+
+If a benchmark listed later than the window you are testing, the strip says "from" and the date rather than pretending it existed and sat flat.
+
+### Load community V2 example moved
+
+The button now sits in the Target tickers row, just left of Select all, instead of down by the Run button.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.21.2] - 2026-08-20
 
 ### Eight duplicate ETFs removed from the ticker universe

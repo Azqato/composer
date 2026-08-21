@@ -87,6 +87,13 @@
     .sl-results-head h2 { margin: 0; }
     #sl-filter { background: var(--color-bg); color: var(--color-primary); border: 1px solid var(--color-border); border-radius: 8px; padding: 7px 10px; font-family: var(--font-mono); font-size: 0.8125rem; min-width: 220px; }
 
+    .sl-combine { margin: 0 0 1rem; padding: .85rem 1rem; border: 1px solid var(--color-green);
+      border-radius: 6px; background: var(--color-surface-2, rgba(127,127,127,.06)); }
+    .sl-combine-main { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; }
+    .sl-combine-main strong { font-family: var(--font-mono); font-size: .9rem; }
+    .sl-combine-note { margin: .7rem 0 0; font-size: .8rem; color: var(--color-disabled); line-height: 1.55; }
+    .sl-table input.sl-sel { cursor: pointer; }
+
     .sl-baseline { margin: 0 0 1rem; padding: .85rem 1rem; border: 1px solid var(--color-border);
       border-left: 3px solid var(--color-blue); border-radius: 6px; background: var(--color-surface-2, rgba(127,127,127,.06)); }
     .sl-baseline-title { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em;
@@ -154,7 +161,8 @@
           <div class="sl-rowhead">
             <span class="sl-label">Target tickers <span id="sl-tgt-count" style="color:var(--color-green)"></span></span>
             <span class="sl-selgroup">
-              <button type="button" class="sl-sel" data-all="target">Select all 80</button>
+              <button type="button" class="sl-sel" id="sl-example">Load community V2 example</button>
+              <button type="button" class="sl-sel" data-all="target">Select all</button>
               <button type="button" class="sl-sel" data-none="target">Clear</button>
             </span>
           </div>
@@ -164,7 +172,7 @@
           <div class="sl-rowhead">
             <span class="sl-label">Signal / comparison tickers <span id="sl-cmp-count" style="color:#6ea0f0"></span></span>
             <span class="sl-selgroup">
-              <button type="button" class="sl-sel" data-all="compare">Select all 80</button>
+              <button type="button" class="sl-sel" data-all="compare">Select all</button>
               <button type="button" class="sl-sel" data-none="compare">Clear</button>
             </span>
           </div>
@@ -217,7 +225,6 @@
         </div>
         <div class="sl-actions">
           <button id="sl-run" class="btn btn-green">Run backtest</button>
-          <button id="sl-example" class="btn btn-ghost btn-sm">Load community V2 example</button>
           <span id="sl-est" class="sl-est"></span>
         </div>
         <div class="sl-progress" id="sl-progress"><div></div></div>
@@ -231,6 +238,14 @@
           <input id="sl-filter" type="text" placeholder="Filter by ticker or text...">
         </div>
         <div class="sl-baseline" id="sl-baseline" style="display:none"></div>
+        <div class="sl-combine" id="sl-combine" style="display:none">
+          <div class="sl-combine-main">
+            <strong id="sl-combine-count"></strong>
+            <button class="btn btn-green btn-sm" id="sl-combine-copy">Copy combined JSON</button>
+            <button class="btn btn-ghost btn-sm" id="sl-combine-clear">Clear selection</button>
+          </div>
+          <p class="sl-combine-note">Branches are ordered by <strong>Calmar</strong>, highest first: the top signal pre-empts the others on any day several fire. <strong>This combination has not been backtested.</strong> Each row's metrics come from testing it alone, holding cash when off. Chaining them produces a strategy nobody has measured, and a ladder of individually strong signals can be worse than any one of them. Treat the export as a starting point to test in Composer.</p>
+        </div>
         <div class="sl-table-wrap">
           <table class="sl-table" id="sl-table">
             <thead><tr id="sl-head"></tr></thead>
@@ -304,8 +319,13 @@
     let targets = new Set();
     let compares = new Set();
     let lastResults = [];
-    let sortKey = 'sortino', sortAsc = false;
+    let sortKey = 'calmar', sortAsc = false;   // default ranking metric (v1.22.0)
     let lastBaselines = null;   // buy-and-hold reference rows for the current run
+    // Rows ticked for the combined export, keyed so a selection survives
+    // re-sorting, filtering and the 100-row display cap: a row can be selected
+    // and then scroll out of the visible set, and it must still export.
+    const selectedRows = new Map();
+    const rowKey = r => r.target + '|' + r.label;
     // Cached Pass-1 output from the last run: every valid single-signal result
     // (before the Time-in-Market / Max Drawdown filters) plus the arrays needed
     // to recompute pairing. Lets the section-3 filters re-apply live without
@@ -568,24 +588,40 @@
     }
 
     // ---------- buy-and-hold baseline ----------
-    // Every signal in a run is a bet that being in the target SOMETIMES beats
-    // being in it ALWAYS. Without that reference the table has no scale: a 300%
-    // return looks like a discovery until you notice holding TQQQ over the same
-    // window returned more with fewer assumptions. So for each target we
-    // backtest the degenerate always-on signal over the identical window and
-    // show it above the results.
+    // Every signal is a bet that being in an asset SOMETIMES beats being in it
+    // ALWAYS. Without a reference the table has no scale: a 300% return looks
+    // like a discovery until you notice holding QQQ over the same window did
+    // more, with no rules and no assumptions.
     //
-    // This is the honest comparison precisely because it reuses backtest()
-    // unchanged: same window, same log returns, same drawdown and Sortino
-    // arithmetic. A separately derived baseline could differ for reasons that
-    // have nothing to do with the strategy. tim comes out at exactly 1.0 by
-    // construction, which doubles as a check that the window plumbing is right.
-    function computeBaselines(tgtList, lretByTarget, win) {
+    // The benchmarks are a FIXED set rather than the run's targets, so the
+    // yardstick does not move when the selection changes and two runs stay
+    // comparable to each other. BIL is the cash floor: it is what a signal
+    // earns while it is switched off, so a strategy that cannot beat it is
+    // not paying for its own complexity.
+    //
+    // Reuses backtest() unchanged so any difference from a signal row is
+    // attributable to the strategy rather than to different arithmetic. `tim`
+    // comes out at exactly 1.0 by construction, which doubles as a check that
+    // the window plumbing is right.
+    const BASELINE_TICKERS = ['TQQQ', 'QQQ', 'SPY', 'BIL'];
+
+    function computeBaselines(win) {
       const ones = new Uint8Array(N).fill(1);
-      return tgtList.map(t => ({
-        target: t, single: true, label: 'Buy & hold ' + t,
-        ...backtest(ones, lretByTarget[t], win.s0, win.len),
-      }));
+      const out = [];
+      for (const sym of BASELINE_TICKERS) {
+        if (!PD.tickers[sym]) continue;              // pruned from the universe
+        // A benchmark can list AFTER the run's window opens (TQQQ starts
+        // 2010-02-11, the axis 2010-01-04). Scoring it from the window start
+        // would credit it with flat days it did not exist for, so clamp to its
+        // own first valid bar and report the shorter window rather than hiding it.
+        const s0 = Math.max(win.s0, firstValidIndex(sym));
+        const nw = N - s0;
+        if (nw < 30) continue;
+        const m = backtest(ones, logReturns(PD.tickers[sym].closes), s0, nw);
+        out.push(Object.assign({ target: sym, single: true, label: 'Buy & hold ' + sym,
+                                 start: DATES[Math.min(s0, N - 1)], short: s0 > win.s0 }, m));
+      }
+      return out;
     }
 
     // ---------- labels ----------
@@ -645,16 +681,24 @@
       else { o['rhs-fn'] = fn; o['rhs-fn-params'] = { window: spec.p2 }; o['rhs-val'] = spec.t2; }
       return o;
     }
-    function buildComposerSymphony(row) {
+    // One "if" branch: this row's condition, holding this row's target.
+    // Shared by the single-row export and the combined ladder so both stay in
+    // the same shape; a branch is identical whether it is alone or third in a
+    // ladder, which is what makes the ladder just a list of these.
+    function composerThenChild(row) {
       const specs = row.single ? [row.spec] : row.specs;
       const condition = { 'condition-type': 'compound', operator: 'all', conditions: specs.map(composerCondition) };
       const flat = composerFlat(specs[0]);
-      const thenChild = Object.assign({
+      return Object.assign({
         id: uid(), step: 'if-child', name: 'If', suppress_incomplete_warnings: false,
         children: [{ id: uid(), step: 'asset', suppress_incomplete_warnings: false, ticker: row.target }],
         'is-else-condition?': false,
         condition: condition,
       }, flat);
+    }
+
+    function buildComposerSymphony(row) {
+      const thenChild = composerThenChild(row);
       const elseChild = {
         id: uid(), step: 'if-child', name: 'Else', suppress_incomplete_warnings: true,
         children: [{ id: uid(), step: 'asset', suppress_incomplete_warnings: false, ticker: ELSE_TICKER }],
@@ -673,25 +717,69 @@
       };
     }
 
+    // Combine several rows into one if / else-if ladder: the Frontrunner shape,
+    // where the first matching branch wins and the rest are fallbacks. Composer
+    // represents this as ONE `if` step holding many `if-child` branches, the
+    // last being the else, so a ladder is literally the single-row export with
+    // extra branches spliced in ahead of the else.
+    //
+    // Priority order is **Calmar descending**, not the table's current sort or
+    // the order rows were ticked. Ladder position is a real strategy decision
+    // (branch 1 pre-empts branch 2 on every day both fire), so deriving it from
+    // a metric keeps it deterministic and reproducible instead of depending on
+    // what the user happened to click first. It also means no drag-to-reorder UI.
+    // NaN sorts last rather than unpredictably, so a row with no finite Calmar
+    // becomes the lowest-priority branch instead of jumping the queue.
+    function buildComposerLadder(rows) {
+      const ordered = rows.slice().sort((a, b) => {
+        const ca = a.calmar === a.calmar ? a.calmar : -Infinity;
+        const cb = b.calmar === b.calmar ? b.calmar : -Infinity;
+        return cb - ca;
+      });
+      const elseChild = {
+        id: uid(), step: 'if-child', name: 'Else', suppress_incomplete_warnings: true,
+        children: [{ id: uid(), step: 'asset', suppress_incomplete_warnings: false, ticker: ELSE_TICKER }],
+        'is-else-condition?': true,
+      };
+      const ifNode = {
+        id: uid(), step: 'if', name: 'Condition', suppress_incomplete_warnings: false,
+        weight: { num: 100, den: 100 },
+        children: [...ordered.map(composerThenChild), elseChild],
+      };
+      const weight = {
+        id: uid(), step: 'wt-cash-equal', name: 'Weight', suppress_incomplete_warnings: true, children: [ifNode],
+      };
+      const targets = [...new Set(ordered.map(r => r.target))];
+      return {
+        id: shortId(), step: 'root',
+        name: `Frontrunner: ${ordered.length} signals by Calmar to ${targets.join(', ')}`,
+        children: [weight], description:
+          'Built with Composer Atlas Signal Miner. Branches are ordered by the ' +
+          'Calmar ratio each signal scored STANDALONE. This combination has not ' +
+          'been backtested as a whole: see the note in the tool.',
+        rebalance: 'daily',
+      };
+    }
+
     // ---------- last-run snapshot ----------
     // The top rows of the last run are saved locally so a revisit shows the
     // previous results instead of an empty table.
     //
-    // Only the DISPLAYED rows are saved, always the top 100 by Sortino. The full
+    // Only the DISPLAYED rows are saved, always the top 100 by Calmar. The full
     // run cannot be saved: Pass 1 holds a Uint8Array per surviving signal, which
     // runs to hundreds of MB, far past any storage quota, and serialising it
     // would cost more than re-running the backtest. That is why a restored view
     // is read-only: sorting and the section-3 filters need the full cached set,
     // and re-ranking just the saved 100 would look like it worked while quietly
     // ranking a subset. The sort headers are disabled until a fresh run.
-    const RESULTS_STORE_KEY = 'composer-atlas.signal-miner.lastrun.v3';
+    const RESULTS_STORE_KEY = 'composer-atlas.signal-miner.lastrun.v4';
     const SNAPSHOT_ROWS = 100;
     let restored = false;      // showing a snapshot, so sorting is off
     let snapshotNote = '';     // meta line for a restored view, kept across re-renders
 
     function saveResults(win) {
       try {
-        const top = selectTop(lastResults, SNAPSHOT_ROWS, 'sortino', false, '').rows;
+        const top = selectTop(lastResults, SNAPSHOT_ROWS, 'calmar', false, '').rows;
         localStorage.setItem(RESULTS_STORE_KEY, JSON.stringify({
           at: new Date().toISOString(),
           total: lastResults.length,
@@ -723,7 +811,7 @@
       lastResults = snap.rows;
       lastBaselines = Array.isArray(snap.baselines) ? snap.baselines : null;
       restored = true;
-      sortKey = 'sortino'; sortAsc = false;
+      sortKey = 'calmar'; sortAsc = false;
       const panel = document.getElementById('sl-results-panel');
       panel.style.display = 'block';
       renderResults();
@@ -732,7 +820,7 @@
         { year: 'numeric', month: 'short', day: 'numeric' });
       const w = snap.win;
       snapshotNote =
-        `Saved results from ${nice}: top ${snap.rows.length} of ${(snap.total || 0).toLocaleString()} by Sortino` +
+        `Saved results from ${nice}: top ${snap.rows.length} of ${(snap.total || 0).toLocaleString()} by Calmar` +
         (w ? `, scored ${w.start} to ${snap.end} (${(w.len || 0).toLocaleString()} trading days` +
              `${w.binding ? `, window set by ${w.binding}` : ''})` : '') +
         `. Sorting needs the full result set, so run a backtest to re-enable it.`;
@@ -917,12 +1005,13 @@
       }
 
       progBar.style.width = '100%';
-      lastBaselines = computeBaselines(tgt, targetLret, win);
+      selectedRows.clear();   // rows from the previous run no longer exist
+      lastBaselines = computeBaselines(win);
       sigCache = { allSingles, survivorArr, tgt, targetLret, N, win };
       runBtn.disabled = false;
       setTimeout(() => { prog.style.display = 'none'; }, 600);
 
-      sortKey = 'sortino'; sortAsc = false;
+      sortKey = 'calmar'; sortAsc = false;
       applyFilters(true);
     }
 
@@ -998,6 +1087,7 @@
 
     // ---------- rendering ----------
     const COLS = [
+      { key: '_sel',    label: '' },
       { key: 'label',   label: 'Signal', cls: 'sig' },
       { key: 'target',  label: 'Target', cls: 'tgt' },
       { key: 'total',   label: 'Total Return', fmt: 'pct' },
@@ -1113,7 +1203,7 @@
 
       const head = document.getElementById('sl-head');
       head.innerHTML = COLS.map(c => {
-        if (c.key === '_copy') return '<th></th>';
+        if (c.key === '_copy' || c.key === '_sel') return '<th></th>';
         const sorted = c.key === sortKey ? ' sorted' + (sortAsc ? ' asc' : '') : '';
         return `<th class="${c.cls || ''}${sorted}" data-key="${c.key}">${c.label}</th>`;
       }).join('');
@@ -1124,6 +1214,7 @@
       } else {
         body.innerHTML = shown.map((r, idx) => {
           const cells = COLS.map(c => {
+            if (c.key === '_sel') return `<td><input type="checkbox" class="sl-sel" data-sel="${idx}" ${selectedRows.has(rowKey(r)) ? 'checked' : ''} title="Select for the combined export"></td>`;
             if (c.key === '_copy') return `<td><button class="btn sl-copy-btn btn-ghost" data-copy="${idx}" title="Copy as a Composer symphony you can paste into the app">Copy JSON</button></td>`;
             if (c.key === 'label') {
               const tag = r.single ? '' : '<span class="sl-combo-tag">AND</span>';
@@ -1134,6 +1225,14 @@
           });
           return '<tr>' + cells.join('') + '</tr>';
         }).join('');
+        body.querySelectorAll('[data-sel]').forEach(cb => {
+          cb.addEventListener('change', () => {
+            const r = shown[parseInt(cb.dataset.sel, 10)];
+            const k = rowKey(r);
+            if (cb.checked) selectedRows.set(k, r); else selectedRows.delete(k);
+            renderCombineBar();
+          });
+        });
         // attach copy handlers using the sorted+filtered view
         body.querySelectorAll('[data-copy]').forEach(btn => {
           btn.addEventListener('click', () => {
@@ -1147,6 +1246,7 @@
       }
 
       renderBaselines();
+      renderCombineBar();
       document.getElementById('sl-count').textContent = `(${total.toLocaleString()})`;
       const w = sigCache && sigCache.win;
       const sample = w
@@ -1179,15 +1279,52 @@
       const cols = COLS.filter(c => c.key !== 'label' && c.key !== 'target' && c.key !== '_copy');
       el.style.display = 'block';
       el.innerHTML =
-        '<div class="sl-baseline-title">Buy &amp; hold over the same window, for comparison</div>' +
+        '<div class="sl-baseline-title">Buy &amp; hold benchmarks over the same window</div>' +
         '<div class="sl-baseline-rows">' +
         lastBaselines.map(b =>
-          '<div class="sl-baseline-row"><span class="tgt">' + escapeHtml(b.target) + '</span>' +
+          '<div class="sl-baseline-row"><span class="tgt">' + escapeHtml(b.target) +
+          (b.short ? '<em style="text-transform:none;letter-spacing:0">from ' + escapeHtml(b.start) + '</em>' : '') + '</span>' +
           cols.map(c => '<span><em>' + escapeHtml(c.label) + '</em>' + fmtVal(b[c.key], c.fmt) + '</span>').join('') +
           '</div>').join('') +
         '</div>' +
-        '<p class="sl-baseline-note">A signal is only interesting where it beats the line above on the measure you care about. ' +
-        'Most will not, and a higher Total Return alone is not enough: check it did not come from a deeper drawdown.</p>';
+        '<p class="sl-baseline-note">A signal is only interesting where it beats these on the measure you care about. ' +
+        'Most will not, and a higher Total Return alone is not enough: check it did not come from a deeper drawdown. ' +
+        '<strong>BIL is the cash floor</strong>, what a signal earns while switched off, so anything that cannot beat its <em>return</em> is not paying for its complexity. ' +
+        'Ignore BIL's Sortino and Calmar: cash has almost no drawdown, so dividing by it inflates both ratios to meaningless numbers. Compare BIL on Total Return and Annualized only.</p>';
+    }
+
+    function renderCombineBar() {
+      const bar = document.getElementById('sl-combine');
+      if (!bar) return;
+      const n = selectedRows.size;
+      bar.style.display = n ? 'block' : 'none';
+      if (!n) return;
+      const tcount = new Set([...selectedRows.values()].map(r => r.target)).size;
+      document.getElementById('sl-combine-count').textContent =
+        `${n} signal${n === 1 ? '' : 's'} selected` +
+        (tcount > 1 ? ` across ${tcount} targets` : '');
+    }
+
+    function initCombineBar() {
+      const copyBtn = document.getElementById('sl-combine-copy');
+      const clearBtn = document.getElementById('sl-combine-clear');
+      if (!copyBtn || !clearBtn) return;
+      copyBtn.addEventListener('click', () => {
+        if (!selectedRows.size) return;
+        const json = JSON.stringify(buildComposerLadder([...selectedRows.values()]), null, 2);
+        navigator.clipboard.writeText(json).then(() => {
+          const old = copyBtn.textContent;
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => copyBtn.textContent = old, 1400);
+        }).catch(() => {
+          copyBtn.textContent = 'Copy failed';
+          setTimeout(() => copyBtn.textContent = 'Copy combined JSON', 1400);
+        });
+      });
+      clearBtn.addEventListener('click', () => {
+        selectedRows.clear();
+        requestRender();
+      });
     }
 
     function escapeHtml(s) { return s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
@@ -1428,6 +1565,7 @@
 
       renderChips();
       renderFamilies();
+      initCombineBar();
 
       const minSel = document.getElementById('sl-minp');
       minSel.innerHTML = MIN_PERIOD_OPTS.map(p => `<option value="${p}"${p === 10 ? ' selected' : ''}>${p}d</option>`).join('');
