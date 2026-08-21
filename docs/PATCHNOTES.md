@@ -5,6 +5,29 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.14] - 2026-08-20
+
+### Leverage and Inverse are now separate ticker groups
+
+The Signal Miner's chip groups had one 22-ticker block called "Leveraged & inverse", the largest group on the page by a wide margin and the only one whose **All** button did not express anything anyone actually wants: it selected fifteen bull funds and seven bear funds in a single click.
+
+It is now two groups:
+
+- **Leverage (15)** TQQQ, QLD, SPXL, SSO, UDOW, SOXL, USD, TECL, RETL, FAS, LABU, TNA, YINN, TMF, GDXU
+- **Inverse (7)** SQQQ, PSQ, SPXU, SH, SOXS, TMV, GDXD
+
+Membership goes by direction rather than by multiple, so the 1x shorts SH and PSQ sit in Inverse next to the 3x ones.
+
+**Factor & dividend is now Value & Dividend**, same six tickers (SPYV, VIG, VIGI, SCHD, SCHG, SPHB), owner's wording.
+
+**Bonds & cash is now Bonds**, same ten tickers (TLT, IEF, IEI, SHY, SHV, LQD, BND, BNDW, BSV, BIL). BIL and SHV are the cash-like ones and still live here.
+
+Only labels changed. The universe is still 72 tickers, no price series moved, and any saved selection is unaffected because selection is stored per ticker, not per group.
+
+**Files changed:** `scripts/refresh_prices.py`, `data/prices.json`, `data/prices.js`, `docs/PRD.md`
+
+---
+
 ## [1.22.13] - 2026-08-20
 
 ### Large runs no longer fill memory, and the countdown stops lying

@@ -1151,7 +1151,7 @@ There is no `.js` twin naming inconsistency to worry about here, `data/database_
   "dates": ["2010-01-04", "2010-01-05", "..."],
   "tickers": {
     "QQQ": { "name": "Invesco QQQ Trust", "group": "Broad market", "closes": [156.5, 157.2, "..."] },
-    "GDXU": { "name": "MicroSectors Gold Miners 3x Leveraged", "group": "Leveraged & inverse", "closes": [null, null, "..."] }
+    "GDXU": { "name": "MicroSectors Gold Miners 3x Leveraged", "group": "Leverage", "closes": [null, null, "..."] }
   }
 }
 ```
@@ -1162,10 +1162,12 @@ There is no `.js` twin naming inconsistency to worry about here, `data/database_
 | `start` | string | Earliest date kept (bounds file size) |
 | `dates` | string[] | Master trading-day axis (sorted union of all tickers' days) |
 | `tickers` | object | Map of `symbol → { name, group, closes }` |
-| `tickers[sym].group` | string | Asset-class group (v1.18.0), drives the chip groups and per-group "All" buttons on `signal-miner.html`. One of: Broad market, Factor & dividend, Sector, International, Bonds & cash, Commodities FX & crypto, Volatility & hedge, Leveraged & inverse. The page falls back to `"Other"` if absent, so the field is additive and safe |
+| `tickers[sym].group` | string | Asset-class group (v1.18.0), drives the chip groups and per-group "All" buttons on `signal-miner.html`. One of: Broad market, Value & Dividend, Sector, International, Bonds, Commodities FX & crypto, Volatility & hedge, Leverage, Inverse. The page falls back to `"Other"` if absent, so the field is additive and safe |
 | `tickers[sym].closes` | (number\|null)[] | Adjusted closes aligned to `dates`; `null` before listing or on a missing bar |
 
 `data/prices.js` is the `.js` twin, assigning `window.PRICES_DATA` to the identical payload (compact JSON), same convention as `rsi.js`. Universe is currently **72 tickers** (37 before v1.18.0, 80 before the v1.21.2 duplicate prune); edit the `TICKERS` list in `scripts/refresh_prices.py` to add or remove one, then re-run the script and commit both regenerated files. Each entry is a `(symbol, name, group)` triple, so grouping lives with the ticker list and the page never keeps its own copy.
+
+**Leverage and Inverse are separate groups (v1.22.14).** They were one 22-ticker "Leveraged & inverse" block, by far the largest group and the only one whose "All" button was close to useless: it selected fifteen bull funds and seven bear funds together, which is almost never what anyone wants. Splitting them into **Leverage** (15: TQQQ, QLD, SPXL, SSO, UDOW, SOXL, USD, TECL, RETL, FAS, LABU, TNA, YINN, TMF, GDXU) and **Inverse** (7: SQQQ, PSQ, SPXU, SH, SOXS, TMV, GDXD) makes both "All" buttons express a real intent. Membership is by direction, not by multiple, so the 1x shorts SH and PSQ sit in Inverse alongside the 3x ones. Nothing but the label changed: the universe is still 72 tickers and no price series moved. In the same pass "Factor & dividend" was renamed **Value & Dividend** and "Bonds & cash" was renamed **Bonds**, both keeping every member (BIL and SHV stay under Bonds).
 
 **Partial-history tickers.** Seven funds list after the 2018 start and so carry `null` for their early rows: ETHA (24% coverage), IBIT (30%), SVIX (51%), KMLM, GDXU, GDXD (66% each) and DBMF (84%). They are kept deliberately, but any signal built on them is fit to a shorter sample, and the default Min Time in Market floor of 0.05 is far too low to screen that out. `signal-miner.html` marks anything below 90% coverage with a dashed chip border and a "limited history" tooltip.
 
