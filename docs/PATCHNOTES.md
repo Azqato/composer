@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.7] - 2026-08-20
+
+### The deploy now refuses to publish a broken page
+
+Two checks moved into `scripts/` and into the deploy workflow, ahead of the build step. If either fails the deploy stops and the previously published site stays up.
+
+`scripts/check_html_js.py` catches the v1.22.2 failure: a stray apostrophe inside a JS string that closes it early and kills the whole inline script, while the page still serves a healthy-looking 200 with its static HTML intact. It checks every inline `<script>` on the site for strings running past end of line and for unbalanced brackets, and it understands regex literals, which is what previously made it unusable on converter.html, database.html and etf-cloner.html. Confirmed against all 11 pages, and confirmed to fail on a copy with the outage deliberately reintroduced.
+
+`scripts/check_composer_ladder.py` catches the v1.22.5 failure: output that is valid JSON but the wrong shape. It walks the combined export's tree asserting that every `if` has exactly two children and every else holds exactly one thing, and it guards against drifting from the real builder by pattern-matching the exporter in `signal-miner.html` first.
+
+No change to the site itself.
+
+**Files changed:** `.github/workflows/deploy.yml`, `scripts/check_html_js.py` (new), `scripts/check_composer_ladder.py` (new), `docs/PRD.md`
+
+---
+
 ## [1.22.6] - 2026-08-20
 
 ### Shorter data-refresh line, reworded export description

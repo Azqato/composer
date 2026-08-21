@@ -468,6 +468,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Check inline JS syntax
+        run: python3 scripts/check_html_js.py
+      - name: Check the Composer export shape
+        run: python3 scripts/check_composer_ladder.py
       - uses: actions/configure-pages@v5
       - name: Build deploy folder
         run: |
@@ -489,6 +493,14 @@ jobs:
       - uses: actions/deploy-pages@v4
         id: deployment
 ```
+
+**Pre-deploy checks (added v1.22.7).** Two Python scripts gate the publish. They run before anything is built, so a failure leaves the previously deployed, working site untouched.
+
+`scripts/check_html_js.py` tokenizes every inline `<script>` in the repo's HTML and rejects two things: a `'` or `"` string that runs past end of line, and unbalanced brackets. It exists because of the v1.22.2 outage, where an apostrophe inside `'Ignore BIL's Sortino...'` closed the string early, the stray quotes re-paired so brackets still balanced, and the entire inline script died. The page still served HTTP 200 with its static HTML intact, so nothing downstream could tell. There is no JS runtime in this toolchain, so `node --check` is not an option; this is the substitute. It understands line and block comments, template literals with nested `${...}`, and regex literals, the last being necessary because converter.html and etf-cloner.html both carry a JSON-highlighting regex holding unbalanced brackets and quotes. Run bare it checks every `*.html` in the repo root; `--self-test` runs 13 built-in cases, including the real outage string, and the full run executes them too so a checker that has stopped working cannot pass silently.
+
+**Its one known blind spot, deliberately recorded as a passing self-test case:** an intruding quote whose strays all re-pair *before* end of line is invisible. `s = "he said "hi" to me";` is a genuine syntax error this tool calls clean. What made the outage catchable is that its re-pairing left a string running off the end of the line. Closing that gap needs a real JS parser.
+
+`scripts/check_composer_ladder.py` covers the v1.22.5 class of bug, which is structurally wrong but syntactically perfect output. It holds a Python port of `buildComposerLadder` and walks the emitted tree asserting the invariant Composer requires: every `if` has exactly two children, every else holds exactly one thing, rungs nest in Calmar order with NaN last, each rung keeps its own target and conditions, and the deepest else is BIL. Because a port can drift from the JS it mirrors, and because the *original* port's failure was asserting the shape the builder produced rather than the shape Composer requires, it first runs a **source guard**: five regexes over `signal-miner.html` confirming the exporter still has the shape the port describes. Change the builder without updating the port and the guard fails by name. Verified by temporarily reverting the exporter to the flat shape and confirming the guard caught it.
 
 ### Performance Targets
 

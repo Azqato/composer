@@ -24,6 +24,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Gate the deploy on syntax. A broken inline <script> still serves a
+      # 200 with its static HTML intact, so a bad publish looks healthy from
+      # the outside; v1.22.2 shipped exactly that. Failing here leaves the
+      # previous, working site up.
+      - name: Check inline JS syntax
+        run: python3 scripts/check_html_js.py
+
+      - name: Check the Composer export shape
+        run: python3 scripts/check_composer_ladder.py
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
