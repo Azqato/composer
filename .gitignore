@@ -26,3 +26,7 @@ __pycache__/
 
 # Local UI mockups (never deploy)
 _wf-mockup.html
+
+# Headless harness test copies (written and deleted by scripts/run_harness.py)
+_harness_*.html
+_harness_*_driver.js

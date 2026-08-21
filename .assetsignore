@@ -1,0 +1,27 @@
+# Files in the repo root that should NOT be served as part of the site.
+#
+# wrangler.jsonc sets `assets.directory` to ".", so by default every file in
+# the repository is published, including internal planning documents. Nothing
+# here is secret, but docs/PRD.md is an internal roadmap and there is no reason
+# for it to have a public URL.
+#
+# Syntax is gitignore-style. Anything NOT listed here is still served, so the
+# pages, css/, js/ and data/ are untouched.
+
+# Internal documentation and planning
+docs/
+README.md
+
+# Build, test and data-refresh tooling (Python; never executed by the site)
+scripts/
+
+# Local UI mockups: gitignored as well, listed here as a second line of defence
+_wf-mockup.html
+_harness_*.html
+_harness_*_driver.js
+
+# Repo and tooling config
+wrangler.jsonc
+.gitignore
+.assetsignore
+.github/
