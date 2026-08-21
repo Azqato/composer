@@ -50,6 +50,9 @@ jobs:
             --exclude='README.md' \
             --exclude='.gitignore' \
             . _site/
+          echo "served-from-artifact" > _site/_probe.txt
+          echo "--- _site top level:"; ls -a _site | head -30
+          echo "--- excluded dirs present in _site?"; ls -d _site/docs _site/scripts 2>&1 | head
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
