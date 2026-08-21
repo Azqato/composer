@@ -1011,8 +1011,8 @@
           status.textContent =
             `Backtesting ${specs.length.toLocaleString()} signals... ${s.toLocaleString()} (${Math.round(frac * 100)}%)` +
             (FACTOR
-              ? ` · ~${DUTY}% CPU · ${fmtDur(remaining)} left of ~${fmtDur(projTotal)} total (idle ~${fmtDur(projIdle)})`
-              : ` · max speed · ${fmtDur(remaining)} left of ~${fmtDur(projTotal)} total`);
+              ? ` · ~${DUTY}% CPU · ${fmtDur(remaining)} left`
+              : ` · max speed · ${fmtDur(remaining)} left`);
           await sleep(FACTOR ? busy * FACTOR : 0);
           batchStart = performance.now();
         }

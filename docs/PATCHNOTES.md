@@ -5,6 +5,18 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.10] - 2026-08-20
+
+### Shorter progress line
+
+The run status now ends at the time remaining: "Backtesting 3,042,720 signals... 303,000 (10%) · ~25% CPU · 5m 17s left". The projected total and the idle-time breakdown are gone. Both were only ever there to explain why a throttled run takes longer than its compute time, which the CPU percentage already implies.
+
+The projection itself is unchanged, since the remaining figure is still derived from it.
+
+**Files changed:** `signal-miner.html`
+
+---
+
 ## [1.22.9] - 2026-08-20
 
 ### The combine bar now says what a mixed-target ladder actually does
