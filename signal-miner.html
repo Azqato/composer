@@ -922,16 +922,21 @@
       // Medium 4 -> 20%, Low 9 -> 10%.
       //
       // Max was 100% (FACTOR 0, batch 500) until v1.22.11 and was crashing
-      // browsers, so it now throttles like every other level. Two changes
-      // matter: it yields at all, and it yields on the same 150-signal batch
-      // as the rest, since the batch is the yield granularity and 500 held the
-      // main thread for over three times as long between breaths.
+      // browsers, so it now throttles like every other level.
+      //
+      // CHUNK scales with the level (v1.22.12) because setTimeout clamps to
+      // ~4ms once nested, and sleep = busy * FACTOR. At Max, FACTOR .25 on a
+      // small batch asks for a sub-clamp sleep that the browser rounds UP,
+      // pushing real duty below the number on screen. A larger batch makes
+      // busy large enough that the requested sleep clears the clamp. The
+      // distortion only ever errs toward LESS CPU, never more, so the display
+      // overstates rather than misleads in the dangerous direction.
       //
       // The loop also measures compute time as it goes to show a live estimate
       // of time remaining (see the status readout below).
       const cpu = (document.getElementById('sl-cpu') || {}).value || 'medium';
       const FACTOR = cpu === 'max' ? 0.25 : cpu === 'high' ? 1.5 : cpu === 'low' ? 9 : 4;
-      const CHUNK = 150;
+      const CHUNK = cpu === 'max' ? 250 : cpu === 'high' ? 200 : cpu === 'low' ? 100 : 150;
       const DUTY = Math.round(100 / (1 + FACTOR));
       const sleep = (ms) => new Promise(r => setTimeout(r, ms));
       const fmtDur = (ms) => {

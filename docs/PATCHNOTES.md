@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.12] - 2026-08-20
+
+### Batch size scales with the CPU level
+
+Max 250, High 200, Medium 150, Low 100, replacing the uniform 150 from v1.22.11.
+
+The reason is the `setTimeout` clamp. Browsers round a nested timer's delay up to roughly 4ms, and the throttle sleeps for `busy x FACTOR`, so a level with a small factor on a small batch asks for a sub-clamp sleep, gets rounded up, and holds less CPU than its label claims. A larger batch at the faster levels makes the requested sleep clear the clamp.
+
+Max is still short of its nominal 80%, landing near 64%, because closing that gap fully would need a batch around 550, which is where Max was when it was crashing browsers. The error only ever runs toward less CPU, so the readout overstates load rather than hiding it.
+
+**Correction to the v1.22.11 note:** that entry claimed the old 500-signal batch was likely contributing to the crashes. The arithmetic does not support it. At roughly 29 microseconds per signal a 500-batch blocks for about 14ms, which is a long frame, not a hang. The uncapped duty cycle and the documented memory ceiling are the plausible causes; batch size in this range is not.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.22.11] - 2026-08-20
 
 ### Lower CPU ceilings; Max no longer means 100%
