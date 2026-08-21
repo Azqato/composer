@@ -320,7 +320,104 @@
     let PD, DATES, N, UNIVERSE;
     let targets = new Set();
     let compares = new Set();
-    let lastResults = [];
+    // ---------- Pass-1 result store (v1.22.15) ----------
+    // Pass 1 produces one row per (signal, target) that backtests to a valid
+    // result. On a large run that is millions of rows, and holding them as
+    // JavaScript objects is what bounds the tool now that the survivor cache
+    // is gone. The limit is NOT the machine's RAM: a browser tab has its own
+    // heap ceiling, measured at 3,586 MB in Edge on a 48GB box, and it does
+    // not grow with installed memory. An object row costs roughly 300 bytes:
+    // the object header and slack, eight separately heap-allocated doubles
+    // (V8 stopped storing doubles inline in objects), and an eagerly built
+    // label string that only the 100 displayed rows ever read.
+    //
+    // Columns instead. Eight Float64Arrays plus a spec index and a target
+    // index is 69 bytes per row, flat, in one allocation per column, outside
+    // the object heap and holding nothing for the garbage collector to trace.
+    // Row objects are materialised only where one is actually needed: the
+    // <=100 rows on screen, the <=150 per target fed into pairing, and the
+    // snapshot. Labels are derived from the spec at that point rather than
+    // stored, which is the same trade the survivor cache lost in v1.22.13:
+    // recomputing on demand beats retaining for a set that is never read.
+    const METRIC_KEYS = ['total', 'annRet', 'sortino', 'calmar', 'maxDD', 'tim', 'pf', 'pctProf'];
+
+    function makeStore() {
+      const st = { n: 0, cap: 0, si: new Uint32Array(0), ti: new Uint8Array(0), m: {},
+                   specs: null, tgt: null };
+      for (const k of METRIC_KEYS) st.m[k] = new Float64Array(0);
+      return st;
+    }
+
+    // Geometric growth. Pre-sizing to specs.length * targets would avoid the
+    // copies but allocates the worst case up front, which on a multi-target
+    // run is larger than what actually survives.
+    function growStore(st) {
+      const cap = st.cap ? st.cap * 2 : 65536;
+      const si = new Uint32Array(cap); si.set(st.si); st.si = si;
+      // A target index, not a ticker string: the universe is 72 tickers, so a
+      // byte is ample and the assert below is the guard if that ever changes.
+      const ti = new Uint8Array(cap); ti.set(st.ti); st.ti = ti;
+      for (const k of METRIC_KEYS) { const a = new Float64Array(cap); a.set(st.m[k]); st.m[k] = a; }
+      st.cap = cap;
+    }
+
+    function pushStore(st, specIdx, tgtIdx, m) {
+      if (st.n === st.cap) growStore(st);
+      const i = st.n++;
+      st.si[i] = specIdx; st.ti[i] = tgtIdx;
+      for (const k of METRIC_KEYS) st.m[k][i] = m[k];
+    }
+
+    // Build the row object the table, the exporter and the snapshot expect.
+    // Called for tens of rows, not millions.
+    function storeRow(st, i) {
+      const spec = st.specs[st.si[i]];
+      const r = { single: true, target: st.tgt[st.ti[i]], spec, label: specLabel(spec) };
+      for (const k of METRIC_KEYS) r[k] = st.m[k][i];
+      return r;
+    }
+
+    // A result set is the read-only view the table works through: `count` rows
+    // addressed by index, where the sort value and the search text can be read
+    // WITHOUT materialising a row. That is what lets selectTop scan millions
+    // of rows while allocating only the handful it keeps.
+    function arraySet(arr) {
+      return {
+        count: arr.length,
+        get: i => arr[i],
+        num: (i, key) => arr[i][key],
+        text: (i, key) => String(arr[i][key]),
+        match: (i, needle) => containsCI(arr[i].target, needle) || containsCI(arr[i].label, needle),
+      };
+    }
+
+    function storeSet(st, idx) {
+      const lab = i => specLabel(st.specs[st.si[idx[i]]]);
+      return {
+        count: idx.length,
+        get: i => storeRow(st, idx[i]),
+        num: (i, key) => st.m[key][idx[i]],
+        text: (i, key) => key === 'target' ? st.tgt[st.ti[idx[i]]] : lab(i),
+        // The label is built here only when the user has typed in the filter
+        // box, and dies immediately. Retaining one per row is what cost 100MB+.
+        match: (i, needle) => containsCI(st.tgt[st.ti[idx[i]]], needle) || containsCI(lab(i), needle),
+      };
+    }
+
+    function concatSet(a, b) {
+      if (!a.count) return b;
+      if (!b.count) return a;
+      const n = a.count;
+      return {
+        count: n + b.count,
+        get: i => i < n ? a.get(i) : b.get(i - n),
+        num: (i, key) => i < n ? a.num(i, key) : b.num(i - n, key),
+        text: (i, key) => i < n ? a.text(i, key) : b.text(i - n, key),
+        match: (i, needle) => i < n ? a.match(i, needle) : b.match(i - n, needle),
+      };
+    }
+
+    let lastResults = arraySet([]);
     let sortKey = 'calmar', sortAsc = false;   // default ranking metric (v1.22.0)
     let lastBaselines = null;   // buy-and-hold reference rows for the current run
     // Rows ticked for the combined export, keyed so a selection survives
@@ -796,7 +893,7 @@
         const top = selectTop(lastResults, SNAPSHOT_ROWS, 'calmar', false, '').rows;
         localStorage.setItem(RESULTS_STORE_KEY, JSON.stringify({
           at: new Date().toISOString(),
-          total: lastResults.length,
+          total: lastResults.count,
           baselines: lastBaselines,
           win: win ? { start: win.start, len: win.len, binding: win.binding } : null,
           end: DATES[N - 1],
@@ -822,7 +919,7 @@
     }
 
     function showSnapshot(snap) {
-      lastResults = snap.rows;
+      lastResults = arraySet(snap.rows);
       lastBaselines = Array.isArray(snap.baselines) ? snap.baselines : null;
       restored = true;
       sortKey = 'calmar'; sortAsc = false;
@@ -995,7 +1092,8 @@
       // Nothing is cached now. applyFilters regenerates the handful of arrays
       // it needs with evalSpec, which is sub-millisecond for 150 signals, so
       // re-filtering stays instant and the memory ceiling goes away.
-      const allSingles = [];
+      const store = makeStore();
+      if (tgt.length > 255) throw new Error('target index is a byte; more than 255 targets needs a wider array');
       const targetLret = {};
       for (const t of tgt) targetLret[t] = cache[t].lret;
 
@@ -1005,10 +1103,10 @@
       for (let s = 0; s < specs.length; s++) {
         const spec = specs[s];
         const arr = evalSpec(spec, cache);
-        for (const t of tgt) {
-          const m = backtest(arr, targetLret[t], win.s0, win.len);
+        for (let ti = 0; ti < tgt.length; ti++) {
+          const m = backtest(arr, targetLret[tgt[ti]], win.s0, win.len);
           if (m.total > 0 && m.sortino === m.sortino && m.calmar === m.calmar) {
-            allSingles.push({ spec, single: true, target: t, label: specLabel(spec), ...m });
+            pushStore(store, s, ti, m);
           }
         }
         // First boundary at s === CHUNK (not 0) so the first sample is a full batch.
@@ -1045,7 +1143,8 @@
       lastBaselines = computeBaselines(win);
       // `cache` replaces the old per-signal survivor arrays: ~30MB of shared
       // indicator series that pairing re-derives its handful of arrays from.
-      sigCache = { allSingles, cache, tgt, targetLret, N, win };
+      store.specs = specs; store.tgt = tgt;
+      sigCache = { store, cache, tgt, targetLret, N, win };
       runBtn.disabled = false;
       setTimeout(() => { prog.style.display = 'none'; }, 600);
 
@@ -1065,35 +1164,51 @@
       const MDD = parseFloat(document.getElementById('sl-mdd').value);
       const QUANT = Math.min(0.9, Math.max(0, parseFloat(document.getElementById('sl-quant').value) || 0));
       const comboLimit = parseInt(document.getElementById('sl-combo').value, 10);
-      const { allSingles, cache, tgt, targetLret, N, win } = sigCache;
+      const { store, cache, tgt, targetLret, N, win } = sigCache;
 
-      const rows = allSingles.filter(r => r.tim > TIM && r.maxDD > MDD);
+      // Passing rows are addressed by index into the store, four bytes each.
+      // This used to be `allSingles.filter(...)`, a second full array of row
+      // objects alongside the first, so a large run paid for its results twice.
+      const timCol = store.m.tim, mddCol = store.m.maxDD;
+      const passBuf = new Uint32Array(store.n);
+      let np = 0;
+      for (let i = 0; i < store.n; i++) if (timCol[i] > TIM && mddCol[i] > MDD) passBuf[np++] = i;
+      const pass = passBuf.subarray(0, np);
 
       const comboRows = [];
       if (comboLimit >= 2) {
-        const byTarget = {};
-        for (const r of rows) { (byTarget[r.target] = byTarget[r.target] || []).push(r); }
-        for (const t of tgt) {
-          let surv = byTarget[t] || [];
-          surv = quantilePrune(surv, QUANT);
+        const byTarget = new Map();
+        for (let k = 0; k < np; k++) {
+          const i = pass[k], ti = store.ti[i];
+          if (!byTarget.has(ti)) byTarget.set(ti, []);
+          byTarget.get(ti).push(i);
+        }
+        for (let ti = 0; ti < tgt.length; ti++) {
+          const t = tgt[ti];
+          let surv = Uint32Array.from(byTarget.get(ti) || []);
+          surv = quantilePrune(store, surv, QUANT);
           // Rank survivors by the same metric the table ranks by, so the pool
           // fed into pairing matches what the user is actually looking at
           // (v1.22.1; was Sortino, left behind when Calmar became the default
           // sort in v1.22.0). NaN sorts last rather than unpredictably, so a
           // row with no finite Calmar cannot displace a real one from the cap.
+          const cal = store.m.calmar;
           surv.sort((a, b) => {
-            const ca = a.calmar === a.calmar ? a.calmar : -Infinity;
-            const cb = b.calmar === b.calmar ? b.calmar : -Infinity;
+            const ca = cal[a] === cal[a] ? cal[a] : -Infinity;
+            const cb = cal[b] === cal[b] ? cal[b] : -Infinity;
             return cb - ca;
           });
-          if (surv.length > SURV_CAP) surv = surv.slice(0, SURV_CAP);
+          if (surv.length > SURV_CAP) surv = surv.subarray(0, SURV_CAP);
+          // The only place single rows are materialised in bulk, and it is
+          // capped at SURV_CAP per target, so at most 150 objects.
+          const survRows = Array.from(surv, i => storeRow(store, i));
           // Rebuild only the capped survivors' arrays, once each, here rather
           // than carrying every survivor's array through Pass 1. At most
           // SURV_CAP per target, so this is ~150 evalSpec calls and about a
           // megabyte, against the gigabytes the old cache held.
-          const arrs = surv.map(r => evalSpec(r.spec, cache));
-          for (let i = 0; i < surv.length; i++) {
-            for (let j = i + 1; j < surv.length; j++) {
+          const arrs = survRows.map(r => evalSpec(r.spec, cache));
+          for (let i = 0; i < survRows.length; i++) {
+            for (let j = i + 1; j < survRows.length; j++) {
               const A = arrs[i], B = arrs[j];
               const arr = new Uint8Array(N);
               for (let k = 0; k < N; k++) arr[k] = (A[k] & B[k]);
@@ -1102,8 +1217,8 @@
                   m.sortino === m.sortino && m.calmar === m.calmar) {
                 comboRows.push({
                   single: false, target: t,
-                  label: surv[i].label + '  AND  ' + surv[j].label,
-                  specs: [surv[i].spec, surv[j].spec],
+                  label: survRows[i].label + '  AND  ' + survRows[j].label,
+                  specs: [survRows[i].spec, survRows[j].spec],
                   ...m,
                 });
               }
@@ -1112,8 +1227,8 @@
         }
       }
 
-      lastResults = rows.concat(comboRows);
-      status.textContent = `${rows.length.toLocaleString()} single + ${comboRows.length.toLocaleString()} combined = ${lastResults.length.toLocaleString()} passing signals.`;
+      lastResults = concatSet(storeSet(store, pass), arraySet(comboRows));
+      status.textContent = `${np.toLocaleString()} single + ${comboRows.length.toLocaleString()} combined = ${lastResults.count.toLocaleString()} passing signals.`;
       const panel = document.getElementById('sl-results-panel');
       panel.style.display = 'block';
       restored = false; snapshotNote = '';   // live results again: sorting and filters are valid
@@ -1125,14 +1240,19 @@
     }
 
     // Sequential quantile pruning across four metrics (matches the notebook).
-    function quantilePrune(rowsIn, q) {
-      if (q <= 0) return rowsIn.slice();
-      let r = rowsIn.slice();
+    // Takes and returns store indices (a Uint32Array). NaN metrics fail the
+    // `> cut` test and are dropped, exactly as when this walked row objects.
+    function quantilePrune(st, idxIn, q) {
+      if (q <= 0) return idxIn;
+      let r = idxIn;
       for (const key of ['total', 'pf', 'sortino', 'calmar']) {
         if (r.length <= 2) break;
-        const vals = r.map(x => x[key]).filter(v => v === v).sort((a, b) => a - b);
+        const col = st.m[key];
+        const vals = [];
+        for (let i = 0; i < r.length; i++) { const v = col[r[i]]; if (v === v) vals.push(v); }
+        vals.sort((a, b) => a - b);
         const cut = percentile(vals, q);
-        r = r.filter(x => x[key] > cut);
+        r = r.filter(i => col[i] > cut);
       }
       return r;
     }
@@ -1188,31 +1308,34 @@
       return false;
     }
 
-    function selectTop(rows, n, key, asc, needle) {
+    function selectTop(set, n, key, asc, needle) {
       const isText = (key === 'label' || key === 'target');
       const valOf = isText
-        ? (r) => String(r[key])
-        : (r) => { const v = r[key]; return v === v ? v : -Infinity; };
+        ? (i) => set.text(i, key)
+        : (i) => { const v = set.num(i, key); return v === v ? v : -Infinity; };
       const before = asc ? (a, b) => a < b : (a, b) => a > b;
 
-      const out = [];    // rows, best-first, length <= n
+      // Indices, not rows. Materialising a row object per candidate would
+      // allocate millions of throwaway objects on every sort click, which is
+      // the churn the columnar store exists to avoid; only the survivors of
+      // this pass are turned into rows, at the bottom.
+      const out = [];    // row indices, best-first, length <= n
       const keys = [];   // parallel sort values, so we never recompute valOf
       let total = 0;
 
-      for (let i = 0; i < rows.length; i++) {
-        const r = rows[i];
-        if (needle && !containsCI(r.target, needle) && !containsCI(r.label, needle)) continue;
+      for (let i = 0; i < set.count; i++) {
+        if (needle && !set.match(i, needle)) continue;
         total++;
-        const k = valOf(r);
+        const k = valOf(i);
         // Fast reject: once the buffer is full, most rows lose to the worst kept
         // row in one comparison. This is what keeps the pass close to linear.
         if (out.length === n && !before(k, keys[n - 1])) continue;
         let lo = 0, hi = out.length;
         while (lo < hi) { const mid = (lo + hi) >> 1; if (before(k, keys[mid])) hi = mid; else lo = mid + 1; }
-        out.splice(lo, 0, r); keys.splice(lo, 0, k);
+        out.splice(lo, 0, i); keys.splice(lo, 0, k);
         if (out.length > n) { out.pop(); keys.pop(); }
       }
-      return { rows: out, total };
+      return { rows: out.map(i => set.get(i)), total };
     }
 
     // Above this many cached rows, a render pass is slow enough to be worth
@@ -1235,8 +1358,8 @@
     function requestRender(delay) {
       clearTimeout(renderTimer);
       renderTimer = setTimeout(() => {
-        if (lastResults.length > BUSY_ROWS) {
-          setBusy(true, `Sorting ${lastResults.length.toLocaleString()} cached results...`);
+        if (lastResults.count > BUSY_ROWS) {
+          setBusy(true, `Sorting ${lastResults.count.toLocaleString()} cached results...`);
           requestAnimationFrame(() => requestAnimationFrame(() => {
             renderResults();
             setBusy(false);
@@ -1663,7 +1786,7 @@
       document.getElementById('sl-run').addEventListener('click', run);
       document.getElementById('sl-example').addEventListener('click', loadExample);
       document.getElementById('sl-default').addEventListener('click', loadDefaults);
-      document.getElementById('sl-filter').addEventListener('input', () => { if (lastResults.length) requestRender(250); });
+      document.getElementById('sl-filter').addEventListener('input', () => { if (lastResults.count) requestRender(250); });
 
       // Live filters: once a run is cached, changing Min Time in Market, Max
       // Drawdown floor, prune quantile, or the AND-pairing toggle re-filters the

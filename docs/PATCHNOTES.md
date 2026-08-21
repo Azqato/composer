@@ -5,6 +5,40 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.15] - 2026-08-20
+
+### Results are stored as columns, so a large run holds half the memory
+
+An owner report from a second machine: the run finished faster but the tab died with a memory error. That machine has 48GB of RAM, which is the useful clue, because the limit was never the machine's.
+
+**A browser tab has its own heap ceiling and it does not grow with installed memory.** Measured in Edge on that class of hardware: 3,586 MB. Whether the box has 8GB or 48GB, the tab gets the same allowance, and "Out of memory" is that allowance running out rather than Windows running short.
+
+**What was filling it.** After v1.22.13 removed the survivor cache, the remaining cost was one JavaScript object per result. A 3,000,000-signal run produces about 2,500,000 of them, and each costs roughly 300 bytes: the object header and slack, eight separately heap-allocated doubles, and a label string built eagerly for every row when only the 100 on screen are ever read.
+
+Results are now stored as columns. Eight `Float64Array`s for the metrics, a `Uint32Array` of spec indices and a `Uint8Array` of target indices: 69 bytes per row, flat, outside the object heap, with nothing for the garbage collector to trace. Row objects are built only where one is actually needed, which is the 100 rows displayed, the at-most-150 per target fed into pairing, and the saved snapshot. Labels are derived from the spec at that point instead of stored.
+
+Two related savings came with it. Sorting used to build a throwaway object per row on every click; it now carries indices and materialises only the rows it keeps. And the Time-in-Market / Max Drawdown filter used to produce a second full array of row objects alongside the first, so a large run paid for its results twice; that is now a list of indices at four bytes per row.
+
+**Measured on the same 3,042,720-signal run:**
+
+| | Before | After |
+|---|---|---|
+| Peak JS heap | 1,144 MB | **527 MB** |
+| Peak process memory | 2,459 MB | **1,502 MB** |
+| Wall time | 140s | **110s** |
+
+Against the tab ceiling that is roughly 2.2x more headroom, moving the crash point from about 7.8M retained rows to about 17M. The speedup is a side effect of not tracing millions of objects on every collection.
+
+**One row per signal PER TARGET.** Worth knowing when sizing a run: the estimate line counts signals, deliberately, because the target count does not change how many conditions exist. Retention is not the same shape. Two targets on a 3M-signal run keeps up to 6M rows.
+
+**Verified against the previous build.** Both were driven through an identical scripted session covering 47,163 results: the default sort, sorting by a text column and a numeric one, two text filters, a live re-filter, the single-row export, the combined ladder export and the baselines. Output was byte-for-byte identical, 25,088 characters. The snapshot round trip was tested separately, running once and reloading against the same profile so `localStorage` survived, since that path builds the result set differently. Also identical.
+
+**Still on the table:** the `specs` array is now the largest single item at roughly 300 MB of the remaining 527 MB, about 3M small objects. Packing those the same way would take the heap to around 230 MB, but it touches `evalSpec`, `specLabel` and the exporter, so it was left out of this change.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.22.14] - 2026-08-20
 
 ### Leverage and Inverse are now separate ticker groups
