@@ -1194,6 +1194,8 @@ How the tool behaves while a run is in flight. All of this is client-side in `si
 
 **Every level was lowered at v1.22.11, and Max stopped meaning 100%** (owner report: it was crashing browsers). Previously Max ran with `FACTOR` 0, no idle at all. `FACTOR` is derived from the target duty as `100/duty - 1`, verified to round-trip: 0.25 to 80%, 1.5 to 40%, 4 to 20%, 9 to 10%. Since no level is now unthrottled, the old unreachable "max speed" status branch and the `FACTOR ? ... : 0` sleep guard were both removed rather than left as dead code.
 
+**The ceilings stay capped, and this is about heat, not only crashes (owner decision, reaffirmed 2026-08-20 after the memory fix).** Measurement later showed the crashes were largely a memory problem, since the same run held 14.3GB before v1.22.13 and 2.7GB after, which invites the conclusion that lowering Max from 100% treated the wrong cause and could be reverted. It should not be. Raising Max back to 100%, making Max the default, and adding a separate unthrottled option were all offered and **declined**: JS is single-threaded, so a run pins a core regardless of how much memory it holds, and the tool runs on visitors' hardware. If a run is too slow the answer is fewer signals, not a hotter CPU. The throttle is neutralised only inside the headless test harness, never in what ships.
+
 **Batch size scales with the level (v1.22.12): Max 250, High 200, Medium 150, Low 100.** The reason is the `setTimeout` clamp, not responsiveness. Once timers nest, browsers round any requested delay up to roughly 4ms, and `sleep = busy × FACTOR`, so a level with a small `FACTOR` on a small batch asks for a sub-clamp sleep that gets rounded up, holding **less** CPU than the label claims. Measured against the ~29µs/signal implied by a 3,042,720-signal run:
 
 | Option | Batch | Busy | Sleep asked | Sleep actual | Displayed | Real |
@@ -1234,6 +1236,19 @@ Supporting changes: the results text filter is debounced 250ms (it fired on ever
 **Pass 1 no longer caches an array per signal (v1.22.13). This was the tool's real scaling limit.** Pass 1 used to keep the `Uint8Array` of every surviving signal in a `survivorArr` map so Pass 2 could AND them into pairs. At 4,183 bytes each (one byte per trading day) a 3,000,000-signal run held roughly 4GB at a 50% survival rate, crossed the tab's heap ceiling near 2,000,000 signals, and spent the remainder of the run in garbage collection and swap. That matches the owner's report exactly: throughput collapsing at ~2.1M of 3.05M.
 
 The cache was also almost entirely **dead weight**. Pairing reads only the top `SURV_CAP` (150) survivors *per target*, chosen after filtering, quantile pruning and a Calmar sort, so on a seven-figure run well over 99.9% of the cached arrays were never read once. Nothing is cached now: `applyFilters` regenerates the ~150 arrays it needs with `evalSpec` after applying the cap, which is a few hundred thousand operations and finishes in under a millisecond. `sigCache` carries the shared indicator `cache` instead (~30MB for 72 tickers with every family on), and `_si`, which existed only to index the old map, is gone.
+
+**Measured, not argued (2026-08-20).** Both builds were driven through the identical scripted session in headless Edge on the full 3,042,720-signal run that prompted the report (1 target, all 72 signal tickers, all families, combine depth 2), with process memory sampled from outside the browser:
+
+| | Before (v1.22.12) | After (v1.22.13) |
+|---|---|---|
+| Peak process memory | **14,264 MB** | **2,747 MB** |
+| Wall time | 541s, cut off at the harness limit | **139s** |
+| Completed | **No.** Renderer died, zero DOM dumped | **Yes** |
+| Result | n/a | 2,483,189 single + 8,182 combined |
+
+Survival on that run was 81.6%, so the old cache alone accounted for 2,483,189 x 4,183 bytes = 10.4GB, which matches the measured peak once the baseline and `allSingles` are added. The old build could not finish the run at all.
+
+A separate scripted session, small enough for both builds to complete, was diffed cell for cell across twenty result rows and every metric column: **byte-for-byte identical**. The refactor changes memory and nothing else.
 
 **Nothing about behaviour changed.** Re-filtering is still instant and still does no single-signal backtesting, because what was expensive was never the array construction, only its retention. Two cheaper ideas considered and rejected as unnecessary once this was found: skipping the cache when Combine signals is 1 (it is now never built at all), and bit-packing the arrays to one bit per day (there is no longer a large population to pack).
 

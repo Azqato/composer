@@ -17,6 +17,8 @@ Re-filtering is still instant and results are unchanged. Retention was the cost,
 
 **Countdown.** The estimate came from measured compute scaled by the CPU factor, which assumed idle time exactly matched what the throttle asked for. When real idle ran longer, through timer clamping, a backgrounded tab, or garbage collection, elapsed time overtook the projection and the countdown stuck at zero with a third of the run left. It now projects from actual throughput and shows "estimating..." for the first five batches.
 
+**Verified by running it.** Both builds were driven through the same 3,042,720-signal run in a headless browser, with memory sampled from outside. Before: 14,264 MB peak and the run never finished. After: 2,747 MB peak, finished in 139 seconds. A smaller session that both builds could complete was compared row by row across every metric column and came out byte-for-byte identical, so the change affects memory only.
+
 **Files changed:** `signal-miner.html`, `docs/PRD.md`
 
 ---
