@@ -695,17 +695,26 @@
       }, flat);
     }
 
-    function buildComposerSymphony(row) {
-      const thenChild = composerThenChild(row);
-      const elseChild = {
+    function composerElseChild(children) {
+      return {
         id: uid(), step: 'if-child', name: 'Else', suppress_incomplete_warnings: true,
-        children: [{ id: uid(), step: 'asset', suppress_incomplete_warnings: false, ticker: ELSE_TICKER }],
-        'is-else-condition?': true,
+        children: children, 'is-else-condition?': true,
       };
-      const ifNode = {
+    }
+    function composerCashAsset() {
+      return { id: uid(), step: 'asset', suppress_incomplete_warnings: false, ticker: ELSE_TICKER };
+    }
+    // An `if` step always holds exactly two children: the condition branch and
+    // the else. Nothing else is a valid shape.
+    function composerIfNode(thenChild, elseChild) {
+      return {
         id: uid(), step: 'if', name: 'Condition', suppress_incomplete_warnings: false,
         weight: { num: 100, den: 100 }, children: [thenChild, elseChild],
       };
+    }
+
+    function buildComposerSymphony(row) {
+      const ifNode = composerIfNode(composerThenChild(row), composerElseChild([composerCashAsset()]));
       const weight = {
         id: uid(), step: 'wt-cash-equal', name: 'Weight', suppress_incomplete_warnings: true, children: [ifNode],
       };
@@ -715,37 +724,40 @@
       };
     }
 
-    // Combine several rows into one if / else-if ladder: the Frontrunner shape,
-    // where the first matching branch wins and the rest are fallbacks. Composer
-    // represents this as ONE `if` step holding many `if-child` branches, the
-    // last being the else, so a ladder is literally the single-row export with
-    // extra branches spliced in ahead of the else.
+    // Combine several rows into an if / else-if ladder: the Frontrunner shape,
+    // where the first matching branch wins and the rest are fallbacks.
+    //
+    // Composer builds a ladder by NESTING (corrected v1.22.5, from a real
+    // Composer screenshot). An `if` step takes exactly two children, a
+    // condition branch and an else, and rung N+1 sits INSIDE rung N's else.
+    // The earlier version emitted one flat `if` carrying every branch as a
+    // sibling, which Composer would not accept. The single-row export was
+    // always correct, and a ladder is now that same shape recursively: the
+    // deepest else holds the cash asset, every shallower else holds the next
+    // `if`. Each rung is still built by composerThenChild, so a branch is
+    // identical whether it stands alone or sits third in a ladder.
     //
     // Priority order is **Calmar descending**, not the table's current sort or
     // the order rows were ticked. Ladder position is a real strategy decision
-    // (branch 1 pre-empts branch 2 on every day both fire), so deriving it from
-    // a metric keeps it deterministic and reproducible instead of depending on
-    // what the user happened to click first. It also means no drag-to-reorder UI.
-    // NaN sorts last rather than unpredictably, so a row with no finite Calmar
-    // becomes the lowest-priority branch instead of jumping the queue.
+    // (rung 1 pre-empts rung 2 on every day both fire), so deriving it from a
+    // metric keeps it deterministic and reproducible instead of depending on
+    // what the user happened to click first. It also means no drag-to-reorder
+    // UI. NaN sorts last rather than unpredictably, so a row with no finite
+    // Calmar becomes the lowest-priority rung instead of jumping the queue.
+    function composerLadderIf(rows, i) {
+      const rest = i + 1 < rows.length ? [composerLadderIf(rows, i + 1)] : [composerCashAsset()];
+      return composerIfNode(composerThenChild(rows[i]), composerElseChild(rest));
+    }
+
     function buildComposerLadder(rows) {
       const ordered = rows.slice().sort((a, b) => {
         const ca = a.calmar === a.calmar ? a.calmar : -Infinity;
         const cb = b.calmar === b.calmar ? b.calmar : -Infinity;
         return cb - ca;
       });
-      const elseChild = {
-        id: uid(), step: 'if-child', name: 'Else', suppress_incomplete_warnings: true,
-        children: [{ id: uid(), step: 'asset', suppress_incomplete_warnings: false, ticker: ELSE_TICKER }],
-        'is-else-condition?': true,
-      };
-      const ifNode = {
-        id: uid(), step: 'if', name: 'Condition', suppress_incomplete_warnings: false,
-        weight: { num: 100, den: 100 },
-        children: [...ordered.map(composerThenChild), elseChild],
-      };
       const weight = {
-        id: uid(), step: 'wt-cash-equal', name: 'Weight', suppress_incomplete_warnings: true, children: [ifNode],
+        id: uid(), step: 'wt-cash-equal', name: 'Weight', suppress_incomplete_warnings: true,
+        children: [composerLadderIf(ordered, 0)],
       };
       const targets = [...new Set(ordered.map(r => r.target))];
       return {

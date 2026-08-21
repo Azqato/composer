@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.5] - 2026-08-20
+
+### Fix: the combined JSON export produced a symphony Composer would not take
+
+The combined export built the wrong structure. It emitted a single `if` step holding every selected signal as a sibling branch, with the last one marked as the else. Composer does not work that way: an `if` step takes exactly two children, the condition branch and an else, and each further rung of a ladder is nested **inside** the previous rung's else.
+
+The builder now recurses. The deepest else holds the cash proxy, and every else above it holds the next `if`. Priority is still Calmar descending, so the ladder reads the same way; only the shape it is written in changed.
+
+The single-row export was never affected, because with one rung the flat and nested shapes are identical. That is also why this survived five versions: the verification port asserted the shape the builder produced rather than the shape Composer requires. The port now checks the invariant directly, that every `if` has exactly two children and every else holds exactly one thing.
+
+Reported by the owner with a screenshot of a correctly formed Composer symphony.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.22.4] - 2026-08-20
 
 ### A Default button, a shorter example label, and less text around the combine bar
