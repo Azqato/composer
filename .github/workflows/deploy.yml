@@ -50,14 +50,6 @@ jobs:
             --exclude='README.md' \
             --exclude='.gitignore' \
             . _site/
-          { rsync --version | head -1
-            echo "--- _site top level:"
-            ls -a _site
-            echo "--- excluded present?"
-            for d in docs scripts .git .github README.md; do
-              if [ -e "_site/$d" ]; then echo "PRESENT $d"; else echo "absent  $d"; fi
-            done
-          } > _site/_probe.txt
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
