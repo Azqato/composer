@@ -5,6 +5,47 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.24.3] - 2026-08-21
+
+### The run status line reports measured CPU duty, not the nominal figure
+
+While a backtest runs, the status line used to print the duty the throttle was *asked* for. It now prints the fraction of wall time actually spent computing, accumulated across every batch since the run started.
+
+At High, Medium and Low the two agree. At **Max** they do not: the throttle sleeps `busy * FACTOR` between batches, and with `FACTOR` at 0.25 the requested sleep is frequently shorter than the roughly 4ms floor a browser applies to a nested `setTimeout`, so real idle runs longer than asked and delivered CPU lands nearer 64% than the 80% on the label. Garbage collection pauses and a backgrounded tab push it the same way.
+
+The error has always been in the safe direction, delivering *less* CPU than advertised rather than more, which is why this sat on the list for a long time. It is fixed now because showing a number known to be wrong is not defensible when the true one costs a single accumulator. The first five batches still show the nominal figure prefixed with `~`, because a duty measured over one batch is noise.
+
+**The CPU ceilings themselves are unchanged and stay that way.** They are capped for heat, on hardware belonging to whoever opens the page. The dropdown labels still describe what is requested; the status line now describes what is delivered.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.24.2] - 2026-08-21
+
+### The large-batch warning fires on large batches again
+
+`SIGNAL_WARN_CAP` (100,000, which triggers the confirm dialog) and the 45,000 yellow-text threshold were set when a default eight-ticker run was about 20,000 signals. After v1.23.1 that same ordinary run was 100,696 and tripped the "this is a very large batch" dialog **every single time**, which is the fastest way to train someone to click through the one warning that matters.
+
+They are now **1,000,000** for the yellow estimate line and **2,500,000** for the confirm, and unlike last time the numbers come from a measurement. Pass 1 performs one backtest per spec, target and day; timed in headless Edge with the throttle disabled that inner loop runs at roughly **4.5 nanoseconds per unit of work**. Against a typical 3,930-day sample with one target:
+
+| Specs | Compute | At Medium (20%) |
+|---|---|---|
+| 91,232 (8 tickers, default families) | ~1.6s | ~8s |
+| 390,320 (20 tickers) | ~6.9s | ~34s |
+| 1,000,000 (**yellow**) | ~18s | ~1.5 min |
+| 2,500,000 (**confirm**) | ~44s | ~3.7 min |
+| 3,936,096 (all 72 tickers, default families) | ~70s | ~5.8 min |
+| 4,931,064 (all 72, all sixteen families) | ~87s | ~7.3 min |
+
+So an ordinary run says nothing, a large one turns yellow, and only a genuinely long one asks first. The confirm text now also names the target count and suggests raising the min signal period, which is the cheapest lever most people miss.
+
+**A known blind spot, stated rather than hidden.** These are spec counts, not units of work. Pass 1 also scales with the number of targets and with sample length, so a three-target run does three times the work at the same spec count and will not warn any earlier. Projecting wall time directly would fix that. It was considered and deliberately not built: the estimate is currently a quantity that is *exact*, and turning it into a prediction that varies with the visitor's hardware is a bigger change than this item called for.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.24.1] - 2026-08-21
 
 ### Indicator warm-up is charged to the sample window, so every row is scored on the same days

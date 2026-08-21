@@ -524,7 +524,35 @@
 
     const SURV_CAP = 150;      // max single-signal survivors fed into pairing, per target
     const DISPLAY_CAP = 100;   // max rows rendered (see selectTop: never sort the full set)
-    const SIGNAL_WARN_CAP = 100000;  // above this, warn-and-confirm before running (no hard limit)
+    // Estimate thresholds, recalibrated 2026-08-21 (v1.24.2). They are raw
+    // spec counts, but the numbers themselves come from a measurement rather
+    // than from taste.
+    //
+    // Pass 1 does one backtest per (spec, target, day). Timed in headless Edge
+    // with the throttle disabled, that inner loop runs at roughly 4.5
+    // nanoseconds per unit of work. At the ~3,930-day sample a full-history
+    // selection gives, and one target:
+    //
+    //   91,232 specs (8 tickers, default families)   ~1.6s compute,  ~8s at Medium
+    //   390,320 specs (20 tickers)                   ~6.9s compute, ~34s at Medium
+    //   1,000,000 specs                               ~18s compute, ~1.5min at Medium
+    //   2,500,000 specs                               ~44s compute, ~3.7min at Medium
+    //   3,936,096 specs (all 72, default families)    ~70s compute, ~5.8min at Medium
+    //   4,931,064 specs (all 72, all 16 families)     ~87s compute, ~7.3min at Medium
+    //
+    // The old pair (45,000 warn / 100,000 confirm) was set when a default
+    // eight-ticker run was ~20,000 specs. After v1.23.1 that same ordinary run
+    // was 100,696 and tripped the confirm EVERY time, which trains people to
+    // click through the one warning that matters.
+    //
+    // KNOWN BLIND SPOT: this counts specs, not work. Pass 1 also scales with
+    // the number of targets and the sample length, so a three-target run does
+    // three times the work at the same spec count and will not warn any
+    // earlier. Projecting wall time directly would fix that; it was considered
+    // and deliberately not built, in favour of keeping the estimate a quantity
+    // that is exact rather than predicted.
+    const SIGNAL_WARN_CAP = 2500000;   // above this, warn-and-confirm before running (no hard limit)
+    const SIGNAL_WARN_SOFT = 1000000;  // above this, the estimate line turns yellow
 
     let PD, DATES, N, UNIVERSE;
     let targets = new Set();
@@ -1452,10 +1480,12 @@
       const specs = buildSpecs(cmp, fams, W);
       if (specs.n > SIGNAL_WARN_CAP) {
         const ok = window.confirm(
-          `Heads up: this run will test ${specs.n.toLocaleString()} signals.\n\n` +
-          `That's a very large batch. It can take a long time and may make your browser slow or unresponsive, ` +
-          `and use a lot of memory, while it runs.\n\n` +
-          `To lower the count, reduce tickers or disable a signal family.\n\n` +
+          `Heads up: this run will test ${specs.n.toLocaleString()} signals against ${tgt.length} ` +
+          `${tgt.length === 1 ? 'target' : 'targets'}.\n\n` +
+          `That's a very large batch: expect several minutes, and your browser may be slow or ` +
+          `unresponsive while it runs. Leave the tab in the foreground.\n\n` +
+          `To lower the count, reduce signal tickers, drop a target, disable a signal family, ` +
+          `or raise the min signal period.\n\n` +
           `Run it anyway?`
         );
         if (!ok) {
@@ -1489,6 +1519,17 @@
       const WARMUP_BATCHES = 5;                // batches before the estimate is shown
       const runStart = performance.now();      // wall-clock start, for elapsed/remaining
       let batchStart = runStart;
+      // MEASURED duty, not nominal (v1.24.3). The throttle sleeps for
+      // busy * FACTOR after each batch, which SHOULD give 1 / (1 + FACTOR).
+      // It does at every setting except Max, where the browser clamps a
+      // nested setTimeout to about 4ms: with FACTOR 0.25 the requested sleep
+      // is often shorter than the clamp, so real idle runs longer than asked
+      // and the delivered duty is nearer 64% than the 80% shown. GC pauses
+      // and a backgrounded tab push it the same way. The error has always
+      // been in the safe direction (less CPU than advertised), but showing a
+      // number we know to be wrong is not defensible when the true one costs
+      // one accumulator.
+      let busyTotal = 0;
       const sigBuf = new Uint8Array(N);   // reused every spec; backtest reads it at once
       for (let s = 0; s < specs.n; s++) {
         const arr = evalSpecAt(specs, s, cache, sigBuf);
@@ -1501,6 +1542,7 @@
         // First boundary at s === CHUNK (not 0) so the first sample is a full batch.
         if (s && (s % CHUNK) === 0) {
           const busy = performance.now() - batchStart;   // compute time for this batch
+          busyTotal += busy;
           const batchNo = s / CHUNK;
           const frac = s / specs.n;
           const elapsed = performance.now() - runStart;
@@ -1520,7 +1562,7 @@
           progBar.style.width = (95 * frac).toFixed(1) + '%';
           status.textContent =
             `Backtesting ${specs.n.toLocaleString()} signals... ${s.toLocaleString()} (${Math.round(frac * 100)}%)` +
-            ` · ~${DUTY}% CPU · ` +
+            ` · ${batchNo < WARMUP_BATCHES ? '~' + DUTY : Math.round(100 * busyTotal / elapsed)}% CPU · ` +
             (batchNo < WARMUP_BATCHES ? 'estimating...' : `${fmtDur(remaining)} left`);
           await sleep(busy * FACTOR);
           batchStart = performance.now();
@@ -1911,7 +1953,7 @@
       const el = document.getElementById('sl-est');
       if (targets.size === 0 || n === 0) { el.textContent = 'Pick at least one target and one signal ticker to estimate.'; el.className = 'sl-est'; return; }
       let txt = `~${c.toLocaleString()} signals to test`;
-      let cls = c > SIGNAL_WARN_CAP ? ' stop' : c > 45000 ? ' warn' : '';
+      let cls = c > SIGNAL_WARN_CAP ? ' stop' : c > SIGNAL_WARN_SOFT ? ' warn' : '';
       // Show the sample window the current selection implies. The most recently
       // listed ticker binds it, so name that ticker: a two-year window on an
       // eight-year axis is usually one chip the user did not mean to include.
