@@ -469,8 +469,8 @@
       // --- Price ---
       { id: 'price_ma',   group: 'Price',  on: true,  kind: 'self', a: 'close', b: 'map',  label: 'Price vs own moving average' },
       { id: 'price_ema',  group: 'Price',  on: true,  kind: 'self', a: 'close', b: 'ema',  label: 'Price vs own EMA' },
-      { id: 'map_cmp',    group: 'Price',  on: true,  kind: 'cmp',  a: 'map',              label: 'Moving average of price compare' },
-      { id: 'ema_cmp',    group: 'Price',  on: false, kind: 'cmp',  a: 'ema',              label: 'EMA of price compare' },
+      { id: 'map_cmp',    group: 'Price',  on: true,  kind: 'cmp',  a: 'map',  same: true, label: 'Moving average of price compare' },
+      { id: 'ema_cmp',    group: 'Price',  on: false, kind: 'cmp',  a: 'ema',  same: true, label: 'EMA of price compare' },
       { id: 'ema_map',    group: 'Price',  on: false, kind: 'self', a: 'ema',   b: 'map',  label: 'EMA vs moving average (same ticker)' },
       // --- Return / momentum ---
       { id: 'rsi_thresh', group: 'Return', on: true,  kind: 'lvl',  a: 'rsi',   lv: () => RSI_LEVELS,                    label: 'RSI vs level' },
@@ -484,7 +484,7 @@
       { id: 'std_lvl',    group: 'Risk',   on: true,  kind: 'lvl',  a: 'std',   lv: () => STD_R_LEVELS,                  label: 'Std dev of return vs level' },
       { id: 'dd_lvl',     group: 'Risk',   on: true,  kind: 'lvl',  a: 'dd',    lv: p => scaledPctGrid(DD_LO, DD_HI, LVL_STEP, p, DD_CAP),   label: 'Max drawdown vs level' },
       { id: 'dd_cmp',     group: 'Risk',   on: false, kind: 'cmp',  a: 'dd',                                             label: 'Max drawdown compare' },
-      { id: 'stdp_cmp',   group: 'Risk',   on: false, kind: 'cmp',  a: 'stdp',                                           label: 'Std dev of price compare' },
+      { id: 'stdp_cmp',   group: 'Risk',   on: false, kind: 'cmp',  a: 'stdp', same: true,                               label: 'Std dev of price compare' },
     ];
     const FAM_GROUPS = ['Price', 'Return', 'Risk'];
     const FAM = {};                      // id -> family
@@ -503,7 +503,14 @@
     // estimate() and buildSpecs() both read it, so the number shown before a
     // run and the number the run actually tests cannot drift apart.
     function famSpecCount(f, n, W) {
-      if (f.kind === 'cmp') { const m = n * W.length; return m * (m - 1); }
+      // `same` families never leave the ticker, so they are n * C(W,2) ordered
+      // pairs * 2 directions rather than m * (m - 1) over all m = n * W
+      // operands. See pushCmpSpecs for why.
+      if (f.kind === 'cmp') {
+        const w = W.length;
+        if (f.same) return n * w * (w - 1);
+        const m = n * w; return m * (m - 1);
+      }
       if (f.kind === 'self') return n * W.length * 2;
       let c = 0;
       for (const p of W) c += f.lv(p).length;
@@ -825,9 +832,35 @@
                t2: sp.tk[sp.b[i]], p2: sp.q[i], level: sp.lv[i] };
     }
 
-    function pushCmpSpecs(sp, fi, nT, windows) {
+    // `sameOnly` restricts a comparison family to operands on the SAME ticker,
+    // i.e. fast window vs slow window, dropping every cross-ticker pair.
+    //
+    // It is set on the three families that compare DOLLAR MAGNITUDES
+    // (map_cmp, ema_cmp, stdp_cmp). "MA-Price(21d) of SPY > MA-Price(21d) of
+    // QQQ" is not a signal, it is a statement about share prices, and it was
+    // measured across all 72 tickers, 2010-2026, at four windows:
+    //
+    //   family     cross-ticker pairs      same-ticker pairs
+    //   map_cmp    median 1 flip, 94.5% flip <12 times    median 51 flips, 7.4% inert
+    //   ema_cmp    median 1 flip, 94.3% flip <12 times    median 53 flips, 8.3% inert
+    //   stdp_cmp   median 9 flips, 54.1% flip <12 times   median 26 flips, 26.4% inert
+    //   rsi_cmp    median 212 flips, 2.5% inert     <- scale-free control
+    //   cum_cmp    median 223 flips, 1.5% inert     <- scale-free control
+    //
+    // The reason to cut them is NOT that they are constant: only 42.5% of
+    // map_cmp cross pairs never separate a day. It is that they are INERT.
+    // A median cross-ticker price pair changes state ONCE in sixteen years, so
+    // it is a date wearing a condition's clothes ("before/after 2018"), and a
+    // rule that fires on one regime break is the purest form of over-fit the
+    // tool can produce. The scale-free families flip hundreds of times and are
+    // deliberately left alone.
+    //
+    // stdp_cmp's case is the weakest of the three (54% inert, not 94%). If a
+    // real signal ever turns out to be missing, its flag is the first to flip.
+    function pushCmpSpecs(sp, fi, nT, windows, sameOnly) {
       for (let i = 0; i < nT; i++) {
-        for (let j = i; j < nT; j++) {
+        const jEnd = sameOnly ? i + 1 : nT;
+        for (let j = i; j < jEnd; j++) {
           for (const p1 of windows) {
             for (const p2 of windows) {
               // Same ticker on both sides: keep only p1 < p2. That drops the
@@ -850,7 +883,7 @@
       for (const f of FAMILIES) {
         if (!fams[f.id]) continue;
         const fi = FAM_IX[f.id];
-        if (f.kind === 'cmp') { pushCmpSpecs(sp, fi, nT, W); continue; }
+        if (f.kind === 'cmp') { pushCmpSpecs(sp, fi, nT, W, !!f.same); continue; }
         for (let i = 0; i < nT; i++) {
           for (const p of W) {
             // Threshold families compare one series against a constant, so
@@ -2063,7 +2096,8 @@
 
     // Tooltip: what the family actually compares, and how its cost scales.
     function famHint(f) {
-      const kind = f.kind === 'cmp' ? 'two tickers or two windows; cost grows with the square of tickers x windows'
+      const kind = f.kind === 'cmp' && f.same ? 'fast window vs slow window on one ticker; cross-ticker pairs are skipped because comparing dollar prices across tickers is inert'
+                 : f.kind === 'cmp' ? 'two tickers or two windows; cost grows with the square of tickers x windows'
                  : f.kind === 'self' ? 'one ticker, both sides at the same window'
                  : 'against a constant; cost grows only linearly with the level count';
       return `${indText(f.a, 'p')} vs ${f.kind === 'lvl' ? 'a level' : indText(f.b || f.a, 'q')} · ${kind}`;

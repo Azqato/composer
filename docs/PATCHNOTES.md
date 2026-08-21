@@ -5,6 +5,36 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.24.0] - 2026-08-21
+
+### The three price-scale comparison families no longer pair across tickers
+
+`map_cmp`, `ema_cmp` and `stdp_cmp` compare **dollar magnitudes**. "MA-Price(21d) of SPY > MA-Price(21d) of QQQ" is not a signal, it is a statement about share prices. Those three families now only pair a fast window against a slow window **on the same ticker**, which is the golden cross and the entire reason the families exist. The other five comparison families (`rsi_cmp`, `cum_cmp`, `ma_cmp`, `std_cmp`, `dd_cmp`) are scale-free and are deliberately untouched.
+
+**The reason is not the one we expected, and the measurement changed the argument.** The working assumption was that cross-ticker price pairs are constant, never separating a day. Measured across all 72 tickers from 2010 to 2026 at four windows, that is only true of **42.5%** of them. The real problem is that they are **inert**:
+
+| Family | Cross-ticker pairs | Same-ticker pairs |
+|---|---|---|
+| `map_cmp` | median **1** flip, 94.5% flip fewer than 12 times | median 51 flips, 7.4% inert |
+| `ema_cmp` | median **1** flip, 94.3% flip fewer than 12 times | median 53 flips, 8.3% inert |
+| `stdp_cmp` | median 9 flips, 54.1% flip fewer than 12 times | median 26 flips, 26.4% inert |
+| `rsi_cmp` (control) | median 212 flips, 2.5% inert | median 455 flips, 0.0% inert |
+| `cum_cmp` (control) | median 223 flips, 1.5% inert | median 134 flips, 1.2% inert |
+
+A *flip* is a day where the condition changes state. The median cross-ticker price pair changes state **once in sixteen years**. That is a date wearing a condition's clothes, "before and after 2018", and a rule that fires on a single regime break is the purest form of over-fit this tool can produce. The two scale-free controls flip hundreds of times, which is what confirms the effect is about price scale rather than about comparison families in general.
+
+**What it costs and what it saves.** `map_cmp` goes from 875,160 specs to **11,232** at 72 tickers with the 10-day floor. A default run drops from 4,800,024 signals to **3,936,096**, a saving of 863,928 or **18.0%**, and every one of those specs was previously paid for in full and then self-pruned at the end of Pass 1. Enabling all sixteen families drops from 7,522,848 to 4,931,064.
+
+**`stdp_cmp` has the weakest case of the three** (54% inert rather than 94%) and it is recorded as such. The restriction is a per-family `same: true` flag rather than a blanket rule, so if a real signal ever turns out to be missing, that is the first flag to flip.
+
+### Verified
+
+425 lockstep cases across five ticker counts and five window floors: `countSpecs()` matches `buildSpecs().n` exactly for every family and for all sixteen combined. Every spec built for a `same` family was confirmed to carry the same ticker index on both sides. All sixteen families still produce identical boolean series through the object and columnar evaluation paths.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.23.2] - 2026-08-21
 
 ### Added The Gold Miner (Original) to curated strategies library and full database
