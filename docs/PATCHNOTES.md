@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.23.2] - 2026-08-21
+
+### Added The Gold Miner (Original) to curated strategies library and full database
+
+Added "The Gold Miner (Original)" (symphony ID `tlDwKY3NRXjYU61jCt0g`) to both `data/strategies.json` (curated library, now 31 entries) and `data/database.json` (full database, now 6,668 entries). This is plaindamnscared's original Gold Miner algorithm with GLD substituting for BIL as the defensive holding. Four-state rotation: GDXU RSI(10) > 79 routes to GDXD, RSI(10) < 30 routes to GDXU, then QQQ/TLT momentum comparisons route between GDXU and GLD. Stats: 697% ARR, 72,872x cumulative return over 5.4 years, 47.6% max drawdown, 2.76 Sharpe, 14.64 Calmar. Tags: `rsi`, `momentum`, `leveraged-etfs`, `inverse-etfs`, `original`.
+
+**Files changed:** `data/strategies.json`, `data/strategies.js`, `data/database.json`, `data/database.js`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.23.1] - 2026-08-20
 
 ### Every level grid is uniformly stepped, and the two that can afford it got much finer

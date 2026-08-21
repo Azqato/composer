@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.15.5
+**Version:** 1.23.2
 **Status:** Active
-**Last Updated:** 2026-08-15
+**Last Updated:** 2026-08-21
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -110,7 +110,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 ### MVP: Shipped (V1.0–V1.2.1)
 
 **Strategy Library**
-- Index page listing all 30 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
+- Index page listing all 31 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
 - Each strategy has a dedicated page with: name, description, tags, "Open in Composer" CTA, an AI Summary (Claude-authored analysis above How It Works), plain-English logic breakdown, signals used (cross-linked to glossary), risk profile, and full metrics table
 - Strategy card titles are clickable links
 
@@ -120,7 +120,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - Concepts cross-link back to strategies that use them
 
 **Data Layer**
-- `data/strategies.json`: flat-file database of all 30 strategies
+- `data/strategies.json`: flat-file database of all 31 strategies
 - `data/glossary.json`: flat-file database of all 20 glossary concepts
 - Dual-mode loading: `window.STRATEGIES_DATA` / `window.GLOSSARY_DATA` globals for `file://` compatibility; `fetch()` fallback for HTTP
 - `scripts/update_metrics.py`: reusable script to refresh all metrics and logic trees from the Composer API
@@ -255,7 +255,7 @@ ComposerAtlas/
 ├── css/
 │   └── main.css                # Full design system: tokens, layout, components
 ├── data/
-│   ├── strategies.json         # 30 strategy entries, source of truth
+│   ├── strategies.json         # 31 strategy entries, source of truth
 │   ├── strategies.js           # Same data as window.STRATEGIES_DATA, for file:// compat
 │   ├── glossary.json           # 8 glossary concept entries, source of truth
 │   ├── glossary.js             # Same data as window.GLOSSARY_DATA, for file:// compat
@@ -1679,6 +1679,7 @@ All 24 Composer Atlas strategies with their Composer symphony IDs:
 | Ob Os Staple my Bonds (Original) | `OmMmeWyyAu0IRN2yOP6k` |
 | Sometimes TQQQ (Original) | `MyRyWhvbdxTsRfzHmE1U` |
 | Triple Accelerator | `0jPwZ5Lm2Y3xH24oEijB` |
+| The Gold Miner (Original) | `tlDwKY3NRXjYU61jCt0g` |
 
 Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 
@@ -2254,7 +2255,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 
 - [ ] Client-side search (Fuse.js or similar)
-- [x] **Tag-based filtering on the strategy index (built 2026-08-15, v1.17.0)** — the tags already carried by every strategy are now selectable filters on `strategies.html`, not just read-only labels. A filter bar above the grid groups them into **Signal** / **Risk metric** / **Asset class** / **Collection** (plus an automatic "Other" group so any new tag in the data can never silently go missing from the UI), each chip showing its match count. Only tags actually present in the data are offered, so the bar can never present a combination that returns nothing. **Multiple tags combine with AND** (a strategy must carry every selected tag), which is what makes pairing a signal tag with an asset-class tag useful; the count line switches to "N of 30 strategies" while filtered, and an empty result explains the AND behavior and offers a reset. Selections are mirrored into a **`?tags=` query param** via `history.replaceState`, so a filtered view is linkable and survives a refresh or a back-navigation from a detail page. New CSS: `.tagfilter*` (inactive chips are dimmed so selected ones clearly stand out).
+- [x] **Tag-based filtering on the strategy index (built 2026-08-15, v1.17.0)** — the tags already carried by every strategy are now selectable filters on `strategies.html`, not just read-only labels. A filter bar above the grid groups them into **Signal** / **Risk metric** / **Asset class** / **Collection** (plus an automatic "Other" group so any new tag in the data can never silently go missing from the UI), each chip showing its match count. Only tags actually present in the data are offered, so the bar can never present a combination that returns nothing. **Multiple tags combine with AND** (a strategy must carry every selected tag), which is what makes pairing a signal tag with an asset-class tag useful; the count line switches to "N of 31 strategies" while filtered, and an empty result explains the AND behavior and offers a reset. Selections are mirrored into a **`?tags=` query param** via `history.replaceState`, so a filtered view is linkable and survives a refresh or a back-navigation from a detail page. New CSS: `.tagfilter*` (inactive chips are dimmed so selected ones clearly stand out).
 - [ ] Strategy comparison view
 - [ ] Performance chart per strategy
 - [ ] Expand strategy library toward 50+ entries
@@ -2271,7 +2272,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
   - Observation: the three generative tools already form a tidy agent-noun family (Convert**er** / Clon**er** / Min**er**); worth preserving that pattern if a fourth tool is ever added. The one-word-where-possible preference is satisfied except where a qualifier is load-bearing (ETF Cloner, RSI Signals). If a future rename is ever pursued, carry it through all surfaces at once (page `<title>`, nav Tools dropdown + footer + homepage Explore card in `js/app.js`/`index.html`, in-page hero/copy, and a `noindex` redirect stub from the old URL), per the Signal Miner rename pattern.
 - [ ] **Cross-link curated strategies ↔ full database (decided 2026-07-13, not yet built — see below)**
 
-#### Cross-linking the curated 30 to the full database (decided 2026-07-13)
+#### Cross-linking the curated 31 to the full database (decided 2026-07-13)
 
 **Background:** confirmed all 29 curated strategies (`data/strategies.json`) already exist as rows in the full database (`data/database.json`/`database_summary.json`), matched exactly by `symphony_id` — they are not disjoint datasets, just two views over overlapping data. Both pipelines independently call the same Composer backtest endpoint with identical parameters (`capital: 10000`, `broker: alpaca`, same slippage/fee flags) for the same 30 symphonies, on two separate schedules (`update_metrics.py` vs. `refresh_full_database.py`), both gated by the same 7-day staleness window — genuinely redundant work computing the same numbers twice.
 
@@ -2281,7 +2282,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 **Option A implementation plan (not yet built):**
 - [ ] Strategy detail pages (`strategies.html?slug=X`) get a "View in full database →" link to that symphony's row in `database.html`. Requires a way to deep-link to a specific `symphony_id`/row that doesn't exist today (e.g. a `?symphony_id=X` query param that pre-filters/scrolls the All Strategies table to that row) — this sub-piece needs its own small design pass at implementation time, not just a static link to `database.html`.
-- [ ] `database.html` rows whose `symphony_id` matches one of the 30 curated strategies get a small "★ Curated" badge/indicator, linking back to that strategy's `strategies.html?slug=X` detail page. Needs a client-side lookup set built from `strategies.js`'s `symphony_id`s (cheap, only 30 entries, no new data file needed).
+- [ ] `database.html` rows whose `symphony_id` matches one of the 30 curated strategies get a small "★ Curated" badge/indicator, linking back to that strategy's `strategies.html?slug=X` detail page. Needs a client-side lookup set built from `strategies.js`'s `symphony_id`s (cheap, only 31 entries, no new data file needed).
 - [ ] No changes to `data/strategies.json`, `data/database.json`, `scripts/update_metrics.py`, or `scripts/refresh_full_database.py` — this is UI/navigation only.
 
 **Explicitly not in scope for this item:** eliminating the duplicated metrics refresh (that's Option B, deferred), any change to which fields live in which file, and any change to refresh schedules.

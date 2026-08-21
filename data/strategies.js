@@ -1925,5 +1925,61 @@ window.STRATEGIES_DATA = [
     ],
     "risk_profile": "Aggressive. The 75.4% ARR and 4,053x cumulative return over approximately 14.8 years place Triple Accelerator among the stronger strategies in this library. The 61.7% max drawdown and 51.8% annualized standard deviation reflect the inherent volatility of a strategy that holds 3x leveraged Nasdaq for the majority of bull-market time. The 1.34 Sharpe and 1.22 Calmar are solid but not exceptional, indicating real but manageable risk relative to returns. The 56.3% win rate means roughly 44% of trading days are negative. The right-skewed distribution (skewness 1.15, kurtosis 20.43) indicates that large single-day gains are more frequent than large single-day losses, with the max single-day return reaching 50.0%. As of the data collection date in late July 2026, the strategy is fully allocated to TQQQ with a modest 4.8% trailing 1-year return and negative recent months, indicating current tech market pressure. The three-state simplicity is both a strength (minimal overfitting risk) and a constraint (no intermediate sub-regimes for choppy or recovering markets).",
     "author_note": "Strategy authored by Inverteum Capital (blog.inverteum.com). The backtest begins approximately October 2011 coinciding with UVXY's inception date, covering roughly 14.8 years of market history including the 2015-2016 volatility spikes, the February 2018 VIX spike, the 2020 COVID crash and recovery, and the 2022 tech bear market. Last semantic update per Composer: 2026-07-29. Symphony ID: 0jPwZ5Lm2Y3xH24oEijB."
+  },
+  {
+    "slug": "gold-miner-original",
+    "name": "The Gold Miner (Original)",
+    "symphony_url": "https://app.composer.trade/symphony/tlDwKY3NRXjYU61jCt0g/details",
+    "symphony_id": "tlDwKY3NRXjYU61jCt0g",
+    "annualized_rate_of_return": 6.97384008560878,
+    "max_drawdown": -0.4763707867170872,
+    "cumulative_return": 72871.57818099999,
+    "calmar_ratio": 14.639520894362667,
+    "sharpe_ratio": 2.761811899485794,
+    "standard_deviation": 0.9002021204921035,
+    "min": -0.38598036362403143,
+    "mean": 0.009865829080624746,
+    "median": 0.002481437385376317,
+    "max": 0.2950107409831786,
+    "trailing_one_month_return": 0.42792086696600573,
+    "trailing_three_month_return": 0.8688090067463408,
+    "trailing_one_year_return": 9.317438823198117,
+    "backtest_days": 1358,
+    "description": "A four-state rotation between GDXU (3x long gold miners), GDXD (3x inverse gold miners), and GLD (physical gold), using GDXU RSI(10) overbought and oversold gates as priority checks before routing through QQQ momentum and TLT vs. QQQ comparisons to pick the right miner or gold regime -- the original Gold Miner algorithm by plaindamnscared with GLD replacing BIL as the defensive holding.",
+    "tags": [
+      "rsi",
+      "momentum",
+      "leveraged-etfs",
+      "inverse-etfs",
+      "original"
+    ],
+    "last_updated": "2026-08-21",
+    "ai_summary": [
+      "The Gold Miner (Original) is plaindamnscared's original Gold Miner algorithm with one change: BIL (cash) is replaced by GLD (physical gold) as the defensive holding. Over approximately 5.4 years from March 2021 (when GDXU and GDXD launched) through August 2026, the strategy delivers 697% annualized returns and 72,872x cumulative growth, with a 47.6% max drawdown. The 2.76 Sharpe and exceptional 14.64 Calmar ratio reflect a period dominated by a powerful gold bull market -- the trailing 1-year return of 931.7% shows how violently the gold miner sector has re-rated in 2025 and 2026.",
+      "The architecture is a four-state machine built around GDXU's RSI. Two priority gates handle extremes: RSI(10) above 79 routes to GDXD (inverse miners, fade the overbought spike), RSI(10) below 30 routes to GDXU (leveraged miners, buy the dip). Between those extremes, two momentum comparisons determine whether to hold GDXU or GLD. The 90.0% annualized standard deviation and 60.7x annual turnover reflect the leveraged 3x miner ETFs at the core -- this is an aggressive sector strategy, not a diversified portfolio."
+    ],
+    "how_it_works": [
+      "The strategy uses GDXU's own RSI as its primary signal, evaluating two extremes before consulting any broader market context. If GDXU's 10-day RSI exceeds 79, the strategy immediately rotates to GDXD -- a 3x inverse gold miners ETF -- treating the overbought reading as a mean-reversion signal. If GDXU's RSI drops below 30, it rotates into GDXU directly as an oversold dip-buy. These two gates fire unconditionally, bypassing all other checks.",
+      "When RSI is between 30 and 79, the strategy uses two cumulative return comparisons to route between GDXU and GLD. The first checks whether QQQ's 90-day return exceeds its 70-day return -- a signal that the equity trend has been building for a sustained period. If true, a second check compares GDXU's 70-day return against its 75-day return: if the shorter window is lagging (recent momentum fading), it holds GDXU expecting a continuation; if the shorter window is ahead (momentum strong), it rotates to GLD. If QQQ's 90-day return does not exceed its 70-day return, the strategy checks whether TLT's 95-day return is less than QQQ's 35-day return -- if bonds are losing to short-term equity momentum, it holds GDXD; otherwise it holds GLD. The result is that GLD acts as a refuge during ambiguous momentum conditions rather than cash, keeping some exposure to gold's safe-haven demand even when the leveraged miner case is unclear."
+    ],
+    "signals": [
+      {
+        "name": "GDXU RSI(10) Overbought and Oversold Gates",
+        "tag": "rsi",
+        "description": "Top-level priority checks on GDXU's 10-day RSI. Above 79 routes immediately to GDXD (fade overbought miners). Below 30 routes immediately to GDXU (buy oversold miners). Both gates fire before any momentum comparisons."
+      },
+      {
+        "name": "QQQ 90d vs. 70d Momentum Router",
+        "tag": "momentum",
+        "description": "When RSI is between extremes, compares QQQ's 90-day and 70-day cumulative returns to gauge trend duration. A stronger 90-day reading signals a sustained trend and routes to a GDXU vs. GLD sub-check; a weaker 90-day reading routes to a TLT vs. QQQ comparison."
+      },
+      {
+        "name": "GDXU Window Momentum and TLT vs. QQQ Check",
+        "tag": "momentum",
+        "description": "Two second-level comparisons that finalize the GDXU/GLD/GDXD decision. In the sustained-trend path: GDXU 70d vs. 75d return picks between holding GDXU (lagging recent window) or GLD (leading recent window). In the weakening-trend path: TLT 95d vs. QQQ 35d picks between GDXD (bonds losing to equities) or GLD (bonds winning, flight to safety)."
+      }
+    ],
+    "risk_profile": "Extremely Aggressive. The 697% ARR and 72,872x cumulative return over approximately 5.4 years (March 2021 to August 2026) are among the highest figures in this library, driven primarily by the explosive 2024 to 2026 gold bull market. The 47.6% max drawdown is substantial in absolute terms but modest relative to the returns, producing a 14.64 Calmar -- exceptional by any measure. The 90.0% annualized standard deviation is the highest of any strategy in the library, reflecting the inherent volatility of 3x leveraged gold miner ETFs. The strategy has 60.7 annual portfolio rebalances on average, meaning it switches roughly every 4 trading days. The win rate of 54.3% is only slightly above coin-flip, but the right-skewed distribution means winning days are larger than losing days on average. The trailing 1-year return of 931.7% reflects a historic gold miner re-rating. The backtest covers only 5.4 years and includes none of the 2022 commodity bear market (GDXU launched March 2021) -- the full drawdown profile over a longer cycle is unknown. Current holdings are 100% GDXU.",
+    "author_note": "Originally created by plaindamnscared on Composer. This version is identical to the original except BIL (cash) has been replaced with GLD (physical gold) as the defensive holding. The backtest begins March 2021 coinciding with the GDXU and GDXD inception dates. Last semantic update per Composer: 2026-08-19. Symphony ID: tlDwKY3NRXjYU61jCt0g."
   }
 ];
