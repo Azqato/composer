@@ -91,6 +91,9 @@
       border-radius: 6px; background: var(--color-surface-2, rgba(127,127,127,.06)); }
     .sl-combine-main { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; }
     .sl-combine-main strong { font-family: var(--font-mono); font-size: .9rem; }
+    .sl-combine-warn { display: block; margin: .55rem 0 0; font-size: .8rem;
+      color: var(--color-yellow); line-height: 1.5; }
+    .sl-combine-warn[hidden] { display: none; }
     .sl-table input.sl-sel { cursor: pointer; }
 
     .sl-baseline { margin: 0 0 1rem; padding: .85rem 1rem; border: 1px solid var(--color-border);
@@ -243,6 +246,7 @@
             <button class="btn btn-green btn-sm" id="sl-combine-copy">Copy combined JSON</button>
             <button class="btn btn-ghost btn-sm" id="sl-combine-clear">Clear selection</button>
           </div>
+          <span class="sl-combine-warn" id="sl-combine-warn" hidden></span>
         </div>
         <div class="sl-table-wrap">
           <table class="sl-table" id="sl-table">
@@ -1314,10 +1318,17 @@
       const n = selectedRows.size;
       bar.style.display = n ? 'block' : 'none';
       if (!n) return;
-      const tcount = new Set([...selectedRows.values()].map(r => r.target)).size;
+      const tickers = [...new Set([...selectedRows.values()].map(r => r.target))];
+      const tcount = tickers.length;
       document.getElementById('sl-combine-count').textContent =
         `${n} signal${n === 1 ? '' : 's'} selected` +
         (tcount > 1 ? ` across ${tcount} targets` : '');
+      const warn = document.getElementById('sl-combine-warn');
+      warn.hidden = tcount < 2;
+      warn.textContent = tcount < 2 ? '' :
+        `A ladder holds one ticker per day, whichever branch fires first, so this ` +
+        `rotates between ${tickers.join(', ')} rather than holding them together. ` +
+        `Each row's metrics cover its own target alone, not the rotation.`;
     }
 
     function initCombineBar() {

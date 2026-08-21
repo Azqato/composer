@@ -5,6 +5,20 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.9] - 2026-08-20
+
+### The combine bar now says what a mixed-target ladder actually does
+
+Raised by a Signal Miner user via the owner: selecting rows with different targets and exporting them as one Frontrunner is misleading, because the ladder buys only one thing.
+
+That is correct about the behaviour. A ladder holds exactly one ticker on any given day, whichever branch fires first, so a selection spanning TQQQ, SOXL and TECL is a rotation between them, not a combined position. The bar counted the targets but never said what followed from that.
+
+Selecting across targets is still allowed, since a deliberate rotation is a legitimate strategy. What changed is that a mixed-target selection now shows a line stating the ladder rotates rather than holds together, and that each row's metrics describe its own signal and target alone, not the rotation. Single-target selections show nothing new.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.22.8] - 2026-08-20
 
 ### Lowercase "calmar" in the exported description
