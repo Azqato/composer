@@ -764,9 +764,9 @@
         id: shortId(), step: 'root',
         name: `Frontrunner: ${ordered.length} signals by Calmar to ${targets.join(', ')}`,
         children: [weight], description:
-          'Built with Composer Atlas Signal Miner. Branches are ordered by the ' +
-          'Calmar ratio each signal scored STANDALONE, holding cash when off. ' +
-          'The chain itself has not been backtested: test it before using it.',
+          'Composer Atlas Signal Miner built this strategy. Branches are ordered ' +
+          'by the Calmar ratio each signal scored standalone, holding cash when ' +
+          'a signal is off.',
         rebalance: 'daily',
       };
     }

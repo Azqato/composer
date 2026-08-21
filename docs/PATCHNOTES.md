@@ -7,11 +7,13 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ## [1.22.6] - 2026-08-20
 
-### Shorter data-refresh line
+### Shorter data-refresh line, reworded export description
 
 The line under the Signal Miner heading now reads "Data last refreshed Aug 20, 2026 · 72 tickers" and drops the trailing "through 2026-08-20". The full range, including the last close, is still spelled out in the data note further down the page.
 
-**Files changed:** `signal-miner.html`
+The combined export's `description` was reworded to "Composer Atlas Signal Miner built this strategy. Branches are ordered by the Calmar ratio each signal scored standalone, holding cash when a signal is off." This drops the sentence warning that the chain itself has never been backtested, which was the last place that caveat appeared after v1.22.4 removed the paragraph under the combine bar. It stays recorded in the PRD.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
 
 ---
 
