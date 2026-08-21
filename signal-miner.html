@@ -91,7 +91,6 @@
       border-radius: 6px; background: var(--color-surface-2, rgba(127,127,127,.06)); }
     .sl-combine-main { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; }
     .sl-combine-main strong { font-family: var(--font-mono); font-size: .9rem; }
-    .sl-combine-note { margin: .7rem 0 0; font-size: .8rem; color: var(--color-disabled); line-height: 1.55; }
     .sl-table input.sl-sel { cursor: pointer; }
 
     .sl-baseline { margin: 0 0 1rem; padding: .85rem 1rem; border: 1px solid var(--color-border);
@@ -160,7 +159,8 @@
           <div class="sl-rowhead">
             <span class="sl-label">Target tickers <span id="sl-tgt-count" style="color:var(--color-green)"></span></span>
             <span class="sl-selgroup">
-              <button type="button" class="sl-sel" id="sl-example">Load community V2 example</button>
+              <button type="button" class="sl-sel" id="sl-default">Default</button>
+              <button type="button" class="sl-sel" id="sl-example">Community V2 Example</button>
               <button type="button" class="sl-sel" data-all="target">Select all</button>
               <button type="button" class="sl-sel" data-none="target">Clear</button>
             </span>
@@ -243,7 +243,6 @@
             <button class="btn btn-green btn-sm" id="sl-combine-copy">Copy combined JSON</button>
             <button class="btn btn-ghost btn-sm" id="sl-combine-clear">Clear selection</button>
           </div>
-          <p class="sl-combine-note">Branches are ordered by <strong>Calmar</strong>, highest first: the top signal pre-empts the others on any day several fire. <strong>This combination has not been backtested.</strong> Each row's metrics come from testing it alone, holding cash when off. Chaining them produces a strategy nobody has measured, and a ladder of individually strong signals can be worse than any one of them. Treat the export as a starting point to test in Composer.</p>
         </div>
         <div class="sl-table-wrap">
           <table class="sl-table" id="sl-table">
@@ -754,8 +753,8 @@
         name: `Frontrunner: ${ordered.length} signals by Calmar to ${targets.join(', ')}`,
         children: [weight], description:
           'Built with Composer Atlas Signal Miner. Branches are ordered by the ' +
-          'Calmar ratio each signal scored STANDALONE. This combination has not ' +
-          'been backtested as a whole: see the note in the tool.',
+          'Calmar ratio each signal scored STANDALONE, holding cash when off. ' +
+          'The chain itself has not been backtested: test it before using it.',
         rebalance: 'daily',
       };
     }
@@ -1556,8 +1555,28 @@
       document.getElementById('sl-mdd').value = '-0.8';
       document.getElementById('sl-quant').value = '0';
       document.querySelectorAll('#sl-families input').forEach(el => el.checked = true);
+      sigCache = null;   // ticker change: the cached run no longer applies
       syncChips();
       document.getElementById('sl-status').textContent = 'Loaded the community V2 example (8 tickers). This is a heavy run; give it a few seconds.';
+    }
+
+    // Restore the out-of-the-box state: the same tickers a first-time visitor
+    // gets, plus every filter back to its documented default. Mirrors
+    // loadExample so the two buttons behave symmetrically, except min period
+    // resets to 10 (what init renders as selected) rather than the example's 5.
+    function loadDefaults() {
+      targets = new Set(DEFAULT_TARGETS);
+      compares = new Set(DEFAULT_COMPARES);
+      document.getElementById('sl-combo').value = '2';
+      document.getElementById('sl-minp').value = '10';
+      document.getElementById('sl-tim').value = '0.05';
+      document.getElementById('sl-mdd').value = '-0.8';
+      document.getElementById('sl-quant').value = '0';
+      document.querySelectorAll('#sl-families input').forEach(el => el.checked = true);
+      sigCache = null;   // ticker change: the cached run no longer applies
+      syncChips();
+      document.getElementById('sl-status').textContent =
+        'Reset to defaults: ' + DEFAULT_TARGETS.join(', ') + ' against ' + DEFAULT_COMPARES.join(', ') + '.';
     }
 
     // ---------- init ----------
@@ -1591,6 +1610,7 @@
 
       document.getElementById('sl-run').addEventListener('click', run);
       document.getElementById('sl-example').addEventListener('click', loadExample);
+      document.getElementById('sl-default').addEventListener('click', loadDefaults);
       document.getElementById('sl-filter').addEventListener('input', () => { if (lastResults.length) requestRender(250); });
 
       // Live filters: once a run is cached, changing Min Time in Market, Max

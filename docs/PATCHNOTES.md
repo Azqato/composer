@@ -5,6 +5,20 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.22.4] - 2026-08-20
+
+### A Default button, a shorter example label, and less text around the combine bar
+
+The Target tickers row gains a **Default** button to the left of the example loader, which resets the whole form: TQQQ against QQQ, SPY, IWM and DIA, every signal family on, and all four filters back to their documented values. The example button is now labelled **Community V2 Example** rather than "Load community V2 example".
+
+Both loaders now clear the cached run when they swap the ticker set. Previously loading a preset left the previous run's results in `sigCache`, so the live filter controls would keep re-filtering results that no longer matched the tickers on screen.
+
+The explanatory paragraph under the combine bar is gone. The warning that a chained ladder has never been backtested as a whole still ships inside the exported symphony's `description`, which is where it reaches the person pasting it into Composer; the wording there no longer points at the removed note.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.22.3] - 2026-08-20
 
 ### Buy-and-hold benchmarks lose their explanatory paragraph
