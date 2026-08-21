@@ -5,6 +5,47 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.23.1] - 2026-08-20
+
+### Every level grid is uniformly stepped, and the two that can afford it got much finer
+
+The v1.23.0 grids were hand-written ladders that thinned out at their extremes: the drawdown grid ran 2, 4, 6, 8, 10, 13, 16, 20, so the top half of its range had half the resolution of the bottom. Every percent-quoted grid now steps by a constant amount across its whole range.
+
+**Cumulative return and max drawdown step by one percentage point, over a bracket set from the data.** The step is now fixed, so resolution is constant and only the reach changes with the window.
+
+The old brackets were `+/-10%` and `2%` to `20%` at 21 days: numbers that sound reasonable and, measured over all 72 tickers from 2010, are not. That cumulative-return grid covered only **75-81% of days**, and the drawdown grid **49-76%**. Drawdown missed at *both* ends: at 5 days its floor sat above the median, so nearly half the sample fell below the grid, while its ceiling sat below the 99th percentile. A threshold nothing ever crosses tests nothing.
+
+The brackets now clear the 5th-to-95th percentile at every window, `+/-20%` and `1%` to `40%` at 21 days:
+
+| Window | CumRet grid | Levels | MaxDD grid | Levels |
+|---|---|---|---|---|
+| 5 | -9% to +9% | 19 | 1% to 19% | 19 |
+| 21 | -20% to +20% | 41 | 1% to 40% | 40 |
+| 63 | -34% to +34% | 69 | 2% to 69% | 68 |
+| 252 | **-69% to +69%** | **139** | **4% to 95%** | **92** |
+
+Up from 11 and 8 fixed levels. Counting a level as *live* if it is between 5% and 95% true across the universe, the number of thresholds that actually split the sample went from 11 to 125 for cumulative return at 252 days, and from 8 to 70 for drawdown. The old levels were not dead, there were simply far too few of them.
+
+Two caveats stated rather than hidden. The upside tail runs fatter than `sqrt(t)` predicts because leveraged funds compound (252-day cumulative return reaches +2311% in this universe), so no finite grid brackets it; the extremes stay reachable through the comparison families. And drawdown is capped at 95%, since it is bounded by construction and almost no day sits beyond that.
+
+**Standard deviation of return and moving average of return could not take a percentage-point step, and that is a real constraint rather than an oversight.** Their entire useful range is narrower than one such step: daily volatility runs about 0.2%/day for a quiet bond fund to 6%/day in a panic, and mean daily return about +/-0.5%/day. A 2-point grid would have collapsed each family to two or three levels. They carry the equivalent *resolution* in their own units instead: volatility steps by 0.1 percentage points (59 levels, up from 9), mean return by 0.02 (51 levels, up from 9, roughly 5% a year per step).
+
+The constraint is confined to those two families. Every family supplies its own level function, so it places no limit on how fine cumulative return or drawdown can go.
+
+**Why this is affordable.** At 72 signal tickers with the 10-day floor, the five compare families are **91% of the search** at 875,160 specs each. All four level families together are 8.8%. Level families are *linear* in the level count while compare families square with tickers times windows, so doubling every level grid costs a couple of percent, whereas adding a single window to the grid would raise five comparison families at once.
+
+A default run at 72 tickers is now 4,800,024 signals, up from 4,508,712: a **6.5% increase** for 3x to 11x more thresholds that separate anything.
+
+**Also fixed:** grids are declared in percent and generated on an integer lattice of hundredths of a percentage point, so repeated addition cannot drift into values like 0.30000000000000004, and endpoints snap inward to the step lattice so every window's levels land on the same round numbers rather than on fifteen offset sets.
+
+### Verified
+
+Re-ran the full v1.23.0 suite in headless Edge. The shared counter still matches `buildSpecs` exactly across 99 cases; all sixteen families still produce identical boolean series via the object and columnar paths, with well-formed labels and Composer JSON; the grouped family controls, a live run and a snapshot round trip all still correct.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`
+
+---
+
 ## [1.23.0] - 2026-08-20
 
 ### The Signal Miner searches a much larger, and much more evenly spaced, space

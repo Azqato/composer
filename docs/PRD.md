@@ -1181,7 +1181,37 @@ How the tool behaves while a run is in flight. All of this is client-side in `si
 
 *One grid.* Every family now reads the same fifteen windows: **5, 7, 10, 12, 14, 21, 26, 30, 42, 50, 63, 100, 126, 200, 252**. They are log-uniform, no two closer than 15%, because a window's information content scales with the *ratio* to its neighbour rather than the difference. Each earns its place: 5 (one week), 7 (the short-RSI cluster common in Composer symphonies), 10 (two weeks, and the single most used window in the strategy library at 137 occurrences), 12 and 26 (the MACD legs), 14 (Wilder's default for RSI, ATR, ADX and Stochastic), 21 (one month, the standard realised-volatility estimator), 30, 42 (two months), 50 (golden-cross fast leg), 63 (one quarter), 100, 126 (six months), 200 (Faber's 10-month trend gate, rounded) and 252 (one year, the dominant momentum window in the literature). **20, 60 and 189 were dropped** as near-duplicates of 21, 63 and 200, all within 6%: a comparison family costs the same for any window while scaling with the *square* of the grid, so a window producing an almost identical daily series to one already present is pure cost. `MIN_PERIOD_OPTS` is now exactly this list, so choosing a floor can never silently round to a window the grid does not contain.
 
-*Level grids are scaled or fixed, per quantity, and the difference was measured.* Quantities that **accumulate** over the window disperse as sqrt(t): a 10% move over 5 days and a 10% move over 252 days are not the same event. Measured on TQQQ 2010-2026, the old fixed +/-10% cumulative-return grid left only **12% of days inside the grid at 252 days**, so most of its levels were pinned true (or false) across the whole sample and separated nothing. Cumulative return and max drawdown therefore quote a base grid at 21 days and scale it by `sqrt(p / 21)`: CumRet runs +/-10% at 21 days, +/-4.9% at 5 days and +/-34.6% at 252. Quantities that are **rate-like** do not scale, because a longer window makes the estimate steadier rather than larger, so mean daily return and daily volatility keep one fixed grid at every window.
+*Level grids are uniformly stepped, and scaled or fixed per quantity (v1.23.1).* Every percent-quoted grid steps by a constant amount across its whole range, replacing the hand-written ladders that used to thin out at their extremes (the old drawdown grid ran 2, 4, 6, 8, 10, 13, 16, 20). Grids are declared in percent and generated on an integer lattice of hundredths of a percentage point, so repeated addition cannot drift, and stored as fractions.
+
+Quantities that **accumulate** over the window disperse as sqrt(t): a 10% move over 5 days and a 10% move over 252 days are not the same event. Measured on TQQQ 2010-2026, the old fixed +/-10% cumulative-return grid left only **12% of days inside the grid at 252 days**, so most of its levels were pinned true (or false) across the whole sample and separated nothing. Cumulative return and max drawdown therefore scale their **range** by `sqrt(p / 21)` while holding the **step** fixed at one percentage point, so resolution is constant across windows and only the reach changes. Endpoints snap inward to the step lattice, which keeps every window's levels on the same round values rather than on fifteen offset sets.
+
+**The brackets were set from the data, not from taste.** The first pass used `+/-10%` and `2%` to `20%` at 21 days, numbers that sound reasonable and are not. Measured over all 72 tickers, 2010-2026, that cumulative-return grid covered only **75-81% of days**, and the drawdown grid **49-76%**. Drawdown missed at *both* ends: at 5 days its 1% floor sat above the 1.2% median, so nearly half the sample fell below the grid, while its 9% ceiling sat below the 18% 99th percentile. A threshold nothing ever crosses tests nothing.
+
+The brackets now clear the 5th-to-95th percentile at every window. Cumulative return runs `+/-20%` at 21 days, drawdown `1%` to `40%`, both scaled by `sqrt(p / 21)` and stepped by one percentage point:
+
+| Window | CumRet grid | Levels | Days inside | MaxDD grid | Levels |
+|---|---|---|---|---|---|
+| 5 | `-9%` to `+9%` | 19 | 92% | `1%` to `19%` | 19 |
+| 10 | `-13%` to `+13%` | 27 | 92% | `1%` to `27%` | 27 |
+| 21 | `-20%` to `+20%` | 41 | 93% | `1%` to `40%` | 40 |
+| 63 | `-34%` to `+34%` | 69 | 93% | `2%` to `69%` | 68 |
+| 126 | `-48%` to `+48%` | 97 | 92% | `3%` to `95%` | 93 |
+| 252 | `-69%` to `+69%` | 139 | 91% | `4%` to `95%` | 92 |
+
+Two things the table does not say. The **upside tail runs fatter than sqrt(t) predicts**, because leveraged funds compound: 252-day cumulative return reaches +2311% in this universe, so no finite grid brackets it. The grid is sized on percentiles and the extremes stay reachable through the comparison families. And **drawdown is capped at 95%**, because it is bounded by construction and above that almost no day sits on the far side.
+
+"Days inside the grid" is also the wrong measure for drawdown, which is one-sided and non-negative: a 1% floor that 46% of days sit below is a *working* threshold in the `<` direction, not a dead one. The metric that matters is how many levels actually split the sample, counting a level as live if it is between 5% and 95% true:
+
+| Window | CumRet live levels | MaxDD live levels |
+|---|---|---|
+| 5 | 15 of 19 (was 11) | 9 of 19 (was 7) |
+| 21 | 33 of 41 (was 11) | 25 of 40 (was 8) |
+| 63 | 57 of 69 (was 11) | 41 of 68 (was 8) |
+| 252 | 125 of 139 (was 11) | 70 of 92 (was 8) |
+
+The old grids were not *dead*, they were simply far too few. This is a 3x to 11x increase in thresholds that separate anything.
+
+Quantities that are **rate-like** do not scale, because a longer window makes the estimate steadier rather than larger, so mean daily return and daily volatility keep one fixed grid at every window. **They also cannot take a 2-point step, and this is a real constraint rather than an oversight:** their entire useful range is narrower than one such step. Daily volatility runs about 0.2%/day for a quiet bond fund to 6%/day in a panic, and mean daily return about +/-0.5%/day. Forcing percentage-point steps there would collapse each family to two or three levels. They carry the equivalent *resolution* in their own units instead: std dev of return steps by 0.1 percentage points (59 levels), moving average of return by 0.02 (51 levels, roughly 5% a year per step). The constraint is confined to those two families, because every family supplies its own level function; it places no limit whatsoever on how fine cumulative return or drawdown can go.
 
 *RSI levels step by 2, and are deliberately not scaled.* 10 to 90 in steps of 2 is **41 levels**, up from nine. Threshold families cost `tickers x windows x levels x 2`, **linear** in the level count, unlike the comparison families which square with the window count, so the finer grid adds about 1.2% to a maximal run. sqrt-scaling RSI was tried and **measured wrong**: it assumes the distribution is symmetric about 50, and a trending asset sits above 50 for years, so the scaled grid drifted off the part of the range that actually separates days. Retracted in favour of the fixed fine grid. A separate earlier claim, that levels below 26 and above 80 never separate anything, is also **wrong** and corrected here: they do produce distinct series at short windows, they are simply more than 95% true, which is near buy-and-hold.
 
@@ -1214,7 +1244,20 @@ How the tool behaves while a run is in flight. All of this is client-side in `si
 
 The five that are off by default are off because they are expensive or rarely productive, not because they are broken. Cross-ticker price-scale comparisons in particular (`stdp_cmp`, and the cross-ticker half of `map_cmp` / `ema_cmp`) compare dollar magnitudes, so many of those specs are constant-false and drop out in Pass 1 for having no trades. The *same-ticker* fast-versus-slow half of those families is the golden-cross signal, and is the reason they exist.
 
-*Sizing.* At 72 signal tickers with the 10-day floor (13 active windows), the eleven default families produce **4,508,712 specs**; all sixteen produce 7,152,912; dropping the floor to 5 days (15 windows) takes the default set to 5,979,960. The previous six families on their inherited grids produced 3,042,720 at the same settings, so standardising the grid roughly paid for the new families.
+*Sizing.* At 72 signal tickers with the 10-day floor (13 active windows), the eleven default families produce **4,800,024 specs**; all sixteen produce 7,522,848; dropping the floor to 5 days (15 windows) takes the default set to 6,292,296. The previous six families on their inherited grids produced 3,042,720 at the same settings, so standardising the grid roughly paid for the new families.
+
+**The level families are 6.5% of the search, which is why their grids can be lavish.** Measured per family at 72 tickers and the 10-day floor:
+
+| Family | Kind | Specs |
+|---|---|---|
+| `map_cmp`, `rsi_cmp`, `cum_cmp`, `ma_cmp`, `std_cmp` | `cmp` | 875,160 each |
+| `cum_lvl` | `lvl` | 123,408 |
+| `std_lvl` | `lvl` | 110,448 |
+| `dd_lvl` | `lvl` | 109,872 |
+| `rsi_thresh` | `lvl` | 76,752 |
+| `price_ma`, `price_ema` | `self` | 1,872 each |
+
+Five comparison families are **91% of the total**; all four level families together are 8.8%. That asymmetry is the whole argument for lavish level grids: doubling every level count adds a couple of percent, while adding one window to the grid raises each comparison family by roughly `2 x m` specs and there are five of them. The full v1.23.1 pass, halving the step *and* roughly doubling both brackets, took a maximal run from 4,508,712 to 4,800,024, **+6.5%**, in exchange for 3x to 11x more thresholds that separate anything.
 
 *One counter, not two.* `estimate()` used to hand-mirror the arithmetic in `buildSpecs()`, two copies kept in lockstep by hand. Both now call `countSpecs()` / `famSpecCount()`, so the figure shown before a run and the figure the run tests are the same arithmetic rather than two versions of it. Verified across 99 cases (every family, three floors, several ticker counts, plus all families at once) with zero mismatches.
 
