@@ -39,7 +39,7 @@ def one(name):
     print('=' * 70)
     print(name)
     print('=' * 70)
-    txt = _edge.run(driver, profile=name, **cfg)
+    txt = _edge.run(driver, **cfg)
     print(txt)
     bad = ('FAIL' in txt or 'EXCEPTION' in txt or 'NO HARNESS OUTPUT' in txt
            or not ('ALL CHECKS PASSED' in txt or 'DONE' in txt))

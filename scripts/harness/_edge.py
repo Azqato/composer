@@ -112,11 +112,26 @@ def build(driver_js, page=PAGE, throttle=False, out_prefix='_harness'):
     return html_path, js_path
 
 
-def run(driver_js, timeout=1800, throttle=False, flags=(), profile='default'):
-    """Build, drive, and return the text the driver left in <pre id="HARNESS">."""
+def run(driver_js, timeout=1800, throttle=False, flags=(), profile=None):
+    """Build, drive, and return the text the driver left in <pre id="HARNESS">.
+
+    `profile` defaults to a FRESH temporary directory per invocation. A shared,
+    stable profile is a trap in two directions: a killed run leaves msedge.exe
+    holding the lock so the next run blocks on it rather than on anything in
+    the page, and deleting the directory races with Edge's shutdown, which
+    leaves a half-deleted profile that makes the driver throw before it can
+    report anything. Pass an explicit name only when a harness genuinely needs
+    state to survive between two Edge invocations, which today means a
+    localStorage round trip and nothing else.
+    """
     prefix = '_harness_' + os.path.splitext(os.path.basename(driver_js))[0]
     html_path, js_path = build(driver_js, throttle=throttle, out_prefix=prefix)
-    prof = os.path.join(tempfile.gettempdir(), 'composer-harness-' + profile)
+    if profile:
+        prof = os.path.join(tempfile.gettempdir(), 'composer-harness-' + profile)
+        ephemeral = False
+    else:
+        prof = tempfile.mkdtemp(prefix='composer-harness-')
+        ephemeral = True
     url = 'file:///' + html_path.replace('\\', '/').replace(' ', '%20')
     argv = [edge_path(), '--headless=new', '--disable-gpu', '--no-sandbox',
             '--virtual-time-budget=2000000000', '--user-data-dir=' + prof]
@@ -130,6 +145,12 @@ def run(driver_js, timeout=1800, throttle=False, flags=(), profile='default'):
                 os.remove(f)
             except OSError:
                 pass
+        if ephemeral:
+            # Best effort only. Edge releases its file handles a moment after
+            # the process exits, so an immediate delete partially fails; the
+            # leftovers are small and land in the system temp directory.
+            import shutil
+            shutil.rmtree(prof, ignore_errors=True)
     html = dom.decode('utf-8', 'replace')                        # trap 4
     m = re.search(r'<pre id="HARNESS">(.*?)</pre>', html, re.S)
     if not m:

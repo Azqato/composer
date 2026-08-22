@@ -25,7 +25,7 @@ not on every edit.
 Every harness launches Edge deliberately, so the owner's Chrome session stays
 untouched. `EDGE_PATH` overrides the executable if it lives somewhere unusual.
 
-## The four traps
+## The traps
 
 All four are encoded once in `_edge.py`. They are documented here because each
 one cost real time to find and every one of them fails *silently* or with a
@@ -65,7 +65,27 @@ having meaningfully started. It reads as a hang or a crash, not as a broken
 timeout. Count **polls**, not milliseconds, and let the `subprocess` timeout
 in `run_harness.py` be the real guard.
 
-## Two cheaper traps
+## Trap 6: the browser profile
+
+`_edge.py` gives every invocation a **fresh** `--user-data-dir` under the
+system temp directory, and that is deliberate. A single shared profile fails
+in two directions, and both look like a hang or a crash in the page:
+
+- a killed run leaves `msedge.exe` holding the profile lock, so the next run
+  blocks on the lock rather than on anything the harness is doing;
+- deleting the directory races with Edge's shutdown, which still holds file
+  handles for a moment. The result is a half-deleted profile, and the driver
+  then throws before it can report, surfacing as `NO HARNESS OUTPUT`.
+
+Cleanup is best effort and some leftovers stay in temp. That is the right
+trade. Pass an explicit `profile=` name only when a harness genuinely needs
+state to survive between two Edge invocations, which today means a
+`localStorage` round trip and nothing else.
+
+If something still looks stuck, check for stray `msedge.exe` processes:
+`taskkill /F /IM msedge.exe`.
+
+## Traps 7 and 8, cheaper but just as silent
 
 `window.confirm` **auto-dismisses** under `--headless=new`, so a run that
 trips the large-batch confirm silently does nothing. `_edge.py` stubs it to
@@ -82,10 +102,3 @@ Drop a `.js` driver in this directory, register it in `run_harness.py`, and
 have it append its output to a `<pre id="HARNESS">` element. Print
 `ALL CHECKS PASSED` when every assertion holds (the runner greps for it), or
 `DONE` for a measurement harness that has nothing to assert.
-
-## If a harness appears to hang
-
-Check for leftover `msedge.exe` processes first. A killed run can leave
-instances holding the shared `--user-data-dir`, and the next run then blocks
-on the profile lock rather than on anything in the page. `taskkill /F /IM
-msedge.exe` and delete the profile directory under the system temp folder.
