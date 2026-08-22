@@ -562,6 +562,14 @@
     // that is exact rather than predicted.
     const SIGNAL_WARN_CAP = 1200000;   // above this, warn-and-confirm before running (no hard limit)
     const SIGNAL_WARN_SOFT = 600000;   // above this, the estimate line turns yellow
+    // Measured throughput, from the table above: nanoseconds of unthrottled
+    // compute per (spec, target, day), plus the fixed per-run cost of building
+    // indicator caches and rendering. Used only to project a duration in the
+    // large-batch confirm, so an approximate figure is fine; a run's own live
+    // "time left" readout is measured, not projected, and supersedes it as soon
+    // as the run starts.
+    const NS_PER_UNIT = 23;
+    const RUN_FIXED_MS = 1700;
 
     let PD, DATES, N, UNIVERSE;
     let targets = new Set();
@@ -1488,13 +1496,32 @@
       // cache[t].lret, so its price data is required either way.
       const specs = buildSpecs(cmp, fams, W);
       if (specs.n > SIGNAL_WARN_CAP) {
+        // The cost this dialog is really guarding is TIME, not memory. Measured
+        // 2026-08-21: a maximal run peaks at about a quarter of the tab's heap
+        // ceiling, so running out of memory is no longer the likely outcome of
+        // a big batch; waiting a long time is. So lead with a projected
+        // duration rather than with "your browser may be slow", which is now
+        // the smaller of the two costs and was the only one the old text named.
+        //
+        // The projection divides by the NOMINAL duty, so at Max it reads low:
+        // v1.24.3 established that Max delivers nearer 64% than the 80% on its
+        // label, because the requested sleep often falls under the browser's
+        // ~4ms nested-setTimeout floor. Erring low on a warning dialog is the
+        // wrong direction, but the live readout that replaces this number is
+        // measured, and it appears within a few seconds of clicking through.
+        const projMs = RUN_FIXED_MS +
+          (specs.n * tgt.length * win.len * NS_PER_UNIT / 1e6) * (100 / DUTY);
         const ok = window.confirm(
-          `Heads up: this run will test ${specs.n.toLocaleString()} signals against ${tgt.length} ` +
-          `${tgt.length === 1 ? 'target' : 'targets'}.\n\n` +
-          `That's a very large batch: expect several minutes, and your browser may be slow or ` +
-          `unresponsive while it runs. Leave the tab in the foreground.\n\n` +
-          `To lower the count, reduce signal tickers, drop a target, disable a signal family, ` +
-          `or raise the min signal period.\n\n` +
+          `This run will test ${specs.n.toLocaleString()} signals against ${tgt.length} ` +
+          `${tgt.length === 1 ? 'target' : 'targets'} over ${win.len.toLocaleString()} days.\n\n` +
+          `At the ${cpu} CPU setting that is roughly ${fmtDur(projMs)}. The estimate is from ` +
+          `measured throughput on one machine, so treat it as a ballpark; the run shows a live ` +
+          `time-remaining figure once it starts. There is no cancel button, so stopping early ` +
+          `means reloading the page and losing the results.\n\n` +
+          `Leave the tab in the foreground: a background tab is throttled by the browser and ` +
+          `will take considerably longer.\n\n` +
+          `To finish sooner, reduce signal tickers, drop a target, disable a signal family, ` +
+          `raise the min signal period, or raise the CPU setting.\n\n` +
           `Run it anyway?`
         );
         if (!ok) {

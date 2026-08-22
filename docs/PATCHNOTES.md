@@ -5,6 +5,28 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.24.5] - 2026-08-21
+
+### The large-batch dialog tells you how long the run will take
+
+The confirm that appears above 1,200,000 signals used to warn that "your browser may be slow or unresponsive" and that the run would take "several minutes". Both were written when memory was what a big run threatened. It is not any more: the v1.24.4 measurements put a maximal run at about a quarter of the tab's heap ceiling. What a big run costs now is time, and the dialog said almost nothing about it.
+
+It now leads with a projected duration, computed from the measured 23 ns per spec-target-day and divided by the duty of the CPU setting actually selected. At Medium, a 1,321,440-signal run against one target over 3,904 days reads:
+
+> This run will test 1,321,440 signals against 1 target over 3,904 days.
+>
+> At the medium CPU setting that is roughly 9m 55s. The estimate is from measured throughput on one machine, so treat it as a ballpark; the run shows a live time-remaining figure once it starts. There is no cancel button, so stopping early means reloading the page and losing the results.
+
+**Two things it now admits that it did not.** That the estimate comes from one machine and is a ballpark, since the visitor's hardware is unknown and a projection dressed up as a fact would be worse than no projection. And that **there is no way to cancel a run**: the only exit is reloading the page and losing the results. That is worth knowing before agreeing to thirty minutes, and the old text let you find it out the hard way.
+
+The advice line now includes raising the CPU setting, which is the one lever that makes a run finish sooner without making it smaller.
+
+**A known bias, in the wrong direction.** The projection divides by the *nominal* duty, and v1.24.3 established that Max delivers nearer 64% than the 80% on its label. So at Max the dialog reads low. A warning that under-promises is the wrong way round, but the live time-remaining readout is measured rather than projected and takes over within a few seconds of clicking through.
+
+**Files changed:** `signal-miner.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.24.4] - 2026-08-21
 
 ### The memory ceiling and the real speed of a run, both measured
