@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.24.6] - 2026-08-21
+
+### Added 1 symphony to database
+
+Added "Extended Backtest Simplified Copy of [ChristMas] Test #1" (`jjIQMCxLK5P98Zpczktk`) to `data/database.json`. Database now has 6,669 entries. Stats: 102.9% ARR, -14.7% max drawdown, 3.08 Sharpe, 1,425 backtest days.
+
+**Files changed:** `data/database.json`, `data/database.js`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.24.5] - 2026-08-21
 
 ### The large-batch dialog tells you how long the run will take
