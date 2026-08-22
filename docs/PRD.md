@@ -2338,6 +2338,39 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
   The constraint this does impose is architectural rather than computational: rating *every* row of a maximal run would be 45 times a full Pass 1, several hours, so **the rating is computed on demand for displayed or selected rows, never as a third pass over the whole search**. For a Pass 2 pair row, sweep each leg independently (90 cells) rather than jointly (2,025 cells); the joint grid is not worth 45x the cost.
 
   **What this does not do, and it must not be sold as if it did.** A wide plateau is evidence against *one* kind of overfitting: a rule balanced on a knife edge. It is no defence at all against the multiple-testing problem, because a search over 4.8M candidates will turn up rules with wide plateaus by chance too. This is why the N-adjusted component above is not optional garnish. A row that passes the grid should read as "not a knife edge", never as "not overfit".
+
+  ---
+
+  **C2. It is a filter, not a report, and the grid is machinery the visitor never sees (owner, 2026-08-21).** Two decisions that change what gets built:
+
+  > "If it fails, it moves on to another test." / "The user never needs to see those tables. They just need to know if Miner has found a solution loose enough to fulfil the sweep around the initial solution criteria."
+
+  In the mockup the reported solution sits at the **centre** of each table, RSI level down the left, window in days across the top.
+
+  **The first decision is the larger one.** C above was written as a *rating*: score the rows, show a verdict beside each. "It moves on to another test" is a different product. The Miner walks down its own leaderboard, sweeping each candidate, and surfaces the best one that **holds**, rather than the best one full stop. The tool stops reporting a number and starts reporting a rule it is willing to defend.
+
+  This is affordable, and the existing code has the hook for it. `selectTop(set, n, key, asc, needle)` already takes the depth `n` and never sorts the full set, so walking deeper is calling it with a larger `n`. At roughly 4 ms per candidate, testing the first 100 costs 0.4s, the first 1,000 costs 4s, and even 10,000 is under a minute. The unknown is the **hit rate**, which nobody knows yet and which is itself the most interesting number this feature could produce. If one row in 20 holds, this is instant. If it is one in 50,000, that finding is worth more than the feature: it would mean the leaderboard is essentially all knife edges. **Instrument the hit rate from the first prototype**, because it determines whether this is a filter or a headline.
+
+  **The statistical caveat, which the filter does not remove.** Taking the best row that also survives a robustness check is still selection on the same data: it is a max over a large set, just a differently shaped one. The surviving Calmar is still a best-of-N number and should still be discounted as one. The filter makes the *rule* more defensible; it does not make the *number* less optimistic. Both statements need to be true in the copy.
+
+  **On presentation, since the owner has asked for a recommendation.** The tables are evidence, not interface. Concretely:
+
+  - **One badge per row** on the existing leaderboard: **Holds** / **Fragile** / **Edge** (see the boundary note below). No numbers, no grid.
+  - **One toggle**, "only signals that hold up to a sweep", which is the filter version of the same thing, with delta and step tucked behind it at sensible defaults. Note that this cannot behave like the four existing section-3 filters: those promise live re-filtering with no re-run, and this one computes. Filtering the displayed 100 is 0.4s, which is fast enough to feel live; going deeper needs a progress indicator and an honest "testing candidate 400 of 1,000".
+  - **The grid on click, for anyone who wants it.** It costs nothing to render something already computed, and hiding the evidence entirely makes the badge unfalsifiable.
+  - **Keep exactly one number.** Pure pass/fail throws away the most useful thing the sweep knows: a row whose worst neighbour is 3.99 is not the same as one that scrapes in at 3.61. Surface the **worst Calmar in the connected region** beside the badge, phrased as "holds down to 3.72 across plus or minus 1 RSI and 2 days". That is one short sentence, it is the honest summary, and it prevents the badge from becoming a binary that hides its own margin.
+
+  **Which families to start with, and what the grid looks like for each.** The owner's reading favours RSI threshold and RSI comparison for leveraged targets, which is also the cheapest place to start:
+
+  - `rsi_thresh` is the worked example: **level by window**, exactly the mockup.
+  - `rsi_cmp` has **no level to sweep**. Its only parameters are the two windows, so its grid is **window A by window B**, the same 2D shape with different axes. This is worth stating early because it means the feature is not "sweep the level and the window", it is "sweep whatever continuous parameters the family has", and the two RSI families already need two different answers.
+
+  **Two rules that must be decided before building, both of which the mockup cannot show:**
+
+  - **Boundary solutions.** The RSI lattice runs 10 to 90 and the window grid runs 5 to 252. A solution reported at the edge has no neighbourhood on one side. Silently testing the half that exists would let edge solutions pass more easily than interior ones, which is backwards. Either fail them, or test one-sided and badge them **Edge** rather than **Holds**. Do not let them quietly pass.
+  - **Defaults, which become the standard.** Whatever delta and step ship will be what almost everyone uses, so they should not be round numbers chosen for looking tidy. The measurement in C1 gives a better basis: pick the delta that moves the signal's **firing frequency** by a target fraction, roughly 25%, rather than a fixed number of RSI points. That adapts automatically to rare and common signals, which a fixed delta does not, and it directly prevents the "band too narrow, everything passes" failure.
+
+  **Generalising beyond RSI is a later step and should stay later.** Every level family (`cum_lvl`, `std_lvl`, `dd_lvl`, `ma_lvl`) has the same level-by-window shape and would work identically. The value of starting with the two RSI families is not that the others are hard, it is that the hit rate and the defaults need to be understood on one family before the answer is generalised to sixteen.
 ---
 
 - [ ] **DEFERRED INDEFINITELY: OR combining, and Composer's any/all multi-ticker conditions.** Asked for directly by the owner on 2026-08-20 (pointing at Composer's `+` button on a condition row), planned as part of the v1.23 rollout, not built, and then **explicitly pushed back with no target date on 2026-08-21** once the scope was clear. It is written up in full here because the reasoning took real work to establish and should not have to be rediscovered. **Do not start this without the owner reopening it.**
