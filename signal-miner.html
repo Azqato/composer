@@ -528,17 +528,26 @@
     // spec counts, but the numbers themselves come from a measurement rather
     // than from taste.
     //
-    // Pass 1 does one backtest per (spec, target, day). Timed in headless Edge
-    // with the throttle disabled, that inner loop runs at roughly 4.5
-    // nanoseconds per unit of work. At the ~3,930-day sample a full-history
-    // selection gives, and one target:
+    // Pass 1 does one backtest per (spec, target, day). Measured 2026-08-21 by
+    // scripts/measure_throughput.py, which times four run sizes from OUTSIDE
+    // the browser, that inner loop runs at 23 nanoseconds per unit of work
+    // unthrottled, plus about 1.7s of fixed per-run cost. The fit is linear
+    // across a 10x range (26.5, 24.8, 23.8, 23.3 ns/unit at 8, 16, 24 and 32
+    // tickers; the drift is the fixed cost being amortised).
     //
-    //   91,232 specs (8 tickers, default families)   ~1.6s compute,  ~8s at Medium
-    //   390,320 specs (20 tickers)                   ~6.9s compute, ~34s at Medium
-    //   600,000 specs                                ~11s compute,  ~53s at Medium
-    //   1,200,000 specs                               ~21s compute, ~1.8min at Medium
-    //   3,936,096 specs (all 72, default families)    ~70s compute, ~5.8min at Medium
-    //   4,931,064 specs (all 72, all 16 families)     ~87s compute, ~7.3min at Medium
+    // At the ~3,930-day sample a full-history selection gives, and one target:
+    //
+    //   91,232 specs (8 tickers, default families)   ~10s unthrottled, ~50s at Medium
+    //   390,320 specs (20 tickers)                   ~37s unthrottled, ~3.1min at Medium
+    //   600,000 specs                                ~56s unthrottled, ~4.6min at Medium
+    //   1,200,000 specs                             ~110s unthrottled, ~9.1min at Medium
+    //   3,936,096 specs (all 72, default families)  ~356s unthrottled, ~30min at Medium
+    //
+    // A PREVIOUS VERSION OF THIS COMMENT SAID 4.5 ns, AND WAS WRONG BY 5x. It
+    // came from performance.now() readings taken inside a driver running under
+    // --virtual-time-budget, where the page clock is paused during synchronous
+    // compute. Nothing timed from inside that rig means anything; see the
+    // header of scripts/harness/throughput.js.
     //
     // The old pair (45,000 warn / 100,000 confirm) was set when a default
     // eight-ticker run was ~20,000 specs. After v1.23.1 that same ordinary run
@@ -1575,7 +1584,15 @@
       // `cache` replaces the old per-signal survivor arrays: ~30MB of shared
       // indicator series that pairing re-derives its handful of arrays from.
       store.specs = specs; store.tgt = tgt;
-      sigCache = { store, cache, tgt, targetLret, N, win };
+      // busyMs is the accumulated COMPUTE time behind the duty meter. It is
+      // meaningful in a real browser and is what the "% CPU" readout divides.
+      // It is NOT usable for measurement from inside a headless harness: under
+      // --virtual-time-budget the page clock is paused during synchronous work,
+      // so busyMs reads near zero no matter how much compute happened (63ms and
+      // 70ms were logged for runs that really took 3.7s and 9.4s). Throughput
+      // figures in docs/PRD.md come from scripts/measure_throughput.py, which
+      // times runs from the parent process instead.
+      sigCache = { store, cache, tgt, targetLret, N, win, busyMs: busyTotal };
       runBtn.disabled = false;
       setTimeout(() => { prog.style.display = 'none'; }, 600);
 

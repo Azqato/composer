@@ -34,6 +34,7 @@ Also: USE EDGE, NEVER CHROME, so the owner's browser session is untouched.
 `window.confirm` auto-dismisses under --headless=new and is stubbed to true.
 """
 import io
+import json
 import os
 import re
 import subprocess
@@ -83,7 +84,7 @@ def edge_path():
                      'Chrome: it would disturb the running browser session.)')
 
 
-def build(driver_js, page=PAGE, throttle=False, out_prefix='_harness'):
+def build(driver_js, page=PAGE, throttle=False, out_prefix='_harness', config=None):
     """Write a test copy of the page with the hook spliced in and `driver_js`
     attached. Returns (html_path, js_path) for the caller to clean up."""
     src = io.open(page, encoding='utf-8').read()
@@ -107,12 +108,14 @@ def build(driver_js, page=PAGE, throttle=False, out_prefix='_harness'):
     html_path = os.path.join(REPO, html_name)
     js_path = os.path.join(REPO, js_name)
     io.open(html_path, 'w', encoding='utf-8', newline='').write(src)
-    io.open(js_path, 'w', encoding='utf-8', newline='').write(
-        io.open(os.path.join(HERE, driver_js), encoding='utf-8').read())
+    body = io.open(os.path.join(HERE, driver_js), encoding='utf-8').read()
+    if config:
+        body = 'window.__cfg = %s;\n' % json.dumps(config) + body
+    io.open(js_path, 'w', encoding='utf-8', newline='').write(body)
     return html_path, js_path
 
 
-def run(driver_js, timeout=1800, throttle=False, flags=(), profile=None):
+def run(driver_js, timeout=1800, throttle=False, flags=(), profile=None, config=None):
     """Build, drive, and return the text the driver left in <pre id="HARNESS">.
 
     `profile` defaults to a FRESH temporary directory per invocation. A shared,
@@ -125,7 +128,7 @@ def run(driver_js, timeout=1800, throttle=False, flags=(), profile=None):
     localStorage round trip and nothing else.
     """
     prefix = '_harness_' + os.path.splitext(os.path.basename(driver_js))[0]
-    html_path, js_path = build(driver_js, throttle=throttle, out_prefix=prefix)
+    html_path, js_path = build(driver_js, throttle=throttle, out_prefix=prefix, config=config)
     if profile:
         prof = os.path.join(tempfile.gettempdir(), 'composer-harness-' + profile)
         ephemeral = False

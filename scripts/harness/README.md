@@ -96,6 +96,47 @@ through `requestRender()`, so `#sl-results-panel` becomes visible *before*
 `#sl-body` is filled. Wait on the row count, not on the panel, or the check is
 an intermittent race.
 
+## Traps 9 and 10: why timing lives outside this directory
+
+**Trap 9: under virtual time, the page clock is not a clock.** This is the
+trap that cost the most, because it fails by producing plausible numbers.
+`--virtual-time-budget` is what makes `--dump-dom` wait for asynchronous work
+instead of dumping at the load event, and every harness here depends on it. The
+price is that the page clock is *paused* during synchronous compute and
+*fast-forwarded* through idle gaps. Measured, with one driver and two run sizes:
+
+| Run | Real duration | `performance.now()` elapsed | Summed `busyMs` |
+|---|---|---|---|
+| 4 tickers | 3.68s | 1,154 ms | 63 ms |
+| 8 tickers | 9.44s | 4,095,136 ms | 70 ms |
+
+Neither column measures anything, and the fast-forwarding is not even monotone
+in the work. At 16 tickers the accumulated virtual time crossed the 2e9 ms
+budget, Edge shut the browser down mid-run, and the harness reported
+`NO HARNESS OUTPUT` with no other symptom. The budget cannot simply be raised:
+2e9 is already close to the largest value the flag accepts.
+
+A wrong throughput figure derived this way (4.5 ns per spec-target-day, five
+times too fast) reached production in code comments, the patch notes and the
+PRD before it was caught. **Never quote a duration measured inside this rig.**
+Timing lives in `scripts/measure_throughput.py`, which runs Edge without
+virtual time and without `--dump-dom`, and reads results off stderr through
+`console.info` so the parent process can timestamp them.
+
+**Trap 10: a real-time headless run needs four more flags.** Dropping virtual
+time introduces two problems that virtual time was hiding:
+
+- A headless tab counts as **hidden**, and a hidden tab has its timers clamped
+  to roughly one per second. Pass 1 yields through `setTimeout` between
+  batches, so without `--disable-background-timer-throttling`,
+  `--disable-backgrounding-occluded-windows` and
+  `--disable-renderer-backgrounding` a run does about one batch per second and
+  what you measure is the clamp.
+- **A fresh `--user-data-dir` is not a clean browser.** Edge still loads the
+  machine's extensions, which log continuously into the same stderr channel the
+  result is being read from, and open network tabs of their own. Pass
+  `--disable-extensions --no-first-run --no-default-browser-check`.
+
 ## Writing a new harness
 
 Drop a `.js` driver in this directory, register it in `run_harness.py`, and

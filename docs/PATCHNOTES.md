@@ -5,6 +5,44 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.24.4] - 2026-08-21
+
+### The memory ceiling and the real speed of a run, both measured
+
+Roadmap item 3 asked where the memory ceiling now sits after v1.22.13, v1.22.15 and v1.23.0 cut what a run retains. It does not sit anywhere near a run any more, and finding that out turned up a worse problem in the other direction.
+
+**Memory.** A genuinely maximal run, meaning the 51 tickers with full history rather than all 72, is 2,064,072 specs and 1,886,073 stored rows over a 3,904-day sample. It peaks at **977 MB against a 4,192 MB heap ceiling, about 24%**. Selecting all 72 tickers looks bigger and is not: IBIT and ETHA cover roughly 30% of the date axis, so including them collapses the shared sample window to 270 days and every stored row gets cheaper. The old crash point near 2,000,000 signals is gone.
+
+The ceiling itself read 4,192 MB here against 3,586 MB when it was last recorded, on the same machine. It is a property of the browser build, not the hardware, and it moves between versions.
+
+**Speed, and a correction.** The v1.24.2 note published a table built on **4.5 nanoseconds per spec-target-day**. That figure was wrong by a factor of five, and it was wrong for a reason worth stating: it came from `performance.now()` readings taken inside a headless driver running under `--virtual-time-budget`, where the page clock is paused during synchronous compute and fast-forwarded through idle gaps. The same driver reported 1,154 ms of elapsed time for a run that really took 3.68s and 4,095,136 ms for one that really took 9.44s.
+
+Timing now happens outside the browser. Four run sizes, each launched in real time with no virtual time and no `--dump-dom`, reporting through the console so the parent process can timestamp it:
+
+| Compare tickers | Specs | Work | Run | ns per unit |
+|---|---|---|---|---|
+| 8 | 91,232 | 358,632,992 | 9.48s | 26.45 |
+| 16 | 268,992 | 1,057,407,552 | 26.21s | 24.79 |
+| 24 | 533,280 | 2,096,323,680 | 49.97s | 23.84 |
+| 32 | 884,096 | 3,475,381,376 | 81.06s | 23.32 |
+
+Linear across a tenfold range: **23 ns per spec-target-day unthrottled, plus about 1.7s of fixed cost per run.** So the corrected picture of what the warning thresholds mean, at Medium:
+
+| Specs | Unthrottled | At Medium (20%) |
+|---|---|---|
+| 91,232 (8 tickers, default families) | ~10s | ~50s |
+| 600,000 (**yellow**) | ~56s | ~4.6 min |
+| 1,200,000 (**confirm**) | ~110s | ~9.1 min |
+| 3,936,096 (all 72 tickers) | ~356s | ~30 min |
+
+The thresholds themselves are unchanged and still land sensibly. What changed is what they are guarding: **not the tab's memory, but the afternoon.** The confirm dialog's wording still talks about the browser becoming slow, which is now the smaller of the two costs. Rewording it is a separate, small follow-up.
+
+**No page behaviour changed in this release.** The corrections are to comments in `signal-miner.html`, to the roadmap, and to the harness documentation, plus a new `scripts/measure_throughput.py` and a rewritten `scripts/harness/throughput.js`. The memory harness no longer prints a timing column at all, because the only honest value it could print is nothing.
+
+**Files changed:** `signal-miner.html`, `scripts/measure_throughput.py`, `scripts/harness/throughput.js`, `scripts/harness/memory.js`, `scripts/harness/_edge.py`, `scripts/harness/README.md`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.24.3] - 2026-08-21
 
 ### The run status line reports measured CPU duty, not the nominal figure
@@ -26,6 +64,8 @@ The error has always been in the safe direction, delivering *less* CPU than adve
 ### The large-batch warning fires on large batches again
 
 `SIGNAL_WARN_CAP` (100,000, which triggers the confirm dialog) and the 45,000 yellow-text threshold were set when a default eight-ticker run was about 20,000 signals. After v1.23.1 that same ordinary run was 100,696 and tripped the "this is a very large batch" dialog **every single time**, which is the fastest way to train someone to click through the one warning that matters.
+
+> **Correction (v1.24.4).** The 4.5 ns/unit figure and the table below it are wrong by a factor of five. They were derived from a page clock running under `--virtual-time-budget`, which does not measure elapsed time. The thresholds themselves are unchanged and still land in the right place; see v1.24.4 for the real numbers and for why the measurement was invalid.
 
 They are now **600,000** for the yellow estimate line and **1,200,000** for the confirm, and unlike last time the numbers come from a measurement. Pass 1 performs one backtest per spec, target and day; timed in headless Edge with the throttle disabled that inner loop runs at roughly **4.5 nanoseconds per unit of work**. Against a typical 3,930-day sample with one target:
 

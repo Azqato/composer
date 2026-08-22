@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.23.2
+**Version:** 1.24.4
 **Status:** Active
 **Last Updated:** 2026-08-21
 
@@ -1372,7 +1372,7 @@ The heap figure is the one that matters, since that is what the 3,586 MB ceiling
 
 **The `ti` column is a `Uint8Array`,** which caps a run at 255 targets. The universe is 72 tickers, so this cannot bind today; Pass 1 throws explicitly rather than silently truncating if it ever does.
 
-**No hard signal cap (v1.16.4).** Large runs are warned about, not blocked. Above `SIGNAL_WARN_CAP` (100,000 signals) a `confirm()` explains that the batch is large and may make the browser slow or unresponsive, and the user can proceed or cancel. The pre-run estimate readout escalates ahead of that: a `warn` state above 45,000 signals and a `stop` state above 100,000. **Known limit:** a run is bounded by the tab's fixed heap ceiling (about 3.5GB, independent of the machine's RAM) rather than by CPU, so a seven-figure run can still exhaust memory and kill the tab at any CPU setting. v1.22.13 and v1.22.15 cut what a run retains by roughly 20x between them, but the ceiling is still there. The fix is fewer signals (fewer tickers, or a family switched off) or fewer targets, not a gentler throttle. Note that raising Min Time in Market does not help, because that filter runs after Pass 1 and the rows are already stored by then.
+**No hard signal cap (v1.16.4; thresholds recalibrated v1.24.2).** Large runs are warned about, not blocked. Above `SIGNAL_WARN_CAP` (1,200,000 signals) a `confirm()` explains that the batch is large and may make the browser slow or unresponsive, and the user can proceed or cancel. The pre-run estimate readout escalates ahead of that: a `warn` state above `SIGNAL_WARN_SOFT` (600,000) and a `stop` state above the cap. **What actually binds, as of the 2026-08-21 measurements in Section 14 item 3: time, not memory.** A genuinely maximal run (51 full-history tickers, 2,064,072 specs) peaks at 977 MB against a ~4.2GB ceiling, roughly 24%, so the heap is no longer the thing that kills a run; v1.22.13, v1.22.15 and v1.23.0 between them cut what a run retains by well over an order of magnitude. The same run costs about 3.5 minutes unthrottled and 17 minutes at Medium, and the 72-ticker default is about 30 minutes at Medium. The confirm dialog's wording still talks about the browser going slow, which is now the lesser of the two costs it is guarding. The fix for a run that is too big is fewer signals (fewer tickers, or a family switched off) or fewer targets, not a gentler throttle, which only trades wall time for responsiveness. Note that raising Min Time in Market does not help, because that filter runs after Pass 1 and the rows are already stored by then.
 
 **Ticker selection defaults and persistence (v1.18.3).** First visit starts at Target `TQQQ` with signal tickers `QQQ`, `SPY`, `IWM`, `DIA`. After that the selection is restored from `localStorage` under `composer-atlas.signal-miner.tickers.v1`. Only the two ticker sets persist: signal families, CPU load and the section-3 filters deliberately reset each visit, since they govern how heavy a run is and should stay a conscious choice rather than something inherited from a forgotten session. Stored symbols are validated against the current universe on load, so pruning a ticker from `prices.json` (see the duplicate-ETF roadmap item) cannot strand a stale selection in someone's browser. A stored-but-empty selection is honoured rather than overwritten with defaults: only the *absence* of a stored value counts as a first visit, so hitting Clear and refreshing shows the cleared state. All storage access is wrapped in try/catch, so private mode or disabled storage degrades to defaults instead of breaking the page.
 
@@ -2191,7 +2191,37 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
   The median cross-ticker price pair changes state **once in sixteen years**: a date wearing a condition's clothes rather than a signal. The two scale-free controls flip hundreds of times, which is what establishes that the effect is about price scale and not about comparison families generally. `stdp_cmp` is the weakest of the three at 54% inert, and its flag is the first to reconsider if coverage is ever missed.
 
-- [ ] **3. Re-measure the memory ceiling on the new search space.** The v1.22.15 profile (527 MB peak heap, 1,502 MB peak process) was taken on the 3,042,720-signal run. The default maximal run is now **4,800,024**, 58% larger, and specs went columnar in v1.23.0 which should more than absorb it. Re-run the `harness-scale.py` A/B to confirm the crash point moved where predicted rather than assuming it did, and update the figures in Section 12. Remember the constraint that makes this matter: a tab's heap ceiling is fixed at roughly 3.5GB and **does not grow with installed RAM** (measured 3,586 MB on a 48GB machine), so this is about the tab, not the user's hardware.
+- [x] **3. Re-measure the memory ceiling on the new search space** (done 2026-08-21). Measured, not assumed, and the answer changed what the Miner's limiting resource is.
+
+  Memory, from `python scripts/run_harness.py memory`, one target (QQQ) at Max with the throttle disabled:
+
+  | Selection | Specs | Rows stored | Sample days | Peak heap | Bytes per row |
+  |---|---|---|---|---|---|
+  | 20 tickers | 390,320 | 364,526 | 2,381 | 127 MB | 366.6 |
+  | 40 tickers | 1,321,440 | 1,180,689 | 1,747 | 477 MB | 423.9 |
+  | 72 tickers (all) | 3,936,096 | 3,181,976 | 270 | 1,011 MB | 333.1 |
+  | 51 tickers (full history) | 2,064,072 | 1,886,073 | 3,904 | 977 MB | 543.3 |
+
+  **Read the last row, not the third.** Selecting all 72 tickers looks like the maximal run and is not: IBIT and ETHA cover only ~30% of the date axis, so including them collapses the common sample window to 270 days and each stored row is cheap. The 51 full-history tickers are what a real maximal run looks like, and it costs about the same heap for half the specs.
+
+  **The heap ceiling read 4,192 MB**, against the 3,586 MB recorded earlier on the same 48GB machine. Both figures are from the same hardware, so the ceiling is a property of the browser build and moves between versions. Treat any single reading as approximate and do not design to within 20% of it.
+
+  **Conclusion: memory is no longer the binding constraint.** A genuinely maximal run peaks at about **24% of the ceiling**. v1.22.13 (no array per signal) and v1.22.15 plus v1.23.0 (columnar rows, columnar specs) between them took the headroom from "crashes near 2,000,000 signals" to "four times the largest run the tool can currently produce." What binds now is time.
+
+  **Time, from `python scripts/measure_throughput.py`.** This needed a separate rig, because a timed run cannot use the harness in `scripts/harness/_edge.py` at all: that rig depends on `--virtual-time-budget`, and under virtual time the page clock is paused during synchronous compute and fast-forwarded through idle gaps. The same driver reported 1,154 ms of elapsed time for a 4-ticker run and 4,095,136 ms for an 8-ticker one, and summed `busyMs` read 63 ms and 70 ms for runs that really took 3.7s and 9.4s. At 16 tickers the accumulated virtual time exceeded the budget and Edge shut the browser down mid-run. `measure_throughput.py` therefore launches Edge itself with no virtual time and no `--dump-dom`, and the driver reports through `console.info`, which the parent process reads off stderr and timestamps with its own clock.
+
+  | Compare tickers | Specs | Work (spec-target-days) | Run | ns per unit |
+  |---|---|---|---|---|
+  | 8 | 91,232 | 358,632,992 | 9.48s | 26.45 |
+  | 16 | 268,992 | 1,057,407,552 | 26.21s | 24.79 |
+  | 24 | 533,280 | 2,096,323,680 | 49.97s | 23.84 |
+  | 32 | 884,096 | 3,475,381,376 | 81.06s | 23.32 |
+
+  Linear across a 10x range: **23 ns per spec-target-day unthrottled, plus ~1.7s fixed per run** (cache building and rendering). The drift down the last column is that fixed cost being amortised, not a scaling effect.
+
+  **Correction.** An earlier version of this section, of the `SIGNAL_WARN_CAP` comment in `signal-miner.html`, and of the v1.24.2 patch note gave **4.5 ns per spec-target-day**, and all three were shipped to production before the error was found. That number came from `performance.now()` readings taken inside a driver running under virtual time, so it was not a measurement of anything. The real figure is **five times worse**. Nothing timed from inside the virtual-time rig should ever be quoted.
+
+  **What this means for items 1 and 2.** The recalibrated thresholds still land in a sensible place: `SIGNAL_WARN_SOFT` (600,000) is about 4.6 minutes at Medium, `SIGNAL_WARN_CAP` (1,200,000) about 9.1 minutes, and a full 72-ticker default run about 30 minutes. So the confirm dialog is now guarding **the user's afternoon, not the tab's memory**, which is a better thing for it to guard but is not what its wording says. Rewording it is a small, unscheduled follow-up. Item 2's restriction of the three price-scale families removed ~2.6M specs from a maximal run, which at 23 ns per unit is roughly **four minutes** off it.
 
 - [x] **4. Persist the headless Edge harnesses into `scripts/`** (done 2026-08-21). They now live in `scripts/harness/` behind one entry point:
 

@@ -5,8 +5,10 @@
    re-measures it.
 
    The constraint that makes this matter: a tab's JS heap ceiling is FIXED and
-   does NOT grow with installed RAM. It was measured at 3,586 MB on a 48GB
-   machine, so this is a property of the tab, not of the hardware.
+   does NOT grow with installed RAM. It measured 3,586 MB when the PRD figure
+   was taken and 4,192 MB here on the same 48GB machine, so it is a property of
+   the browser build, not of the hardware, and it moves between versions. Treat
+   any single reading as approximate.
 
    Run with --enable-precise-memory-info, or performance.memory buckets to
    100KB granularity and the peak is meaningless. */
@@ -50,9 +52,22 @@
 
     document.getElementById('sl-cpu').value = 'max';
 
-    for (const nT of [20, 40, 72]) {
+    // The 72-ticker case is NOT the largest realistic run: IBIT and ETHA cover
+    // ~30% of the date axis, so selecting everything collapses the common
+    // sample window to a few hundred days and the run stops being comparable
+    // to any other. 'full' is every ticker whose history covers the whole
+    // axis, which is what a real maximal selection looks like.
+    const FULL = TK.filter(t => {
+      const c = T.PD.tickers[t].closes;
+      let f = 0; while (f < c.length && c[f] == null) f++;
+      return (c.length - f) / c.length >= 0.99;
+    });
+    log('full-history tickers: ' + FULL.length + ' of ' + TK.length);
+
+    for (const nT of [20, 40, 72, 'full']) {
+      const sel = nT === 'full' ? FULL : TK.slice(0, nT);
       T.targets.clear(); T.targets.add('QQQ');
-      T.compares.clear(); TK.slice(0, nT).forEach(s => T.compares.add(s));
+      T.compares.clear(); sel.forEach(s => T.compares.add(s));
       T.syncChips();
 
       let peak = 0;
@@ -63,7 +78,6 @@
 
       const panel = document.getElementById('sl-results-panel');
       panel.style.display = 'none';
-      const t0 = performance.now();
       document.getElementById('sl-run').click();
       try {
         await waitFor(() => panel.style.display !== 'none');
@@ -72,16 +86,20 @@
         log(`tickers=${nT}: DID NOT COMPLETE (${e.message}), peak ${MB(peak)}`);
         continue;
       }
-      const ms = performance.now() - t0;
       clearInterval(sampler);
 
       const sc = T.sigCache;
       const specs = sc.store.specs.n, rows = sc.store.n, days = sc.win.len;
-      const work = specs * sc.tgt.length * days;
+      // NO TIMING COLUMN, DELIBERATELY. An earlier version reported one and it
+      // was fiction: under --virtual-time-budget the page clock is paused
+      // during synchronous compute, so both performance.now() deltas and the
+      // summed busyMs read near zero. Timing lives in
+      // scripts/measure_throughput.py, which runs without virtual time and
+      // measures from the parent process. Memory is measured here because
+      // performance.memory is a sample of real state, not of elapsed time, so
+      // virtual time does not touch it.
       log(`tickers=${nT} specs=${specs.toLocaleString()} rows=${rows.toLocaleString()} ` +
-          `days=${days} | peak heap ${MB(peak)} | ${(ms / 1000).toFixed(1)}s unthrottled | ` +
-          `${(ms * 1e6 / work).toFixed(2)} ns per spec-target-day | ` +
-          `${(peak / specs).toFixed(1)} bytes per spec`);
+          `days=${days} | peak heap ${MB(peak)} | ${(peak / rows).toFixed(1)} bytes per row`);
     }
 
     log('DONE');
