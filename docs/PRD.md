@@ -2247,7 +2247,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 ---
 
-**Under design, not yet scheduled (raised 2026-08-21).** Two robustness items. Neither is committed to a version and neither has been built; they are recorded here because the reasoning is worth keeping and because they attack the same weakness from opposite directions. The Miner searches 4.8M signals against one target, so the top of its leaderboard is selected for luck as much as for skill. Everything in the numbered list above makes the search bigger, faster or cheaper. These two ask whether a winning row is *real*.
+**Under design, not yet scheduled (raised 2026-08-21).** Three robustness items. None is committed to a version and none has been built; they are recorded here because the reasoning is worth keeping and because they attack the same weakness from different directions. The Miner searches 4.8M signals against one target, so the top of its leaderboard is selected for luck as much as for skill. Everything in the numbered list above makes the search bigger, faster or cheaper. These three ask whether a winning row is *real*. A and B are the two measurements; C is the layer that turns them into something a visitor can act on.
 
 - [ ] **A. Parameter plateau scoring: rank on the neighbourhood, not on the peak.** Owner's idea, 2026-08-21. A row's rank says nothing about whether the parameter it found is a knife edge. Suppose the leaderboard shows `RSI(10) of SMH < 23` at 2.8 Calmar. If `< 22` and `< 24` score 0.9 and 1.1, that 23 is a spike: the rule works at exactly one threshold and nowhere near it, which is what over-fitting looks like from the inside. If instead the whole span from 20 to 28 scores between 2.4 and 2.9, that is a **plateau**, the node fires usefully across a range of values, and the result is far more likely to be a real effect than an artifact of where the lattice happened to land.
 
@@ -2296,6 +2296,27 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
   - **The dummy data in any mockup must decay honestly.** Most rows should fall apart out of sample, with a handful holding up, because that is what real walk-forward output looks like. A mockup where everything survives would misrepresent the feature it is selling.
 
   **A and B are complementary, not alternatives.** Plateau scoring is cheap and uses every day of data; walk-forward is expensive and deliberately throws data away. A rule that has a wide plateau *and* holds up out of sample is worth taking seriously. A rule with neither is almost certainly noise, and today the tool cannot tell you which it is looking at.
+
+- [ ] **C. An overfitting rating on every row.** Owner's idea, 2026-08-21. A and B each produce one diagnostic. This is the layer that combines them, plus what the tool already knows, into a per-row judgment of how much to trust the number next to it.
+
+  **Build it as a scorer, never as a search.** Every input below is either already computed during a run, or is a lookup into specs the run has already evaluated. Nothing here should trigger a second Pass 1. If a proposed component needs its own pass, it belongs in A or B, not here.
+
+  **The input the tool has and does not use: how many candidates it looked at.** This is the most important item on this list and the cheapest. A search over 4,800,024 candidates will produce a spectacular best-of-N Calmar **from pure noise**, and the size of that effect is knowable rather than mysterious: it grows with the number of candidates and shrinks with the length and independence of the sample. The Miner already knows N exactly, knows the sample length exactly, and knows how correlated the candidates are (it built them from one lattice). Today it reports a winner's Calmar as though it had tested one hypothesis. **Reporting a row's edge against what the best of N would look like under a null is the single most honest number this tool could add**, and it needs no new backtests at all. The literature calls the general idea a deflated or multiple-testing-adjusted performance measure; the exact formulation should be chosen deliberately, since the standard ones assume independence that a dense lattice badly violates.
+
+  A more expensive but far more defensible alternative to a closed-form null: **measure it**. Score a few thousand random signals with time-in-market matched to the row being rated, take the distribution of their Calmars, and report the row's percentile against it. That is an empirical null built from this exact search space, so it needs no independence assumption. It costs one small extra pass and could be run once per session rather than per row.
+
+  **The other components, all cheap:**
+  - **Plateau width (from A).** A knife edge rates badly no matter how good its number is.
+  - **Out-of-sample decay (from B).** The only component that can actually fail a rule outright.
+  - **Trade count and firing days.** A rule with a 4.0 Calmar earned across nine trades has almost no evidence behind it, regardless of everything else. This is already available from the backtest and is probably the second cheapest component after N.
+  - **Time in market.** Already computed and already a filter. A signal that fires 2% of the time is fitting a handful of days.
+  - **Concentration in time.** Whether the entire edge comes from one period, most likely 2020 or 2022. Cheap to approximate by scoring the row over sub-periods it has already been evaluated on.
+
+  **The design danger, and it is the real one.** A single letter grade or 0-to-100 score invites exactly the false confidence it is meant to prevent, and the moment it exists people will optimise against it, which converts a diagnostic into a target and destroys it. **Show the components, and only then a summary.** The summary should be coarse on purpose, three or four buckets rather than a number with a decimal point, because the underlying estimate does not support more precision than that.
+
+  **The honesty test for whether it works.** Given a 4.8M-candidate search, **most rows should rate badly**, including rows near the top of the leaderboard. If a first implementation rates most of the leaderboard as trustworthy, the rating is wrong and should not ship. It exists to make the tool argue with its own output.
+
+  **Sequencing.** C cannot ship before A, since plateau width is its backbone and A is nearly free. B strengthens it but is not a prerequisite; the rating can carry an explicit "not validated out of sample" state until B exists. The N-adjusted component could ship on its own, before either, and would be worth doing even if nothing else here is ever built.
 
 ---
 
