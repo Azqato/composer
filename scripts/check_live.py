@@ -18,6 +18,7 @@ Exits non-zero on any mismatch, so it can gate a release.
 """
 import io
 import os
+import re
 import sys
 import urllib.request
 
@@ -58,6 +59,21 @@ PAGES = {
 }
 
 
+BEACON_RE = re.compile(
+    '<script[^>]*static[.]cloudflareinsights[.]com[^>]*></script>[\\n]?', re.I)
+
+
+def strip_injected(text):
+    """Remove anything Cloudflare adds at serve time.
+
+    Returns (text, bytes_removed). This is deliberately a short, explicit
+    list rather than a fuzzy comparison: the whole point of this script is
+    that an unexplained difference between committed and live is a problem.
+    """
+    out = BEACON_RE.sub('', text)
+    return out, len(text) - len(out)
+
+
 def fetch(url):
     req = urllib.request.Request(url, headers={
         'User-Agent': 'composer-atlas-check-live/1.0',
@@ -84,9 +100,22 @@ def check(slug):
     ok = True
     # Normalise line endings before comparing: the working copy is CRLF on
     # Windows and what Cloudflare serves is whatever git stored.
-    if live.replace('\r\n', '\n') != committed.replace('\r\n', '\n'):
-        print('  DIFF %-14s live is %d bytes, committed is %d bytes'
-              % (slug, len(live), len(committed)))
+    a = committed.replace('\r\n', '\n')
+    b = live.replace('\r\n', '\n')
+
+    # Cloudflare injects its Web Analytics beacon at serve time, so every live
+    # page is legitimately ~359 bytes longer than the committed one. Strip it
+    # before comparing, rather than reporting a diff on every page forever.
+    # It is still reported as a note, because the day it stops appearing (or
+    # something else starts being injected) is worth knowing.
+    b, injected = strip_injected(b)
+    if injected:
+        print('  note %-14s Cloudflare beacon injected at serve time (+%d bytes)'
+              % (slug, injected))
+
+    if a != b:
+        print('  DIFF %-14s live is %d bytes, committed is %d bytes '
+              '(after stripping injections)' % (slug, len(b), len(a)))
         ok = False
 
     for m in must:
