@@ -16,20 +16,26 @@
 
   const MB = v => (v / 1048576).toFixed(0) + ' MB';
 
-  function waitFor(fn, ms) {
+  // TRAP: under --virtual-time-budget the page clock advances fast whenever
+  // the renderer is idle, so a Date.now() deadline inside a driver expires
+  // long before a long compute has finished. The first version of this
+  // harness "timed out" on all three cases at 82 MB peak, i.e. before Pass 1
+  // had really started. Count POLLS, not milliseconds; the subprocess timeout
+  // in run_harness.py is the real guard.
+  function waitFor(fn, polls) {
     return new Promise((res, rej) => {
-      const t0 = Date.now();
+      let n = 0;
       (function tick() {
         let v; try { v = fn(); } catch (e) { return rej(e); }
         if (v) return res(v);
-        if (Date.now() - t0 > ms) return rej(new Error('timeout'));
+        if (++n > (polls || 4000000)) return rej(new Error('gave up after ' + n + ' polls'));
         setTimeout(tick, 25);
       })();
     });
   }
 
   async function main() {
-    await waitFor(() => window.__t && window.__t.PD && document.getElementById('sl-run'), 60000);
+    await waitFor(() => window.__t && window.__t.PD && document.getElementById('sl-run'));
     const T = window.__t;
     const TK = Object.keys(T.PD.tickers);
 
@@ -60,7 +66,7 @@
       const t0 = performance.now();
       document.getElementById('sl-run').click();
       try {
-        await waitFor(() => panel.style.display !== 'none', 1800000);
+        await waitFor(() => panel.style.display !== 'none');
       } catch (e) {
         clearInterval(sampler);
         log(`tickers=${nT}: DID NOT COMPLETE (${e.message}), peak ${MB(peak)}`);

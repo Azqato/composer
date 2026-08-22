@@ -34,7 +34,7 @@ PAGES = {
     'signal-miner': (
         'signal-miner.html',
         [
-            'SIGNAL_WARN_CAP = 2500000',              # v1.24.2 thresholds
+            'SIGNAL_WARN_CAP = 1200000',              # v1.24.2 thresholds
             'SIGNAL_WARN_SOFT',
             'function windowInfo(syms, warm)',        # v1.24.1 warm-up
             'lost to warm-up',

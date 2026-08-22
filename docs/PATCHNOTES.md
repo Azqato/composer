@@ -27,14 +27,14 @@ The error has always been in the safe direction, delivering *less* CPU than adve
 
 `SIGNAL_WARN_CAP` (100,000, which triggers the confirm dialog) and the 45,000 yellow-text threshold were set when a default eight-ticker run was about 20,000 signals. After v1.23.1 that same ordinary run was 100,696 and tripped the "this is a very large batch" dialog **every single time**, which is the fastest way to train someone to click through the one warning that matters.
 
-They are now **1,000,000** for the yellow estimate line and **2,500,000** for the confirm, and unlike last time the numbers come from a measurement. Pass 1 performs one backtest per spec, target and day; timed in headless Edge with the throttle disabled that inner loop runs at roughly **4.5 nanoseconds per unit of work**. Against a typical 3,930-day sample with one target:
+They are now **600,000** for the yellow estimate line and **1,200,000** for the confirm, and unlike last time the numbers come from a measurement. Pass 1 performs one backtest per spec, target and day; timed in headless Edge with the throttle disabled that inner loop runs at roughly **4.5 nanoseconds per unit of work**. Against a typical 3,930-day sample with one target:
 
 | Specs | Compute | At Medium (20%) |
 |---|---|---|
 | 91,232 (8 tickers, default families) | ~1.6s | ~8s |
 | 390,320 (20 tickers) | ~6.9s | ~34s |
-| 1,000,000 (**yellow**) | ~18s | ~1.5 min |
-| 2,500,000 (**confirm**) | ~44s | ~3.7 min |
+| 600,000 (**yellow**) | ~11s | ~53s |
+| 1,200,000 (**confirm**) | ~21s | ~1.8 min |
 | 3,936,096 (all 72 tickers, default families) | ~70s | ~5.8 min |
 | 4,931,064 (all 72, all sixteen families) | ~87s | ~7.3 min |
 

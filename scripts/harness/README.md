@@ -55,7 +55,17 @@ decode it as the console codepage dies on the first non-ASCII byte, and the
 page uses a middot as a separator, so this happens immediately. Take
 `subprocess` stdout as bytes and `.decode('utf-8', 'replace')`.
 
-## A fifth, cheaper trap
+## Trap 5: wall-clock deadlines are meaningless inside a driver
+
+Under `--virtual-time-budget` the page clock races ahead whenever the
+renderer is idle, so a `Date.now()` deadline inside a driver expires long
+before a long compute has finished. The first version of the memory harness
+reported "timeout" on all three cases at an 82 MB peak, which is Pass 1 not
+having meaningfully started. It reads as a hang or a crash, not as a broken
+timeout. Count **polls**, not milliseconds, and let the `subprocess` timeout
+in `run_harness.py` be the real guard.
+
+## Two cheaper traps
 
 `window.confirm` **auto-dismisses** under `--headless=new`, so a run that
 trips the large-batch confirm silently does nothing. `_edge.py` stubs it to
@@ -72,3 +82,10 @@ Drop a `.js` driver in this directory, register it in `run_harness.py`, and
 have it append its output to a `<pre id="HARNESS">` element. Print
 `ALL CHECKS PASSED` when every assertion holds (the runner greps for it), or
 `DONE` for a measurement harness that has nothing to assert.
+
+## If a harness appears to hang
+
+Check for leftover `msedge.exe` processes first. A killed run can leave
+instances holding the shared `--user-data-dir`, and the next run then blocks
+on the profile lock rather than on anything in the page. `taskkill /F /IM
+msedge.exe` and delete the profile directory under the system temp folder.

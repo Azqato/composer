@@ -535,8 +535,8 @@
     //
     //   91,232 specs (8 tickers, default families)   ~1.6s compute,  ~8s at Medium
     //   390,320 specs (20 tickers)                   ~6.9s compute, ~34s at Medium
-    //   1,000,000 specs                               ~18s compute, ~1.5min at Medium
-    //   2,500,000 specs                               ~44s compute, ~3.7min at Medium
+    //   600,000 specs                                ~11s compute,  ~53s at Medium
+    //   1,200,000 specs                               ~21s compute, ~1.8min at Medium
     //   3,936,096 specs (all 72, default families)    ~70s compute, ~5.8min at Medium
     //   4,931,064 specs (all 72, all 16 families)     ~87s compute, ~7.3min at Medium
     //
@@ -551,8 +551,8 @@
     // earlier. Projecting wall time directly would fix that; it was considered
     // and deliberately not built, in favour of keeping the estimate a quantity
     // that is exact rather than predicted.
-    const SIGNAL_WARN_CAP = 2500000;   // above this, warn-and-confirm before running (no hard limit)
-    const SIGNAL_WARN_SOFT = 1000000;  // above this, the estimate line turns yellow
+    const SIGNAL_WARN_CAP = 1200000;   // above this, warn-and-confirm before running (no hard limit)
+    const SIGNAL_WARN_SOFT = 600000;   // above this, the estimate line turns yellow
 
     let PD, DATES, N, UNIVERSE;
     let targets = new Set();
