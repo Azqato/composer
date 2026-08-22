@@ -43,10 +43,12 @@ PAGES = {
             'busyTotal',                              # v1.24.3 measured duty
             "same: true",                             # v1.24.0 price-scale families
             'function pushCmpSpecs(sp, fi, nT, windows, sameOnly)',
+            '23 nanoseconds per unit of work',        # v1.24.4 measured throughput
         ],
         [
             'SIGNAL_WARN_CAP = 100000',               # the old threshold
             'const COMPOSER_FN',                      # deleted in v1.23.0
+            'roughly 4.5',                            # the throughput figure v1.24.4 corrected
         ],
     ),
     'index': ('index.html', ['Composer Atlas'], []),
