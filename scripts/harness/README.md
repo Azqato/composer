@@ -137,6 +137,50 @@ time introduces two problems that virtual time was hiding:
   result is being read from, and open network tabs of their own. Pass
   `--disable-extensions --no-first-run --no-default-browser-check`.
 
+## The two-invocation pattern (`settings`)
+
+Most harnesses run once on a throwaway profile. `settings` cannot: it tests
+whether the section-3 controls survive a refresh, and a single page load has no
+way to observe one. So `run_harness.py` drives `settings.js` **twice** over one
+shared `--user-data-dir`, selecting the half to run with `config={'phase': N}`:
+
+- it **deletes the profile directory first**, so phase 1 is genuinely a browser
+  that has never seen the page and the shipped defaults can be asserted;
+- phase 1 checks the HTML attributes against `DEFAULT_SETTINGS`, changes every
+  control, and lets the change listeners persist;
+- phase 2 is a **new browser process** over the same profile. It asserts the
+  controls came back changed, clicks Default, and asserts everything reset and
+  wrote through to storage.
+
+Two things to know if you write another one. Reloading from inside the driver
+is not a substitute: `window.__cfg` is re-injected on every load, so a
+self-reload loops forever. And a two-phase harness must pass **both** phases, so
+`run_harness.py` counts `ALL CHECKS PASSED` twice rather than looking for it
+once.
+
+`localStorage` works on `file://` in headless Edge, and the test copy is written
+to the same path every time, so both invocations share an origin.
+
+**Trap 11: a shared profile name must not be a fixed one.** The profile the two
+phases share is named `settings-<pid>`, not `settings`. A killed or backgrounded
+harness leaves an `msedge.exe` holding its profile directory, `shutil.rmtree`
+then fails silently under `ignore_errors=True`, and the next run's Edge exits
+against the locked directory in about a tenth of a second. What you see is
+`NO HARNESS OUTPUT` on both phases with no JavaScript error anywhere, which
+reads exactly like a driver that hangs, and costs an hour of instrumenting a
+driver that was fine. A per-invocation name cannot collide with a leftover, and
+`run_settings` now says so explicitly if the directory survives the delete.
+
+If you do hit a locked profile, list the offenders before killing anything:
+
+```powershell
+Get-CimInstance Win32_Process -Filter "Name='msedge.exe'" |
+  Where-Object { $_.CommandLine -like '*composer-harness*' }
+```
+
+Filter on `composer-harness` rather than killing `msedge.exe` wholesale, so the
+browser session you are actually using is left alone.
+
 ## Writing a new harness
 
 Drop a `.js` driver in this directory, register it in `run_harness.py`, and

@@ -44,11 +44,16 @@ PAGES = {
             "same: true",                             # v1.24.0 price-scale families
             'function pushCmpSpecs(sp, fi, nT, windows, sameOnly)',
             '23 nanoseconds per unit of work',        # v1.24.4 measured throughput
+            'SETTINGS_STORE_KEY',                     # v1.24.7 settings persistence
+            'const DEFAULT_SETTINGS',
+            "'sl-cpu': 'high'",                       # the new default CPU load
+            'Max Drawdown floor (%)',                 # unsigned percent units
         ],
         [
             'SIGNAL_WARN_CAP = 100000',               # the old threshold
             'const COMPOSER_FN',                      # deleted in v1.23.0
             'roughly 4.5',                            # the throughput figure v1.24.4 corrected
+            'value="-0.8"',                           # the old signed drawdown input
         ],
     ),
     'index': ('index.html', ['Composer Atlas'], []),

@@ -5,6 +5,40 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.24.7] - 2026-08-21
+
+### Settings survive a refresh, and both floors are entered as percentages
+
+Three changes to section 3, all of them things the tool should probably always have done.
+
+**The settings persist.** Combine signals, min signal period, Min Time in Market, Max Drawdown floor, prune quantile and CPU load are all restored on your next visit, from their own `localStorage` key alongside the one the ticker selection already used. **This reverses a deliberate earlier decision.** Until now only the tickers persisted, on the reasoning that CPU load and the filters govern how heavy a run is and should stay a conscious choice rather than something inherited from a forgotten session. The argument that won: tuning six controls and then losing them to a refresh is lost work for a reason nobody can see, and the Default button covers the case the old rule was protecting.
+
+One consequence worth stating plainly, because the interface will not: **if you leave CPU load on Low, every future run is slow and the control looks exactly the same as if you had just chosen it.** Default puts it back.
+
+**Both floors are percentages now, and drawdown is unsigned.** Min Time in Market reads `15` rather than `0.15`, and Max Drawdown floor reads `69` rather than `-0.69`. Typing a minus sign in front of a number already called a floor was a small permanent papercut. Nothing about the filtering changed: the values are divided by 100 and the drawdown negated before they reach the comparison, which still runs against the fractions the result store holds.
+
+A related fix found while moving the units: an unparseable floor used to produce `NaN`, and every comparison against `NaN` is false, so the results table silently emptied. It now falls back to admitting everything, on the principle that a filter which cannot be read should not be the strictest filter in the tool.
+
+**Signal families persist as well**, and are stored as a list of the families that are switched ON rather than as a map of all of them. The difference shows up on the day a new family is added: an absent id reads as OFF, so a returning visitor gets the new family switched off and opts into it, instead of finding every run suddenly larger for a reason nothing on the page explains. Default puts the families back to the shipped set along with everything else.
+
+**New defaults**, and the Default button restores all of them:
+
+| Setting | Was | Now |
+|---|---|---|
+| Min signal period | 10d | 10d |
+| Min Time in Market | 0.05 | **15%** |
+| Max Drawdown floor | -0.8 | **69%** |
+| Prune quantile | 0 | 0 |
+| CPU load | Medium | **High** |
+
+The two floors are meaningfully stricter, so it is worth knowing what they actually cost: measured on a default run, **36,523 displayed rows under the old floors against 35,706 under the new ones**, about 2%. Tightening two filters at once looks like it should be dramatic and is not.
+
+**Under the hood**, the defaults used to be written out in three separate places with a comment asking whoever changed one to remember the other two. They are now a single `DEFAULT_SETTINGS` object, with the HTML attributes carrying the same values so the controls are right before any script runs, and a new `settings` harness asserts the two agree. That harness is also the first to use the two-Edge-invocation pattern the rig always supported and nothing had exercised: it writes settings in one browser process and reads them back in a **genuinely new one**, which is the only honest way to test that a refresh works.
+
+**Files changed:** `signal-miner.html`, `scripts/harness/settings.js`, `scripts/harness/_edge.py`, `scripts/harness/README.md`, `scripts/run_harness.py`, `scripts/check_live.py`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.24.6] - 2026-08-21
 
 ### Added 1 symphony to database

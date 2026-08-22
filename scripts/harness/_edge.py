@@ -59,6 +59,8 @@ HOOK = """    window.__t = {
       activeWindows, windowInfo, buildSpecs, countSpecs, famSpecCount, specAt,
       specLabel, buildCaches, neededIndicators, evalSpec, evalSpecAt,
       composerCondition, composerFlat, pctGrid, scaledPctGrid, syncChips,
+      DEFAULT_SETTINGS, SETTING_IDS, applySettings, saveSettings, loadSettings,
+      SETTINGS_STORE_KEY,
       get targets() { return targets; },
       get compares() { return compares; },
       get sigCache() { return sigCache; },
