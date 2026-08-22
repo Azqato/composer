@@ -168,7 +168,7 @@ def build_clusters(entries):
 def write_js(entries):
     comment = (
         "// Full database data - loaded as a script tag so database.html works with file:// protocol.\n"
-        "// To update: run scripts/import_full_database.py or scripts/refresh_full_database.py\n"
+        "// To update: run scripts/refresh_full_database.py\n"
     )
     JS_PATH.write_text(
         comment + f"window.DATABASE_DATA = {json.dumps(entries, indent=2, ensure_ascii=False)};\n",

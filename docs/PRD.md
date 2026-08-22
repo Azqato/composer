@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.24.7
+**Version:** 1.24.8
 **Status:** Active
 **Last Updated:** 2026-08-21
 
@@ -162,7 +162,7 @@ reasoning). As of v1.12.0, `data/database.json`/`.js`, `data/database_summary.js
 14 `retry` (transient, self-clearing).
 
 - [x] `data/database.json` imported from the raw xlsx as the canonical JSON source (v1.9.0)
-- [x] `scripts/import_full_database.py`: one-time, re-runnable xlsx → JSON importer (v1.9.0)
+- [x] `scripts/import_full_database.py`: one-time, re-runnable xlsx → JSON importer (v1.9.0). **Deleted in v1.24.8**, along with `scripts/add_original_tag.py`. Both had done their one job: the bootstrap import happened once at v1.9.0 and `database.json` has been canonical ever since, and the `(Original)` renames, the `original` glossary entry and the four `original` tags are all sitting in the committed data. The importer was worse than merely unused, since its column layout had drifted from what `export_full_database_to_xlsx.py` writes, so running it against the current spreadsheet would have overwritten the live dataset with a mis-parsed import. Entries below and in `docs/PATCHNOTES.md` describing past work on either script are left as an accurate record of what happened at the time.
 - [x] `scripts/refresh_full_database.py`: resumable, checkpointed API refresh script, mirrors `update_metrics.py` conventions (v1.9.0); automated weekly via `.github/workflows/refresh-full-database.yml` as of v1.12.0
 - [x] `database.html` template: tabbed page (All Strategies / Leaderboard / Screener) (v1.9.0)
 - [x] Target schema expansion: 17 new fields locked and captured (v1.9.1)
@@ -278,7 +278,6 @@ ComposerAtlas/
 │   ├── add_glossary.py         # One-time: added 9 glossary entries (v1.5.2), safe to re-run
 │   ├── add_zoop.py             # One-time: added Zoop glossary entry + zoop tags (v1.5.3)
 │   ├── add_ai_summary.py       # Writes the ai_summary field on all strategies (v1.7.0), safe to re-run
-│   ├── import_full_database.py # One-time: xlsx → data/database.json (v1.9.0), safe to re-run
 │   ├── refresh_full_database.py # Resumable, checkpointed API refresh for the full database (v1.9.0)
 │   ├── export_full_database_to_xlsx.py # Local-only, occasional: regenerates the xlsx from the JSON (v1.9.4)
 │   ├── export_summary.py       # Derives database_summary.json/.js from database.json (v1.16); run after every refresh
@@ -361,7 +360,7 @@ async function loadStrategies() {
 
 The same pattern applies to `loadGlossary()`. This ensures the site works in all three environments: double-click (`file://`), Python HTTP server, and GitHub Pages.
 
-**Full database dataset:** `database.html` uses the identical pattern via its own inline `loadFullDatabase()` (not a shared `js/app.js` function, since this dataset is not part of the curated-library data layer). `data/database.js` assigns `window.DATABASE_DATA`; both `scripts/import_full_database.py` and `scripts/refresh_full_database.py` write the `.json` and `.js` twins in sync, same as `update_metrics.py` does for the curated 25. A v1.9.0/v1.9.1 oversight shipped `database.html` with `fetch()`-only loading (no global fallback), which fails with "Failed to fetch" on `file://`; fixed in v1.9.2.
+**Full database dataset:** `database.html` uses the identical pattern via its own inline `loadFullDatabase()` (not a shared `js/app.js` function, since this dataset is not part of the curated-library data layer). `data/database.js` assigns `window.DATABASE_DATA`; every script that writes `database.json` writes the `.js` twin in sync, same as `update_metrics.py` does for the curated 25. A v1.9.0/v1.9.1 oversight shipped `database.html` with `fetch()`-only loading (no global fallback), which fails with "Failed to fetch" on `file://`; fixed in v1.9.2.
 
 ### BASE URL and `u()` Helper
 

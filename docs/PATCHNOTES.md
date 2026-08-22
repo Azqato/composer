@@ -5,6 +5,24 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.24.8] - 2026-08-22
+
+### Two finished one-shot scripts removed
+
+`scripts/import_full_database.py` and `scripts/add_original_tag.py` are gone. Both were one-time scripts that had already done their one job, and neither was reachable from anything the site serves.
+
+`import_full_database.py` bootstrapped `data/database.json` out of `data/Full Database.xlsx` back in v1.9.0. `database.json` has been the canonical source ever since, maintained by `refresh_full_database.py` and the flag/purge/sync scripts. Keeping it around was not neutral: its column layout expected the original scrape-format spreadsheet, `export_full_database_to_xlsx.py` has written a different layout since v1.9.4, and the two never got reconciled. So the script was a loaded gun aimed at the live dataset, one that would overwrite 6,640 entries with a stale, mis-parsed import and, per the v1.11.3 race-condition note, could do it silently while a refresh was running.
+
+`add_original_tag.py` performed three renames, added the `original` glossary entry and applied the `original` tag to four strategies, in July. Verified before deleting: all three names carry the `(Original)` suffix in `data/strategies.json`, the glossary entry is present, and all four strategies carry the tag. The script's output is the committed data.
+
+**What moved with them.** The generated banner in `data/database.js` told a future maintainer to run one of two scripts, one of which would no longer exist, so the five scripts that write that banner now name only `refresh_full_database.py`. The same correction went into `refresh_full_database.py`'s clobber warning, the README script table, and the repo structure map in `docs/PRD.md`. Completed roadmap entries and older patch notes describing work on either script were left alone, since they are an accurate record of what happened at the time rather than a claim about what exists now.
+
+`data/Full Database.xlsx` stays. It has had no importer since v1.9.0 in practice; it is an offline snapshot written by the export script and read by nothing.
+
+**Files changed:** `scripts/import_full_database.py` (deleted), `scripts/add_original_tag.py` (deleted), `scripts/refresh_full_database.py`, `scripts/dedupe_symphonies.py`, `scripts/flag_name_noise.py`, `scripts/purge_flagged_entries.py`, `scripts/sync_storage_to_database.py`, `README.md`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.24.7] - 2026-08-21
 
 ### Settings survive a refresh, and both floors are entered as percentages

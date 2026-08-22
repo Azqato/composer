@@ -91,7 +91,6 @@ Separate pipeline for the full community symphony database, not the curated 28. 
 
 | Script | Purpose |
 |---|---|
-| `import_full_database.py` | One-time: imports the raw source spreadsheet into `data/database.json` |
 | `refresh_full_database.py` | Resumable, checkpointed API refresh; automated weekly. **Do not run other scripts that write `database.json` while this is running**, see the script's docstring |
 | `sync_storage_to_database.py` | Adds any URL in `data/storage.csv` missing from `database.json` as a new unrefreshed row |
 | `export_summary.py` | Derives the slim `data/database_summary.json`/`.js` used by the site from the full `database.json`; run after every refresh |
@@ -101,6 +100,8 @@ Separate pipeline for the full community symphony database, not the curated 28. 
 | `purge_flagged_entries.py` | Removes entries by `flag` level from `database.json`, enforcing a `storage.csv` safety check first |
 
 `database.json`, `database_summary.json`, and `storage.csv` are committed and live as of v1.12.0.
+
+There is no importer for `data/Full Database.xlsx` any more. `import_full_database.py` did the one-time v1.9.0 bootstrap of `database.json` from that spreadsheet and was deleted in v1.24.8: `database.json` has been the canonical source ever since, the script's column layout had drifted out of sync with what `export_full_database_to_xlsx.py` now writes, and running it would have overwritten the live dataset with a stale, mis-parsed import. The xlsx stays as an offline snapshot, written by the export script and read by nothing.
 
 ## Build and Deploy
 
