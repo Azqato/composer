@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.25.1
+**Version:** 1.25.2
 **Status:** Active
 **Last Updated:** 2026-08-24
 
@@ -170,12 +170,12 @@ reasoning). As of v1.12.0, `data/database.json`/`.js`, `data/database_summary.js
 
 > **Discrepancy (measured 2026-08-24).** The line above is the v1.11.23 figure and is kept as the
 > historical record of that moment. Counted directly from `data/database.json` today the database
-> holds **6,669 entries**, and the flag distribution is **6,474 unflagged, 69 `retry`, 94
+> holds **6,668 entries**, and the flag distribution is **6,473 unflagged, 69 `retry`, 94
 > `caution`, 32 `excluded`, and 0 `duplicate`**. Two things moved: the weekly
 > `refresh-full-database.yml` job has been adding rows and re-classifying failures ever since, and
 > the `duplicate` population is now empty, which the v1.11.12 reset (flags cleared back to null so
 > rows requeue) plus subsequent successful refreshes would produce. **6,655 entries carry a
-> `sharpe_ratio`**, which is the Leaderboard's eligibility proxy.
+> `sharpe_ratio`**, which is the Leaderboard's eligibility proxy (6,654 after the v1.25.2 dedupe).
 >
 > **How fast these move, measured rather than guessed.** The flag counts in the paragraph above were
 > rewritten once during the day of 2026-08-24. The audit measured 6,324 unflagged, 248 `retry`, 81
@@ -186,8 +186,10 @@ reasoning). As of v1.12.0, `data/database.json`/`.js`, `data/database_summary.js
 > **Treat every flag figure in this document as a reading with a date on it, not a property of the
 > dataset.** The total and the eligibility count are the stable numbers.
 >
-> **Also observed, and left alone: 6,669 rows resolve to 6,668 distinct `symphony_id` values.** One
-> exact duplicate survives the refresh. See Section 25 open question 22.
+> **The duplicate is gone as of v1.25.2.** The reading above was taken at 6,669 rows resolving to
+> 6,668 distinct `symphony_id` values, one duplicate. `symphony_id` is now a stated invariant rather
+> than an assumption: see "The Primary Key Invariant" in Section 12, enforced by
+> `scripts/check_database_keys.py` as a deploy gate. The count is 6,668 and every id is distinct.
 >
 > `data/database_summary.json` held **6,665 rows against the full file's 6,669**, so the derived
 > summary was four rows behind. `scripts/export_summary.py` had not been re-run since the last four
@@ -326,6 +328,7 @@ ComposerAtlas/
 │   ├── export_full_database_to_xlsx.py # Local-only, occasional: regenerates the xlsx from the JSON (v1.9.4)
 │   ├── export_summary.py       # Derives database_summary.json/.js from database.json (v1.16); run after every refresh
 │   ├── build_sitemap.py        # Regenerates sitemap.xml from the indexable pages + curated slugs (v1.25.1)
+│   ├── check_database_keys.py  # Deploy gate: symphony_id unique + summary in sync (v1.25.2)
 │   ├── sync_storage_to_database.py # Adds storage.csv URLs missing from database.json as new unrefreshed rows (v1.11.1)
 │   ├── refresh_rsi.py          # Fetches Yahoo Finance daily bars, computes Wilder's RSI(10) (V2.1)
 │   └── refresh_prices.py       # Fetches full Yahoo Finance daily-close history for the Signal Miner universe (v1.15.0)
@@ -1087,6 +1090,36 @@ Every strategy must have an entry in `scripts/add_ai_summary.py` regardless of h
 **Strategy not found**
 - Confirm the `slug` in `strategies.json` exactly matches the `?slug=` query parameter in the URL (case-sensitive)
 
+**A live URL returns 403 and you are sure it exists**
+
+Check the `User-Agent` before checking the deploy. **Cloudflare returns HTTP 403 to Python's default
+`urllib` User-Agent on every URL, including `robots.txt`**, as ordinary bot protection. It looks
+exactly like an outage from a script and exactly like a healthy site from a browser.
+
+`scripts/check_live.py` has always sent `User-Agent: composer-atlas-check-live/1.0` and is therefore
+unaffected. Anything else written in a hurry against `composeratlas.com` needs the same treatment:
+
+```python
+req = urllib.request.Request(url, headers={'User-Agent': 'composer-atlas-check-live/1.0'})
+```
+
+**A blanket 403, on `robots.txt` as much as on a page, is the signature of the bot filter rather than
+a broken deploy.** A genuinely missing file returns 404 with the header set, which is how the
+sitemap's absence was distinguished from the site being down during the v1.25.1 verification.
+
+**A newly pushed file 404s on composeratlas.com for a minute or two**
+
+Normal. Cloudflare Pages took roughly 30 seconds to serve a newly added `sitemap.xml` in the v1.25.1
+deploy. Poll rather than concluding the deploy failed.
+
+**`check_live.py` reports a byte mismatch on a file you did not change**
+
+Almost certainly line endings. Working copies on Windows are CRLF and the repository stores LF, so a
+raw byte compare against what the host serves differs by exactly the newline count. `check_live.py`
+normalises before comparing; anything hand-written must do the same. Also expect the Cloudflare Web
+Analytics beacon, which is injected at serve time and adds 359 bytes to every page; the script
+reports it as a note rather than a failure.
+
 **Local dev, data not loading when opened directly**
 - Confirm `data/strategies.js` and `data/glossary.js` are present
 - Confirm each HTML page has `<script src="data/strategies.js">` and `<script src="data/glossary.js">` before the `app.js` script tag
@@ -1175,14 +1208,56 @@ All fields in `data/strategies.json`. Both `strategies.json` and `strategies.js`
 
 All fields in `data/database.json`. This is a separate, lighter schema from
 `strategies.json`: it holds the raw ~7,700-entry database (see Section 14 Roadmap),
-not the 30 curated strategies. `data/database.js` is its `.js` twin (assigns
+not the 31 curated strategies. `data/database.js` is its `.js` twin (assigns
 `window.DATABASE_DATA`, same file:// compat pattern as `strategies.js`/`glossary.js`).
+
+#### The Primary Key Invariant
+
+**`symphony_id` is the primary key of `data/database.json`. The file is always deduplicated on it.**
+No two entries may carry the same `symphony_id`, and every entry must have one.
+
+> **Correction, v1.25.2 (2026-08-24), owner instruction.** The `symphony_url` row below called that
+> field "the true unique key", and it is kept as written because it is the reasoning the pipeline was
+> built on. **It is wrong, and it is wrong in a way that cost real data integrity.** Composer serves
+> the same symphony under more than one path, at least `/details` and `/factsheet`, so a URL is not
+> unique per symphony. `sync_storage_to_database.py` deduplicated on the URL string, which meant a
+> second URL for a symphony already in the database read as a new symphony and was appended as a new
+> row. That is exactly how `chkrQ6BnXCw31n7OIEaK` came to sit in the file twice, identical on all 37
+> fields except the URL suffix, showing "Hedged Sector Rotator " twice in every list view and
+> counting it twice in every total.
+>
+> **`symphony_url` remains required and is still the field the pipeline fetches from. It is not the
+> key.** The id is.
+
+**Enforced, not merely stated.** `scripts/check_database_keys.py` runs as a deploy gate alongside
+`check_html_js.py` and `check_composer_ladder.py`, and asserts four things:
+
+1. every entry has a non-empty `symphony_id`
+2. `symphony_id` values are unique across the file
+3. the id embedded in `symphony_url` matches the entry's `symphony_id`, since the two are written by
+   different code paths and can disagree
+4. `database_summary.json` holds the same ids in the same order as `database.json`
+
+**Why a gate rather than only a fix to the script.** Fixing `sync_storage_to_database.py` closes the
+path that caused this instance, and it was fixed in the same release. It does not close the class.
+`database.json` is also edited by hand: the `AddSymphony.csv` route and the ad-hoc cluster
+corrections in Section 14 both write it directly, and no amount of care in a script prevents a hand
+edit from adding a row that already exists. The gate checks the artifact, so it holds regardless of
+what produced it. Check 4 closes the separate hole that made four symphonies invisible on the live
+site until v1.25.1: the site reads the summary, so a summary that silently falls behind the full file
+is indistinguishable from those symphonies not existing.
+
+**This invariant is distinct from `dedupe_symphonies.py`.** That script clusters symphonies that are
+*different records of similar strategies*, by name pattern and logic tree, and picks a keeper using a
+deliberately debatable tiebreak (Section 14, V1.14 Part A; Section 25 item 18). Its judgement calls
+stay judgement calls. An identical `symphony_id` is not a judgement call: it is the same symphony,
+recorded twice, and it is removed unconditionally.
 
 | Field | Type | Description |
 |---|---|---|
 | `name` | string \| null | Symphony name as scraped; may be null on entries that never finished scraping |
-| `symphony_url` | string | Full URL to the symphony on Composer.trade; always present, the true unique key |
-| `symphony_id` | string \| null | Extracted from `symphony_url`; used to call the Composer API |
+| `symphony_url` | string | Full URL to the symphony on Composer.trade; always present, the true unique key. **Superseded, v1.25.2: this is not unique per symphony.** Composer serves at least `/details` and `/factsheet` for the same symphony. Still required, still the field the refresh pipeline fetches from, but not the key. See "The Primary Key Invariant" above |
+| `symphony_id` | string \| null | Extracted from `symphony_url`; used to call the Composer API. **This is the primary key (v1.25.2).** Unique across the file and never null in practice, both gated by `scripts/check_database_keys.py`. The `\| null` in the type column records what the schema has always permitted rather than what the data contains; every one of the 6,668 current entries has one |
 | `annualized_rate_of_return` through `trailing_one_year_return` | float \| null | Same meaning and sign conventions as the matching fields in `strategies.json` Section 12; `null` when the entry has no usable metrics yet |
 | `backtest_days` | integer \| null | Backtest length in trading days (API field `size`) |
 | `refresh_date` | string \| null | **Renamed from `last_updated` in v1.11.10.** ISO date (`YYYY-MM-DD`) this entry's metrics were last successfully refreshed; only advanced on a successful API call, so a permanently-failing row's `refresh_date` stays frozen at its last success (or `null` if it never succeeded) |
@@ -3450,7 +3525,7 @@ from files rather than reported by a service.
 
 | When | What |
 |---|---|
-| Every deploy | `check_live.py`, plus the two deploy gates (`check_html_js.py`, `check_composer_ladder.py`) |
+| Every deploy | `check_live.py`, plus the three deploy gates (`check_html_js.py`, `check_composer_ladder.py`, `check_database_keys.py`) |
 | Every release touching counts | Re-count strategies, glossary entries and database rows; update this document and the patch note in the same commit |
 | Weekly, after the database refresh | Flag distribution and refresh coverage |
 | Monthly | Cloudflare Web Analytics review: paths, referrers, outbound clicks, Core Web Vitals |
@@ -3488,11 +3563,11 @@ last rule was made explicit in v1.5.5 after two scripts were found loose in the 
 
 | Convention | Observed | Deviants |
 |---|---|---|
-| Shebang `#!/usr/bin/env python3` | 13 of 18 scripts | **Missing on the five newest:** `check_html_js.py`, `check_composer_ladder.py`, `check_live.py`, `measure_throughput.py`, `run_harness.py`. All five are invoked as `python3 script.py`, never executed directly, so nothing is broken. The convention is nonetheless drifting, and the drift correlates with recency |
+| Shebang `#!/usr/bin/env python3` | 15 of 20 scripts | **Missing on five:** `check_html_js.py`, `check_composer_ladder.py`, `check_live.py`, `measure_throughput.py`, `run_harness.py`. All five are invoked as `python3 script.py`, never executed directly, so nothing is broken. The drift correlated with recency until v1.25.1, when `build_sitemap.py` and `check_database_keys.py` were written back to the majority form deliberately |
 | Module docstring stating what the script does and why | Effectively universal, and unusually thorough: several carry multi-paragraph rationale including what was tried and rejected | None |
-| `pathlib` for file paths | 12 of 18 | The six without it are the newest gate and measurement scripts, which mostly use `os.path`. Same drift as the shebang |
-| Type hints | **4 of 18** (`update_metrics.py`, `refresh_prices.py`, `refresh_rsi.py`, and partially elsewhere) | This is a minority form, so the honest statement is that **the codebase does not use type hints**, and the four that do are the exception. Do not "restore consistency" by stripping them; do not mass-add them either |
-| `argparse` | **0 of 18.** Flags are parsed by hand from `sys.argv` | Uniform. Not worth changing for the number of flags in play |
+| `pathlib` for file paths | 14 of 20 | The six without it are the older gate and measurement scripts, which mostly use `os.path`. `build_sitemap.py` and `check_database_keys.py` (v1.25.x) use `pathlib`, following the majority rather than their nearest neighbours |
+| Type hints | **4 of 20** (`update_metrics.py`, `refresh_prices.py`, `refresh_rsi.py`, and partially elsewhere) | This is a minority form, so the honest statement is that **the codebase does not use type hints**, and the four that do are the exception. Do not "restore consistency" by stripping them; do not mass-add them either |
+| `argparse` | **0 of 20.** Flags are parsed by hand from `sys.argv` | Uniform. Not worth changing for the number of flags in play |
 | Data writes | Always write the `.json` and its `.js` twin in the same run | Non-negotiable. See below |
 
 ### Data Files
@@ -3676,10 +3751,11 @@ next, including an AI assistant with no memory of the previous session.
 | A tool page's own look | That page's inline `<style>` block, per DESIGN.md Section 8 |
 | Curated strategy content, metrics, tags, AI summaries | `data/strategies.json` **and** `data/strategies.js`, plus `scripts/add_ai_summary.py` if a summary is involved |
 | Glossary content | `data/glossary.json` **and** `data/glossary.js` |
-| The community database pipeline | `scripts/refresh_full_database.py`, then `scripts/export_summary.py` to regenerate what the site reads |
+| The community database pipeline | `scripts/refresh_full_database.py`, then `scripts/export_summary.py` to regenerate what the site reads, then `scripts/check_database_keys.py` to confirm the two agree |
 | The Signal Miner's price history or ticker universe | `scripts/refresh_prices.py`, which writes `data/prices.json` and `.js` |
 | The RSI page's data | `scripts/refresh_rsi.py` |
-| Deploy behaviour or the deploy gates | `.github/workflows/deploy.yml`, `scripts/check_html_js.py`, `scripts/check_composer_ladder.py` |
+| Deploy behaviour or the deploy gates | `.github/workflows/deploy.yml`, `scripts/check_html_js.py`, `scripts/check_composer_ladder.py`, `scripts/check_database_keys.py` |
+| Which pages search engines are told about | `scripts/build_sitemap.py`, then re-run it. Never hand-edit `sitemap.xml` |
 | What Cloudflare serves publicly | `.assetsignore` (not `deploy.yml`, which governs GitHub Pages only) |
 | Product decisions, architecture, schemas, roadmap, policy | `docs/PRD.md`, this file |
 | Anything at all | `docs/PATCHNOTES.md`, always, in the same commit |
@@ -3695,6 +3771,7 @@ that a change which looks obviously correct is not.
 | Any inline `<script>` on any page | `python scripts/check_html_js.py`. A broken inline script still serves a 200 with its static HTML intact, so a bad publish looks healthy from outside. This is the gate that would have caught v1.22.2 |
 | The Composer export shape | `python scripts/check_composer_ladder.py`. Valid JSON in the wrong shape is what shipped in v1.22.0 and was not caught for five releases |
 | Any JSON data file | `python -c "import json; json.load(open('data/FILE.json', encoding='utf-8'))"`, and confirm the `.js` twin was written in the same run |
+| `data/database.json`, by any route | `python scripts/check_database_keys.py`. Asserts `symphony_id` is present and unique, agrees with the URL, and that `database_summary.json` holds the same ids in the same order. A duplicate key and a stale summary are both invisible without it, and both have shipped |
 | Anything at all, after deploying | `python scripts/check_live.py`. Fetches each live clean URL, compares byte-for-byte against the committed file, and reports failures. Currently 8 URLs, 0 failing |
 | Page appearance or behaviour end to end | Drive it in **headless Edge**. See below |
 | Documentation counts | Re-count from the files. Never copy a number forward from a previous revision |
@@ -3726,6 +3803,9 @@ explicitly if it cannot clear one.
 | **Build a self-hosted strategy submission form** | Decided 2026-08-15: submissions go through an external Google Form. A self-hosted intake would be an input surface on a site that deliberately has none |
 | **Commit `strategies.xlsx` or `watched_sanity_check.xlsx`** | Standing instruction |
 | **Write a `.json` without its `.js` twin** | Splits the HTTP site from the `file://` site with no error anywhere |
+| **Deduplicate `database.json` on `symphony_url`** | The URL is not unique per symphony. Composer serves at least `/details` and `/factsheet` for the same one, and keying on the URL is how a duplicate row got in and stayed in. **`symphony_id` is the primary key.** Section 12 |
+| **Regenerate `database.json` without regenerating `database_summary.json`** | The site reads the summary. A symphony present in the full file and absent from the summary does not exist as far as any visitor is concerned, and nothing raises an error. This is what hid four symphonies until v1.25.1 |
+| **Run `scripts/sync_storage_to_database.py` to see what it would do** | It has no dry-run mode and writes on every invocation. `storage.csv` is a deliberate superset of the database, currently by 1,045 URLs, so an exploratory run grows the dataset by 15% in one pass. Read `storage.csv` yourself instead |
 | **Run another script that writes `database.json` while `refresh_full_database.py` is running** | It holds the whole file in memory and overwrites on every checkpoint, so a concurrent writer's changes are silently discarded. This happened once, in v1.11.3, and the rule is in both scripts' docstrings |
 | **Insert community-sourced text into `innerHTML` without `escapeHtml()`** | `database.json` names come from thousands of anonymous authors. This was a live XSS hole until v1.9.3 |
 | **Use an em-dash, or `--` as punctuation** | Section 19. It reads as machine-written and undermines the site's voice |
@@ -3757,7 +3837,7 @@ why, and the losing text is either kept in place with a marked discrepancy note 
 corrected with the correction stated.
 
 **The general rule: trust the code, but not automatically.** Code can be wrong as easily as a
-document, and two of the rows below are cases where the code was the problem. What decides it is
+document, and three of the rows below are cases where the code was the problem. What decides it is
 evidence, usually a patch note recording the change as deliberate.
 
 ### Open
@@ -3797,6 +3877,7 @@ resolves; that is why this table is not in numeric order.
 | 22 | 304 em-dashes across the project, against Section 19's own prohibition | Swept. See Section 19 for the count and the three deliberate survivors |
 | 23 | Section 18 said README's role is "developer quick-start: setup, run, deploy" | Superseded by the owner's 2026-08-24 instruction that the README is a general-reader front door with no install steps, commands, versions or dependency lists. Section 18 rewritten; the removed content was merged into Sections 10 and 11 rather than dropped |
 | 24 | PATCHNOTES: `[1.15.5]` and `[1.5.8]` each appear twice; `[1.15.0]` sits above `[1.15.5]` in a newest-first file | Real defects in the changelog. **Annotated in place, not renumbered**, because these version strings appear in commit messages and in cross-references elsewhere. See Section 22 on not rewriting history |
+| 25 | Section 12: `symphony_url` is "the true unique key" of `data/database.json` | **Wrong, and it cost data integrity.** Composer serves the same symphony under at least `/details` and `/factsheet`, so a URL is not unique per symphony. `sync_storage_to_database.py` was built on this claim and appended a second row for a symphony it already had. **Owner ruling, v1.25.2: `symphony_id` is the primary key and the file is always deduplicated on it.** Original wording kept in the schema table with the correction beside it, invariant stated in Section 12, gated by `scripts/check_database_keys.py`. This is the third row in this register where the code, not the document, was the problem |
 
 ---
 
@@ -3872,7 +3953,7 @@ Numbered for reference. Open unless marked otherwise.
     the other thirteen carry, and mostly use `os.path` where the rest use `pathlib`. Nothing is
     broken. **Open question:** ratify the new form or restore the old one, but pick one.
 
-12. **Type hints exist in only 4 of 18 Python scripts.** Currently documented honestly as a minority
+12. **Type hints exist in only 4 of 20 Python scripts.** Currently documented honestly as a minority
     form. **Open question:** adopt them properly or remove them, rather than leaving a coin flip.
 
 13. **The curated "zoop's X (2026 Edition)" replacement plan is decided but unexecuted.** Eleven
@@ -3917,26 +3998,46 @@ Numbered for reference. Open unless marked otherwise.
     section. **Open question:** whether counts should be stated in exactly one place and
     cross-referenced everywhere else.
 
-21. **Nothing enforces that `database_summary.json` matches `database.json`.** Risk 5 above is
-    closed, but only the instance, not the class. The weekly job regenerates the summary; every
-    hand-run addition path writes the full file and leaves the summary behind, and the site reads
-    the summary, so the failure mode is a symphony that exists in the data and cannot be seen. It is
-    silent by construction: no error, no warning, and a row count nobody compares. **Open question:**
-    add a deploy gate asserting the two row counts match, in the shape of the existing
-    `check_html_js.py` and `check_composer_ladder.py` gates. The argument for is that this drifted
-    once already and the check is a few lines. The argument against is a fourth gate to maintain and
-    an 18.7MB file to parse on every run. Not decided; deliberately left as a question rather than
-    built in v1.25.1, which was a fix release.
+21. **CLOSED 2026-08-24 (v1.25.2). Nothing enforced that `database_summary.json` matches
+    `database.json`.** Closing risk 5 fixed the instance, not the class: the weekly job regenerates
+    the summary, every hand-run addition path writes the full file and leaves the summary behind, and
+    the site reads the summary, so the failure mode was a symphony that exists in the data and cannot
+    be seen. Silent by construction, with a row count nobody compared. Resolved by building the gate
+    the question asked about, as check 4 of `scripts/check_database_keys.py`, which compares ids and
+    order rather than only counts. **The cost that argued against it was real and was accepted:** it
+    is a third deploy gate to maintain and it parses an 18.7MB file on every run, roughly a second.
+    That is cheap against a failure nothing else detects.
 
-22. **`data/database.json` contains one exact duplicate row.** Two entries share
-    `symphony_id` `chkrQ6BnXCw31n7OIEaK`, both named "Hedged Sector Rotator " with the same trailing
-    space, both unflagged, with identical metrics. 6,669 rows resolve to 6,668 distinct symphony ids.
-    Found during the v1.25.1 summary fix, **not fixed there**, because removing a row from the
-    canonical dataset is a data change rather than a sync fix and deserves its own decision.
-    **Open question:** delete one, and separately decide whether `dedupe_symphonies.py` should treat
-    an identical `symphony_id` as an unconditional duplicate regardless of name, which is a stronger
-    and simpler rule than the name-cluster tiebreak in item 18. Impact today is cosmetic: one row
-    appears twice in list views and is counted twice in every total.
+22. **CLOSED 2026-08-24 (v1.25.2), by owner ruling. `data/database.json` contained one exact
+    duplicate row.** Two entries shared `symphony_id` `chkrQ6BnXCw31n7OIEaK`, both named "Hedged
+    Sector Rotator " with the same trailing space, both unflagged, identical on all 37 fields except
+    that one URL ended `/details` and the other `/factsheet`. **The owner's ruling: the file is
+    always deduplicated on the primary key.** The `/factsheet` row was removed, keeping the
+    `/details` form that the other 6,667 rows use, and the invariant is now stated in Section 12 and
+    gated by `scripts/check_database_keys.py`.
+
+    **The root cause was the schema's own claim that `symphony_url` is "the true unique key".** It is
+    not: Composer serves the same symphony under more than one path, so `sync_storage_to_database.py`
+    comparing URL strings read a second URL for a known symphony as a new one. That script now keys
+    on `symphony_id`. **Verified in passing:** a subsequent run of it correctly skipped the
+    `/factsheet` URL that is still in `storage.csv`, so the backup file needs no editing.
+
+    This does **not** change `dedupe_symphonies.py`. An identical id is the same symphony recorded
+    twice and is removed unconditionally; that script's name-and-logic clustering with its debatable
+    tiebreak (item 18) is a different problem and keeps its judgement calls.
+
+23. **`data/storage.csv` holds 1,045 symphony URLs that are not in `data/database.json`.** 7,709
+    URLs in the durable backup against 6,668 entries in the database. Discovered accidentally on
+    2026-08-24 by running `sync_storage_to_database.py`, which is not a read-only script: it promoted
+    all 1,045 into the database as unrefreshed rows in one pass. **The run was reverted**, because
+    growing the dataset by 15% is a product decision rather than a side effect of verifying a bug
+    fix. The backlog itself is not a defect; `storage.csv` is deliberately a superset, collecting
+    every URL ever referenced whether or not it belongs in the database. **Open question:** whether
+    that backlog should be promoted and refreshed, which is roughly what the V1.15 full-scale refresh
+    did at a smaller size, or whether it should stay a backup. **Related and worth stating on its
+    own: `sync_storage_to_database.py` writes on every invocation and has no dry-run flag.** There is
+    no way to ask it what it would do. That is a reasonable thing to add before the next time someone
+    wants to find out.
 
 ---
 

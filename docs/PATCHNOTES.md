@@ -5,6 +5,82 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.25.2] - 2026-08-24
+
+### symphony_id is the database's primary key, and it is now enforced
+
+**Owner ruling: `data/database.json` is always deduplicated on its primary key.** That key is
+`symphony_id`. No two entries may share one, and every entry must have one. Stated in `docs/PRD.md`
+Section 12 as "The Primary Key Invariant" and gated on every deploy, rather than left as an
+assumption three separate scripts each made in their own way.
+
+**One duplicate was removed.** Two entries carried `symphony_id` `chkrQ6BnXCw31n7OIEaK`, both named
+"Hedged Sector Rotator " with the same trailing space, both unflagged, identical on all 37 fields
+except that one `symphony_url` ended `/details` and the other `/factsheet`. Verified field by field
+before deleting, so nothing was lost by choosing either; the `/details` row was kept because it is
+the form the other 6,667 rows use. The database now holds **6,668 entries with 6,668 distinct ids**.
+`database.js` and both summary twins were regenerated in the same pass.
+
+**The root cause was a claim in the schema itself.** The Full Database schema described
+`symphony_url` as "always present, the true unique key", and `scripts/sync_storage_to_database.py`
+was built on that: it compared URL strings to decide whether a symphony was already known. Composer
+serves the same symphony under more than one path, so a second URL for a known symphony read as a new
+symphony and was appended as a new row. That script now keys on `symphony_id`, falling back to the
+URL only when no id can be parsed, and also deduplicates within a single run so `storage.csv` listing
+one symphony twice adds it once. The schema's original wording is kept with the correction beside it,
+because it is the reasoning the pipeline was built on and deleting it would hide why the bug existed.
+**`storage.csv` needs no editing:** it still contains the `/factsheet` URL, and a run of the fixed
+script correctly skipped it.
+
+### Added: a third deploy gate, scripts/check_database_keys.py
+
+Read-only, exits non-zero, and runs in `deploy.yml` beside `check_html_js.py` and
+`check_composer_ladder.py`. Four checks, each on a failure that is otherwise silent:
+
+1. **Every entry has a non-empty `symphony_id`.** A null key makes every downstream join wrong with
+   nothing to say so.
+2. **`symphony_id` values are unique.** A duplicate shows the same symphony twice in every list view
+   and counts it twice in every total.
+3. **The id embedded in `symphony_url` matches the `symphony_id` field.** The two are written by
+   different code paths at different times and can disagree.
+4. **`database_summary.json` holds the same ids in the same order as `database.json`.** The site
+   reads the summary, so a summary that falls behind makes real symphonies invisible. This is the
+   failure that hid four of them until v1.25.1, and it compares ids rather than only counts, so a
+   same-size divergence is caught too.
+
+**Why a gate and not just the script fix.** Fixing `sync_storage_to_database.py` closes the path that
+caused this instance, not the class. `database.json` is also written by hand, through the
+`AddSymphony.csv` route and the ad-hoc cluster corrections, and no care taken inside a script
+prevents that. The gate checks the artifact, so it holds regardless of what produced it. The cost was
+weighed and accepted: a third gate to maintain, parsing an 18.7MB file on every deploy, about a
+second. Closes PRD open questions 21 and 22.
+
+### Docs: the Cloudflare 403, and two findings logged
+
+**`scripts/check_live.py` sends a `User-Agent` header for a reason that was never written down.**
+Cloudflare returns **HTTP 403 to Python's default `urllib` User-Agent on every URL**, including
+`robots.txt`, as ordinary bot protection. From a script it looks exactly like an outage; from a
+browser the site looks fine. A blanket 403, on `robots.txt` as much as on a page, is the signature of
+the bot filter rather than a broken deploy, and a genuinely missing file returns 404 once the header
+is set, which is how the sitemap's absence was told apart from the site being down during the v1.25.1
+verification. Now in Section 11's troubleshooting list along with two neighbours: a newly pushed file
+takes roughly 30 seconds to appear on Cloudflare Pages, and a `check_live.py` byte mismatch on an
+untouched file is almost always CRLF working copies against LF in the repository.
+
+**Two findings logged rather than acted on.** `data/storage.csv` holds **7,709 URLs against the
+database's 6,668**, a backlog of 1,045 never promoted. That is not a defect, since `storage.csv` is
+deliberately a superset, but whether the backlog should be refreshed into the database is a product
+decision and is now open question 23. It was found by running `sync_storage_to_database.py` to check
+the dedupe fix, which promoted all 1,045 in one pass; **the run was reverted**, and the second finding
+is the reason it could happen: **that script has no dry-run flag and writes on every invocation.**
+Both the warning and the missing flag are recorded, the former in Section 23's never-do table.
+
+**Files changed:** `scripts/check_database_keys.py` (added), `scripts/sync_storage_to_database.py`,
+`.github/workflows/deploy.yml`, `data/database.json`, `data/database.js`,
+`data/database_summary.json`, `data/database_summary.js`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.25.1] - 2026-08-24
 
 ### sitemap.xml now exists, and it is generated rather than written by hand

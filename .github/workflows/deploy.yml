@@ -34,6 +34,14 @@ jobs:
       - name: Check the Composer export shape
         run: python3 scripts/check_composer_ladder.py
 
+      # symphony_id is the community database's primary key, and the site reads
+      # the derived summary rather than the full file. A duplicate key shows the
+      # same symphony twice in every list view; a stale summary makes real
+      # symphonies invisible. Both are silent without this check, and both have
+      # happened (v1.25.1, v1.25.2).
+      - name: Check the database primary key and summary sync
+        run: python3 scripts/check_database_keys.py
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 

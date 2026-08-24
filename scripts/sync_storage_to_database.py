@@ -14,7 +14,12 @@ matching how originally-unscraped rows look), symphony_url, and
 symphony_id, so they're indistinguishable from any other not-yet-
 refreshed row and will be picked up by the next refresh run.
 
-Safe to re-run: URLs already in database.json are skipped.
+Safe to re-run: symphonies already in database.json are skipped. The skip is
+keyed on symphony_id, not on the URL string, because Composer serves the same
+symphony under more than one path (/details, /factsheet). Until v1.25.2 this
+check compared URLs, which let a second URL for an existing symphony through as
+a new row; scripts/check_database_keys.py now gates that invariant on the
+artifact itself.
 
 WARNING: do not run this while scripts/refresh_full_database.py is running
 in the background. That script loads database.json into memory once at
@@ -47,11 +52,31 @@ def main():
         storage_urls = [row["url"] for row in csv.DictReader(f)]
 
     entries = json.loads(JSON_PATH.read_text(encoding="utf-8"))
-    existing_urls = {e["symphony_url"] for e in entries if e.get("symphony_url")}
     template_keys = list(entries[0].keys())
 
-    new_urls = [u for u in storage_urls if u not in existing_urls]
-    print(f"{len(storage_urls)} URLs in storage.csv, {len(existing_urls)} already in database.json, {len(new_urls)} new")
+    # Key on symphony_id, not on the URL string. Composer serves the same
+    # symphony under more than one path (/details and /factsheet at least), so
+    # a URL-keyed check reads a second URL for a symphony already in the
+    # database as a brand new symphony. That is exactly how chkrQ6BnXCw31n7OIEaK
+    # ended up in database.json twice; see v1.25.2 in docs/PATCHNOTES.md.
+    # Falls back to the URL only when no id can be parsed, which should not
+    # happen for a real Composer link and is better than dropping the row.
+    def key_for(url):
+        return extract_id(url) or url
+
+    seen = {key_for(e["symphony_url"]) for e in entries if e.get("symphony_url")}
+    seen.update(e["symphony_id"] for e in entries if e.get("symphony_id"))
+    already = len(seen)
+
+    new_urls = []
+    for url in storage_urls:
+        key = key_for(url)
+        if key in seen:
+            continue
+        seen.add(key)          # so storage.csv listing the same symphony twice adds it once
+        new_urls.append(url)
+
+    print(f"{len(storage_urls)} URLs in storage.csv, {already} symphonies already in database.json, {len(new_urls)} new")
 
     for url in new_urls:
         entry = {k: None for k in template_keys}
