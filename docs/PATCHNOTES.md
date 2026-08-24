@@ -5,6 +5,69 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.25.3] - 2026-08-24
+
+### Docs: storage.csv is larger than database.json on purpose, and v1.25.2 said otherwise
+
+**Correction, on owner instruction.** The v1.25.2 entry below logged the size gap between
+`data/storage.csv` and `data/database.json` as "open question 23", asking whether the 1,045
+unpromoted URLs should be brought into the database. **That framing was wrong, and the question
+should never have been written.** The two files hold different things by design:
+
+| | `data/storage.csv` | `data/database.json` |
+|---|---|---|
+| **What it holds** | **Every symphony URL ever seen**, kept long term whether the symphony is alive, dead, private, deleted, noise or a duplicate | **Only the symphonies confirmed and approved for the site** |
+| **Admission** | Nothing is excluded. A URL is added on sight | Deliberate, and reversible |
+| **Removal** | **Never** | Routine: purged, flagged, de-duplicated, re-scoped |
+| **Count today** | 7,709 rows, 7,708 distinct symphonies | 6,668 entries, 6,668 distinct symphonies |
+
+The gap is the design working. Its largest single contributor is the v1.11.14 purge, which removed
+1,004 permanently-dead entries from `database.json` while keeping every one of their URLs in
+`storage.csv` forever, exactly as intended.
+
+**The v1.25.2 audit also missed that the project had already documented this**, in the AddSymphony
+workflow in `docs/PRD.md` Section 11, since 2026-07-15, including a warning about the specific
+accident the audit then repeated. The relationship is now stated as a table in Section 12 under
+"storage.csv Is Larger Than database.json, On Purpose", pointed at from Section 6's count block and
+from the directory tree, so it is findable from wherever a reader meets the numbers. Per the practice
+of not rewriting history, the v1.25.2 entry stands as written and this is the correction.
+
+### Docs: the never-run rule now states the real reason
+
+Section 23's never-do row on `sync_storage_to_database.py` said the risk was growing the dataset by
+15%. **The actual risk is worse and more specific: a blind run resurrects dead symphonies into the
+approved database.** The script cannot distinguish "a URL nobody has processed yet" from "a URL
+deliberately purged as dead", so it brings back everything the v1.11.14 purge removed. This has now
+happened twice, on 2026-07-15 (1,055 rows) and 2026-08-24 (1,045 rows), both reverted and neither
+committed. Section 12's promotion guidance was corrected in the same pass: it used to end "run this
+whenever `storage.csv` has grown since the last sync", which is the advice that caused both
+incidents. **Promotion is an approval decision, not a sync.**
+
+### Docs: two open questions logged, one of them a real gap in the archive
+
+Question 23 is withdrawn. Two replace it.
+
+**Question 24: `sync_storage_to_database.py` has no dry-run mode.** It writes on every invocation, so
+there is no way to ask what it would promote without promoting it. A `--dry-run` flag would have
+prevented both incidents above, though it makes the wrong operation safer rather than making it
+right.
+
+**Question 25: five entries are in `database.json` but not in `storage.csv`.** That inverts the
+"never lose a URL once seen" rule in the direction nothing checks: `0jPwZ5Lm2Y3xH24oEijB` (Triple
+Accelerator), `zY4jRnXoFC9e1Pt97YDS`, `P7RLUTtWmTjkJBaNBQT9`, `tlDwKY3NRXjYU61jCt0g` (The Gold Miner
+(Original)) and `jjIQMCxLK5P98Zpczktk`. **Four of the five are the same symphonies that were missing
+from `database_summary.json` until v1.25.1**, which points at a single cause: the hand-run addition
+routes write `database.json` and stop, updating neither the durable archive before it nor the derived
+summary after it. It fails safe today, since `purge_flagged_entries.py` aborts rather than remove a
+row whose URL is absent from `storage.csv`, so these five cannot be purged at all. But an incomplete
+archive is the one thing `storage.csv` exists not to be. Left for the owner rather than fixed here,
+because `storage.csv` is append-only and nothing is ever deleted from it, so adding a row is not
+reversible.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.25.2] - 2026-08-24
 
 ### symphony_id is the database's primary key, and it is now enforced

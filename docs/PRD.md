@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.25.2
+**Version:** 1.25.3
 **Status:** Active
 **Last Updated:** 2026-08-24
 
@@ -177,6 +177,12 @@ reasoning). As of v1.12.0, `data/database.json`/`.js`, `data/database_summary.js
 > rows requeue) plus subsequent successful refreshes would produce. **6,655 entries carry a
 > `sharpe_ratio`**, which is the Leaderboard's eligibility proxy (6,654 after the v1.25.2 dedupe).
 >
+> **`data/storage.csv` is larger than this, and is meant to be: 7,709 rows against 6,668 entries.**
+> The two files hold different things. `storage.csv` is the long-term archive of every symphony URL
+> ever seen, kept whether the symphony is alive or dead; `database.json` holds only the symphonies
+> approved to appear on the site. Do not read the difference as a backlog or as drift. See
+> "storage.csv Is Larger Than database.json, On Purpose" in Section 12.
+>
 > **How fast these move, measured rather than guessed.** The flag counts in the paragraph above were
 > rewritten once during the day of 2026-08-24. The audit measured 6,324 unflagged, 248 `retry`, 81
 > `caution` and 16 `excluded`; the weekly refresh job landed hours later and left 6,474 / 69 / 94 /
@@ -311,7 +317,7 @@ ComposerAtlas/
 │   ├── database_summary.json   # Columnar, float-rounded subset of database.json for list/filter/score views (v1.16)
 │   ├── database_summary.js     # Same data as window.DATABASE_SUMMARY_DATA, for file:// compat (v1.16)
 │   ├── Full Database.xlsx      # Raw source spreadsheet; database.json is generated from this
-│   ├── storage.csv             # Append-only URL backup, single `url` column, deduped (v1.10.1)
+│   ├── storage.csv             # Append-only archive of EVERY symphony URL ever seen, alive or dead; deliberately larger than database.json (v1.10.1)
 │   ├── AddSymphony.csv         # User-submitted URL inbox, single `url` column, manual-only (added 2026-07-15)
 │   ├── rsi.json                # 10-day RSI (Wilder's smoothing) for the 20-ticker Frontrunner universe (V2.1)
 │   ├── rsi.js                  # Same data as window.RSI_DATA, for file:// compat (V2.1)
@@ -1308,13 +1314,49 @@ There is no `.js` twin naming inconsistency to worry about here, `data/database_
 
 `data/storage.csv` (added v1.10.1): a single-column, append-only backup of every Composer symphony URL ever shared, referenced, or added to the site or the full database, independent of whether it was ever successfully backtested. Its purpose is durability, not analysis: `database.json` can be rebuilt, re-scoped, or have entries dropped (e.g. during Noise Filtering), but `storage.csv` is meant to never lose a URL once it's been seen.
 
+#### storage.csv Is Larger Than database.json, On Purpose
+
+**These two files answer different questions and are not meant to match.** The gap between them is
+the design working, not drift, and it is not a backlog waiting to be cleared.
+
+| | `data/storage.csv` | `data/database.json` |
+|---|---|---|
+| **What it holds** | **Every symphony URL ever seen**, kept long term whether the symphony is alive, dead, private, deleted, noise, or a duplicate | **Only the symphonies confirmed and approved for the site.** A row here is a row a visitor can see and score |
+| **Admission rule** | Nothing is ever excluded. A URL is added on sight | A URL is admitted deliberately, and can be removed again |
+| **Removal** | **Never.** Nothing is deleted from this file, ever | Routine. Purged, flagged, de-duplicated, re-scoped |
+| **Primary key** | `url` | `symphony_id` |
+| **Count (2026-08-24)** | 7,709 rows, 7,708 distinct symphonies | 6,668 entries, 6,668 distinct symphonies |
+
+**The 1,045 symphonies in `storage.csv` and not in `database.json` are there deliberately.** The
+largest single contributor is the v1.11.14 purge, which removed 1,004 permanently-dead entries
+(404/422: deleted, private, or malformed symphonies) from `database.json` outright while keeping
+every one of their URLs in `storage.csv` forever. That purge only ran because the safety invariant
+held: `purge_flagged_entries.py` aborts rather than remove a row whose URL is not already in
+`storage.csv`, so nothing is ever lost outright and any purged symphony can be re-promoted later.
+
+**This is why `sync_storage_to_database.py` must not be run casually.** It cannot distinguish "a URL
+nobody has processed yet" from "a URL deliberately purged as dead", so a blind run resurrects every
+dead symphony as a fresh unrefreshed row. That has now happened twice: once on 2026-07-15, when a run
+intended to process 10 new `AddSymphony.csv` URLs pulled in 1,055 stale entries, and again on
+2026-08-24 during the v1.25.2 verification, when it pulled in 1,045. **Both runs were reverted and
+neither was committed.** See the warning in Section 11's AddSymphony workflow, and Section 23's
+never-do table.
+
+> **Correction, v1.25.3 (2026-08-24), owner instruction.** The v1.25.2 release logged the size gap as
+> open question 23, asking whether the URLs should be promoted into the database. **That was wrong on
+> both counts.** It is not an open question, and the gap is not a backlog: the two files hold
+> different things by design, which Section 11 has documented since 2026-07-15 and which this audit
+> failed to read before writing the question. Question 23 is withdrawn and this table replaces it.
+
 | Field | Type | Description |
 |---|---|---|
 | `url` | string | Full Composer.trade symphony URL. The only column, and the primary key: one row per unique URL, never duplicated |
 
 **Maintenance:** manually append new URLs as they come up in conversation or get added anywhere on the site; deduplicate against the existing file before adding (`url` is the primary key, exactly one row per symphony regardless of how many times it's been discussed or how many other files reference it). Seeded on creation (v1.10.1) from the union of every `symphony_url` in `data/database.json` and `data/strategies.json`, 6,489 unique URLs at seed time.
 
-**Promoting storage.csv URLs into the database:** `scripts/sync_storage_to_database.py` (v1.11.1) adds any `storage.csv` URL not yet in `database.json` as a new, unrefreshed entry (every field null except `symphony_url`/`symphony_id`), so it gets picked up by the next `refresh_full_database.py` run like any other due row. Run this whenever `storage.csv` has grown since the last sync; it's safe to re-run (already-present URLs are skipped).
+**Promoting storage.csv URLs into the database:** `scripts/sync_storage_to_database.py` (v1.11.1) adds any `storage.csv` URL not yet in `database.json` as a new, unrefreshed entry (every field null except `symphony_url`/`symphony_id`), so it gets picked up by the next `refresh_full_database.py` run like any other due row. Already-present symphonies are skipped, keyed on `symphony_id` since v1.25.2.
+
+**It is not, however, safe to run casually**, and the sentence this paragraph used to end with ("run this whenever `storage.csv` has grown") is the advice that caused two reverted incidents. Promotion is an approval decision, one symphony at a time or one reviewed batch at a time, not a sync. Read the table above before running it at all: `storage.csv` deliberately holds symphonies that were removed from the database on purpose, and this script will bring every one of them back. It also has **no dry-run flag** and writes on every invocation, so there is no way to ask it what it would do.
 
 ---
 
@@ -3805,7 +3847,7 @@ explicitly if it cannot clear one.
 | **Write a `.json` without its `.js` twin** | Splits the HTTP site from the `file://` site with no error anywhere |
 | **Deduplicate `database.json` on `symphony_url`** | The URL is not unique per symphony. Composer serves at least `/details` and `/factsheet` for the same one, and keying on the URL is how a duplicate row got in and stayed in. **`symphony_id` is the primary key.** Section 12 |
 | **Regenerate `database.json` without regenerating `database_summary.json`** | The site reads the summary. A symphony present in the full file and absent from the summary does not exist as far as any visitor is concerned, and nothing raises an error. This is what hid four symphonies until v1.25.1 |
-| **Run `scripts/sync_storage_to_database.py` to see what it would do** | It has no dry-run mode and writes on every invocation. `storage.csv` is a deliberate superset of the database, currently by 1,045 URLs, so an exploratory run grows the dataset by 15% in one pass. Read `storage.csv` yourself instead |
+| **Run `scripts/sync_storage_to_database.py` casually, or to see what it would do** | It has no dry-run mode and writes on every invocation. Worse than the write is what it writes: `storage.csv` deliberately keeps every URL ever seen, including 1,004 symphonies purged as permanently dead in v1.11.14, so a blind run **resurrects dead symphonies into the approved database**. It cannot tell "never processed" from "removed on purpose". This has happened twice, 2026-07-15 and 2026-08-24, both reverted. Promotion is an approval decision, not a sync. Section 12 |
 | **Run another script that writes `database.json` while `refresh_full_database.py` is running** | It holds the whole file in memory and overwrites on every checkpoint, so a concurrent writer's changes are silently discarded. This happened once, in v1.11.3, and the rule is in both scripts' docstrings |
 | **Insert community-sourced text into `innerHTML` without `escapeHtml()`** | `database.json` names come from thousands of anonymous authors. This was a live XSS hole until v1.9.3 |
 | **Use an em-dash, or `--` as punctuation** | Section 19. It reads as machine-written and undermines the site's voice |
@@ -4026,18 +4068,36 @@ Numbered for reference. Open unless marked otherwise.
     twice and is removed unconditionally; that script's name-and-logic clustering with its debatable
     tiebreak (item 18) is a different problem and keeps its judgement calls.
 
-23. **`data/storage.csv` holds 1,045 symphony URLs that are not in `data/database.json`.** 7,709
-    URLs in the durable backup against 6,668 entries in the database. Discovered accidentally on
-    2026-08-24 by running `sync_storage_to_database.py`, which is not a read-only script: it promoted
-    all 1,045 into the database as unrefreshed rows in one pass. **The run was reverted**, because
-    growing the dataset by 15% is a product decision rather than a side effect of verifying a bug
-    fix. The backlog itself is not a defect; `storage.csv` is deliberately a superset, collecting
-    every URL ever referenced whether or not it belongs in the database. **Open question:** whether
-    that backlog should be promoted and refreshed, which is roughly what the V1.15 full-scale refresh
-    did at a smaller size, or whether it should stay a backup. **Related and worth stating on its
-    own: `sync_storage_to_database.py` writes on every invocation and has no dry-run flag.** There is
-    no way to ask it what it would do. That is a reasonable thing to add before the next time someone
-    wants to find out.
+23. **WITHDRAWN 2026-08-24 (v1.25.3), owner correction. Not an open question.** This item asked
+    whether the 1,045 symphonies in `storage.csv` and not in `database.json` should be promoted into
+    the database. **The gap is the design, not a backlog.** `storage.csv` keeps every URL ever seen
+    long term, alive or dead; `database.json` holds only the symphonies approved to be on the site.
+    Section 11 has documented this since 2026-07-15 and the v1.25.2 audit did not read it before
+    writing the question. The relationship is now stated as a table in Section 12. **The one part
+    worth keeping:** `sync_storage_to_database.py` has no dry-run flag and writes on every
+    invocation, which is how the same reverted accident happened twice. Adding one is item 24.
+
+24. **`scripts/sync_storage_to_database.py` has no dry-run mode.** It writes `database.json` and
+    `database.js` on every invocation, so there is no way to ask what it would promote without
+    promoting it. It has twice been run expecting a report and produced a
+    1,000-row import instead: 2026-07-15 (1,055 rows) and 2026-08-24 (1,045 rows), both reverted, neither
+    committed. **Open question:** add a `--dry-run` flag that prints the delta and writes nothing.
+    Small, and it would have prevented both incidents. Note that the script's real problem is deeper
+    than a flag, since promotion is an approval decision rather than a sync (Section 12), so a
+    dry-run makes the wrong operation safer rather than making it right.
+
+25. **Five entries are in `database.json` but not in `storage.csv`**, which inverts the
+    "never lose a URL once seen" rule in the direction nobody checks: `0jPwZ5Lm2Y3xH24oEijB` (Triple
+    Accelerator), `zY4jRnXoFC9e1Pt97YDS`, `P7RLUTtWmTjkJBaNBQT9`, `tlDwKY3NRXjYU61jCt0g` (The Gold
+    Miner (Original)) and `jjIQMCxLK5P98Zpczktk`. Four of the five are the same symphonies that were
+    missing from `database_summary.json` until v1.25.1, which points at one cause: **the hand-run
+    addition routes write `database.json` and stop there**, updating neither the durable backup
+    before it nor the derived summary after it. **It fails safe today**, because
+    `purge_flagged_entries.py` aborts rather than remove a row whose URL is absent from
+    `storage.csv`, so these five simply cannot be purged. But the archive is incomplete, which is the
+    one thing `storage.csv` exists to never be. **Open question, and it is a small one:** append the
+    five URLs, and decide whether the addition workflow in Section 11 should write `storage.csv`
+    first rather than relying on it being remembered.
 
 ---
 
