@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Convert a Composer.trade symphony into clean, formatted JSON and a readable IF/ELSE logic tree.">
-  <title>Symphony → JSON Converter — Composer Atlas</title>
+  <title>Symphony → JSON Converter: Composer Atlas</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/main.css">
   <style>
@@ -775,7 +775,7 @@
           return;
         }
         if (step === 'asset') {
-          var nm = node.name ? ' <span class="t-muted">— ' + esc(node.name) + '</span>' : '';
+          var nm = node.name ? ' <span class="t-muted">: ' + esc(node.name) + '</span>' : '';
           out.push(line(depth, '<span class="t-asset">• ' + esc(node.ticker || '?') + '</span>' + nm + wtag));
           return;
         }
@@ -862,7 +862,7 @@
 
       function normalizeSymphony(parsed) {
         if (parsed && parsed.step) return parsed;
-        // maybe a { slug: tree } map or an array — grab first tree-like value
+        // maybe a { slug: tree } map or an array, grab the first tree-like value
         if (Array.isArray(parsed)) {
           var a = parsed.find(function (x) { return x && x.step; });
           if (a) return a;
@@ -908,7 +908,7 @@
           .catch(function (err) {
             setMsg(
               'Could not fetch it directly from the browser (' + esc(err.message) +
-              ') — this is usually a CORS restriction. Open the raw JSON in a new tab, copy it, and paste it above:<br>' +
+              '): this is usually a CORS restriction. Open the raw JSON in a new tab, copy it, and paste it above:<br>' +
               '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(url) + '</a>',
               'info'
             );
@@ -922,7 +922,7 @@
       function loadFrontrunner() {
         document.getElementById('conv-in').value = FRONT_URL;
         renderOutput(EXAMPLE);
-        setMsg("Showing <strong>zoop's 2026 Frontrunner</strong> as the default example — paste your own symphony URL, ID, or JSON above and click <strong>Convert</strong>.", 'info');
+        setMsg("Showing <strong>zoop's 2026 Frontrunner</strong> as the default example. Paste your own symphony URL, ID, or JSON above and click <strong>Convert</strong>.", 'info');
       }
       document.getElementById('btn-example').addEventListener('click', loadFrontrunner);
       document.getElementById('btn-clear').addEventListener('click', function () {

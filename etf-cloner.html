@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Type an ETF ticker and get a Composer.trade symphony that clones its top holdings, with matched or equal weights, ready to paste.">
-  <title>ETF → Composer Cloner — Composer Atlas</title>
+  <title>ETF → Composer Cloner: Composer Atlas</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/main.css">
   <style>
@@ -277,7 +277,7 @@
       }
       // Keep only real company holdings. Issuer files list cash, futures, collateral,
       // pending dividends, currency, etc. as line items whose "ticker" can even collide
-      // with a real symbol (e.g. cash "USD" vs. the USD ETF) — drop those entirely.
+      // with a real symbol (e.g. cash "USD" vs. the USD ETF); drop those entirely.
       var CASH_TICKER = /^(USD|EUR|GBP|JPY|CAD|AUD|CHF|CNY|CNH|HKD|SGD|MXN|BRL|INR|KRW|SEK|NOK|DKK|NZD|ZAR|TRY|RUB|ILS|PLN|THB|IDR|MYR|PHP|TWD|AED|SAR|CASH)$/;
       var NON_COMPANY = /\b(cash|collateral|futures?|pending|dividends?|receivabl\w*|payabl\w*|accrued|currency|currencies|money ?market|repurchase|net other|other asset\w*|contra|equivalents?|margin deposit|t-bill|treasury bill)\b/i;
       function isCompany(sym, name) {
@@ -634,7 +634,7 @@
           var rows, lower = file.name.toLowerCase();
           if (lower.endsWith('.xlsx')) {
             if (typeof DecompressionStream === 'undefined')
-              throw new Error('this browser can’t unzip .xlsx — try CSV, or a current Chrome/Edge/Firefox/Safari');
+              throw new Error('this browser can’t unzip .xlsx; try CSV, or a current Chrome/Edge/Firefox/Safari');
             var zip = await openZip(await file.arrayBuffer());
             var shared = await zip.read('xl/sharedStrings.xml');
             var sheetName = zip.entries['xl/worksheets/sheet1.xml'] ? 'xl/worksheets/sheet1.xml'
@@ -644,7 +644,7 @@
           } else if (lower.endsWith('.csv') || lower.endsWith('.txt')) {
             rows = parseCSV(await file.text());
           } else {
-            throw new Error('unsupported file type — upload a .csv or .xlsx holdings file');
+            throw new Error('unsupported file type: upload a .csv or .xlsx holdings file');
           }
           var kept = mapTable(rows);
           if (!kept) throw new Error('couldn’t find a holdings table (needs Ticker and Weight columns) in that file');

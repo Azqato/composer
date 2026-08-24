@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.24.8
+**Version:** 1.25.1
 **Status:** Active
-**Last Updated:** 2026-08-21
+**Last Updated:** 2026-08-24
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -32,6 +32,15 @@ This is the single authoritative reference for Composer Atlas. It consolidates p
 17. [FAQ](#17-faq)
 18. [Documentation Process](#18-documentation-process)
 19. [Writing Style](#19-writing-style)
+
+**Part C; Measurement, Practice & Record**
+20. [Metrics](#20-metrics)
+21. [Conventions](#21-conventions)
+22. [Deprecation and Removal](#22-deprecation-and-removal)
+23. [Working Practice](#23-working-practice)
+24. [Documentation Versus Reality](#24-documentation-versus-reality)
+25. [Risks and Open Questions](#25-risks-and-open-questions)
+26. [Press Release](#26-press-release)
 
 ---
 
@@ -148,7 +157,7 @@ symphony database, originally seeded by an external Google Apps Script scrape (t
 original 6,488-row scrape plus rows synced in from `data/storage.csv` over time).
 The goal was to recreate that refresh pipeline on composeratlas.com itself against
 the real Composer API, filter out non-strategy noise and duplicates, and build a
-Leaderboard and Screener on top of the full database — all of which is now built,
+Leaderboard and Screener on top of the full database, all of which is now built,
 refreshed, cleaned, and live.
 
 **Went fully live v1.12.0:** the code (`database.html`, its CSS/JS, the full-database
@@ -157,7 +166,30 @@ were deliberately withheld until the full refresh and V1.14 noise-filtering pass
 completed (see Section 14 Roadmap, V1.9's correction note, for the original
 reasoning). As of v1.12.0, `data/database.json`/`.js`, `data/database_summary.json`/
 `.js`, and `data/storage.csv` are committed and live. Final numbers at go-live:
-**6,640 total entries** — 6,221 clean, 229 flagged `duplicate`, 88 `excluded`
+**6,640 total entries**: 6,221 clean, 229 flagged `duplicate`, 88 `excluded`
+
+> **Discrepancy (measured 2026-08-24).** The line above is the v1.11.23 figure and is kept as the
+> historical record of that moment. Counted directly from `data/database.json` today the database
+> holds **6,669 entries**, and the flag distribution is **6,324 unflagged, 248 `retry`, 81
+> `caution`, 16 `excluded`, and 0 `duplicate`**. Two things moved: the weekly
+> `refresh-full-database.yml` job has been adding rows and re-classifying failures ever since, and
+> the `duplicate` population is now empty, which the v1.11.12 reset (flags cleared back to null so
+> rows requeue) plus subsequent successful refreshes would produce. **6,655 entries carry a
+> `sharpe_ratio`**, which is the Leaderboard's eligibility proxy.
+>
+> `data/database_summary.json` held **6,665 rows against the full file's 6,669**, so the derived
+> summary was four rows behind. `scripts/export_summary.py` had not been re-run since the last four
+> additions. This was a real, if small, staleness bug rather than a documentation error: the site
+> reads the summary, so those four symphonies were invisible on `database.html`.
+>
+> **Closed in v1.25.1 (2026-08-24).** The export was re-run and the summary now holds all 6,669 rows
+> in the same order as `database.json`, with the `.js` twin verified to match the JSON exactly. The
+> four that had been missing were "Pals Minor Spell of Summon Money (Core Logic)", "PP MAX TEC",
+> "The Gold Miner (Original)" and "Extended Backtest Simplified Copy of [ChristMas] Test #1", all
+> unflagged and valid, so nothing had filtered them out. `export_summary.py` was hardened in the same
+> release: it derived its column list from `entries[0].keys()` alone, which would have silently
+> dropped any field added to later entries without backfilling the first, and now takes the union of
+> every entry's keys in first-seen order. Column order is unchanged.
 (permanent API failures + name-pattern noise), 88 `caution` (Composer data warnings),
 14 `retry` (transient, self-clearing).
 
@@ -170,7 +202,7 @@ reasoning). As of v1.12.0, `data/database.json`/`.js`, `data/database_summary.js
 - [x] Screener tab, full multi-view column switcher (v1.10.x, redesigned v1.11.15)
 - [x] Leaderboard tab, 20-metric/1,000-point scoring model (v1.10.x), reweighted and S+ redefined per V1.17 (2026-07-13)
 - [x] Performance Fix: columnar + float-rounded summary JSON, ~80% size reduction (v1.10.x)
-- [x] Noise filtering (test ports, "Invest Copy"/duplicate clusters, WIP builds): implemented and run (V1.14, v1.11.22-23) — permanent API failures and name-pattern noise flagged `excluded`, near-identical duplicates flagged `duplicate` via logic-tree structural comparison, all filterable via the Working/Broken/Duplicates/All toggle
+- [x] Noise filtering (test ports, "Invest Copy"/duplicate clusters, WIP builds): implemented and run (V1.14, v1.11.22-23): permanent API failures and name-pattern noise flagged `excluded`, near-identical duplicates flagged `duplicate` via logic-tree structural comparison, all filterable via the Working/Broken/Duplicates/All toggle
 - [x] Full-scale metric refresh: complete, all entries refreshed at least once; ongoing via the weekly automated workflow above
 - [x] Data files pushed live (v1.12.0)
 
@@ -257,7 +289,7 @@ ComposerAtlas/
 ├── data/
 │   ├── strategies.json         # 31 strategy entries, source of truth
 │   ├── strategies.js           # Same data as window.STRATEGIES_DATA, for file:// compat
-│   ├── glossary.json           # 8 glossary concept entries, source of truth
+│   ├── glossary.json           # 20 glossary concept entries, source of truth (was 8 at MVP)
 │   ├── glossary.js             # Same data as window.GLOSSARY_DATA, for file:// compat
 │   ├── symphony_scores.json    # Full logic trees; AI analysis only, not served publicly
 │   ├── database.json           # Full raw ~7,700-symphony database (not the curated 28); see Section 14
@@ -269,7 +301,7 @@ ComposerAtlas/
 │   ├── AddSymphony.csv         # User-submitted URL inbox, single `url` column, manual-only (added 2026-07-15)
 │   ├── rsi.json                # 10-day RSI (Wilder's smoothing) for the 20-ticker Frontrunner universe (V2.1)
 │   ├── rsi.js                  # Same data as window.RSI_DATA, for file:// compat (V2.1)
-│   ├── prices.json             # Full daily adjusted-close history (37 tickers from 2018) for Signal Miner (v1.15.0)
+│   ├── prices.json             # Full daily adjusted-close history (72 tickers from 2010) for Signal Miner (v1.15.0)
 │   └── prices.js               # Same data as window.PRICES_DATA, for file:// compat (v1.15.0)
 ├── js/
 │   └── app.js                  # Shared utilities: format, nav, footer, render helpers
@@ -281,6 +313,7 @@ ComposerAtlas/
 │   ├── refresh_full_database.py # Resumable, checkpointed API refresh for the full database (v1.9.0)
 │   ├── export_full_database_to_xlsx.py # Local-only, occasional: regenerates the xlsx from the JSON (v1.9.4)
 │   ├── export_summary.py       # Derives database_summary.json/.js from database.json (v1.16); run after every refresh
+│   ├── build_sitemap.py        # Regenerates sitemap.xml from the indexable pages + curated slugs (v1.25.1)
 │   ├── sync_storage_to_database.py # Adds storage.csv URLs missing from database.json as new unrefreshed rows (v1.11.1)
 │   ├── refresh_rsi.py          # Fetches Yahoo Finance daily bars, computes Wilder's RSI(10) (V2.1)
 │   └── refresh_prices.py       # Fetches full Yahoo Finance daily-close history for the Signal Miner universe (v1.15.0)
@@ -296,7 +329,8 @@ ComposerAtlas/
 ├── about.html                   # About page
 ├── 404.html                    # Custom 404 page
 ├── favicon.svg                 # 🗺️ map emoji SVG favicon
-├── robots.txt
+├── robots.txt                  # Allows everything, advertises /sitemap.xml
+├── sitemap.xml                 # Generated by scripts/build_sitemap.py; never hand-edited (v1.25.1)
 ├── .gitignore
 └── docs/                       # All documentation (excluded from public deploy)
 ```
@@ -430,17 +464,17 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 
 **Tool pages:** `converter.html`, `signal-miner.html`, and `etf-cloner.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). All are indexable. As of v1.16.3 the three tools reachable from the primary nav (RSI Signals, Signal Miner, Converter) are grouped under a single **Tools** dropdown rather than sitting as separate top-level links; all three also appear in the footer sitemap and homepage Explore grid. The ETF Cloner is lower-profile: it is live and indexable and appears in the footer sitemap + homepage Explore card, but at the user's request is intentionally held out of the primary nav (including the Tools dropdown). As of v1.15.4 no page carries a `noindex` robots meta.
 
-**ETF Cloner data flow:** the tool has two independent input paths, both fully client-side. (1) **Live fetch by ticker** — reads a fund's top ~25 holdings from stockanalysis.com's SvelteKit `__data.json` route via a CORS relay (`proxy.cors.sh`, with allorigins/codetabs fallbacks), since issuer files and most holdings APIs are CORS-blocked or key-gated. (2) **Full-basket upload** — the user downloads the issuer's own holdings file (a top-level download, not a `fetch()`, so CORS never applies) and drops it in; CSV is parsed directly, and `.xlsx` is unzipped natively in the browser (`DecompressionStream('deflate-raw')` + `DOMParser`, no library) with a generic column-mapper that locates the Ticker/Weight/Name columns across issuer layouts. Both paths filter out non-company line items (cash, futures, collateral, pending dividends, currency — which can carry tickers that collide with real securities, e.g. cash "USD" vs. the USD ETF), normalize share-class tickers to Composer/Crescendo format (a trailing `.X`/`-X` class suffix becomes `/X`, e.g. `BRK.B`/`BRK-B` → `BRK/B`, in `cleanSym()`, since the dot/dash forms will not save or backtest on either platform — v1.16.7), renormalize weights across the remaining companies, and emit a Composer symphony (`root` → `wt-cash-specified` or `wt-cash-equal` → `asset` nodes). Nothing is uploaded anywhere; there is no server component and no committed data file for this tool.
+**ETF Cloner data flow:** the tool has two independent input paths, both fully client-side. (1) **Live fetch by ticker**: reads a fund's top ~25 holdings from stockanalysis.com's SvelteKit `__data.json` route via a CORS relay (`proxy.cors.sh`, with allorigins/codetabs fallbacks), since issuer files and most holdings APIs are CORS-blocked or key-gated. (2) **Full-basket upload**: the user downloads the issuer's own holdings file (a top-level download, not a `fetch()`, so CORS never applies) and drops it in; CSV is parsed directly, and `.xlsx` is unzipped natively in the browser (`DecompressionStream('deflate-raw')` + `DOMParser`, no library) with a generic column-mapper that locates the Ticker/Weight/Name columns across issuer layouts. Both paths filter out non-company line items (cash, futures, collateral, pending dividends, currency, which can carry tickers that collide with real securities, e.g. cash "USD" vs. the USD ETF), normalize share-class tickers to Composer/Crescendo format (a trailing `.X`/`-X` class suffix becomes `/X`, e.g. `BRK.B`/`BRK-B` → `BRK/B`, in `cleanSym()`, since the dot/dash forms will not save or backtest on either platform, v1.16.7), renormalize weights across the remaining companies, and emit a Composer symphony (`root` → `wt-cash-specified` or `wt-cash-equal` → `asset` nodes). Nothing is uploaded anywhere; there is no server component and no committed data file for this tool.
 
 ### Navigation & Linking Model (v1.15.3)
 
 Three link surfaces, each with a distinct, deliberate rule. When adding a new page, decide its placement against all three:
 
-1. **Primary nav (`links` array in `renderNav`, `js/app.js`)** — *curated*, not exhaustive. Holds Home plus the main destinations, then the external CTAs (Azqato Invests, Support). As of v1.16.3, the tools (RSI Signals, Signal Miner, Converter) are collapsed under a single **Tools** dropdown group — an item with a `children` array renders as a hover/click dropdown — to keep the top level short. Deliberately omits the lowest-profile utility (ETF Cloner) even from the Tools dropdown. Adding a page here is an editorial choice, not automatic.
+1. **Primary nav (`links` array in `renderNav`, `js/app.js`)**: *curated*, not exhaustive. Holds Home plus the main destinations, then the external CTAs (Azqato Invests, Support). As of v1.16.3, the tools (RSI Signals, Signal Miner, Converter) are collapsed under a single **Tools** dropdown group, an item with a `children` array renders as a hover/click dropdown, to keep the top level short. Deliberately omits the lowest-profile utility (ETF Cloner) even from the Tools dropdown. Adding a page here is an editorial choice, not automatic.
 
-2. **Footer (`renderFooter`, `js/app.js`)** — the **complete sitemap**. It must link *every* public-facing page on the site: Home and all internal pages (Strategies, Database, RSI, Signal Miner, Glossary, Converter, ETF Cloner, About), followed by external links (Support, Composer.trade). `404.html` is the only page excluded on principle (it is an error page, not a destination). When you add any public page, you **must** add it to the footer. As of v1.16.3 there is no exception — `etf-cloner.html` is now in the footer, closing the earlier temporary deferral.
+2. **Footer (`renderFooter`, `js/app.js`)**: the **complete sitemap**. It must link *every* public-facing page on the site: Home and all internal pages (Strategies, Database, RSI, Signal Miner, Glossary, Converter, ETF Cloner, About), followed by external links (Support, Composer.trade). `404.html` is the only page excluded on principle (it is an error page, not a destination). When you add any public page, you **must** add it to the footer. As of v1.16.3 there is no exception, `etf-cloner.html` is now in the footer, closing the earlier temporary deferral.
 
-3. **Homepage "Everything on this site" Explore grid (`index.html`)** — one card per **self-built tool or content section** we own. Concretely: a card for every *internal* footer link that is a tool/section we built, i.e. every internal footer link **except** Home (the page itself) and About (a static info page, not a tool). External links never get cards. Current set: Strategies, Database, RSI, Signal Miner, Glossary, Converter, ETF Cloner. The grid uses `.grid-3` (three columns; seven cards); update the count word in the section subhead ("Seven ways...") when it changes.
+3. **Homepage "Everything on this site" Explore grid (`index.html`)**: one card per **self-built tool or content section** we own. Concretely: a card for every *internal* footer link that is a tool/section we built, i.e. every internal footer link **except** Home (the page itself) and About (a static info page, not a tool). External links never get cards. Current set: Strategies, Database, RSI, Signal Miner, Glossary, Converter, ETF Cloner. The grid uses `.grid-3` (three columns; seven cards); update the count word in the section subhead ("Seven ways...") when it changes.
 
 **Rule of thumb when shipping a new page:** always add it to the footer (rule 2); add an Explore card if it is a tool/section we built (rule 3); add it to the nav only if it is a primary destination (rule 1).
 
@@ -482,8 +516,7 @@ jobs:
             --exclude='docs' \
             --exclude='scripts' \
             --exclude='data/symphony_scores.json' \
-            --exclude='strategies.xlsx' \
-            --exclude='README.MD' \
+            --exclude='README.md' \
             --exclude='.gitignore' \
             . _site/
       - uses: actions/upload-pages-artifact@v3
@@ -523,7 +556,14 @@ Chrome 100+, Firefox 100+, Safari 15+, Edge 100+. No IE11. Requires: `fetch()`, 
 | Tag filtering on index | Vanilla JS DOM filter |
 | Performance charts | Chart.js or uPlot: loaded as a module script |
 | Build system upgrade | Migrate to Astro 5.x |
-| Analytics | None currently. If ever added, it must be cookieless and collect no personal data (e.g. Plausible); per Section 4 the site collects no user data |
+| Analytics | **Cloudflare Web Analytics**, injected by the host at serve time on the canonical domain. Cookieless, collects no personal data and sets no client storage; adds about 359 bytes per page. Accepted by the owner, and settled: it is not to be re-raised as a privacy concern. Per Section 4 the site still collects no user data of its own |
+
+> **Discrepancy (found 2026-08-24).** This row previously read "None currently. If ever added, it
+> must be cookieless and collect no personal data (e.g. Plausible)". The requirement it stated was
+> met, by a different product than the one it named: Cloudflare Pages injects its own Web Analytics
+> beacon into every response on `composeratlas.com`, so the committed HTML has no analytics tag but
+> the served HTML does. The row is corrected above rather than annotated, because the original text
+> asserted an absence that is simply no longer true, and the policy it set is satisfied.
 
 ---
 
@@ -687,9 +727,9 @@ git push origin main
 
 `.github/workflows/refresh-full-database.yml` (added v1.12.0) runs `scripts/refresh_full_database.py` automatically every **Sunday at 01:07 UTC** and commits any changes, plus regenerates and commits `data/database_summary.json`/`.js` (via `scripts/export_summary.py`) so the live site's actual data source stays in sync. No manual action required for routine refreshes.
 
-**This is a meaningfully heavier job than `update-metrics.yml`'s daily run.** `STALE_AFTER_DAYS` (7) matches this workflow's weekly cadence exactly, so essentially the entire ~6,600-row full database is "due" on every run, not just a handful of stragglers — at the proven-safe 2-second-per-call throttle (Section 13, Rate Limits), that's roughly 4.5–5 hours, close to GitHub's 6-hour job ceiling. The workflow's refresh step has its own 340-minute timeout with `continue-on-error: true`, and the summary-regeneration/commit steps run with `if: always()`, so if a run gets cut short, whatever `refresh_full_database.py` already checkpointed to disk (every 10 rows, per its own docstring) still gets committed rather than lost — the next Sunday's run picks up whatever's still stale via the normal staleness check. GitHub Actions minutes are unmetered for public repositories on GitHub-hosted runners, so the long weekly runtime has no cost implication.
+**This is a meaningfully heavier job than `update-metrics.yml`'s daily run.** `STALE_AFTER_DAYS` (7) matches this workflow's weekly cadence exactly, so essentially the entire ~6,600-row full database is "due" on every run, not just a handful of stragglers, at the proven-safe 2-second-per-call throttle (Section 13, Rate Limits), that's roughly 4.5–5 hours, close to GitHub's 6-hour job ceiling. The workflow's refresh step has its own 340-minute timeout with `continue-on-error: true`, and the summary-regeneration/commit steps run with `if: always()`, so if a run gets cut short, whatever `refresh_full_database.py` already checkpointed to disk (every 10 rows, per its own docstring) still gets committed rather than lost, the next Sunday's run picks up whatever's still stale via the normal staleness check. GitHub Actions minutes are unmetered for public repositories on GitHub-hosted runners, so the long weekly runtime has no cost implication.
 
-`Full Database.xlsx` is deliberately **not** regenerated/committed by this workflow — it's documented as a local-only, occasional-use review artifact (see `scripts/export_full_database_to_xlsx.py`'s docstring), not part of the site's data pipeline, and not worth the binary-diff churn in git history on a weekly cadence. Regenerate it manually when wanted.
+`Full Database.xlsx` is deliberately **not** regenerated/committed by this workflow, it's documented as a local-only, occasional-use review artifact (see `scripts/export_full_database_to_xlsx.py`'s docstring), not part of the site's data pipeline, and not worth the binary-diff churn in git history on a weekly cadence. Regenerate it manually when wanted.
 
 To force an immediate full-database refresh, either trigger the workflow manually (GitHub → Actions → "Refresh Full Database" → Run workflow) or run locally:
 
@@ -701,25 +741,25 @@ git commit -m "data: refresh full database - YYYY-MM-DD"
 git push origin main
 ```
 
-**Reminder — scope boundary:** this workflow runs `refresh_full_database.py` only. `scripts/flag_name_noise.py` and `scripts/dedupe_symphonies.py` (V1.14 Part A) remain manual-only and must never be added here or to any other scheduled/CI job — see "Name-Based Noise & De-Duplication" above for why.
+**Reminder, scope boundary:** this workflow runs `refresh_full_database.py` only. `scripts/flag_name_noise.py` and `scripts/dedupe_symphonies.py` (V1.14 Part A) remain manual-only and must never be added here or to any other scheduled/CI job, see "Name-Based Noise & De-Duplication" above for why.
 
 ---
 
 ### Submitting New Symphonies (`data/AddSymphony.csv`)
 
-**Added 2026-07-15.** A single-column CSV (`url`, matching `storage.csv`'s existing format) where the user drops new Composer symphony URLs to submit for inclusion in the full database, outside of the original bulk-scrape/sync pipeline. Manual-only by design, same posture as `flag_name_noise.py`/`dedupe_symphonies.py` — this is never run automatically or from a scheduled workflow.
+**Added 2026-07-15.** A single-column CSV (`url`, matching `storage.csv`'s existing format) where the user drops new Composer symphony URLs to submit for inclusion in the full database, outside of the original bulk-scrape/sync pipeline. Manual-only by design, same posture as `flag_name_noise.py`/`dedupe_symphonies.py`: this is never run automatically or from a scheduled workflow.
 
 **Workflow, run only when the user explicitly asks (e.g. "check AddSymphony.csv"):**
 
 1. Read every URL currently in `data/AddSymphony.csv`.
 2. Check each one against `data/storage.csv` (the durable, deduped URL backup, one row per unique symphony ever seen) to filter out anything already present.
 3. Append the surviving (genuinely new) URLs to `data/storage.csv`.
-4. Add the same new URLs to `data/database.json` as new, unrefreshed entries, matching `scripts/sync_storage_to_database.py`'s row shape (every field null except `symphony_url`/`symphony_id`). **Do NOT actually run `scripts/sync_storage_to_database.py` for this** — see the warning immediately below. Add the specific new rows directly instead.
-   - **⚠️ `storage.csv` is deliberately larger than `database.json`, by design, confirmed 2026-07-15:** `storage.csv` retains URLs for symphonies that were later **purged** from `database.json` (see "Purging Flagged Full-Database Entries" below — 1,004 permanently-404/422-broken rows were removed from `database.json` outright in v1.11.14, but their URLs were deliberately kept in `storage.csv` forever, per its own "never lose a URL once seen" design). Running `sync_storage_to_database.py` blindly does not distinguish "genuinely new URL" from "URL that was intentionally purged as dead" — it will resurrect every purged dead entry as a new unrefreshed row. This actually happened: running it to process 10 new `AddSymphony.csv` URLs pulled in 1,055 stale/purged entries instead of 10. Reverted (nothing was committed) and redone by adding just the specific new rows directly. **If `sync_storage_to_database.py` is ever run for real, sanity-check the entry-count delta against the number of genuinely new URLs before proceeding to refresh/commit** — a large mismatch means purged entries are being resurrected.
+4. Add the same new URLs to `data/database.json` as new, unrefreshed entries, matching `scripts/sync_storage_to_database.py`'s row shape (every field null except `symphony_url`/`symphony_id`). **Do NOT actually run `scripts/sync_storage_to_database.py` for this**: see the warning immediately below. Add the specific new rows directly instead.
+   - **⚠️ `storage.csv` is deliberately larger than `database.json`, by design, confirmed 2026-07-15:** `storage.csv` retains URLs for symphonies that were later **purged** from `database.json` (see "Purging Flagged Full-Database Entries" below, 1,004 permanently-404/422-broken rows were removed from `database.json` outright in v1.11.14, but their URLs were deliberately kept in `storage.csv` forever, per its own "never lose a URL once seen" design). Running `sync_storage_to_database.py` blindly does not distinguish "genuinely new URL" from "URL that was intentionally purged as dead", it will resurrect every purged dead entry as a new unrefreshed row. This actually happened: running it to process 10 new `AddSymphony.csv` URLs pulled in 1,055 stale/purged entries instead of 10. Reverted (nothing was committed) and redone by adding just the specific new rows directly. **If `sync_storage_to_database.py` is ever run for real, sanity-check the entry-count delta against the number of genuinely new URLs before proceeding to refresh/commit**: a large mismatch means purged entries are being resurrected.
 5. Manually update the affected stats: run `scripts/refresh_full_database.py` (will pick up the new unrefreshed rows on its normal staleness check) or refresh just the new rows, then `scripts/export_summary.py` to regenerate `database_summary.json`/`.js`, then commit.
 6. Clear `data/AddSymphony.csv` back to just its header row once processed, so it doesn't get re-processed on the next pass.
 
-**Deliberately not automated:** matches the same reasoning already established for `flag_name_noise.py`/`dedupe_symphonies.py` — this touches `database.json` and should only ever run when explicitly invoked, never from a scheduled GitHub Actions job.
+**Deliberately not automated:** matches the same reasoning already established for `flag_name_noise.py`/`dedupe_symphonies.py`: this touches `database.json` and should only ever run when explicitly invoked, never from a scheduled GitHub Actions job.
 
 ---
 
@@ -789,18 +829,58 @@ git push origin main
 
 ---
 
+### Regenerating the Sitemap
+
+`scripts/build_sitemap.py` (added v1.25.1) writes `sitemap.xml` at the repository root. **Never hand-edit
+`sitemap.xml`**; it is generated output and a manual change is lost on the next run.
+
+```bash
+python scripts/build_sitemap.py
+```
+
+**What it emits, and why nothing here is hardcoded:**
+
+- **Every indexable top-level `.html` page**, discovered by globbing rather than from a list, so a new
+  page appears in the sitemap without anyone remembering this script exists. Three exclusions:
+  `404.html` (an error document, not a destination, the same principle that keeps it out of the
+  footer sitemap in Section 6), any `_*.html` (local mockups and harness pages, gitignored and listed
+  in `.assetsignore`), and any page carrying a `noindex` robots meta, currently only
+  `signal-lab.html`.
+- **One URL per curated strategy**, as `strategies.html?slug=<slug>`, read from `data/strategies.json`.
+  These are genuinely distinct documents despite sharing one HTML file, because `strategies.html`
+  sets a per-slug `<title>` and meta description at render time. The full community database is
+  deliberately **not** enumerated this way: 6,669 query-string URLs of thin, near-identical rows is
+  how a sitemap gets ignored.
+- **`lastmod` only where it can be known.** Strategy URLs use each entry's own `last_updated` field;
+  page URLs use the file's last commit date from `git log`. If git is unavailable or the file is
+  untracked, the element is simply omitted. An absent `lastmod` is fine, a wrong one is worse than
+  none.
+- **No `changefreq` and no `priority`.** Google has stated it ignores both, and any value chosen for
+  them is a guess.
+
+**Run it after** adding or removing a page, after `scripts/update_metrics.py`, or after any change to
+the curated set in `data/strategies.json`. Because page `lastmod` comes from git, regenerating
+*after* the commit that changed a page gives a more accurate file than regenerating before it; this
+is a minor inaccuracy, not a correctness problem, and is not worth a second commit on its own.
+
+**Only the canonical host gets a sitemap.** It points at `https://composeratlas.com`. The GitHub
+Pages mirror is not given one on purpose, since it serves the same content and should not compete
+with the canonical host for it.
+
+---
+
 ### Purging Flagged Full-Database Entries
 
-`scripts/purge_flagged_entries.py` (added v1.11.14) removes `data/database.json` entries by `flag` level — e.g. permanently-dead `excluded` (404/422) symphonies. Reusable for any future cleanse along the same lines, not a one-off script.
+`scripts/purge_flagged_entries.py` (added v1.11.14) removes `data/database.json` entries by `flag` level, e.g. permanently-dead `excluded` (404/422) symphonies. Reusable for any future cleanse along the same lines, not a one-off script.
 
 ```bash
 python scripts/purge_flagged_entries.py excluded
 python scripts/purge_flagged_entries.py excluded retry caution   # multiple levels in one pass
 ```
 
-**Safety invariant:** a purge candidate's `symphony_url` must already be present in `data/storage.csv` (the durable URL backup) before it's removed from `database.json`; the script aborts with no changes made if any candidate's URL is missing there, rather than silently losing the URL. Nothing is ever deleted outright — a purged row can always be re-promoted back into `database.json` later via `scripts/sync_storage_to_database.py`, unrefreshed.
+**Safety invariant:** a purge candidate's `symphony_url` must already be present in `data/storage.csv` (the durable URL backup) before it's removed from `database.json`; the script aborts with no changes made if any candidate's URL is missing there, rather than silently losing the URL. Nothing is ever deleted outright, a purged row can always be re-promoted back into `database.json` later via `scripts/sync_storage_to_database.py`, unrefreshed.
 
-Regenerates every downstream artifact in one run: `database.js`, `database_summary.json`/`.js` (via `scripts/export_summary.py`), and `Full Database.xlsx` (via `scripts/export_full_database_to_xlsx.py` — must not be open in Excel or this step fails with a `PermissionError`; close it and re-run that script by hand if so). Do not run while `scripts/refresh_full_database.py` is active in the background (same clobbering risk as other scripts that write `database.json`).
+Regenerates every downstream artifact in one run: `database.js`, `database_summary.json`/`.js` (via `scripts/export_summary.py`), and `Full Database.xlsx` (via `scripts/export_full_database_to_xlsx.py`: must not be open in Excel or this step fails with a `PermissionError`; close it and re-run that script by hand if so). Do not run while `scripts/refresh_full_database.py` is active in the background (same clobbering risk as other scripts that write `database.json`).
 
 ---
 
@@ -814,13 +894,13 @@ python scripts/dedupe_symphonies.py     # then this
 python scripts/dedupe_symphonies.py 20  # optional LIMIT arg, for a small test run first
 ```
 
-`scripts/flag_name_noise.py` (added v1.11.22) flags `TESTPORT #`/`[Work]`/`STILL BUILDING` non-strategy rows with `flag = "excluded"` (reuses the existing level rather than introducing a new one), no API calls. `scripts/dedupe_symphonies.py` (added v1.11.22) clusters the remaining clean (`flag == null`) rows by normalized name, confirms genuine duplicates via a logic-tree structural equality check (`GET /symphonies/{id}/score?score_version=v1`, one lightweight call per candidate row, falling back to metrics-tolerance comparison only if that fetch fails), and flags every loser in an identical group `flag = "duplicate"` — the keeper is chosen by longest `oos_date`, then earliest `symphony_id`. **Nothing is ever deleted by either script** — both only set `flag`/`error` on existing rows.
+`scripts/flag_name_noise.py` (added v1.11.22) flags `TESTPORT #`/`[Work]`/`STILL BUILDING` non-strategy rows with `flag = "excluded"` (reuses the existing level rather than introducing a new one), no API calls. `scripts/dedupe_symphonies.py` (added v1.11.22) clusters the remaining clean (`flag == null`) rows by normalized name, confirms genuine duplicates via a logic-tree structural equality check (`GET /symphonies/{id}/score?score_version=v1`, one lightweight call per candidate row, falling back to metrics-tolerance comparison only if that fetch fails), and flags every loser in an identical group `flag = "duplicate"`: the keeper is chosen by longest `oos_date`, then earliest `symphony_id`. **Nothing is ever deleted by either script**: both only set `flag`/`error` on existing rows.
 
-**Known limitation — the keeper is not always the copy people actually follow.** A manual spot-check (2026-07-15, 3 clusters / 19 rows) compared each cluster's keeper against the copy with the highest `size` (watcher count). Two clusters agreed: `TQQQ For The Long Term (Reddit Post Link)` kept the 1,242-watcher copy, and `KMLM switcher (single pops)` kept the 25-watcher copy, both the most-watched in their group. One did not: in the `V3.0.4.5 | Beta Baller + TCCC` cluster the `oos_date`/`symphony_id` tiebreak kept a copy with **8 watchers** while a structurally identical sibling had **173**. So the rule optimizes for the longest backtest history, which is the right call for metric quality, but it can flag as `duplicate` the copy the community actually follows. Not changed: watcher count is a popularity signal, not a correctness one, and making it the primary tiebreak would trade away backtest length. Worth revisiting only if a well-known symphony turns up missing from the Working view. (Recorded here from a throwaway audit spreadsheet, since the finding is the part worth keeping.)
+**Known limitation, the keeper is not always the copy people actually follow.** A manual spot-check (2026-07-15, 3 clusters / 19 rows) compared each cluster's keeper against the copy with the highest `size` (watcher count). Two clusters agreed: `TQQQ For The Long Term (Reddit Post Link)` kept the 1,242-watcher copy, and `KMLM switcher (single pops)` kept the 25-watcher copy, both the most-watched in their group. One did not: in the `V3.0.4.5 | Beta Baller + TCCC` cluster the `oos_date`/`symphony_id` tiebreak kept a copy with **8 watchers** while a structurally identical sibling had **173**. So the rule optimizes for the longest backtest history, which is the right call for metric quality, but it can flag as `duplicate` the copy the community actually follows. Not changed: watcher count is a popularity signal, not a correctness one, and making it the primary tiebreak would trade away backtest length. Worth revisiting only if a well-known symphony turns up missing from the Working view. (Recorded here from a throwaway audit spreadsheet, since the finding is the part worth keeping.)
 
 Running `flag_name_noise.py` first matters: it removes `TESTPORT #`-prefixed rows from the dedup candidate pool entirely, so one can never win the `symphony_id` tiebreak and become the sole surviving "keeper" of a real strategy family. This is a sequencing choice, not special-case logic inside the dedup script itself.
 
-**MANUAL-ONLY, do not automate.** `dedupe_symphonies.py` makes roughly one live API call per candidate row (hundreds per run) against Composer's unauthenticated API, and a full pass can take 20–30+ minutes. Neither script is wired into GitHub Actions, and neither should be — the deploy workflow excludes `scripts/` entirely, `update-metrics.yml` only ever runs `update_metrics.py` (the curated 25 strategies), and `refresh-full-database.yml` (added v1.12.0, see "Updating the Full Database" above) only ever runs `refresh_full_database.py`. Running this unattended on a schedule risks hammering Composer's API far more often than a human would choose to, with no one watching for rate-limit or correctness problems. Every full-database maintenance script in `scripts/` follows this same manual-only rule except `refresh_full_database.py`, which was deliberately opted into weekly automation as a distinct decision.
+**MANUAL-ONLY, do not automate.** `dedupe_symphonies.py` makes roughly one live API call per candidate row (hundreds per run) against Composer's unauthenticated API, and a full pass can take 20–30+ minutes. Neither script is wired into GitHub Actions, and neither should be, the deploy workflow excludes `scripts/` entirely, `update-metrics.yml` only ever runs `update_metrics.py` (the curated 25 strategies), and `refresh-full-database.yml` (added v1.12.0, see "Updating the Full Database" above) only ever runs `refresh_full_database.py`. Running this unattended on a schedule risks hammering Composer's API far more often than a human would choose to, with no one watching for rate-limit or correctness problems. Every full-database maintenance script in `scripts/` follows this same manual-only rule except `refresh_full_database.py`, which was deliberately opted into weekly automation as a distinct decision.
 
 ---
 
@@ -834,7 +914,45 @@ Composer Atlas deploys automatically via GitHub Actions on every push to `main`.
 
 To monitor: go to GitHub → Actions tab → find "Deploy to GitHub Pages" run. Green = deployed; red = failed (check logs).
 
-The workflow excludes from public deployment: `data/symphony_scores.json`, `docs/`, `scripts/`, `strategies.xlsx`, `README.MD`, `.gitignore`, `.github/`.
+The workflow excludes from public deployment: `data/symphony_scores.json`, `docs/`, `scripts/`,
+`README.md`, `.gitignore`, `.github/`, `.git`, and `_site` itself.
+
+> **Discrepancy (verified live 2026-08-24), and it is the most serious finding in this audit.**
+> Earlier revisions of this line also listed `strategies.xlsx` and spelled the README `README.MD`.
+> Neither matches `.github/workflows/deploy.yml`: the real exclusion list has `README.md` in
+> lowercase and no `strategies.xlsx` entry at all, and no file by that name exists in the repository
+> (the only spreadsheet is `data/Full Database.xlsx`, which is deliberately committed and served).
+> That part is now corrected above.
+>
+> **The larger problem is that the exclusion list is inert.** Fetched live, GitHub Pages returns
+> **HTTP 200** for every path the list is supposed to withhold:
+>
+> | URL | Status | Bytes |
+> |---|---|---|
+> | `azqato.github.io/composer/docs/PRD.md` | **200** | 325,375 |
+> | `azqato.github.io/composer/README.md` | **200** | 6,915 |
+> | `azqato.github.io/composer/scripts/check_live.py` | **200** | 5,855 |
+> | `azqato.github.io/composer/data/symphony_scores.json` | **200** | 22,798,603 |
+>
+> Every byte count matches the working-copy file exactly, so what GitHub Pages serves is the raw
+> repository, not this workflow's `_site/` artifact. The most likely cause is that the repository's
+> Pages source is set to **Deploy from a branch** (`main` / root) rather than **GitHub Actions**, in
+> which case `deploy.yml` builds an artifact nobody publishes. That cannot be confirmed from inside
+> the repo (the `gh` CLI is not installed on the maintenance machine), so it is stated as the leading
+> hypothesis rather than a fact, and it needs checking in the repository's Pages settings.
+>
+> On Cloudflare Pages, the canonical host, the same paths correctly **404**, because `.assetsignore`
+> is honoured. Nothing here is secret: the repository is public and always has been. What is wrong is
+> that two documents describe a privacy boundary that only one of the two hosts actually enforces.
+> Tracked in Section 25 as an open risk.
+>
+> **`.assetsignore` has its own gap.** It withholds `docs/`, `README.md`, `scripts/`,
+> `wrangler.jsonc`, `.github/` and the local mockups, but it does **not** list
+> `data/symphony_scores.json`, so that 22.8MB file returns 200 on the canonical host too, despite
+> `scripts/update_metrics.py`, this document and the README all describing it as not served
+> publicly. `data/database.json` (18.7MB) and `data/Full Database.xlsx` (5.8MB) are likewise served
+> though no page requests either: the site reads `database_summary.json`. That is roughly 47MB of
+> publicly reachable files that nothing on the site fetches. Not a leak, but not what the docs say.
 
 ---
 
@@ -1072,9 +1190,9 @@ not the 30 curated strategies. `data/database.js` is its `.js` twin (assigns
 | `last_market_days_holdings` | object \| null | Current live allocation, ticker symbol → dollar amount (e.g. `{"TQQQ": 7537.17, "$USD": 0.36}`). This is where real ticker symbols live, not `active_asset_nodes` |
 | `active_asset_nodes` | object \| null | Internal node UUID → weight (e.g. `{"875f367e-...": 1.0}`). **Not a ticker list**; corrected after live validation in v1.9.1, do not use for a ticker/holding filter |
 | `total_costs` | float \| null | Sum of the API's `costs` object (`reg_fee` + `taf_fee` + `cat_fee` + `slippage` + `spread_markup` + `subscription`); the per-category breakdown is not separately stored |
-| `flag` | string \| null | **Added v1.11.8 as an object, consolidated v1.11.9, split into `flag`+`error` v1.11.11.** Error/warning category for downstream filtering — see V1.14 Part B. One of `"excluded"` (permanent failure, 404/422, e.g. deleted/private/malformed symphony), `"caution"` (backtest succeeded but Composer flagged a data issue, e.g. a holding delisted mid-window), `"retry"` (transient failure, 429/500/503/timeout, cleared automatically by the normal staleness-check retry cycle), or `null` when clean. Written directly by `scripts/refresh_full_database.py` on every API call (see `classify_error()`). |
-| `error` | string \| object \| null | **Added v1.11.11**, paired with `flag`. The original message: a plain string for script errors (e.g. `"HTTPError 422: Unprocessable Entity"`), or Composer's own `data_warnings` object when `flag == "caution"`. `null` when `flag` is `null`. There is no separate `script_errors`/`data_warnings` field to cross-reference — this is the sole record of the original error/warning text. |
-| `oos_date` | string \| null | **Renamed from `last_semantic_update_at` in v1.11.10, also truncated to date-only.** Date (`YYYY-MM-DD`) of the symphony's last logic edit, sourced from the Composer API's `last_semantic_update_at` timestamp field with the time-of-day/timezone portion dropped. Used by `database.html`'s `oosDaysValue()` to compute "days since last edit" (out-of-sample duration) live at render time, both as a Filter Panel field and a Leaderboard scoring input (Section 14, V1.13) — the day-count itself is never stored, only this source date. |
+| `flag` | string \| null | **Added v1.11.8 as an object, consolidated v1.11.9, split into `flag`+`error` v1.11.11.** Error/warning category for downstream filtering, see V1.14 Part B. One of `"excluded"` (permanent failure, 404/422, e.g. deleted/private/malformed symphony), `"caution"` (backtest succeeded but Composer flagged a data issue, e.g. a holding delisted mid-window), `"retry"` (transient failure, 429/500/503/timeout, cleared automatically by the normal staleness-check retry cycle), or `null` when clean. Written directly by `scripts/refresh_full_database.py` on every API call (see `classify_error()`). |
+| `error` | string \| object \| null | **Added v1.11.11**, paired with `flag`. The original message: a plain string for script errors (e.g. `"HTTPError 422: Unprocessable Entity"`), or Composer's own `data_warnings` object when `flag == "caution"`. `null` when `flag` is `null`. There is no separate `script_errors`/`data_warnings` field to cross-reference, this is the sole record of the original error/warning text. |
+| `oos_date` | string \| null | **Renamed from `last_semantic_update_at` in v1.11.10, also truncated to date-only.** Date (`YYYY-MM-DD`) of the symphony's last logic edit, sourced from the Composer API's `last_semantic_update_at` timestamp field with the time-of-day/timezone portion dropped. Used by `database.html`'s `oosDaysValue()` to compute "days since last edit" (out-of-sample duration) live at render time, both as a Filter Panel field and a Leaderboard scoring input (Section 14, V1.13): the day-count itself is never stored, only this source date. |
 
 **Known data quality issues (as of v1.9.0):**
 - Only ~953 of 6,488 entries have usable metrics; the rest have `flag` set to `"excluded"` or `"retry"` and all metric fields `null`
@@ -1453,7 +1571,8 @@ A run with an empty Signal set is now rejected with an explanatory message rathe
 
 ### Canonical Tag Vocabulary
 
-Tags must match the `slug` of a glossary entry in `data/glossary.json`. All 8 current tags:
+Tags must match the `slug` of a glossary entry in `data/glossary.json`. The 8 tags below were the
+full set at MVP and the table is kept as written:
 
 | Tag | Glossary Slug | Concept |
 |---|---|---|
@@ -1657,7 +1776,10 @@ Used by `update_metrics.py` to refresh `data/symphony_scores.json`.
 
 ### Symphony ID Reference
 
-All 24 Composer Atlas strategies with their Composer symphony IDs:
+All Composer Atlas curated strategies with their Composer symphony IDs. **The heading on this list
+previously read "All 24"; the table itself has 31 rows, which matches `data/strategies.json`
+exactly, so the count in the heading was the stale half and has been removed rather than corrected
+to a number that will go stale again.**
 
 | Strategy | Symphony ID |
 |---|---|
@@ -1699,6 +1821,68 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 
 ## 14. Roadmap
 
+### Where the Project Is Right Now
+
+**Current phase: V2.2, "Scale and Discovery".** Everything through V2.1 has shipped and is live.
+The MVP, the curated library, the glossary, the full community database with its leaderboard and
+screener, the four tools and the live RSI page are all built, public and maintained on automated
+refresh schedules.
+
+**What the current phase is actually about.** Not new sections. The remaining V2.2 work is depth on
+what already exists: refreshing the curated set to newer strategy versions, cross-linking the
+curated pages to their rows in the community database, and giving the Signal Miner some defence
+against the overfitting its own search space makes inevitable. That last item is the largest open
+piece of product work on the site and is designed but unbuilt (Section 14 items A, B and C below,
+and Section 25 risk 6).
+
+**Version numbering is not phase numbering, and the two have diverged.** Releases are semantic
+versions (`1.24.8` at the last release before this audit). Roadmap phases are `V1.0` through `V4.0`
+and describe scope, not release order. Several phases were built well ahead of their numbered slot
+at the owner's explicit request, notably V1.16 before V1.11 to V1.15, and V2.1 before V1.17. Where
+that happened it is stated in the phase's own status line. Do not try to reconcile the two
+numbering schemes; they answer different questions.
+
+### Milestones
+
+| Phase | Scope | Status | Landed at |
+|---|---|---|---|
+| V1.0 | MVP: vanilla stack, 13 strategies, 8 glossary concepts, deploy pipeline | Complete | v1.0.x, 2026-06-08 |
+| V1.1 | Polish and content quality: logic-tree rewrites, metrics script, `file://` and Pages link fixes | Complete except a Lighthouse pass | v1.1.5 |
+| V1.2 | Data tooling and structure refactor: flat root `.html`, `?slug=` routing | Mostly complete; field validation still open | v1.2.1 |
+| V1.3 | Documentation consolidation: 12 files to 4 | Complete | v1.3.0 |
+| V1.4 to V1.6 | Strategy library growth to 25, glossary growth to 20, repo rename | Complete | v1.6.0 |
+| V1.7 | AI summaries on every strategy page | Complete | v1.7.0 |
+| V1.9 to V1.9.5 | Full database foundation: schema, refresh pipeline, API rate-limit characterisation | Complete | v1.9.5 |
+| V1.10 to V1.13 | Filter panel, screener, leaderboard scoring model, storage backup, nav restructure | Complete, built ahead of slot | v1.11.x |
+| V1.14 | Noise filtering: name-pattern flagging and logic-tree de-duplication | Complete | v1.11.22-23 |
+| V1.15 | Full-scale refresh: every entry through at least one real API attempt | Complete; now maintained weekly | v1.11.23 |
+| V1.16 | Performance fix: columnar summary export, page weight | Complete, built ahead of slot | v1.11.0 |
+| V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
+| V2.0 | Full database goes public | Complete | v1.12.0 |
+| V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
+| **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
+| V2.3 | Community signals: external submission form, curator notes, related strategies | Backlog, lowest priority | Not started |
+| V3.0 | Formerly Monetization Expansion | **Removed entirely, 2026-08-15.** Not deferred | n/a |
+| V4.0 | Signal discovery and robustness tooling, five candidate external forks | Ideation only. No work to begin until V2.x is well underway | Not started |
+
+### Explicitly Deferred
+
+Recorded so none of these reads as an oversight. Each was considered and set aside for a stated
+reason, and each remains a legitimate future item.
+
+| Item | Status | Reason |
+|---|---|---|
+| OR combining, and Composer's `any`/`all` multi-ticker conditions | **Deferred indefinitely** | Asked for directly by the owner and still worth doing. It is the largest single expansion of what the Miner can express, and it is genuinely two features that were conflated in discussion and must be kept apart. Full write-up retained below |
+| Option B: single source of truth for curated metrics | **Deferred, not rejected** | Would stop `strategies.json` backtesting the curated set independently of `database.json`. Option A (cross-link only) was chosen first because it is purely additive navigation |
+| Signal Miner sparklines | Deferred | Explicitly, at V2.1 |
+| CSV export of a filtered screener result set | Deferred | Never built; still a reasonable equivalent of the Finviz reference |
+| De-duplicating near-identical Signal Miner result rows | **Declined by the owner, 2026-08-20** | Not considered a real problem. Recorded so it is not re-proposed as new |
+| Per-ticker handling of reformed funds (SVXY's 2018 change from -1x to -0.5x) | **Explicitly waived by the owner** | Accepted known tradeoff |
+| Tiebreak on "watched by N" popularity in the dedupe pipeline | Wanted, blocked | The API this pipeline uses does not expose it |
+| User accounts, saved strategies | **Removed permanently** | Will never be built. Not iceboxed |
+| Client-side search (Fuse.js or similar) | Backlog | Never started |
+| Strategy comparison view, per-strategy performance chart | Backlog | Never started |
+
 ### V1.0: MVP
 
 **Launched:** 2026-06-08 | **Status:** Complete
@@ -1725,7 +1909,7 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 - [x] Fix: navigation broken on `file://` protocol: `u()` helper added (v1.0.4)
 - [x] Fix: all links broken on GitHub Pages: case-insensitive BASE detection (v1.1.2)
 - [x] Footer simplified to match azqato.github.io (v1.1.3)
-- [~] ~~Google AdSense integration (pending approval)~~ — **dropped.** Monetization was removed from the product entirely (see Non-Goals and Tenet 7): the site takes donations through Buy Me a Coffee only, runs no ads, and collects no user data. This line survived the monetization removal because it sits in a completed historical section rather than the live backlog.
+- [~] ~~Google AdSense integration (pending approval)~~, **dropped.** Monetization was removed from the product entirely (see Non-Goals and Tenet 7): the site takes donations through Buy Me a Coffee only, runs no ads, and collects no user data. This line survived the monetization removal because it sits in a completed historical section rather than the live backlog.
 - [ ] Performance audit and Lighthouse optimization
 
 ### V1.2: Data Tooling + Structure Refactor
@@ -1960,60 +2144,60 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 
 - [x] **Implemented (v1.11.22):** `scripts/flag_name_noise.py` flags `TESTPORT #`/`[Work]`/`STILL BUILDING` rows with `flag = "excluded"` (reuses the existing level rather than introducing a new one). Run against the live database: **88 rows flagged.**
 - [x] **De-duplication policy decided (v1.11.16, revised v1.11.17) and implemented (v1.11.22):**
-  - **Clustering (candidate-finding only):** group rows by normalized name — strip `TESTPORT #N: ` prefix, leading `Copy of ` chains (one or more), and `(Invest Copy)` suffixes, then compare what's left. Name matching is only ever used to find *candidates* to check, never as the actual duplicate decision — real data shows two rows can share an exact literal name and have meaningfully different metrics (`V2 Holy Grail Simplified w/RSI Divination - without VIXen` appears twice with ARR 180.8% vs 215.2%), so name alone is not trustworthy evidence of duplication in either direction.
-  - **Primary identity check — logic-tree structural equality (v1.11.17, supersedes the metrics-tolerance approach as primary):** for each candidate cluster, fetch `GET /api/v0.1/symphonies/{id}/score?score_version=v1` (Section 13, Logic Tree Endpoint) for every member — one lightweight GET per row, no backtest execution required. Strip every `id` field (Composer assigns a unique UUID to *every* node, root and nested, even for literal clones) and the root-level `name` field (carries the "Copy of"/"TESTPORT" text), then compare the canonical (sorted-key) JSON. An exact match after stripping means the rows are structurally identical strategy logic, not just similar-performing. Verified live against the real "Holy Grail simplified" 4-row cluster below: all four hash identically after stripping, confirming they're the same underlying symphony.
+  - **Clustering (candidate-finding only):** group rows by normalized name, strip `TESTPORT #N: ` prefix, leading `Copy of ` chains (one or more), and `(Invest Copy)` suffixes, then compare what's left. Name matching is only ever used to find *candidates* to check, never as the actual duplicate decision, real data shows two rows can share an exact literal name and have meaningfully different metrics (`V2 Holy Grail Simplified w/RSI Divination - without VIXen` appears twice with ARR 180.8% vs 215.2%), so name alone is not trustworthy evidence of duplication in either direction.
+  - **Primary identity check, logic-tree structural equality (v1.11.17, supersedes the metrics-tolerance approach as primary):** for each candidate cluster, fetch `GET /api/v0.1/symphonies/{id}/score?score_version=v1` (Section 13, Logic Tree Endpoint) for every member, one lightweight GET per row, no backtest execution required. Strip every `id` field (Composer assigns a unique UUID to *every* node, root and nested, even for literal clones) and the root-level `name` field (carries the "Copy of"/"TESTPORT" text), then compare the canonical (sorted-key) JSON. An exact match after stripping means the rows are structurally identical strategy logic, not just similar-performing. Verified live against the real "Holy Grail simplified" 4-row cluster below: all four hash identically after stripping, confirming they're the same underlying symphony.
     - This is preferred over metrics comparison because it needs no tolerance threshold (exact match, not "close enough") and no same-day-refresh alignment (logic is stable until someone edits it; backtest metrics drift day to day even for genuinely unchanged logic).
-  - **Fallback — metrics comparison (used only if the logic-tree endpoint is unavailable/fails for a candidate):** compare `annualized_rate_of_return`, `max_drawdown`, `trailing_one_year_return`, `cumulative_return`, `sharpe_ratio`, `calmar_ratio`, `backtest_days`, restricted to same-`refresh_date` rows only (force a refresh of the whole cluster first if members weren't refreshed the same day). "Identical" = within **3 percentage points** absolute for the percentage-scale fields (ARR, max drawdown, 1Y return) or **3% relative difference** for the rest (Sharpe, Calmar, cumulative return, backtest days) — validated against real near-miss pairs in the live data (e.g. "The Holy Grail" 151.8% ARR vs. its "Buy Copy"/"Canonical" cluster at 151.7% ARR, 0.05pp apart, correctly merges; "Holy Grail simplified" at 134.9% vs. "The Holy Grail" at 151.8%, 16.9pp apart, correctly stays separate).
-  - **Tiebreak among identical rows:** keep the one with the longest `oos_date` (longest continuously-unedited logic). If `oos_date` also ties (or all are null), fall back to the lexicographically earliest `symphony_id` — arbitrary but deterministic.
-  - **Future-state idea (2026-07-15), validated by a manual sanity-check sample:** user wants the tiebreak to eventually prefer whichever cluster member has the highest "Watched by N" popularity count. Not exposed by the API this pipeline uses (`/backtest`, `/score`) — only shown on the rendered Composer web app page. A one-off headless-Chrome scrape (not part of the shipped pipeline) of 13 clusters (51 symphonies, ~3% of the 179 total duplicate clusters) found the current `oos_date`/`symphony_id` tiebreak picked the most-watched member in only **2 of 13 clusters** — in the other 11, a differently-suffixed variant (usually the plain, unsuffixed name) had dramatically more watchers than the `symphony_id`-selected "kept" row, e.g. one cluster's kept row had 1 watcher against a same-cluster alternative with 1,755. Strong enough a pattern to justify eventually rebuilding the tiebreak around this signal, but still **not buildable as an automated pipeline step today** — no API access to the count, and hammering ~400+ rendered pages via headless Chrome per full-database refresh is a fundamentally heavier, slower integration than every other JSON-API call this pipeline makes elsewhere. Until a real data source exists (API support, or a deliberate decision to accept the scraping cost on a slower cadence), **per-cluster manual overrides are handled ad hoc** on explicit user request: flip `flag`/`error` for every affected cluster member directly in `data/database.json` (not just the two rows being swapped — every row in the cluster references the kept `symphony_id` in its `error` field, and all of them need updating together or the cluster's cross-references go inconsistent), regenerate `database.js`/`database_summary.json`/`.js` via `scripts/export_summary.py`. **Clusters corrected this way so far (2026-07-15):** The Holy Grail, Mean Reversion Comparison to Python Code, TQQQ FTLT w/Sideways Market Mods (FINAL), Nuclear Energy with Feaver Frontrunner V5, S&P Symphony w/ Leverage, TQQQ or Not - Non-Degen Gambler Variant, "We know this works. We just get greedy." (old kept row's page was inaccessible/likely dead, an added reason to swap), Inside Nancy Pelosi's Chips- V3, Copy of Holy Grail simplified.
+  - **Fallback, metrics comparison (used only if the logic-tree endpoint is unavailable/fails for a candidate):** compare `annualized_rate_of_return`, `max_drawdown`, `trailing_one_year_return`, `cumulative_return`, `sharpe_ratio`, `calmar_ratio`, `backtest_days`, restricted to same-`refresh_date` rows only (force a refresh of the whole cluster first if members weren't refreshed the same day). "Identical" = within **3 percentage points** absolute for the percentage-scale fields (ARR, max drawdown, 1Y return) or **3% relative difference** for the rest (Sharpe, Calmar, cumulative return, backtest days): validated against real near-miss pairs in the live data (e.g. "The Holy Grail" 151.8% ARR vs. its "Buy Copy"/"Canonical" cluster at 151.7% ARR, 0.05pp apart, correctly merges; "Holy Grail simplified" at 134.9% vs. "The Holy Grail" at 151.8%, 16.9pp apart, correctly stays separate).
+  - **Tiebreak among identical rows:** keep the one with the longest `oos_date` (longest continuously-unedited logic). If `oos_date` also ties (or all are null), fall back to the lexicographically earliest `symphony_id`: arbitrary but deterministic.
+  - **Future-state idea (2026-07-15), validated by a manual sanity-check sample:** user wants the tiebreak to eventually prefer whichever cluster member has the highest "Watched by N" popularity count. Not exposed by the API this pipeline uses (`/backtest`, `/score`): only shown on the rendered Composer web app page. A one-off headless-Chrome scrape (not part of the shipped pipeline) of 13 clusters (51 symphonies, ~3% of the 179 total duplicate clusters) found the current `oos_date`/`symphony_id` tiebreak picked the most-watched member in only **2 of 13 clusters**: in the other 11, a differently-suffixed variant (usually the plain, unsuffixed name) had dramatically more watchers than the `symphony_id`-selected "kept" row, e.g. one cluster's kept row had 1 watcher against a same-cluster alternative with 1,755. Strong enough a pattern to justify eventually rebuilding the tiebreak around this signal, but still **not buildable as an automated pipeline step today**: no API access to the count, and hammering ~400+ rendered pages via headless Chrome per full-database refresh is a fundamentally heavier, slower integration than every other JSON-API call this pipeline makes elsewhere. Until a real data source exists (API support, or a deliberate decision to accept the scraping cost on a slower cadence), **per-cluster manual overrides are handled ad hoc** on explicit user request: flip `flag`/`error` for every affected cluster member directly in `data/database.json` (not just the two rows being swapped, every row in the cluster references the kept `symphony_id` in its `error` field, and all of them need updating together or the cluster's cross-references go inconsistent), regenerate `database.js`/`database_summary.json`/`.js` via `scripts/export_summary.py`. **Clusters corrected this way so far (2026-07-15):** The Holy Grail, Mean Reversion Comparison to Python Code, TQQQ FTLT w/Sideways Market Mods (FINAL), Nuclear Energy with Feaver Frontrunner V5, S&P Symphony w/ Leverage, TQQQ or Not - Non-Degen Gambler Variant, "We know this works. We just get greedy." (old kept row's page was inaccessible/likely dead, an added reason to swap), Inside Nancy Pelosi's Chips- V3, Copy of Holy Grail simplified.
   - **Tiebreak has no name-based priority (confirmed v1.11.18):** per user decision, the `symphony_id` tiebreak is used exactly as specified, with no special-casing for `TESTPORT #`/WIP-marker names even though that can produce a counterintuitive "keeper" (see examples below). Simplicity over a bespoke priority rule for what's already an arbitrary fallback.
   - **Real examples, `symphony_id` tiebreak (v1.11.18):**
-    - 4-way "Holy Grail simplified" cluster (`TESTPORT #016: Copy of Holy Grail simplified`, `Copy of Holy Grail simplified (Invest Copy) (Invest Copy)`, `Copy of Holy Grail simplified`, `Copy of Copy of Holy Grail simplified`) — confirmed structurally identical via the logic-tree check, `oos_date` also identical across all four. This is the example that motivated running `flag_name_noise.py` *before* the dedup pass: by the time dedup actually ran, `TESTPORT #016:` had already been flagged `excluded` by the name-noise pass and was never a dedup candidate at all, so the `symphony_id` tiebreak among the remaining three picked `Bpq9NoCpCJfN0nrKk5dC` ("...(Invest Copy) (Invest Copy)") as the keeper instead — confirmed against the real post-run data. A legitimate-looking name stays visible in "Working," exactly the outcome the sequencing was designed for, achieved without any tiebreak special-casing.
-    - "TQQQ For The Long Term V2 (226.7% RR/46.1% Max DD)" cluster (6 rows) splits into two identical sub-groups plus one genuine remix (`...+ The Holy Grail`, different metrics, correctly excluded): one 2-row sub-group where `oos_date` actually differs (2022-08-24 vs 2022-12-04) so the *primary* rule decides directly, no tiebreak needed; one 3-row sub-group where `oos_date` ties for all three, falling to the `symphony_id` sort, which keeps an `(Invest Copy)`-suffixed row (`Ipvw0S4HlF8GNa7Oe6TP`) over the plain-named one — same shape of arbitrary-but-accepted outcome as the first example.
-  - **Candidate-finding signal (elaborated v1.11.18):** name-normalization alone, no corroborating signal (e.g. `last_market_days_holdings`) needed. Reasoning: the actual duplicate decision is made by the exact logic-tree structural check, which can't be fooled — so the two possible failure modes of the name-based candidate filter are asymmetric. A false positive (coincidentally similar names grouped together) is harmless: the structural check just fails to match and both rows are correctly kept, at the cost of one extra cheap API call. A false negative (a real duplicate published under a name too different to normalize together) is a soft failure: that pair just doesn't get deduped this pass, the database stays slightly noisier than ideal, but nothing is ever wrongly deleted. Since a wrong deletion is the only outcome that actually matters and the structural check already fully guards against it, a corroborating signal mostly adds complexity (holdings can legitimately differ between two real duplicates just from market-price timing) without reducing the one real risk. Do tighten the normalization regex itself, though — it's currently missing `(Buy Copy)`, which appears in the live data alongside `(Invest Copy)`.
-  - **Disposition of the losers — revised v1.11.18, supersedes the v1.11.16 "delete outright" decision for dedup specifically:** per user decision, duplicates are **flagged, not deleted**. Extend the `flag` field's value set with a new `"duplicate"` level (alongside `"excluded" | "caution" | "retry"`); every cluster member except the kept "original" gets `flag = "duplicate"`, all rows stay in `data/database.json`. This is a real policy change from the earlier "delete outright, preserve URL in storage.csv" plan — that treatment is unchanged for the already-executed 404/422 `excluded` purge (v1.11.14), it's specifically the dedup losers that get the flag-and-keep treatment instead.
-  - **UI built (v1.11.20):** per user decision, `"Duplicates"` added as a 4th flag-mode option (not folded into "Broken"), positioned between "Broken" and "All". Full mode order/labels: `default` → **Working**, `flagged` → **Broken** (`caution`/`excluded` only), `duplicates` → **Duplicates** (`flag === 'duplicate'` only), `all` → **All**. "Working" (the default view) excludes all three noise categories — `caution`, `excluded`, and `duplicate` — via a shared `isNoiseFlag()` check.
-  - **Pipeline built and run (v1.11.22):** `scripts/dedupe_symphonies.py` implements the full policy above — normalize-name clustering restricted to `flag == null` rows only, logic-tree structural check with the metrics-tolerance fallback, `oos_date`→`symphony_id` tiebreak. Tested against a real 5-member "Holy Grail" family before the full run (correctly kept the hand-computed winner; correctly left two near-miss rows alone since their names didn't normalize into the same candidate cluster — an accepted soft-miss, not a bug). **Full run results:** 362 candidate clusters (842 candidate rows) processed; **225 rows flagged `duplicate`** (229 total including the earlier validation test); **23 logic-tree fetches failed** (mostly `404`s — likely symphonies deleted/made private between when they were scraped and this run; those rows were left ungrouped rather than force-refreshed, a known, accepted gap in this pass, not a crash). Final database-wide flag tally: 6,221 clean, 229 duplicate, 88 excluded, 88 caution, 14 retry (6,640 total). `database_summary.json`/`.js` and `Full Database.xlsx` regenerated to match.
-- [x] **Resolved (v1.11.22):** the exclusion-rule patterns (`TESTPORT #`, WIP markers) are flagged, not deleted — reusing the existing `excluded` level rather than a new one, since the practical effect (hidden from default views) is the same as a permanently-failing row. See `scripts/flag_name_noise.py` above.
+    - 4-way "Holy Grail simplified" cluster (`TESTPORT #016: Copy of Holy Grail simplified`, `Copy of Holy Grail simplified (Invest Copy) (Invest Copy)`, `Copy of Holy Grail simplified`, `Copy of Copy of Holy Grail simplified`): confirmed structurally identical via the logic-tree check, `oos_date` also identical across all four. This is the example that motivated running `flag_name_noise.py` *before* the dedup pass: by the time dedup actually ran, `TESTPORT #016:` had already been flagged `excluded` by the name-noise pass and was never a dedup candidate at all, so the `symphony_id` tiebreak among the remaining three picked `Bpq9NoCpCJfN0nrKk5dC` ("...(Invest Copy) (Invest Copy)") as the keeper instead, confirmed against the real post-run data. A legitimate-looking name stays visible in "Working," exactly the outcome the sequencing was designed for, achieved without any tiebreak special-casing.
+    - "TQQQ For The Long Term V2 (226.7% RR/46.1% Max DD)" cluster (6 rows) splits into two identical sub-groups plus one genuine remix (`...+ The Holy Grail`, different metrics, correctly excluded): one 2-row sub-group where `oos_date` actually differs (2022-08-24 vs 2022-12-04) so the *primary* rule decides directly, no tiebreak needed; one 3-row sub-group where `oos_date` ties for all three, falling to the `symphony_id` sort, which keeps an `(Invest Copy)`-suffixed row (`Ipvw0S4HlF8GNa7Oe6TP`) over the plain-named one, same shape of arbitrary-but-accepted outcome as the first example.
+  - **Candidate-finding signal (elaborated v1.11.18):** name-normalization alone, no corroborating signal (e.g. `last_market_days_holdings`) needed. Reasoning: the actual duplicate decision is made by the exact logic-tree structural check, which can't be fooled, so the two possible failure modes of the name-based candidate filter are asymmetric. A false positive (coincidentally similar names grouped together) is harmless: the structural check just fails to match and both rows are correctly kept, at the cost of one extra cheap API call. A false negative (a real duplicate published under a name too different to normalize together) is a soft failure: that pair just doesn't get deduped this pass, the database stays slightly noisier than ideal, but nothing is ever wrongly deleted. Since a wrong deletion is the only outcome that actually matters and the structural check already fully guards against it, a corroborating signal mostly adds complexity (holdings can legitimately differ between two real duplicates just from market-price timing) without reducing the one real risk. Do tighten the normalization regex itself, though, it's currently missing `(Buy Copy)`, which appears in the live data alongside `(Invest Copy)`.
+  - **Disposition of the losers, revised v1.11.18, supersedes the v1.11.16 "delete outright" decision for dedup specifically:** per user decision, duplicates are **flagged, not deleted**. Extend the `flag` field's value set with a new `"duplicate"` level (alongside `"excluded" | "caution" | "retry"`); every cluster member except the kept "original" gets `flag = "duplicate"`, all rows stay in `data/database.json`. This is a real policy change from the earlier "delete outright, preserve URL in storage.csv" plan, that treatment is unchanged for the already-executed 404/422 `excluded` purge (v1.11.14), it's specifically the dedup losers that get the flag-and-keep treatment instead.
+  - **UI built (v1.11.20):** per user decision, `"Duplicates"` added as a 4th flag-mode option (not folded into "Broken"), positioned between "Broken" and "All". Full mode order/labels: `default` → **Working**, `flagged` → **Broken** (`caution`/`excluded` only), `duplicates` → **Duplicates** (`flag === 'duplicate'` only), `all` → **All**. "Working" (the default view) excludes all three noise categories, `caution`, `excluded`, and `duplicate`: via a shared `isNoiseFlag()` check.
+  - **Pipeline built and run (v1.11.22):** `scripts/dedupe_symphonies.py` implements the full policy above, normalize-name clustering restricted to `flag == null` rows only, logic-tree structural check with the metrics-tolerance fallback, `oos_date`→`symphony_id` tiebreak. Tested against a real 5-member "Holy Grail" family before the full run (correctly kept the hand-computed winner; correctly left two near-miss rows alone since their names didn't normalize into the same candidate cluster, an accepted soft-miss, not a bug). **Full run results:** 362 candidate clusters (842 candidate rows) processed; **225 rows flagged `duplicate`** (229 total including the earlier validation test); **23 logic-tree fetches failed** (mostly `404`s, likely symphonies deleted/made private between when they were scraped and this run; those rows were left ungrouped rather than force-refreshed, a known, accepted gap in this pass, not a crash). Final database-wide flag tally: 6,221 clean, 229 duplicate, 88 excluded, 88 caution, 14 retry (6,640 total). `database_summary.json`/`.js` and `Full Database.xlsx` regenerated to match.
+- [x] **Resolved (v1.11.22):** the exclusion-rule patterns (`TESTPORT #`, WIP markers) are flagged, not deleted, reusing the existing `excluded` level rather than a new one, since the practical effect (hidden from default views) is the same as a permanently-failing row. See `scripts/flag_name_noise.py` above.
 
-**Part B: Data-quality noise (error/warning-based) — policy decided v1.11.4, implemented as a schema field v1.11.8, consolidated to the sole write target v1.11.9**
+**Part B: Data-quality noise (error/warning-based): policy decided v1.11.4, implemented as a schema field v1.11.8, consolidated to the sole write target v1.11.9**
 
-**Final counts (v1.11.8, full 7,685-row refresh complete):** 1,113 entries (14.48%) carry a `script_errors` value, 88 (1.15%) carry a `data_warnings` value. This is a large jump from the earlier partial-sample audit (1.3%/0.5% at 3,707/7,685 rows) — the batch of rows processed in the second half of the refresh run failed at a much higher rate (~28% of that batch, almost entirely `422`), concentrated in previously-unrefreshed rows rather than spread evenly. The 422/404 rows have not been spot-checked by hand to confirm they're genuinely dead/private/malformed symphonies rather than some other artifact of that batch; worth a sample check before relying on the "excluded" set for anything user-facing. Breakdown:
+**Final counts (v1.11.8, full 7,685-row refresh complete):** 1,113 entries (14.48%) carry a `script_errors` value, 88 (1.15%) carry a `data_warnings` value. This is a large jump from the earlier partial-sample audit (1.3%/0.5% at 3,707/7,685 rows): the batch of rows processed in the second half of the refresh run failed at a much higher rate (~28% of that batch, almost entirely `422`), concentrated in previously-unrefreshed rows rather than spread evenly. The 422/404 rows have not been spot-checked by hand to confirm they're genuinely dead/private/malformed symphonies rather than some other artifact of that batch; worth a sample check before relying on the "excluded" set for anything user-facing. Breakdown:
 
 | Error | Count | Disposition |
 |---|---|---|
-| `404 Not Found` | 84 | Permanent — symphony deleted, private, or bad ID from the original scrape. Filter out of default views. |
-| `422 Unprocessable Entity` | 920 | Permanent — symphony can't be backtested (empty/malformed logic, zero allocations). Filter out of default views. |
-| `429 Too Many Requests` | 68 | Transient — retry, don't filter |
-| `500` / `503` / `TimeoutError` | 41 | Transient — retry, don't filter |
+| `404 Not Found` | 84 | Permanent, symphony deleted, private, or bad ID from the original scrape. Filter out of default views. |
+| `422 Unprocessable Entity` | 920 | Permanent, symphony can't be backtested (empty/malformed logic, zero allocations). Filter out of default views. |
+| `429 Too Many Requests` | 68 | Transient, retry, don't filter |
+| `500` / `503` / `TimeoutError` | 41 | Transient, retry, don't filter |
 
 `data_warnings` are a different kind of signal, not a fetch failure: `"Close price data is not available for TICKER after DATE"`, meaning a holding in that symphony stopped trading mid-backtest-window. The backtest still succeeded; the metrics are just potentially skewed by the delisting. Decision: filter these out of default Leaderboard/Screener views too (metrics computed over a window with a delisted holding aren't a fair comparison), but keep them visible in All Strategies with a ⚠ indicator rather than hiding them outright, since the row itself is real and refreshed, just caveated.
 
-- [x] **Implemented (v1.11.8):** rather than a boolean `is_excluded`/`is_noise` flag, added a single derived `flag` field, initially via a one-time migration script backfilled onto all 7,685 entries — see Full Database JSON Schema (Section 12) for the shape. `flag.level` is `"excluded"` (404/422), `"caution"` (`data_warnings` present), `"retry"` (429/500/503/timeout), or the field is `null` for clean rows. Final tally at the time: 1,004 excluded, 88 caution, 109 retry, 6,484 clean.
-- [x] **Consolidated (v1.11.9):** `flag` is now the *only* error/warning field. `scripts/refresh_full_database.py` was rewritten to compute and write `entry["flag"]` directly on every API call (`classify_error()` for failures, inline classification of the API's `data_warnings` response for successes) instead of writing separate `script_errors`/`data_warnings` fields. Those two raw fields were stripped from all 7,685 existing entries in `data/database.json`/`.js` (their content is preserved verbatim in `flag.reason`, nothing was lost). The one-time migration script (`scripts/add_flag_field.py`) was deleted since its job — backfilling `flag` from fields that no longer exist — no longer applies. Extensively tested against two independent live batches (50 records from the front of the array, 50 from the back, forced re-refresh via `--force`/a manual bottom-slice test harness): both runs produced correctly-shaped `flag` values, including a real transient `429` hit during the second test that was correctly classified `"retry"`; post-test audit confirmed all 7,685 entries are free of `script_errors`/`data_warnings` and `flag.level` counts remain internally consistent (6,484 clean + 88 caution + 109 retry + 1,004 excluded = 7,685).
-- [x] `scripts/export_full_database_to_xlsx.py` (nested-field serialization list updated to drop `data_warnings`, keep `flag`) and `scripts/export_summary.py` both re-run after the consolidation — `Full Database.xlsx` (36 columns, down from 38) and `data/database_summary.json`/`.js` (28 fields, down from 30) are back in sync with `database.json`.
-- [x] **Renamed (v1.11.10):** `last_updated` → `refresh_date`, `last_semantic_update_at` → `oos_date` across `data/database.json`/`.js`, `database_summary.json`/`.js`, `Full Database.xlsx`, `scripts/refresh_full_database.py`, `scripts/export_full_database_to_xlsx.py`, `scripts/import_full_database.py` (legacy, already out of sync with the current xlsx column layout independent of this rename), and `database.html`. `oos_date` is also now truncated to plain `YYYY-MM-DD` at write time (previously stored the Composer API's full timestamp with time-of-day and timezone, e.g. `2026-03-16T08:11:33.345904-04:00[America/New_York]`); the live "days since" computation in `oosDaysValue()` is unaffected since it only ever needed the date portion. This rename is scoped to `database.json`'s schema only — `strategies.json`/`glossary.json` each have their own separate `last_updated` field, untouched. Tested with a live `--force 20` batch after the rename; spot-checked entries show correctly-named fields and a properly truncated `oos_date` sourced from a real API response, not just the retroactive backfill.
-- [x] All Strategies' ⚠ badge (already present in `database.html`, previously reading `e.data_warnings` directly) fixed to read `e.flag && e.flag.level === 'caution'` instead, since `data_warnings` no longer exists post-consolidation — this was a live regression introduced and caught/fixed within this same session, not a pre-existing gap
-- [x] **Split (v1.11.11):** per user decision, `flag` is no longer an object — it reverted to being just the category string (`"excluded" | "caution" | "retry" | null`), paired with a new sibling field `error` (the original message: a string for script errors, or Composer's `data_warnings` object for `"caution"` rows). `scripts/refresh_full_database.py`'s `classify_error()` now returns a plain string; `apply_backtest_result()` and both failure branches in `main()` set `entry["flag"]`/`entry["error"]` separately. `database.html`'s ⚠ badge updated to `e.flag === 'caution'`. Migrated all 7,685 existing entries by splitting the `{level, reason}` object; counts unchanged (1,004 excluded, 88 caution, 109 retry, 6,484 clean). Tested live against a mixed batch (15 clean rows + 5 known-`excluded` rows, forcing both the success and failure write paths in the same run) — verified correct `flag`/`error` shapes on all four cases (clean, 422, 404, caution), zero entries left in the old object shape.
+- [x] **Implemented (v1.11.8):** rather than a boolean `is_excluded`/`is_noise` flag, added a single derived `flag` field, initially via a one-time migration script backfilled onto all 7,685 entries, see Full Database JSON Schema (Section 12) for the shape. `flag.level` is `"excluded"` (404/422), `"caution"` (`data_warnings` present), `"retry"` (429/500/503/timeout), or the field is `null` for clean rows. Final tally at the time: 1,004 excluded, 88 caution, 109 retry, 6,484 clean.
+- [x] **Consolidated (v1.11.9):** `flag` is now the *only* error/warning field. `scripts/refresh_full_database.py` was rewritten to compute and write `entry["flag"]` directly on every API call (`classify_error()` for failures, inline classification of the API's `data_warnings` response for successes) instead of writing separate `script_errors`/`data_warnings` fields. Those two raw fields were stripped from all 7,685 existing entries in `data/database.json`/`.js` (their content is preserved verbatim in `flag.reason`, nothing was lost). The one-time migration script (`scripts/add_flag_field.py`) was deleted since its job, backfilling `flag` from fields that no longer exist, no longer applies. Extensively tested against two independent live batches (50 records from the front of the array, 50 from the back, forced re-refresh via `--force`/a manual bottom-slice test harness): both runs produced correctly-shaped `flag` values, including a real transient `429` hit during the second test that was correctly classified `"retry"`; post-test audit confirmed all 7,685 entries are free of `script_errors`/`data_warnings` and `flag.level` counts remain internally consistent (6,484 clean + 88 caution + 109 retry + 1,004 excluded = 7,685).
+- [x] `scripts/export_full_database_to_xlsx.py` (nested-field serialization list updated to drop `data_warnings`, keep `flag`) and `scripts/export_summary.py` both re-run after the consolidation, `Full Database.xlsx` (36 columns, down from 38) and `data/database_summary.json`/`.js` (28 fields, down from 30) are back in sync with `database.json`.
+- [x] **Renamed (v1.11.10):** `last_updated` → `refresh_date`, `last_semantic_update_at` → `oos_date` across `data/database.json`/`.js`, `database_summary.json`/`.js`, `Full Database.xlsx`, `scripts/refresh_full_database.py`, `scripts/export_full_database_to_xlsx.py`, `scripts/import_full_database.py` (legacy, already out of sync with the current xlsx column layout independent of this rename), and `database.html`. `oos_date` is also now truncated to plain `YYYY-MM-DD` at write time (previously stored the Composer API's full timestamp with time-of-day and timezone, e.g. `2026-03-16T08:11:33.345904-04:00[America/New_York]`); the live "days since" computation in `oosDaysValue()` is unaffected since it only ever needed the date portion. This rename is scoped to `database.json`'s schema only, `strategies.json`/`glossary.json` each have their own separate `last_updated` field, untouched. Tested with a live `--force 20` batch after the rename; spot-checked entries show correctly-named fields and a properly truncated `oos_date` sourced from a real API response, not just the retroactive backfill.
+- [x] All Strategies' ⚠ badge (already present in `database.html`, previously reading `e.data_warnings` directly) fixed to read `e.flag && e.flag.level === 'caution'` instead, since `data_warnings` no longer exists post-consolidation, this was a live regression introduced and caught/fixed within this same session, not a pre-existing gap
+- [x] **Split (v1.11.11):** per user decision, `flag` is no longer an object, it reverted to being just the category string (`"excluded" | "caution" | "retry" | null`), paired with a new sibling field `error` (the original message: a string for script errors, or Composer's `data_warnings` object for `"caution"` rows). `scripts/refresh_full_database.py`'s `classify_error()` now returns a plain string; `apply_backtest_result()` and both failure branches in `main()` set `entry["flag"]`/`entry["error"]` separately. `database.html`'s ⚠ badge updated to `e.flag === 'caution'`. Migrated all 7,685 existing entries by splitting the `{level, reason}` object; counts unchanged (1,004 excluded, 88 caution, 109 retry, 6,484 clean). Tested live against a mixed batch (15 clean rows + 5 known-`excluded` rows, forcing both the success and failure write paths in the same run): verified correct `flag`/`error` shapes on all four cases (clean, 422, 404, caution), zero entries left in the old object shape.
 - [x] **Reset (v1.11.12):** per user decision, all 197 `caution`/`retry`-flagged entries had `flag`, `error`, and `refresh_date` reset to `null`, putting them back in the "due" queue for the next `refresh_full_database.py` run rather than spot-checking them individually. `excluded` entries were left untouched at this step.
 - [x] **Reordered (v1.11.13):** per user decision, the trailing field order in every entry is now `oos_date`, `refresh_date`, `flag`, `error` (previously `flag`, `refresh_date`, `oos_date`, `error`).
-- [x] **Purged (v1.11.14):** per user decision, skipped the hand spot-check and removed all 1,004 `excluded` (404/422) entries from `data/database.json` outright rather than just flagging them for UI exclusion. All 1,004 URLs were confirmed already present in `data/storage.csv` (the durable URL backup) before removal, so nothing is lost — any of them could be re-promoted back into `database.json` unrefreshed via `scripts/sync_storage_to_database.py` later. Built `scripts/purge_flagged_entries.py` (see Operational Runbook, "Purging Flagged Full-Database Entries") as a reusable tool for this and future cleanses, rather than a one-off script — takes one or more `flag` levels as arguments, enforces the storage.csv safety invariant, and regenerates every downstream export in one run. Database now has 6,681 entries (down from 7,685).
+- [x] **Purged (v1.11.14):** per user decision, skipped the hand spot-check and removed all 1,004 `excluded` (404/422) entries from `data/database.json` outright rather than just flagging them for UI exclusion. All 1,004 URLs were confirmed already present in `data/storage.csv` (the durable URL backup) before removal, so nothing is lost, any of them could be re-promoted back into `database.json` unrefreshed via `scripts/sync_storage_to_database.py` later. Built `scripts/purge_flagged_entries.py` (see Operational Runbook, "Purging Flagged Full-Database Entries") as a reusable tool for this and future cleanses, rather than a one-off script, takes one or more `flag` levels as arguments, enforces the storage.csv safety invariant, and regenerates every downstream export in one run. Database now has 6,681 entries (down from 7,685).
 - [x] **UI exclusion built (v1.11.15):** `isNoiseFlag(e)` (`e.flag === 'caution' || e.flag === 'excluded'`, deliberately excluding `'retry'` since transient failures aren't noise) now gates default views:
-  - **All Strategies**: per user decision (overriding the earlier "keep caution visible, badge only" plan), now defaults to *excluding* flagged rows too, via a 3-state toggle — **Default** (excludes), **All** (shows everything), **Broken** (shows only flagged rows). The ⚠ badge is kept regardless of mode.
-  - **Screener**: same 3-state toggle (Default/All/Broken), independent state from All Strategies. **Removed 2026-07-13** — see the dated addendum at the end of this section; Screener is no longer toggleable, always Working-only.
-  - **Leaderboard**: per user decision, **not** user-toggleable — always excludes flagged rows from the eligible/scoring pool, no toggle shown. Recomputes scores/tiers from the filtered pool (percentile rank depends on the pool, so this can't just be a post-hoc render filter like the other two tabs).
+  - **All Strategies**: per user decision (overriding the earlier "keep caution visible, badge only" plan), now defaults to *excluding* flagged rows too, via a 3-state toggle, **Default** (excludes), **All** (shows everything), **Broken** (shows only flagged rows). The ⚠ badge is kept regardless of mode.
+  - **Screener**: same 3-state toggle (Default/All/Broken), independent state from All Strategies. **Removed 2026-07-13**: see the dated addendum at the end of this section; Screener is no longer toggleable, always Working-only.
+  - **Leaderboard**: per user decision, **not** user-toggleable, always excludes flagged rows from the eligible/scoring pool, no toggle shown. Recomputes scores/tiers from the filtered pool (percentile rank depends on the pool, so this can't just be a post-hoc render filter like the other two tabs).
   - Implemented in `database.html`: `isNoiseFlag()`, `FLAG_MODES`/`FLAG_MODE_LABELS` (`{default: 'Default', all: 'All', flagged: 'Broken'}`), `applyFlagMode()`, `flagToggleHtml()`, plus per-tab `recompute*Entries()`/`recomputeLeaderboard()` functions wired into every filter/sort/toggle interaction path.
   - Verified via a headless-Chrome CDP smoke test (no `chromium-cli`/Playwright available in this environment; drove Chrome's DevTools Protocol directly over its remote-debugging websocket): All Strategies counts moved correctly across all three modes (Default 6,549 / All 6,681 / Broken 132 at test time), Leaderboard confirmed to have zero flag-toggle elements present, Screener toggle confirmed present with the "Broken" label, zero console errors.
-- [x] **Screener redesigned (v1.11.15):** per user decision, replaced Screener's hidden Filter Panel (shared component with All Strategies) with an always-visible, Finviz-style bucketed filter grid — one label+dropdown per numeric field (20 fields: all `FILTER_FIELDS` except `holding`, plus a free-text Symphony Name search), laid out in a responsive CSS grid. All Strategies is explicitly unchanged and keeps its existing hidden, specific-value (field/operator/exact-value) Filter Panel — per user decision, the two tabs intentionally have different filter UIs now, not a shared component.
-  - Bucket thresholds are **not hardcoded** — `buildBucketOptions()` computes each field's 25th/50th/75th/90th percentile live from the actual loaded dataset once after `dbEntries` loads, so the buckets stay meaningful as the database grows/changes instead of going stale like fixed numbers would.
+- [x] **Screener redesigned (v1.11.15):** per user decision, replaced Screener's hidden Filter Panel (shared component with All Strategies) with an always-visible, Finviz-style bucketed filter grid, one label+dropdown per numeric field (20 fields: all `FILTER_FIELDS` except `holding`, plus a free-text Symphony Name search), laid out in a responsive CSS grid. All Strategies is explicitly unchanged and keeps its existing hidden, specific-value (field/operator/exact-value) Filter Panel, per user decision, the two tabs intentionally have different filter UIs now, not a shared component.
+  - Bucket thresholds are **not hardcoded**: `buildBucketOptions()` computes each field's 25th/50th/75th/90th percentile live from the actual loaded dataset once after `dbEntries` loads, so the buckets stay meaningful as the database grows/changes instead of going stale like fixed numbers would.
   - `backtest_days` and `oos_date` (via `oosDaysValue()`) use a `duration` formatter producing natural-language labels (`"Over 11 months"`, `"Over 3.5 years"`) instead of raw day counts, per user request.
-  - Verified live via the same CDP harness: selecting "ARR: Over 50%" correctly cut the result count from 6,549 to 3,268; name search for "zoop" correctly returned 119; `oos_date`/`backtest_days` bucket labels read naturally; zero console errors. One real bug caught and fixed during testing: the CSS grid initially rendered as a single stacked column in a screenshot — turned out to be stale browser cache serving pre-edit `main.css`, not a layout bug; confirmed correct multi-column grid once cache was disabled for the test session.
+  - Verified live via the same CDP harness: selecting "ARR: Over 50%" correctly cut the result count from 6,549 to 3,268; name search for "zoop" correctly returned 119; `oos_date`/`backtest_days` bucket labels read naturally; zero console errors. One real bug caught and fixed during testing: the CSS grid initially rendered as a single stacked column in a screenshot, turned out to be stale browser cache serving pre-edit `main.css`, not a layout bug; confirmed correct multi-column grid once cache was disabled for the test session.
 
-- [x] Part A (name-based noise) implemented v1.11.22 — see above, `scripts/flag_name_noise.py`
+- [x] Part A (name-based noise) implemented v1.11.22, see above, `scripts/flag_name_noise.py`
 
 - [x] **Search + Screener refinements (2026-07-13):**
-  - Added a "Search by name..." textbox (`.db-search-input`) to the left of the Filter button on **All Strategies** and **Leaderboard**, filtering by symphony name substring, case-insensitive (Screener already had its own name search inside the bucket grid). All three name-search boxes, including the pre-existing Screener one, now filter **live on every keystroke** instead of requiring Enter or blur — re-rendering the table also recreates the search input itself (same innerHTML-replacement pattern as everything else in this file), which would otherwise steal focus every keystroke; fixed by restoring focus and cursor position immediately after each re-render.
-  - **Removed Screener's 3-state flag toggle** (Default/All/Broken, built v1.11.15) entirely, per user decision — Screener is now always Working-only (unflagged, non-duplicate), matching Leaderboard's existing non-toggleable behavior. Only All Strategies still has a toggle (the 4-state Working/Broken/Duplicates/All from Part A above).
+  - Added a "Search by name..." textbox (`.db-search-input`) to the left of the Filter button on **All Strategies** and **Leaderboard**, filtering by symphony name substring, case-insensitive (Screener already had its own name search inside the bucket grid). All three name-search boxes, including the pre-existing Screener one, now filter **live on every keystroke** instead of requiring Enter or blur, re-rendering the table also recreates the search input itself (same innerHTML-replacement pattern as everything else in this file), which would otherwise steal focus every keystroke; fixed by restoring focus and cursor position immediately after each re-render.
+  - **Removed Screener's 3-state flag toggle** (Default/All/Broken, built v1.11.15) entirely, per user decision, Screener is now always Working-only (unflagged, non-duplicate), matching Leaderboard's existing non-toggleable behavior. Only All Strategies still has a toggle (the 4-state Working/Broken/Duplicates/All from Part A above).
   - **Bucket dropdowns expanded** from the original 4-5 sparse options (25th/50th/75th/90th percentile for "higher is better" fields, 75th/50th/25th for "lower is better" fields) to a uniform **9 deciles (10th-90th percentile, 10% steps) + Any = 10 total options**, for all 20 fields regardless of direction, still ordered loosest-to-strictest (e.g. ARR: "Over 10%" → "Over 220%"; Std Deviation: "Under 70%" → "Under 13%"). Verified locally via a headless-Chrome DOM dump confirming exact option counts and ordering on both a "higher" and a "lower" field before shipping.
 
 ### V1.15: Full-Scale Refresh
@@ -2023,9 +2207,9 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 - [x] `scripts/refresh_full_database.py --force` launched in the background against all 6,488 entries, populating the full v1.9.1 field set for every row, not just `last_updated`/`script_errors` (started v1.9.4)
 - [x] **Race condition found and fixed (v1.11.3):** `refresh_full_database.py` loads `database.json` into memory once at startup and periodically overwrites the whole file with that in-memory copy on every checkpoint. Running `sync_storage_to_database.py` (or `import_full_database.py`, or any other script that writes `database.json`) while a refresh is still running in the background gets silently clobbered on the refresh script's next checkpoint, the sync appeared to succeed (correct file on disk immediately after), then reverted back to the pre-sync state a few checkpoints later. Caught when a routine entry-count check came back wrong; recovered by stopping the running refresh, re-running the sync, and restarting the refresh against the now-correct file. **Operational rule going forward: never run another script that writes `database.json` while a refresh is running in the background; stop it first.**
 - [x] Monitor for new failure patterns beyond the original quota error: none found so far, the resumed run (v1.11.4) is producing the same 404/422/429/500/503/timeout shapes as the paused run, no new error type
-- [x] **Recovery outcome (final, v1.11.22-23):** of the original 7,685-entry database, 1,004 rows were permanently 404/422-broken and purged (v1.11.14); a further 88 name-pattern-noise rows and 229 near-identical duplicates were flagged (not deleted) rather than counted as "recovered." Final live database: 6,640 entries, 6,221 of them clean with usable metrics. A precise "recovery rate" against the original error set was not separately tracked as its own metric beyond these final counts — the practical outcome (clean vs. flagged vs. purged, and why) is fully captured by the `flag` field breakdown above.
+- [x] **Recovery outcome (final, v1.11.22-23):** of the original 7,685-entry database, 1,004 rows were permanently 404/422-broken and purged (v1.11.14); a further 88 name-pattern-noise rows and 229 near-identical duplicates were flagged (not deleted) rather than counted as "recovered." Final live database: 6,640 entries, 6,221 of them clean with usable metrics. A precise "recovery rate" against the original error set was not separately tracked as its own metric beyond these final counts, the practical outcome (clean vs. flagged vs. purged, and why) is fully captured by the `flag` field breakdown above.
 - [x] **Policy decided (v1.11.4)** for rows that fail after a real API attempt, see V1.14 Part B: 404/422 are permanent (flag and exclude from default views, implemented there, not here); 429/500/503/timeout are transient (leave unflagged, let the normal staleness-check retry cycle clear them on a future run)
-- [x] Leaderboard, Screener, and the Filter Panel re-verified against the full refreshed (and now deduplicated) dataset throughout V1.14's implementation and testing (v1.11.15-23) — all three were live-tested via the CDP harness against real, current data at every step, not just the original partial dataset they were originally built against
+- [x] Leaderboard, Screener, and the Filter Panel re-verified against the full refreshed (and now deduplicated) dataset throughout V1.14's implementation and testing (v1.11.15-23): all three were live-tested via the CDP harness against real, current data at every step, not just the original partial dataset they were originally built against
 
 ### V1.16: Performance Fix (Data Weight)
 
@@ -2044,15 +2228,15 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 
 **Status:** Complete (2026-07-13). Supersedes V1.13's scoring model (that section is left intact above as the historical launch record; this section is the current live methodology).
 
-**Why this happened:** user feedback (2026-07-08) that the V1.13 scoring "isn't as good as I would like it to be," with no specifics initially. Rather than guess, the actual mission was established first: *identify symphonies with the best return and a long backtest, while being relatively safe, with long-term performance* — a narrower, more specific goal than V1.13's original "well-rounded across 20 stats" design. V1.13's real problems against that mission, identified before any rework began:
+**Why this happened:** user feedback (2026-07-08) that the V1.13 scoring "isn't as good as I would like it to be," with no specifics initially. Rather than guess, the actual mission was established first: *identify symphonies with the best return and a long backtest, while being relatively safe, with long-term performance*: a narrower, more specific goal than V1.13's original "well-rounded across 20 stats" design. V1.13's real problems against that mission, identified before any rework began:
 
 - Longevity was only 10% of the score (100/1,000), despite "long backtest" being an explicitly named, co-equal requirement.
 - Half the model (Asymmetry/Shape + Concentration/Fragility, 200/1,000) was metrics most people don't reason about at all (Skewness, Kurtosis, Tail Ratio, three "top-day contribution" stats), heavily redundant with Max Drawdown/Standard Deviation.
 - Four separate risk-adjusted ratios (Sharpe/Calmar/Sortino/Win Rate) mostly measured the same underlying idea from slightly different angles.
-- The clamp constant (0.22) was flagged at V1.13 launch for "post-rollout re-evaluation against the actual score distribution at full scale" — that re-check never happened.
-- S+ required a literal perfect 1,000/1,000, which meant it never fired in practice — confirmed live: even the single best-scoring strategy in the entire 6,225-entry eligible pool topped out around 890-900/1,000, nowhere near a perfect score, because no strategy clears the clamp's full-marks threshold on all 20 metrics simultaneously.
+- The clamp constant (0.22) was flagged at V1.13 launch for "post-rollout re-evaluation against the actual score distribution at full scale", that re-check never happened.
+- S+ required a literal perfect 1,000/1,000, which meant it never fired in practice, confirmed live: even the single best-scoring strategy in the entire 6,225-entry eligible pool topped out around 890-900/1,000, nowhere near a perfect score, because no strategy clears the clamp's full-marks threshold on all 20 metrics simultaneously.
 
-**Process:** rather than rebuild from a blank slate, every metric from V1.13 was individually rated 1.0-10.0 for how directly it serves the stated mission, with a written rationale per rating (self-reviewed once for internal consistency — e.g. Sortino Ratio was initially under-rated relative to Standard Deviation despite being the more mission-aligned metric, since it only penalizes downside volatility rather than symmetric swings; corrected on review). Point weights were then derived proportionally from those importance scores (`points = 1000 × score ÷ sum-of-all-scores`), not from a category-based allocation. Two real strategies (zoop's "TQQQ FOR THE LONG TERM (2026 Edition)" and "Sometimes TQQQ (2026 Edition)") were used as running test cases throughout — same backtest length and `oos_date`, very different Return/Safety profiles — to concretely observe how weight changes actually moved real scores, rather than reasoning about it in the abstract. All candidate models were validated by running them against the live `database_summary.json` (6,225 eligible entries) via a throwaway Python test script mirroring `database.html`'s exact scoring code, output to a reviewable xlsx (url/tier/score), before anything touched the live site.
+**Process:** rather than rebuild from a blank slate, every metric from V1.13 was individually rated 1.0-10.0 for how directly it serves the stated mission, with a written rationale per rating (self-reviewed once for internal consistency, e.g. Sortino Ratio was initially under-rated relative to Standard Deviation despite being the more mission-aligned metric, since it only penalizes downside volatility rather than symmetric swings; corrected on review). Point weights were then derived proportionally from those importance scores (`points = 1000 × score ÷ sum-of-all-scores`), not from a category-based allocation. Two real strategies (zoop's "TQQQ FOR THE LONG TERM (2026 Edition)" and "Sometimes TQQQ (2026 Edition)") were used as running test cases throughout, same backtest length and `oos_date`, very different Return/Safety profiles, to concretely observe how weight changes actually moved real scores, rather than reasoning about it in the abstract. All candidate models were validated by running them against the live `database_summary.json` (6,225 eligible entries) via a throwaway Python test script mirroring `database.html`'s exact scoring code, output to a reviewable xlsx (url/tier/score), before anything touched the live site.
 
 **Locked scoring model: same 20 metrics as V1.13, reweighted, no categories dropped:**
 
@@ -2070,26 +2254,26 @@ Category totals: A 200 / B 100 / C 200 / D 200 / E 100 / F 100 / G 100 = **1,000
 | | | 2-Week Trailing Return | 11 |
 | | | Kurtosis | 10 |
 
-Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_return`, `mean`, `min`, `max`, `herfindahl_index`, `total_costs`, `annualized_turnover`) — those exclusion reasons were never in question, only the weighting of what's already scored.
+Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_return`, `mean`, `min`, `max`, `herfindahl_index`, `total_costs`, `annualized_turnover`): those exclusion reasons were never in question, only the weighting of what's already scored.
 
-**Category regrouping (display only, for the per-row breakdown modal and Methodology modal — doesn't affect scoring math):** V1.13's 7 categories collapsed to 4, matching the mission's actual shape rather than an arbitrary split: **Return** (6 metrics, 281 pts), **Risk-Adjusted / Downside Risk** (6 metrics, 427 pts), **Shape & Concentration** (6 metrics, 170 pts), **Longevity** (2 metrics, 122 pts).
+**Category regrouping (display only, for the per-row breakdown modal and Methodology modal, doesn't affect scoring math):** V1.13's 7 categories collapsed to 4, matching the mission's actual shape rather than an arbitrary split: **Return** (6 metrics, 281 pts), **Risk-Adjusted / Downside Risk** (6 metrics, 427 pts), **Shape & Concentration** (6 metrics, 170 pts), **Longevity** (2 metrics, 122 pts).
 
-**Clamp constant raised from 0.22 to 0.14.** The clamp's "full marks" threshold is exactly `1 − Q` — V1.13's 0.22 meant anyone at or above the 78th percentile on a metric scored identically, with no reward for being at the 99th vs. the 80th. Tested empirically against the live pool at Q = 0.10 through 0.30: **lower Q raises the full-marks bar and pushes scores down** (Q=0.10 dropped the pool's top score to 867.6); **higher Q lowers that bar and pushes scores up** (Q=0.25 → 903.1 top score, Q=0.30 → 931.4). Landed on **0.14** — meaningfully tighter than V1.13's 0.22 (more differentiation among strong performers) without inflating the whole distribution the way Q=0.25+ started to. Confirmed this reshuffles rank order at the margins, not just score magnitude, as Q moves (different strategies benefit depending on exactly which of their metrics sit in the "almost-but-not-quite full marks" zone) — an accepted, expected side effect, not a bug.
+**Clamp constant raised from 0.22 to 0.14.** The clamp's "full marks" threshold is exactly `1 − Q`: V1.13's 0.22 meant anyone at or above the 78th percentile on a metric scored identically, with no reward for being at the 99th vs. the 80th. Tested empirically against the live pool at Q = 0.10 through 0.30: **lower Q raises the full-marks bar and pushes scores down** (Q=0.10 dropped the pool's top score to 867.6); **higher Q lowers that bar and pushes scores up** (Q=0.25 → 903.1 top score, Q=0.30 → 931.4). Landed on **0.14**: meaningfully tighter than V1.13's 0.22 (more differentiation among strong performers) without inflating the whole distribution the way Q=0.25+ started to. Confirmed this reshuffles rank order at the margins, not just score magnitude, as Q moves (different strategies benefit depending on exactly which of their metrics sit in the "almost-but-not-quite full marks" zone): an accepted, expected side effect, not a bug.
 
-**S+ redefined as a real rank cut, not an unreachable perfect score.** New tier cuts: **S+ = top 0.25%**, **S = next 9.75% (top 0.25-10%)**, A = next 10% (10-20%), B = next 30% (20-50%), C = next 25% (50-75%), F = bottom 25%. This carves S+ out of what used to just be "S," rather than shifting every other tier's definition down a notch. Initially set to top 1% (62/6,225 entries), tightened to top 0.25% after launch feedback that 1% produced too many S+ entries — confirmed live: **16 entries land in S+** (≈0.26% of the 6,225 eligible pool) at the final cut.
+**S+ redefined as a real rank cut, not an unreachable perfect score.** New tier cuts: **S+ = top 0.25%**, **S = next 9.75% (top 0.25-10%)**, A = next 10% (10-20%), B = next 30% (20-50%), C = next 25% (50-75%), F = bottom 25%. This carves S+ out of what used to just be "S," rather than shifting every other tier's definition down a notch. Initially set to top 1% (62/6,225 entries), tightened to top 0.25% after launch feedback that 1% produced too many S+ entries, confirmed live: **16 entries land in S+** (≈0.26% of the 6,225 eligible pool) at the final cut.
 
 - [x] `database.html`: `SCORE_METRICS` weights, `CLAMP_Q`, `TIER_CUTS`, `SCORE_CATEGORIES`, and `computeTiers()`'s S+ logic all updated to match
 - [x] Methodology modal narrative text rewritten to describe the new mechanics (4 categories, ~14% clamp threshold, S+/S/A/B/C/F rank cuts)
-- [x] Verified locally via a headless-Chrome screenshot of the live Leaderboard tab and Methodology modal before pushing — tier distribution (S+ 62 / S 560 / A 623 / B 1,868 / C 1,559 / F 1,553) and top-15 scores matched the validated Python test script exactly
+- [x] Verified locally via a headless-Chrome screenshot of the live Leaderboard tab and Methodology modal before pushing, tier distribution (S+ 62 / S 560 / A 623 / B 1,868 / C 1,559 / F 1,553) and top-15 scores matched the validated Python test script exactly
 - [x] Eligibility gate unchanged from V1.13 (unflagged + `sharpe_ratio` present, not user-toggleable)
 
 ### V2.0: Full Database Goes Public
 
 **Status:** Complete (v1.12.0)
 
-**What actually happened, corrected from the original plan:** the original plan was one clean push once every gate was cleared. Instead, the code (`database.html` and its supporting CSS/JS/scripts) was pushed to `main` on v1.11.2 while the data files were deliberately held back until the full refresh and V1.14 noise-filtering pass completed. The data files went live on v1.12.0. `deploy.yml`'s rsync exclusion list was left unchanged — it already didn't touch the `database.json` family, and `Full Database.xlsx` (a local-only review artifact, not fetched by the live site) was never included in the exclusion list either since nothing needed excluding.
+**What actually happened, corrected from the original plan:** the original plan was one clean push once every gate was cleared. Instead, the code (`database.html` and its supporting CSS/JS/scripts) was pushed to `main` on v1.11.2 while the data files were deliberately held back until the full refresh and V1.14 noise-filtering pass completed. The data files went live on v1.12.0. `deploy.yml`'s rsync exclusion list was left unchanged, it already didn't touch the `database.json` family, and `Full Database.xlsx` (a local-only review artifact, not fetched by the live site) was never included in the exclusion list either since nothing needed excluding.
 
-- [x] Full docs and content audit of `database.html`, Leaderboard, and Screener (v1.12.0): no em-dashes found; copy reviewed and accurate. Mobile responsiveness audit **found and fixed two real, pre-existing sitewide CSS bugs**, not specific to this page: (1) `.nav-cta` (the "Open Composer" button) had the same specificity as `.btn`'s `display: inline-flex` and lost the cascade regardless of source order — meaning the button never actually hid on mobile anywhere on the site; fixed by reordering `.nav-cta`'s rule after `.btn`'s. (2) `.db-tabs` (used for the page-level tabs, Screener's view switcher, and the new flag-mode toggle) had no `overflow-x`, so on narrow viewports its content silently forced the whole page to scroll horizontally instead of scrolling internally; fixed with `overflow-x: auto`. Also fixed a `database.html`-specific instance of the same root problem: `.page` (a `flex: 1` child of `body { display: flex }`) had no `min-width: 0`, so its widest descendant (the data table) could force the whole page wider than the viewport instead of letting `.db-table-wrap`'s own `overflow-x: auto` contain it. Verified via headless-Chrome screenshots at a 390px mobile viewport before and after each fix.
+- [x] Full docs and content audit of `database.html`, Leaderboard, and Screener (v1.12.0): no em-dashes found; copy reviewed and accurate. Mobile responsiveness audit **found and fixed two real, pre-existing sitewide CSS bugs**, not specific to this page: (1) `.nav-cta` (the "Open Composer" button) had the same specificity as `.btn`'s `display: inline-flex` and lost the cascade regardless of source order, meaning the button never actually hid on mobile anywhere on the site; fixed by reordering `.nav-cta`'s rule after `.btn`'s. (2) `.db-tabs` (used for the page-level tabs, Screener's view switcher, and the new flag-mode toggle) had no `overflow-x`, so on narrow viewports its content silently forced the whole page to scroll horizontally instead of scrolling internally; fixed with `overflow-x: auto`. Also fixed a `database.html`-specific instance of the same root problem: `.page` (a `flex: 1` child of `body { display: flex }`) had no `min-width: 0`, so its widest descendant (the data table) could force the whole page wider than the viewport instead of letting `.db-table-wrap`'s own `overflow-x: auto` contain it. Verified via headless-Chrome screenshots at a 390px mobile viewport before and after each fix.
 - [x] Pushed the data files (`database.json`/`.js`, `database_summary.json`/`.js`, `storage.csv`) live (v1.12.0)
 - [x] Update Section 6 Feature List: moved "Full Database Initiative" from "In Progress" to "Shipped" (v1.12.0)
 
@@ -2099,9 +2283,9 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 **What it is:** `rsi.html` displays live 10-day RSI (Wilder's smoothing, computed from ~45 days of adjusted daily closes) for the 20-ticker Frontrunner signal universe (XLF, SPYV, VTV, SPY, IOO, UUP, FXI, QQQE, XLK, QQQ, XLE, VOX, TECL, SOXX, RETL, XLY, EEM, GLD, XLP, TLT), so a visitor can glance at the site and know which tickers are oversold/overbought right now. See Section 12 (RSI Signals JSON Schema) for the `data/rsi.json` shape.
 
-**RSI methodology:** Wilder's smoothing on adjusted daily closes (Composer's exact method is unconfirmed, but this is the industry-standard match — a QuantConnect staffer pointed at `MovingAverageType.WILDERS` as the closest replication of Composer's own displayed values). Formula, edge cases, and validation approach documented in `scripts/refresh_rsi.py`.
+**RSI methodology:** Wilder's smoothing on adjusted daily closes (Composer's exact method is unconfirmed, but this is the industry-standard match, a QuantConnect staffer pointed at `MovingAverageType.WILDERS` as the closest replication of Composer's own displayed values). Formula, edge cases, and validation approach documented in `scripts/refresh_rsi.py`.
 
-**Color thresholds (revised 2026-07-09, post-launch):** the original 70/30 scheme rendered every one of the 20 tickers as "Neutral" on the day it launched (all 20 landed between 34.7 and 65.2), making the page look inert. Replaced with a narrower band, tuned against that live data: ≥79 Extreme Overbought, 70–78 Overbought, 42–69 Neutral, 29–41 Oversold, ≤28 Extreme Oversold. Colors are literal hex values in `css/main.css` (not existing design tokens; the user specified a distinct green→red gradient for this page rather than reusing `--color-green`/`--color-pink`): `.rsi-extreme-overbought` `#00ff00` bold, `.rsi-overbought` `#2fb92f`, `.rsi-neutral` `#b0b0b0`, `.rsi-oversold` `#e04545`, `.rsi-extreme-oversold` `#ff0000` bold. The inner tiers' initial values (`#008900`/`#890000`) were repainted brighter after launch — too low-contrast against the dark table background to read. **Also fixed post-launch:** the rules were originally bare classes (`.rsi-oversold { ... }`), which lost the cascade to `.db-table td`'s own `color` rule (higher specificity: class+type beats a single class) — the color-coding silently never rendered at all until the selectors were rescoped to `.db-table td.rsi-oversold` etc.
+**Color thresholds (revised 2026-07-09, post-launch):** the original 70/30 scheme rendered every one of the 20 tickers as "Neutral" on the day it launched (all 20 landed between 34.7 and 65.2), making the page look inert. Replaced with a narrower band, tuned against that live data: ≥79 Extreme Overbought, 70–78 Overbought, 42–69 Neutral, 29–41 Oversold, ≤28 Extreme Oversold. Colors are literal hex values in `css/main.css` (not existing design tokens; the user specified a distinct green→red gradient for this page rather than reusing `--color-green`/`--color-pink`): `.rsi-extreme-overbought` `#00ff00` bold, `.rsi-overbought` `#2fb92f`, `.rsi-neutral` `#b0b0b0`, `.rsi-oversold` `#e04545`, `.rsi-extreme-oversold` `#ff0000` bold. The inner tiers' initial values (`#008900`/`#890000`) were repainted brighter after launch, too low-contrast against the dark table background to read. **Also fixed post-launch:** the rules were originally bare classes (`.rsi-oversold { ... }`), which lost the cascade to `.db-table td`'s own `color` rule (higher specificity: class+type beats a single class): the color-coding silently never rendered at all until the selectors were rescoped to `.db-table td.rsi-oversold` etc.
 
 - [x] `scripts/refresh_rsi.py`: fetches Yahoo Finance daily bars (`v8/finance/chart`, no API key), computes Wilder's RSI(10), writes `data/rsi.json` + `data/rsi.js` atomically
 - [x] `rsi.html`: sortable table (Ticker/Name/RSI(10d)/Signal), default sort descending by RSI, "Last refreshed" timestamp, no pagination (20 rows)
@@ -2113,7 +2297,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 **Status:** Backlog
 
-- [ ] **Replace 11 of the 12 curated "zoop's X (2026 Edition)" strategies with newer "evergreen" versions; remove the 12th (decided/confirmed 2026-07-15, all source symphonies now in the full database, not yet applied to the curated set)** — user authored updated, more evergreen versions of the curated zoop 2026-Edition strategies. Full mapping, confirmed by the user:
+- [ ] **Replace 11 of the 12 curated "zoop's X (2026 Edition)" strategies with newer "evergreen" versions; remove the 12th (decided/confirmed 2026-07-15, all source symphonies now in the full database, not yet applied to the curated set)**: user authored updated, more evergreen versions of the curated zoop 2026-Edition strategies. Full mapping, confirmed by the user:
 
   | Curated slug (2026 Edition) | Action | New evergreen symphony | New symphony_id |
   |---|---|---|---|
@@ -2128,23 +2312,23 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
   | `zoops-soxl-growth-2026` | Replace | zoop's SOXL Growth | `89DLODa3ARMwGUQP9cDx` |
   | `zoops-upro-ftlt-2026` | Replace **(confirmed, ticker changed UPRO→SPXL)** | zoop's SPXL FOR THE LONGTERM | `q0nwmcUDGKtg7sMydVxV` |
   | `zoops-kmlm-switcher-2026` | Replace | zoop's KMLM Switcher | `0SO8z4JkRVgiyhlkS2Xx` |
-  | `zoops-manhattan-project-2026` | **Remove, no replacement** | — | — |
+  | `zoops-manhattan-project-2026` | **Remove, no replacement** |, |, |
 
-  All 11 new symphonies are refreshed with real backtest data in `data/database.json` as of 2026-07-15. **Applying this is still a bigger lift than a normal database addition**: replacing a curated strategy means re-running the full "Adding a Strategy from a Composer URL" workflow (logic tree, AI summary, `how_it_works`/`signals`/`risk_profile` content) for each of the 11 new symphonies, then removing all 12 old slugs (11 replaced + 1 removed outright) from `data/strategies.json` — not just adding the database rows, which are already in place.
-- [x] **Add "Leaderboard Ranking" as an option for the Screener (built 2026-08-15, v1.17.0)** — the V1.17 Leaderboard score/tier now surfaces inside the Screener, both ways as decided:
+  All 11 new symphonies are refreshed with real backtest data in `data/database.json` as of 2026-07-15. **Applying this is still a bigger lift than a normal database addition**: replacing a curated strategy means re-running the full "Adding a Strategy from a Composer URL" workflow (logic tree, AI summary, `how_it_works`/`signals`/`risk_profile` content) for each of the 11 new symphonies, then removing all 12 old slugs (11 replaced + 1 removed outright) from `data/strategies.json`: not just adding the database rows, which are already in place.
+- [x] **Add "Leaderboard Ranking" as an option for the Screener (built 2026-08-15, v1.17.0)**: the V1.17 Leaderboard score/tier now surfaces inside the Screener, both ways as decided:
   - A **"Leaderboard Tier" select** in the filter grid, alongside the existing bucket filters. Options are cumulative ("S+ only", "S or better", … "C or better") rather than exact-match, to match the threshold semantics every other bucket filter already uses ("Over 12%", "Better than -30%") so the grid reads consistently.
   - **Sortable Rank / Tier / Score columns on all three `SCREENER_VIEWS`** (Overview, Risk-Adjusted, Distribution), via a shared `RANK_COLUMNS` spread so the three view definitions can't drift.
-  - **Implementation note — scoring is global, not per-filter.** `computeScores()`/`computeTiers()` run once over the full eligible pool in a new `recomputeGlobalRanking()`, which fills a `rankBySymphonyId` index that both the Leaderboard and the Screener read. The original wording of this item ("against the Screener's already-bucket-filtered pool") was **deliberately not followed**, because re-scoring inside the filtered subset would make the tier filter circular: filtering to "S or better" would immediately re-tier the survivors, so the set could never settle, and the two tabs would disagree about the same symphony. `recomputeLeaderboard()` was reduced to filtering only, and `recomputeGlobalRanking()` runs before the Screener renders. Rows not yet refreshed are in the Screener pool but not the ranking, so they show a dash and are excluded when a tier floor is active.
-- [x] **Homepage redesigned as a marketing/landing page (2026-07-15)** — `index.html`'s strategy grid (all 29 cards rendered inline) was removed entirely, now that `strategies.html` covers that listing on its own page (also sorted by longest backtest first, per the same-day change above). New structure: hero (rewritten copy framing the whole site, not just curated strategies; primary CTA "Browse Strategies" → `strategies.html`, secondary "Glossary" → `glossary.html`), a new 4-card "Explore the Site" grid (Strategies / Database / RSI Signals / Glossary, each linking out), and a new 3-step "How to use this site" section (Browse a strategy → Read the breakdown → Check live signals) tying the site's pieces together narratively. Modeled structurally (hero + eyebrow-labeled card-grid sections) after a landing page built for a sibling Azqato project, adapted to Composer Atlas's own design tokens and voice, not copied verbatim. New CSS: `.grid-4` (responsive 1/2/4-column grid, mirrors `.grid-3`'s breakpoints), `.explore-icon`, `.step-num` (numbered circle badge). Verified locally via desktop and mobile headless-Chrome screenshots, and confirmed all four explore-card links resolve correctly via a DOM dump, before pushing.
-- [x] **Stats bar redesigned (2026-07-15)** — replaced the original 5 stats (Strategies/Best Sharpe/Top ARR/Concepts/Longest Backtest, all cherry-picked maximums from the curated 29) after a full scoring pass rating ~30 candidate stats 1-10 for homepage importance (see conversation record; the two "max" stats were flagged as a highlight-reel framing at odds with the site's Transparency Over Hype tenet). New 5 stats, chosen for honesty and site-wide scope rather than cherry-picked extremes: **Strategies** (6,640, full database scale), **Median ARR** (+48.7%, full-DB median, not a cherry-picked max), **Median Drawdown** (-34.7%, full-DB median), **Curated** (29, ties back to the hero's primary CTA), **Last Refreshed** (a freshness/trust signal). Currently **hardcoded static values**, not yet wired to live data — update by hand after each full database refresh until a small derived stats file (e.g. `data/site_stats.json`, written alongside `export_summary.py`'s existing output) replaces this; loading the full `database_summary.json` client-side just for these numbers was explicitly rejected, it would blow the homepage's own <500KB total-page-weight target (Section 10, Performance Targets) many times over. Also removed the now-dead `data/strategies.js`/`data/glossary.js` script tags from `index.html` (~331KB combined, no longer read by any homepage JS once the stats stopped being computed client-side and the strategy grid was removed) — a real page-weight win, not just cleanup.
-- [x] **Mobile overflow bug at ~390px width (hardened 2026-08-15, v1.16.7)** — paragraph text and the nav hamburger appeared to overflow/cut off at narrow mobile widths, sitewide (seen on `strategies.html` and `about.html`). Investigation: the shared chrome (hero, stats bar, footer) already uses `flex-wrap` + `clamp()` + `box-sizing:border-box`, and `about.html` is pure prose in `.container`, so no single wide element was the cause; the remaining realistic triggers were a long unbreakable token forcing width and the absence of any horizontal-overflow safety net. Fix: hardened `body` with `overflow-x: clip` (prevents stray sideways scroll without making `<body>` a scroll container, so `position:sticky`/`fixed` and the fixed nav are unaffected) and `overflow-wrap: break-word` (long tickers/IDs/URLs wrap instead of forcing width). **Caveat:** applied without an in-session browser repro (no headless Chrome available this session); should be visually re-verified at ~390px on a device, and if the clip is masking a specific offending element, that element can still be tracked down separately.
-- [x] **Signal Miner: use a common sample window per run (done 2026-08-20, v1.19.0)** — raised 2026-08-20 while questioning the 2018 start date, and it is a **correctness issue independent of how far back the data goes**. `backtest()` divides by `N`, the length of the *entire* date axis, for both `tim` (`active / N`) and the mean feeding Sortino (`sumRet / N`). But a ticker that listed partway through the axis has `null` closes before that, so its signals can never fire there. The result: any signal touching a short-history ticker has its Time in Market structurally capped and its Sortino diluted by a stretch of history where the ticker did not exist. IBIT covers 30% of the current axis, so an IBIT signal cannot exceed `tim` 0.30 no matter how good it is, and its mean return is divided by roughly 3.3x more days than it could ever trade.
+  - **Implementation note, scoring is global, not per-filter.** `computeScores()`/`computeTiers()` run once over the full eligible pool in a new `recomputeGlobalRanking()`, which fills a `rankBySymphonyId` index that both the Leaderboard and the Screener read. The original wording of this item ("against the Screener's already-bucket-filtered pool") was **deliberately not followed**, because re-scoring inside the filtered subset would make the tier filter circular: filtering to "S or better" would immediately re-tier the survivors, so the set could never settle, and the two tabs would disagree about the same symphony. `recomputeLeaderboard()` was reduced to filtering only, and `recomputeGlobalRanking()` runs before the Screener renders. Rows not yet refreshed are in the Screener pool but not the ranking, so they show a dash and are excluded when a tier floor is active.
+- [x] **Homepage redesigned as a marketing/landing page (2026-07-15)**: `index.html`'s strategy grid (all 29 cards rendered inline) was removed entirely, now that `strategies.html` covers that listing on its own page (also sorted by longest backtest first, per the same-day change above). New structure: hero (rewritten copy framing the whole site, not just curated strategies; primary CTA "Browse Strategies" → `strategies.html`, secondary "Glossary" → `glossary.html`), a new 4-card "Explore the Site" grid (Strategies / Database / RSI Signals / Glossary, each linking out), and a new 3-step "How to use this site" section (Browse a strategy → Read the breakdown → Check live signals) tying the site's pieces together narratively. Modeled structurally (hero + eyebrow-labeled card-grid sections) after a landing page built for a sibling Azqato project, adapted to Composer Atlas's own design tokens and voice, not copied verbatim. New CSS: `.grid-4` (responsive 1/2/4-column grid, mirrors `.grid-3`'s breakpoints), `.explore-icon`, `.step-num` (numbered circle badge). Verified locally via desktop and mobile headless-Chrome screenshots, and confirmed all four explore-card links resolve correctly via a DOM dump, before pushing.
+- [x] **Stats bar redesigned (2026-07-15)**: replaced the original 5 stats (Strategies/Best Sharpe/Top ARR/Concepts/Longest Backtest, all cherry-picked maximums from the curated 29) after a full scoring pass rating ~30 candidate stats 1-10 for homepage importance (see conversation record; the two "max" stats were flagged as a highlight-reel framing at odds with the site's Transparency Over Hype tenet). New 5 stats, chosen for honesty and site-wide scope rather than cherry-picked extremes: **Strategies** (6,640, full database scale), **Median ARR** (+48.7%, full-DB median, not a cherry-picked max), **Median Drawdown** (-34.7%, full-DB median), **Curated** (29, ties back to the hero's primary CTA), **Last Refreshed** (a freshness/trust signal). Currently **hardcoded static values**, not yet wired to live data, update by hand after each full database refresh until a small derived stats file (e.g. `data/site_stats.json`, written alongside `export_summary.py`'s existing output) replaces this; loading the full `database_summary.json` client-side just for these numbers was explicitly rejected, it would blow the homepage's own <500KB total-page-weight target (Section 10, Performance Targets) many times over. Also removed the now-dead `data/strategies.js`/`data/glossary.js` script tags from `index.html` (~331KB combined, no longer read by any homepage JS once the stats stopped being computed client-side and the strategy grid was removed): a real page-weight win, not just cleanup.
+- [x] **Mobile overflow bug at ~390px width (hardened 2026-08-15, v1.16.7)**: paragraph text and the nav hamburger appeared to overflow/cut off at narrow mobile widths, sitewide (seen on `strategies.html` and `about.html`). Investigation: the shared chrome (hero, stats bar, footer) already uses `flex-wrap` + `clamp()` + `box-sizing:border-box`, and `about.html` is pure prose in `.container`, so no single wide element was the cause; the remaining realistic triggers were a long unbreakable token forcing width and the absence of any horizontal-overflow safety net. Fix: hardened `body` with `overflow-x: clip` (prevents stray sideways scroll without making `<body>` a scroll container, so `position:sticky`/`fixed` and the fixed nav are unaffected) and `overflow-wrap: break-word` (long tickers/IDs/URLs wrap instead of forcing width). **Caveat:** applied without an in-session browser repro (no headless Chrome available this session); should be visually re-verified at ~390px on a device, and if the clip is masking a specific offending element, that element can still be tracked down separately.
+- [x] **Signal Miner: use a common sample window per run (done 2026-08-20, v1.19.0)**: raised 2026-08-20 while questioning the 2018 start date, and it is a **correctness issue independent of how far back the data goes**. `backtest()` divides by `N`, the length of the *entire* date axis, for both `tim` (`active / N`) and the mean feeding Sortino (`sumRet / N`). But a ticker that listed partway through the axis has `null` closes before that, so its signals can never fire there. The result: any signal touching a short-history ticker has its Time in Market structurally capped and its Sortino diluted by a stretch of history where the ticker did not exist. IBIT covers 30% of the current axis, so an IBIT signal cannot exceed `tim` 0.30 no matter how good it is, and its mean return is divided by roughly 3.3x more days than it could ever trade.
 
   Fix: compute the run's window as the intersection of the selected tickers' available history (start at the latest first-valid date among them, which is what the user proposed), and backtest over that window only. Then every row in a given run is scored on the same sample and the metrics are comparable again.
 
   **Consequences to handle:** metrics become dependent on the ticker selection, so results are no longer comparable *across* runs with different selections; the window in use must be shown prominently near the results. Selecting one recent ticker collapses the window for the entire run, so the UI should warn before a short-history ticker (already dashed in the chip list) drags an otherwise long sample down to two years.
 
-- [x] **Signal Miner: extend price history before 2018** (done v1.20.1) � `START_DATE` moved from `2018-01-01` to `2010-01-01`. The axis went from 2170 to **4183 trading days** (2010-01-04 onward) and `prices.json` from 1363KB to **2573KB**, close to the 2.6MB estimate. 2010 was chosen over 2000 because it covers the whole leveraged-ETF era (TQQQ, UPRO, SPXL, TNA, FAS, TMF all launched 2010 or earlier) while going further back mostly adds nulls: little of this universe existed before 2010, and the common sample window means one modern ticker in a selection collapses the window anyway. Every visitor pays the file size on load, which is what bounds it.
+- [x] **Signal Miner: extend price history before 2018** (done v1.20.1): `START_DATE` moved from `2018-01-01` to `2010-01-01`. The axis went from 2170 to **4183 trading days** (2010-01-04 onward) and `prices.json` from 1363KB to **2573KB**, close to the 2.6MB estimate. 2010 was chosen over 2000 because it covers the whole leveraged-ETF era (TQQQ, UPRO, SPXL, TNA, FAS, TMF all launched 2010 or earlier) while going further back mostly adds nulls: little of this universe existed before 2010, and the common sample window means one modern ticker in a selection collapses the window anyway. Every visitor pays the file size on load, which is what bounds it.
 
   **A latent bug was found doing this and is the real lesson.** `fetch_daily_closes` requested a hardcoded `range=10y` and then filtered to `START_DATE`, so the start date could only ever *narrow* that ten-year window, never widen it. The first re-run returned every ticker starting 2016-08-22 (exactly ten years back) and looked completely normal: correct schema, plausible prices, no error. The script now sends explicit `period1`/`period2` epoch bounds. **When changing the window, verify the reported first date actually moved**, because this class of bug is invisible in the output.
 
@@ -2152,7 +2336,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
   **Post-change data state (as of v1.20.1, before the v1.21.2 prune):** 55 of 80 tickers had full coverage; the rest list partway through, so the common sample window binds more often than it used to. One known data hole: 2026-08-11 is missing a close for 6 thin-volume tickers in the current universe (QQQE, VIGI, BNDW, KMLM, DBMF, LABU; SVIX was a seventh before it was pruned), 1 row in 4183, pre-existing and treated as a zero return by `backtest`.
 
-- [x] **Signal Miner: multi-select rows and export one combined symphony** (done v1.22.0) � suggested by Haverel Mink in the Composer Discord (2026-08-20). A checkbox per row plus **Copy combined JSON** emits one Frontrunner-shaped symphony from the whole selection.
+- [x] **Signal Miner: multi-select rows and export one combined symphony** (done v1.22.0): suggested by Haverel Mink in the Composer Discord (2026-08-20). A checkbox per row plus **Copy combined JSON** emits one Frontrunner-shaped symphony from the whole selection.
 
   **Shape chosen: nested if/else-if ladder**, of the three options considered (ladder, equal-weight branches, AND). `composerThenChild(row)` was extracted from `buildComposerSymphony` so the single and combined exports build a rung through the same code path and cannot drift.
 
@@ -2168,7 +2352,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
   Verified by porting the builder and asserting: branch order matches Calmar descending, `NaN` sorts last, exactly one else child and it is last, each branch holds its own row's target, AND-pair rows keep both conditions, and all node ids are unique.
 
-- [x] **Signal Miner: Calmar as the default ranking metric** (done v1.22.0) � the table's initial `sortKey` moved from `sortino` to `calmar`, and `saveResults` keeps the top 100 by Calmar to match, so the snapshot preserves the same rows the user was ranked on. This only became sensible after the v1.21.0 Calmar fix: while Calmar divided *total* return by drawdown it grew with backtest length and was not comparable across runs, so ranking by it would have rewarded whichever run had the longest window. Snapshot key bumped to `v4` because stored rows were ranked by a different metric.
+- [x] **Signal Miner: Calmar as the default ranking metric** (done v1.22.0): the table's initial `sortKey` moved from `sortino` to `calmar`, and `saveResults` keeps the top 100 by Calmar to match, so the snapshot preserves the same rows the user was ranked on. This only became sensible after the v1.21.0 Calmar fix: while Calmar divided *total* return by drawdown it grew with backtest length and was not comparable across runs, so ranking by it would have rewarded whichever run had the longest window. Snapshot key bumped to `v4` because stored rows were ranked by a different metric.
 
   **Follow-up, resolved in v1.22.1:** the AND-pairing survivor cap was left ranking by Sortino when the display metric changed, so the pool feeding pairing was Sortino-selected while the table ranked by Calmar. It now ranks by Calmar too, with the same `-Infinity` NaN fallback used by the ladder builder. This was split into its own release deliberately: it changes which survivors reach `SURV_CAP` and therefore **which AND pairs exist at all**, so it alters results rather than just their order, and folding it silently into a display-metric change would have made that invisible.
 
@@ -2446,7 +2630,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 ---
 
-- [ ] **Signal Miner: answer "which signals are best for this target?" properly** — raised by a site user (2026-08-20). The engine already searches the full cross product, so every result row is a `(signal, target)` pair and the reverse question is technically answerable today by selecting one target and many signal tickers. Nothing in the UI says so, and two gaps make the answers hard to trust. Three parts, in priority order:
+- [ ] **Signal Miner: answer "which signals are best for this target?" properly**: raised by a site user (2026-08-20). The engine already searches the full cross product, so every result row is a `(signal, target)` pair and the reverse question is technically answerable today by selecting one target and many signal tickers. Nothing in the UI says so, and two gaps make the answers hard to trust. Three parts, in priority order:
 
   1. **Buy-and-hold baseline (do this first).** "Best signal for TQQQ" is meaningless without "compared to just owning TQQQ." The engine already holds the target's own return series (`targetLret`) but never surfaces it, so a 1.4 Sortino looks impressive with no way to see the target alone did 1.6. Add it as a pinned reference row per target, or a "vs hold" delta column. Cheap, and it is what makes every other number interpretable.
   2. **Signal robustness / cross-target view.** Flip the table so each row is one *signal* with columns for how it did across every selected target: median Sortino, count of targets where it beat hold, best and worst. Pass 1 already computes every `(signal, target)` cell, so this needs no new backtesting, only a different reduction over `sigCache`. This is the real "reverse" view, and it doubles as the strongest available defence against the tool's core weakness: a signal that beats hold on 8 of 8 targets is a finding, one that wins on 1 of 8 is almost certainly noise.
@@ -2458,7 +2642,7 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
   **Statistical caveat to surface in the UI when this ships:** pointing tens of thousands of tested conditions at a single target makes the multiple-comparisons problem *sharper*, not softer. The top of a per-target leaderboard is selected for luck as much as skill. The existing warning box covers this generically; a per-target ranking deserves its own note.
 
-- [x] **Prune duplicate ETFs from the Signal Miner universe, by inception date** (done v1.21.2) � 80 to **72 tickers**, ~19% fewer signals on a select-all run. Removed: **UPRO, VGSH, VGLT, VGIT, SOXX, VTV, SVIX, IJR**. Kept the older listing in every pair, per owner preference for the inception rule over usage.
+- [x] **Prune duplicate ETFs from the Signal Miner universe, by inception date** (done v1.21.2): 80 to **72 tickers**, ~19% fewer signals on a select-all run. Removed: **UPRO, VGSH, VGLT, VGIT, SOXX, VTV, SVIX, IJR**. Kept the older listing in every pair, per owner preference for the inception rule over usage.
 
   **Method correction, and the main lesson.** The first pass ranked candidates by daily-return correlation. That was the wrong instrument: it measures whether two funds move together, not whether they hold the same thing, and large caps dominate the variance in nearly every pair here. It scored SPY/VTI at 0.9961 and called them duplicates, when one is the S&P 500 and the other is the total market including mid and small caps. Corrected approach: **compare stated mandates first**, use correlation only as a supporting signal. Several pairs were reclassified as genuinely different and kept in full:
 
@@ -2490,43 +2674,43 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 
 
 - [ ] Client-side search (Fuse.js or similar)
-- [x] **Tag-based filtering on the strategy index (built 2026-08-15, v1.17.0)** — the tags already carried by every strategy are now selectable filters on `strategies.html`, not just read-only labels. A filter bar above the grid groups them into **Signal** / **Risk metric** / **Asset class** / **Collection** (plus an automatic "Other" group so any new tag in the data can never silently go missing from the UI), each chip showing its match count. Only tags actually present in the data are offered, so the bar can never present a combination that returns nothing. **Multiple tags combine with AND** (a strategy must carry every selected tag), which is what makes pairing a signal tag with an asset-class tag useful; the count line switches to "N of 31 strategies" while filtered, and an empty result explains the AND behavior and offers a reset. Selections are mirrored into a **`?tags=` query param** via `history.replaceState`, so a filtered view is linkable and survives a refresh or a back-navigation from a detail page. New CSS: `.tagfilter*` (inactive chips are dimmed so selected ones clearly stand out).
+- [x] **Tag-based filtering on the strategy index (built 2026-08-15, v1.17.0)**: the tags already carried by every strategy are now selectable filters on `strategies.html`, not just read-only labels. A filter bar above the grid groups them into **Signal** / **Risk metric** / **Asset class** / **Collection** (plus an automatic "Other" group so any new tag in the data can never silently go missing from the UI), each chip showing its match count. Only tags actually present in the data are offered, so the bar can never present a combination that returns nothing. **Multiple tags combine with AND** (a strategy must carry every selected tag), which is what makes pairing a signal tag with an asset-class tag useful; the count line switches to "N of 31 strategies" while filtered, and an empty result explains the AND behavior and offers a reset. Selections are mirrored into a **`?tags=` query param** via `history.replaceState`, so a filtered view is linkable and survives a refresh or a back-navigation from a detail page. New CSS: `.tagfilter*` (inactive chips are dimmed so selected ones clearly stand out).
 - [ ] Strategy comparison view
 - [ ] Performance chart per strategy
 - [ ] Expand strategy library toward 50+ entries
 - [ ] Expand glossary
-- [x] **Fold the ETF → Composer Cloner (`etf-cloner.html`) into the standard linking model (done 2026-08-15, v1.16.3)** — the tool shipped live and indexable at v1.16.0 held out of the footer sitemap and homepage Explore grid. As of v1.16.3 it is folded into both: a footer link in `renderFooter` (`js/app.js`) and an Explore card in `index.html`. It remains intentionally out of the primary nav (same treatment as Converter, which now lives in the Tools dropdown). This closes the temporary exception to the "footer links every public page" rule (Section 6).
-- [x] **Signal Miner: live filter updates without a full re-run (done 2026-08-15, v1.16.7)** — changing the section-3 filters (Min Time in Market, Max Drawdown floor, Prune quantile, and the AND-pairing toggle) now re-filters the results instantly, no re-run. Implementation: Pass 1 now caches **every valid** single-signal result (`sigCache`, gated only on `total > 0` and finite Sortino/Calmar, not on the user thresholds) plus the survivor `Uint8Array`s needed for pairing; a new `applyFilters()` re-applies TIM/MDD/quantile/pairing against that cache (debounced 250ms on `input`/`change`) and recomputes only the cheap pairing pass. `run()` builds the cache then calls `applyFilters(true)`. Changing tickers/families/min-period invalidates `sigCache` (they change which signals exist), so those still require a fresh run. Distinct from the existing results-table text filter (`sl-filter`), which was already live.
-- [x] **ETF Cloner: normalize share-class tickers to Composer/Crescendo format (done 2026-08-15, v1.16.7; reported via community QA)** — holdings sources rendered multi-class tickers with a dot (`BRK.B`, `BF.B`) or dash (`BRK-B`), but Composer *and* Crescendo require the slash form `BRK/B` or the symphony will not save or backtest. `cleanSym()` now normalizes a trailing single-letter class suffix (`.X`/`-X` → `/X`) after validation, so both input paths (live fetch and file upload) and both the on-screen table and emitted JSON use the slash form. Only a trailing `<sep><one letter>` is rewritten, so plain tickers and multi-letter suffixes are untouched. QA'd against `BRK.B`/`BRK-B`/`BF.B`/`LEN.B` (→ slash form) and `VTI`/`VT`/`AAPL` (unchanged).
-- [x] **Full site-wide naming review of every tool/page (done 2026-08-15)** — did one deliberate pass over every public page/tool name for clarity, one-word preference, and cross-tool consistency. **Outcome: keep all current names; no renames recommended.** Verdicts:
-  - **Home / Strategies / Database / Glossary / About** — keep. Standard, one-word, self-explanatory.
-  - **Converter** — keep. One word, unambiguous.
-  - **ETF Cloner** — keep. "Cloner" alone is ambiguous; the "ETF" qualifier is what makes it self-explanatory, so the two words earn their place.
-  - **Signal Miner** — keep (renamed from Signal Lab at v1.16.6; "Miner" alone was rejected as reading like crypto/mining-stocks on an investing site).
-  - **RSI Signals** — keep. "RSI" alone is jargon and "Signals" alone would collide with Signal Miner, so the pair is the clearest option. It is a live-data page, not a generative tool, so sitting outside the tool naming family is fine.
+- [x] **Fold the ETF → Composer Cloner (`etf-cloner.html`) into the standard linking model (done 2026-08-15, v1.16.3)**: the tool shipped live and indexable at v1.16.0 held out of the footer sitemap and homepage Explore grid. As of v1.16.3 it is folded into both: a footer link in `renderFooter` (`js/app.js`) and an Explore card in `index.html`. It remains intentionally out of the primary nav (same treatment as Converter, which now lives in the Tools dropdown). This closes the temporary exception to the "footer links every public page" rule (Section 6).
+- [x] **Signal Miner: live filter updates without a full re-run (done 2026-08-15, v1.16.7)**: changing the section-3 filters (Min Time in Market, Max Drawdown floor, Prune quantile, and the AND-pairing toggle) now re-filters the results instantly, no re-run. Implementation: Pass 1 now caches **every valid** single-signal result (`sigCache`, gated only on `total > 0` and finite Sortino/Calmar, not on the user thresholds) plus the survivor `Uint8Array`s needed for pairing; a new `applyFilters()` re-applies TIM/MDD/quantile/pairing against that cache (debounced 250ms on `input`/`change`) and recomputes only the cheap pairing pass. `run()` builds the cache then calls `applyFilters(true)`. Changing tickers/families/min-period invalidates `sigCache` (they change which signals exist), so those still require a fresh run. Distinct from the existing results-table text filter (`sl-filter`), which was already live.
+- [x] **ETF Cloner: normalize share-class tickers to Composer/Crescendo format (done 2026-08-15, v1.16.7; reported via community QA)**: holdings sources rendered multi-class tickers with a dot (`BRK.B`, `BF.B`) or dash (`BRK-B`), but Composer *and* Crescendo require the slash form `BRK/B` or the symphony will not save or backtest. `cleanSym()` now normalizes a trailing single-letter class suffix (`.X`/`-X` → `/X`) after validation, so both input paths (live fetch and file upload) and both the on-screen table and emitted JSON use the slash form. Only a trailing `<sep><one letter>` is rewritten, so plain tickers and multi-letter suffixes are untouched. QA'd against `BRK.B`/`BRK-B`/`BF.B`/`LEN.B` (→ slash form) and `VTI`/`VT`/`AAPL` (unchanged).
+- [x] **Full site-wide naming review of every tool/page (done 2026-08-15)**: did one deliberate pass over every public page/tool name for clarity, one-word preference, and cross-tool consistency. **Outcome: keep all current names; no renames recommended.** Verdicts:
+  - **Home / Strategies / Database / Glossary / About**: keep. Standard, one-word, self-explanatory.
+  - **Converter**: keep. One word, unambiguous.
+  - **ETF Cloner**: keep. "Cloner" alone is ambiguous; the "ETF" qualifier is what makes it self-explanatory, so the two words earn their place.
+  - **Signal Miner**: keep (renamed from Signal Lab at v1.16.6; "Miner" alone was rejected as reading like crypto/mining-stocks on an investing site).
+  - **RSI Signals**: keep. "RSI" alone is jargon and "Signals" alone would collide with Signal Miner, so the pair is the clearest option. It is a live-data page, not a generative tool, so sitting outside the tool naming family is fine.
   - Observation: the three generative tools already form a tidy agent-noun family (Convert**er** / Clon**er** / Min**er**); worth preserving that pattern if a fourth tool is ever added. The one-word-where-possible preference is satisfied except where a qualifier is load-bearing (ETF Cloner, RSI Signals). If a future rename is ever pursued, carry it through all surfaces at once (page `<title>`, nav Tools dropdown + footer + homepage Explore card in `js/app.js`/`index.html`, in-page hero/copy, and a `noindex` redirect stub from the old URL), per the Signal Miner rename pattern.
-- [ ] **Cross-link curated strategies ↔ full database (decided 2026-07-13, not yet built — see below)**
+- [ ] **Cross-link curated strategies ↔ full database (decided 2026-07-13, not yet built, see below)**
 
 #### Cross-linking the curated 31 to the full database (decided 2026-07-13)
 
-**Background:** confirmed all 29 curated strategies (`data/strategies.json`) already exist as rows in the full database (`data/database.json`/`database_summary.json`), matched exactly by `symphony_id` — they are not disjoint datasets, just two views over overlapping data. Both pipelines independently call the same Composer backtest endpoint with identical parameters (`capital: 10000`, `broker: alpaca`, same slippage/fee flags) for the same 30 symphonies, on two separate schedules (`update_metrics.py` vs. `refresh_full_database.py`), both gated by the same 7-day staleness window — genuinely redundant work computing the same numbers twice.
+**Background:** confirmed all 29 curated strategies (`data/strategies.json`) already exist as rows in the full database (`data/database.json`/`database_summary.json`), matched exactly by `symphony_id`: they are not disjoint datasets, just two views over overlapping data. Both pipelines independently call the same Composer backtest endpoint with identical parameters (`capital: 10000`, `broker: alpaca`, same slippage/fee flags) for the same 30 symphonies, on two separate schedules (`update_metrics.py` vs. `refresh_full_database.py`), both gated by the same 7-day staleness window, genuinely redundant work computing the same numbers twice.
 
 **Two options were considered:**
-- **Option A (chosen): cross-link only.** Keep both pipelines fully independent — no schema, script, or workflow changes. Purely additive navigation between the two existing views.
+- **Option A (chosen): cross-link only.** Keep both pipelines fully independent, no schema, script, or workflow changes. Purely additive navigation between the two existing views.
 - **Option B (explicitly deferred, not rejected): single source of truth for metrics.** Have `strategies.json` stop independently backtesting the 30 curated symphonies and instead join to `database_summary.json` by `symphony_id` for its numeric metrics, keeping `strategies.json` as an editorial-only layer (`description`/`ai_summary`/`how_it_works`/`signals`/`risk_profile`/`tags`/`slug`, none of which exist in the raw database and can never be derived from it). Rejected for now specifically because it introduces a real coupling risk that needs its own decision before being safe to build: if a curated strategy's row in the full database ever gets `flag`'d (`excluded`/`caution`/`duplicate`/`retry`) or a refresh fails, the curated pages could go stale or blank with no defined fallback. Revisit this as its own future decision, not bundled into Option A.
 
 **Option A implementation plan (not yet built):**
-- [ ] Strategy detail pages (`strategies.html?slug=X`) get a "View in full database →" link to that symphony's row in `database.html`. Requires a way to deep-link to a specific `symphony_id`/row that doesn't exist today (e.g. a `?symphony_id=X` query param that pre-filters/scrolls the All Strategies table to that row) — this sub-piece needs its own small design pass at implementation time, not just a static link to `database.html`.
+- [ ] Strategy detail pages (`strategies.html?slug=X`) get a "View in full database →" link to that symphony's row in `database.html`. Requires a way to deep-link to a specific `symphony_id`/row that doesn't exist today (e.g. a `?symphony_id=X` query param that pre-filters/scrolls the All Strategies table to that row): this sub-piece needs its own small design pass at implementation time, not just a static link to `database.html`.
 - [ ] `database.html` rows whose `symphony_id` matches one of the 30 curated strategies get a small "★ Curated" badge/indicator, linking back to that strategy's `strategies.html?slug=X` detail page. Needs a client-side lookup set built from `strategies.js`'s `symphony_id`s (cheap, only 31 entries, no new data file needed).
-- [ ] No changes to `data/strategies.json`, `data/database.json`, `scripts/update_metrics.py`, or `scripts/refresh_full_database.py` — this is UI/navigation only.
+- [ ] No changes to `data/strategies.json`, `data/database.json`, `scripts/update_metrics.py`, or `scripts/refresh_full_database.py`: this is UI/navigation only.
 
 **Explicitly not in scope for this item:** eliminating the duplicated metrics refresh (that's Option B, deferred), any change to which fields live in which file, and any change to refresh schedules.
 
 ### V2.3: Community Signals
 
-**Status:** Backlog — lowest priority of the open work; deliberately scheduled after all V2.2 items (decided 2026-08-15)
+**Status:** Backlog, lowest priority of the open work; deliberately scheduled after all V2.2 items (decided 2026-08-15)
 
-- [ ] **Strategy submission form — deferred as far out as possible; use an external Google Form, not a self-built intake (decided 2026-08-15)** — kept on the roadmap but explicitly last. When it is eventually built, it must **not** be a self-hosted form that posts data anywhere Atlas controls: link out to a **Google Form** instead, so submissions land in the author's own Google account and the site itself never collects, stores, or processes visitor data. That keeps the zero-server posture (Tenet 4) and the no-user-data stance (Section 4, Tenet 7) intact: the site holds only a plain outbound link, with no backend, no form handler, and no personal data touching Atlas. Submissions are then triaged manually into the normal "Adding a Strategy from a Composer URL" workflow. Do not build a native form, a serverless handler, or any email capture as part of this.
+- [ ] **Strategy submission form, deferred as far out as possible; use an external Google Form, not a self-built intake (decided 2026-08-15)**: kept on the roadmap but explicitly last. When it is eventually built, it must **not** be a self-hosted form that posts data anywhere Atlas controls: link out to a **Google Form** instead, so submissions land in the author's own Google account and the site itself never collects, stores, or processes visitor data. That keeps the zero-server posture (Tenet 4) and the no-user-data stance (Section 4, Tenet 7) intact: the site holds only a plain outbound link, with no backend, no form handler, and no personal data touching Atlas. Submissions are then triaged manually into the normal "Adding a Strategy from a Composer URL" workflow. Do not build a native form, a serverless handler, or any email capture as part of this.
 - [ ] Curator notes field visible on strategy pages
 - [ ] Related strategies section on each strategy page
 
@@ -2536,43 +2720,43 @@ Formerly "Monetization Expansion" (premium strategy tier, newsletter integration
 
 ### V4.0: Signal Discovery & Robustness Tooling (Extreme Future State)
 
-**Status:** Ideation — extreme future state, not near-term. No implementation, forking, or architecture work should begin until V2.x is well underway and this section has been re-scoped with fresh eyes (V3.0 was removed 2026-08-15, so V2.x is now the gate). Documented now (v1.11.5/v1.11.6/v1.11.7) purely so the idea isn't lost.
+**Status:** Ideation, extreme future state, not near-term. No implementation, forking, or architecture work should begin until V2.x is well underway and this section has been re-scoped with fresh eyes (V3.0 was removed 2026-08-15, so V2.x is now the gate). Documented now (v1.11.5/v1.11.6/v1.11.7) purely so the idea isn't lost.
 
-Five external repos were reviewed as candidate forks: `composer_json_fuzz_tester`, `rsi_search`, `strategy_generation` (private, all owned by GitHub user `VoxMachina1`), `quantstats-js` (public, GitHub user `whsmacon`), and `local-maestro` (public, GitHub user `Gabraham4`). The first three operate on Composer strategy JSON exports and Tiingo price data, entirely outside Composer Atlas today; the latter two are standalone portfolio-analytics/reporting tools. This section documents what each does and how they *could* eventually plug into the site — as a distinct, separately-run "Signal Miner" / analytics capability, not a rewrite of the existing static site.
+Five external repos were reviewed as candidate forks: `composer_json_fuzz_tester`, `rsi_search`, `strategy_generation` (private, all owned by GitHub user `VoxMachina1`), `quantstats-js` (public, GitHub user `whsmacon`), and `local-maestro` (public, GitHub user `Gabraham4`). The first three operate on Composer strategy JSON exports and Tiingo price data, entirely outside Composer Atlas today; the latter two are standalone portfolio-analytics/reporting tools. This section documents what each does and how they *could* eventually plug into the site, as a distinct, separately-run "Signal Miner" / analytics capability, not a rewrite of the existing static site.
 
-**⚠️ Adaptation note (applies to all five tools):** None of these repos are drop-in. Every one of them was built as an independent, standalone project with its own assumptions about environment, data format, and output — not against Composer Atlas's actual data layer (`data/database.json`, the Full Database JSON Schema in Section 12) or its existing front-end structure (static HTML/CSS/vanilla JS, no build step, no Node runtime in production, uPlot for charting — see Section 10). Forking any of them means re-authoring the integration points, not just `npm install`-ing or `git clone`-ing and wiring up a call. Treat every item below as "study this, then rebuild the integration surface to fit Atlas," never "paste this in."
+**⚠️ Adaptation note (applies to all five tools):** None of these repos are drop-in. Every one of them was built as an independent, standalone project with its own assumptions about environment, data format, and output, not against Composer Atlas's actual data layer (`data/database.json`, the Full Database JSON Schema in Section 12) or its existing front-end structure (static HTML/CSS/vanilla JS, no build step, no Node runtime in production, uPlot for charting, see Section 10). Forking any of them means re-authoring the integration points, not just `npm install`-ing or `git clone`-ing and wiring up a call. Treat every item below as "study this, then rebuild the integration surface to fit Atlas," never "paste this in."
 
 **What each tool does:**
 
-1. **`composer_json_fuzz_tester`** — Robustness/fragility auditor for a *single existing* strategy. Walks a strategy's JSON tree, extracts every `IF` condition (RSI thresholds, MA/EMA crosses, cumulative-return and max-drawdown gates, etc.), and re-runs the backtest across a 2D parameter sweep (±30% by default) around each condition's fitted period/threshold. Outputs a self-contained HTML report with heatmaps and a fragility score (coefficient of variation of win rate across the sweep) per condition, color-coded Robust → Very Fragile. Directly answers "is this condition a real edge, or does it only work at one magic number?"
-2. **`rsi_search`** — A three-stage pipeline (backtest → filter → insert) that searches for RSI-based "frontrunner" signals — assets that could pre-empt or improve on an existing strategy's decision points — and can automatically insert validated logic back into the strategy JSON at the correct node, ready to re-import into Composer. Filter thresholds are currently hardcoded (win rate > 75%, > 20 trades, benchmark median return < 0).
-3. **`strategy_generation`** — The most ambitious and most in-flux of the three Python tools: a from-scratch 15-stage discovery pipeline (data fetch → signal generation → in-sample backtest → out-of-sample walk-forward validation → tail-risk analysis → Composer export). Per its own `VISION.md`, this is the intended long-term convergence point for the other two tools — the fuzz tester's tail-analysis becomes an automated pipeline stage, and the RSI-search insertion logic generalizes to all indicator types and both of the vision doc's two signal archetypes (short-duration "replacement" signals vs. longer-duration "regime/timing" gates). The author's own docs list several pre-requisite bug fixes and note this project is pre-alpha/actively evolving — the least stable of the four to fork against.
-4. **`quantstats-js`** — A Node.js/JavaScript port of the popular Python `quantstats` library: 40+ portfolio metrics (Sharpe, Sortino, Calmar, CAGR, VaR/CVaR, Kelly Criterion, Ulcer Index, drawdown-period detail, etc.) plus a "tearsheet" generator that produces a self-contained HTML report with 13+ SVG charts (cumulative returns, rolling Sharpe/Sortino/volatility, monthly heatmap, underwater drawdown plot) from a plain `{values, index}` daily-returns series, with optional benchmark comparison. Unlike the three Python tools, this is pure JavaScript with zero core dependencies — meaningfully more compatible with Atlas's existing static, no-backend, vanilla-JS architecture, since it can in principle run client-side in the browser rather than requiring a Python environment or server compute. Directly relevant to Atlas: it computes a superset of the metrics already tracked per strategy (Section 12's Full Database schema) plus many not currently shown (Sortino, Calmar, Ulcer Index, VaR/CVaR, per-drawdown-period detail, rolling stat charts), and its tearsheet format is a natural candidate for an expanded per-strategy detail view. Its main gap: it needs a daily equity-curve/returns series as input, which Atlas's schema doesn't currently store (see `local-maestro` below for a tool that already solves that data-loading problem).
-5. **`local-maestro`** — A local, offline recreation of [MyMaestro.co](https://mymaestro.co): *multi*-strategy portfolio correlation and risk analysis, as opposed to the single-strategy focus of the other four tools. Given a set of strategies' daily equity curves (loaded from CSV, Composer's own `dvm_capital` backtest-cache JSON format, or auto-fetched via the Composer API using a symphony ID), it aligns them to a common date range, simulates a weighted portfolio, and produces an HTML report (Plotly.js charts) across five tabs: Returns, Correlations (including a correlation matrix heatmap and its own **CARP** — Correlation And Risk-adjusted Performance = Sortino ÷ (1 + mean correlation) — metric), Volatility, Exposure, and a combined Metrics summary. Validated by its author at ~97–99.9% accuracy against MyMaestro.co across 5 test strategies. Directly relevant to Atlas: this is the "how do these N strategies in my portfolio interact / diversify each other" question, which nothing in Atlas answers today (Atlas shows each strategy's metrics in isolation) — a natural fit for a future "build a portfolio from the library and see the correlation/CARP profile" feature. It also already contains a working `data_loader.py` that turns Composer backtest-cache JSON into aligned daily equity-curve series — the same raw-data problem `quantstats-js` has, solved with a different language/library stack (pandas/numpy/Plotly instead of vanilla JS), so if both are ever pursued, that loading logic is worth reviewing side by side to avoid solving it twice, even though it would still need porting to fit Atlas's existing JS-only front end.
+1. **`composer_json_fuzz_tester`**: Robustness/fragility auditor for a *single existing* strategy. Walks a strategy's JSON tree, extracts every `IF` condition (RSI thresholds, MA/EMA crosses, cumulative-return and max-drawdown gates, etc.), and re-runs the backtest across a 2D parameter sweep (±30% by default) around each condition's fitted period/threshold. Outputs a self-contained HTML report with heatmaps and a fragility score (coefficient of variation of win rate across the sweep) per condition, color-coded Robust → Very Fragile. Directly answers "is this condition a real edge, or does it only work at one magic number?"
+2. **`rsi_search`**: A three-stage pipeline (backtest → filter → insert) that searches for RSI-based "frontrunner" signals, assets that could pre-empt or improve on an existing strategy's decision points, and can automatically insert validated logic back into the strategy JSON at the correct node, ready to re-import into Composer. Filter thresholds are currently hardcoded (win rate > 75%, > 20 trades, benchmark median return < 0).
+3. **`strategy_generation`**: The most ambitious and most in-flux of the three Python tools: a from-scratch 15-stage discovery pipeline (data fetch → signal generation → in-sample backtest → out-of-sample walk-forward validation → tail-risk analysis → Composer export). Per its own `VISION.md`, this is the intended long-term convergence point for the other two tools, the fuzz tester's tail-analysis becomes an automated pipeline stage, and the RSI-search insertion logic generalizes to all indicator types and both of the vision doc's two signal archetypes (short-duration "replacement" signals vs. longer-duration "regime/timing" gates). The author's own docs list several pre-requisite bug fixes and note this project is pre-alpha/actively evolving, the least stable of the four to fork against.
+4. **`quantstats-js`**: A Node.js/JavaScript port of the popular Python `quantstats` library: 40+ portfolio metrics (Sharpe, Sortino, Calmar, CAGR, VaR/CVaR, Kelly Criterion, Ulcer Index, drawdown-period detail, etc.) plus a "tearsheet" generator that produces a self-contained HTML report with 13+ SVG charts (cumulative returns, rolling Sharpe/Sortino/volatility, monthly heatmap, underwater drawdown plot) from a plain `{values, index}` daily-returns series, with optional benchmark comparison. Unlike the three Python tools, this is pure JavaScript with zero core dependencies, meaningfully more compatible with Atlas's existing static, no-backend, vanilla-JS architecture, since it can in principle run client-side in the browser rather than requiring a Python environment or server compute. Directly relevant to Atlas: it computes a superset of the metrics already tracked per strategy (Section 12's Full Database schema) plus many not currently shown (Sortino, Calmar, Ulcer Index, VaR/CVaR, per-drawdown-period detail, rolling stat charts), and its tearsheet format is a natural candidate for an expanded per-strategy detail view. Its main gap: it needs a daily equity-curve/returns series as input, which Atlas's schema doesn't currently store (see `local-maestro` below for a tool that already solves that data-loading problem).
+5. **`local-maestro`**: A local, offline recreation of [MyMaestro.co](https://mymaestro.co): *multi*-strategy portfolio correlation and risk analysis, as opposed to the single-strategy focus of the other four tools. Given a set of strategies' daily equity curves (loaded from CSV, Composer's own `dvm_capital` backtest-cache JSON format, or auto-fetched via the Composer API using a symphony ID), it aligns them to a common date range, simulates a weighted portfolio, and produces an HTML report (Plotly.js charts) across five tabs: Returns, Correlations (including a correlation matrix heatmap and its own **CARP**: Correlation And Risk-adjusted Performance = Sortino ÷ (1 + mean correlation): metric), Volatility, Exposure, and a combined Metrics summary. Validated by its author at ~97–99.9% accuracy against MyMaestro.co across 5 test strategies. Directly relevant to Atlas: this is the "how do these N strategies in my portfolio interact / diversify each other" question, which nothing in Atlas answers today (Atlas shows each strategy's metrics in isolation): a natural fit for a future "build a portfolio from the library and see the correlation/CARP profile" feature. It also already contains a working `data_loader.py` that turns Composer backtest-cache JSON into aligned daily equity-curve series, the same raw-data problem `quantstats-js` has, solved with a different language/library stack (pandas/numpy/Plotly instead of vanilla JS), so if both are ever pursued, that loading logic is worth reviewing side by side to avoid solving it twice, even though it would still need porting to fit Atlas's existing JS-only front end.
 
-**Why fork rather than build from scratch:** The three Python tools already implement the hard, error-prone parts — correct Composer JSON traversal/insertion (node IDs, `if-child` structure, `wt-cash-equal` blocks), zero-lookahead-bias backtesting mechanics, and Tiingo data plumbing with key rotation and freshness caching. Rebuilding this from zero would be substantial duplicated effort; the existing `refresh_full_database.py` pipeline in this repo already solves an adjacent but distinct problem (bulk metric refresh via the Composer API, not local backtesting against raw price data). `quantstats-js` similarly already implements dozens of metric formulas validated against the reference Python library and a full SVG charting layer — reimplementing 40+ statistically fiddly formulas (VaR, CVaR, Ulcer Index, Kelly Criterion, drawdown-period detection, etc.) from scratch would be its own multi-week effort for something this library already gets mathematically right. `local-maestro` similarly already solves cross-strategy alignment, portfolio simulation, and correlation math (validated to ~97–99.9% against a real reference implementation, MyMaestro.co) — the kind of numerically fiddly, easy-to-get-subtly-wrong work not worth re-deriving from scratch.
+**Why fork rather than build from scratch:** The three Python tools already implement the hard, error-prone parts, correct Composer JSON traversal/insertion (node IDs, `if-child` structure, `wt-cash-equal` blocks), zero-lookahead-bias backtesting mechanics, and Tiingo data plumbing with key rotation and freshness caching. Rebuilding this from zero would be substantial duplicated effort; the existing `refresh_full_database.py` pipeline in this repo already solves an adjacent but distinct problem (bulk metric refresh via the Composer API, not local backtesting against raw price data). `quantstats-js` similarly already implements dozens of metric formulas validated against the reference Python library and a full SVG charting layer, reimplementing 40+ statistically fiddly formulas (VaR, CVaR, Ulcer Index, Kelly Criterion, drawdown-period detection, etc.) from scratch would be its own multi-week effort for something this library already gets mathematically right. `local-maestro` similarly already solves cross-strategy alignment, portfolio simulation, and correlation math (validated to ~97–99.9% against a real reference implementation, MyMaestro.co): the kind of numerically fiddly, easy-to-get-subtly-wrong work not worth re-deriving from scratch.
 
 **Major architectural implications (why this is "extreme future state," not a near-term item):**
 
 - Composer Atlas is currently a fully static, browser-only site with **zero server infrastructure** ([Tenet 4](#4-zero-cost-to-operate), Section 15). The three Python signal-discovery tools and `local-maestro` are all local CLI scripts (the latter also offers an optional local web server, `server.py`) requiring a Python environment and non-trivial compute time (parameter sweeps, 15-stage pipelines, and portfolio correlation analysis are not something a static site or GitHub Pages build step can run per-request).
-- Any real integration of the Python tools means one of: (a) a scheduled/offline batch job (analogous to `refresh_full_database.py`) that pre-computes fragility/signal/correlation reports for library strategies and publishes static JSON/HTML artifacts the site can serve as-is (cheapest, most consistent with current architecture), or (b) standing up actual server-side compute (serverless function, small backend) if on-demand user-submitted strategy analysis is ever wanted — a real departure from the current zero-cost, static-only posture that would need its own dedicated proposal and cost/security review before any code is written.
-- `quantstats-js` is the exception on the compute question (pure JS, could run in-browser) but still needs real adaptation work: it's authored against Node.js conventions (`fs.writeFileSync`, npm/ES module imports, its own bundled MUI-style CSS and SVG chart renderer) rather than Atlas's existing no-build-step `<script>`-tag JS and uPlot-based charting (see Section 10, JS Utility Functions), and it expects a `{values, index}` daily-returns array as input where Atlas's data layer stores pre-computed summary metrics per strategy in `database.json`, not raw daily-return series — feeding it real data would likely require sourcing/storing daily equity-curve series per strategy, which the current schema doesn't capture.
-- `local-maestro` has the same "needs daily equity curves, Atlas doesn't store them" gap as `quantstats-js`, plus it's built on pandas/numpy/Plotly.js — a heavier, Python-side dependency stack than a pure-JS port would require, and its interactive server mode (`server.py`) is a genuine local server, not something a static GitHub Pages deploy can host as-is. A user-facing "build a portfolio and see correlations" feature would most realistically need either an offline batch pre-computation (fixed set of curated multi-strategy portfolios, not arbitrary user-built ones) or the server-side compute departure noted above for arbitrary combinations.
+- Any real integration of the Python tools means one of: (a) a scheduled/offline batch job (analogous to `refresh_full_database.py`) that pre-computes fragility/signal/correlation reports for library strategies and publishes static JSON/HTML artifacts the site can serve as-is (cheapest, most consistent with current architecture), or (b) standing up actual server-side compute (serverless function, small backend) if on-demand user-submitted strategy analysis is ever wanted, a real departure from the current zero-cost, static-only posture that would need its own dedicated proposal and cost/security review before any code is written.
+- `quantstats-js` is the exception on the compute question (pure JS, could run in-browser) but still needs real adaptation work: it's authored against Node.js conventions (`fs.writeFileSync`, npm/ES module imports, its own bundled MUI-style CSS and SVG chart renderer) rather than Atlas's existing no-build-step `<script>`-tag JS and uPlot-based charting (see Section 10, JS Utility Functions), and it expects a `{values, index}` daily-returns array as input where Atlas's data layer stores pre-computed summary metrics per strategy in `database.json`, not raw daily-return series, feeding it real data would likely require sourcing/storing daily equity-curve series per strategy, which the current schema doesn't capture.
+- `local-maestro` has the same "needs daily equity curves, Atlas doesn't store them" gap as `quantstats-js`, plus it's built on pandas/numpy/Plotly.js, a heavier, Python-side dependency stack than a pure-JS port would require, and its interactive server mode (`server.py`) is a genuine local server, not something a static GitHub Pages deploy can host as-is. A user-facing "build a portfolio and see correlations" feature would most realistically need either an offline batch pre-computation (fixed set of curated multi-strategy portfolios, not arbitrary user-built ones) or the server-side compute departure noted above for arbitrary combinations.
 - Needs Tiingo (three Python tools) and/or Composer API access (`local-maestro`) with its own rate-limit/cost management, separate from the existing Composer API key and rate-limit handling already documented in Section 13.
-- `strategy_generation` is explicitly pre-alpha per its own docs (known bugs, `.planning` scratch docs, no stable public interface yet) — forking it today would mean forking a moving target upstream.
+- `strategy_generation` is explicitly pre-alpha per its own docs (known bugs, `.planning` scratch docs, no stable public interface yet): forking it today would mean forking a moving target upstream.
 
 **If/when this is revisited, in rough order:**
 - [ ] Re-review all five repos for drift against this write-up (upstream is actively developed, especially `strategy_generation`, `quantstats-js`, and `local-maestro`)
 - [ ] Decide the batch-artifact-vs-live-backend architecture question above before writing any code
-- [ ] Start with `composer_json_fuzz_tester` only (single-strategy robustness report is the most self-contained, lowest-risk fork — no insertion/mutation of strategy JSON, read-only analysis) as a static "Robustness Report" tab per strategy, generated offline and committed like other database artifacts
+- [ ] Start with `composer_json_fuzz_tester` only (single-strategy robustness report is the most self-contained, lowest-risk fork, no insertion/mutation of strategy JSON, read-only analysis) as a static "Robustness Report" tab per strategy, generated offline and committed like other database artifacts
 - [ ] Only after that ships and proves the batch-artifact pattern, evaluate `rsi_search` / `strategy_generation` for a "Signal Miner" / candidate-signal discovery feature feeding V2.3 Community Signals
-- [ ] Evaluate `quantstats-js` separately from the Signal Miner track — it's an analytics/reporting upgrade, not a discovery tool. Would require deciding whether to (a) store daily equity-curve series per strategy (schema change) to feed it properly, or (b) adapt just its metric-formula layer against Atlas's existing summary metrics without the full tearsheet/daily-series machinery
-- [ ] Evaluate `local-maestro` as a separate "portfolio builder" feature (multi-strategy correlation/CARP analysis) rather than folding it into per-strategy tooling — it answers a different question (how strategies interact) than the other four (is this one strategy robust/improvable). Would share the daily-equity-curve schema gap with `quantstats-js`; worth solving that gap once for both if both are ever pursued
-- [ ] Any strategy-JSON mutation (insertion of discovered signals) must be reviewed carefully — these tools write modified strategy JSON meant for re-import into Composer; Atlas has never mutated strategy definitions, only displayed them
+- [ ] Evaluate `quantstats-js` separately from the Signal Miner track, it's an analytics/reporting upgrade, not a discovery tool. Would require deciding whether to (a) store daily equity-curve series per strategy (schema change) to feed it properly, or (b) adapt just its metric-formula layer against Atlas's existing summary metrics without the full tearsheet/daily-series machinery
+- [ ] Evaluate `local-maestro` as a separate "portfolio builder" feature (multi-strategy correlation/CARP analysis) rather than folding it into per-strategy tooling, it answers a different question (how strategies interact) than the other four (is this one strategy robust/improvable). Would share the daily-equity-curve schema gap with `quantstats-js`; worth solving that gap once for both if both are ever pursued
+- [ ] Any strategy-JSON mutation (insertion of discovered signals) must be reviewed carefully, these tools write modified strategy JSON meant for re-import into Composer; Atlas has never mutated strategy definitions, only displayed them
 
 ### Icebox
 
-- ~~User accounts / saved strategies~~ — **removed permanently 2026-08-15, not iceboxed.** User accounts will never be built. Composer Atlas will not let visitors create accounts and will not collect, store, or process any user data, ever. This is a deliberate, permanent design choice (see Section 4 Non-Goals and Tenet 7), not a scoping decision to revisit when the site is bigger. Any future feature that would require an account, a login, a saved per-user state, or any personal data is out of scope by definition, and "saved strategies" specifically should be solved with client-side-only storage or not at all.
+- ~~User accounts / saved strategies~~, **removed permanently 2026-08-15, not iceboxed.** User accounts will never be built. Composer Atlas will not let visitors create accounts and will not collect, store, or process any user data, ever. This is a deliberate, permanent design choice (see Section 4 Non-Goals and Tenet 7), not a scoping decision to revisit when the site is bigger. Any future feature that would require an account, a login, a saved per-user state, or any personal data is out of scope by definition, and "saved strategies" specifically should be solved with client-side-only storage or not at all.
 - Portfolio simulator
 - Community forum
 - Mobile app
@@ -2594,13 +2778,20 @@ Composer Atlas is a fully static, browser-only website with no server infrastruc
 | XSS (Cross-Site Scripting) | Managed | See below |
 | Supply chain attacks | Low risk | Zero npm dependencies |
 | Data exfiltration | N/A | No user data collected |
-| HTTPS | Required | GitHub Pages enforces HTTPS |
+| HTTPS | Required | Both hosts enforce HTTPS: Cloudflare Pages on the canonical domain, GitHub Pages on the mirror. Originally written when GitHub Pages was the only host |
 
 ### Key Security Practices
 
 **No secrets in client code.** No API keys, tokens, or credentials are stored in the repository or rendered in client-side JavaScript. The Composer API endpoints used for data refresh require no authentication. The `symphony_url` values are public by nature.
 
-**JSON data integrity.** `data/strategies.json` is the only data source and is committed to the public repo. All changes go through GitHub's commit history, a full audit trail. No PII in strategy entries.
+**JSON data integrity.** `data/strategies.json` is the only data source and is committed to the
+public repo.
+
+> **Discrepancy (found 2026-08-24).** True when written, at MVP. There are now nine committed data
+> sources under `data/`: `strategies`, `glossary`, `database`, `database_summary`, `prices`, `rsi`
+> (each as a `.json` plus a `.js` twin), `symphony_scores.json`, `storage.csv`, `AddSymphony.csv`
+> and `Full Database.xlsx`. Everything the sentence goes on to say still holds for all of them:
+> committed to a public repo, every change in git history, no PII in any of them. All changes go through GitHub's commit history, a full audit trail. No PII in strategy entries.
 
 **XSS prevention.** All dynamic content rendered from JSON must be escaped before DOM insertion. Do not use `innerHTML` with unsanitized JSON values. Strategy descriptions and names in JSON must not contain HTML tags. The `app.js` render functions use template literals with escaped data.
 
@@ -2610,9 +2801,18 @@ Composer Atlas is a fully static, browser-only website with no server infrastruc
 
 **GitHub repository.** Repository is public, treat all committed content as fully public. Never commit `.env` files, credentials, or PII. Branch protection on `main` is recommended: require PR review before merge.
 
-### Google AdSense (Post-MVP)
+### Google AdSense (Post-MVP): retired, never implemented
 
-When AdSense is integrated: use only the official Google AdSense script tag. Do not load ad scripts from unverified third-party sources. Review AdSense policy compliance before enabling.
+> **Discrepancy (found 2026-08-24), resolved in favour of the newer decision.** This subsection used
+> to give guidance for integrating Google AdSense. It contradicted three other places in this
+> document: Tenet 7 ("The site is free and unmonetized"), Non-Goals ("No monetization beyond
+> voluntary donations", decided 2026-08-15), and Section 14's V3.0 entry, which removed the
+> Monetization Expansion plan "entirely, not deferred". The v1.1 roadmap line also marks AdSense as
+> dropped. Four statements to one, and the one was the oldest, so it loses.
+>
+> **AdSense was never integrated and will not be.** No ad script has ever been on the site. The
+> original guidance is preserved in the git history of this file and needs no live home. The site's
+> only funding channel is voluntary Buy Me a Coffee donations.
 
 ### Responsible Disclosure
 
@@ -2627,6 +2827,19 @@ If you discover a security issue (e.g., malicious content injection via JSON, br
 ---
 
 ## 16. Tenets
+
+> **Note on the count (2026-08-24).** There are **eight** tenets below. A documentation standard
+> applied during the 2026-08-24 audit proposes a maximum of seven, on the reasoning that a list long
+> enough to need scanning stops being used in an argument. **The existing eight are kept unchanged.**
+> They are load-bearing: several are cited by name elsewhere in this document and in
+> `docs/DESIGN.md`, and each has visibly decided a real trade-off in the patch notes. Trimming to
+> seven would mean either dropping a live principle or fusing two that are cited separately, both of
+> which cost more than the length does. The difference is recorded here rather than silently
+> resolved.
+>
+> If the list is ever trimmed, the two closest to merging are 3 (Simplicity Over Complexity) and 8
+> (Open and Maintainable), which argue from different directions toward the same restraint. That is
+> an observation, not a recommendation.
 
 These tenets guide every product, design, and technical decision. When trade-offs arise, consult this list. Order matters: higher tenets take precedence over lower ones.
 
@@ -2650,7 +2863,7 @@ Every feature should reduce friction, not add it. The site should feel like a we
 
 ### 4. Zero Cost to Operate
 
-Composer Atlas runs on GitHub Pages with no server, no database service, and no paid infrastructure. Every technical decision must be evaluated against this constraint. Complexity that introduces operational cost is rejected at MVP.
+Composer Atlas runs on static hosting (Cloudflare Pages canonically, GitHub Pages as a mirror; it ran on GitHub Pages alone until the Cloudflare move) with no server, no database service, and no paid infrastructure. Every technical decision must be evaluated against this constraint. Complexity that introduces operational cost is rejected at MVP.
 
 *If it requires a server, find a static alternative.*
 
@@ -2687,48 +2900,178 @@ The codebase is public, readable, and maintainable by a single developer. We do 
 ### User FAQ
 
 **Q: What is Composer Atlas?**
-A: Composer Atlas is a free reference website that showcases 25 curated Composer.trade strategies, explains how they work in plain language, and educates visitors on the investing concepts behind them.
+A: A free, independent reference website for people who use Composer.trade. It explains how real
+strategies work in plain English, publishes their backtested numbers without cherry-picking, covers
+thousands of community symphonies in a searchable database, and provides tools for building
+strategies of your own.
 
 **Q: Who is this for?**
-A: Self-directed retail investors who use Composer.trade, are curious about systematic investing, or want to learn about concepts like RSI, VIX strategies, momentum, or leveraged ETFs.
+A: Self-directed retail investors who use Composer.trade, are considering it, or want to learn about
+systematic investing generally. It assumes you are willing to read, not that you have a finance
+background. The glossary exists precisely so the strategy pages can use real terms without stranding
+anyone.
 
 **Q: Are these strategies financial advice?**
-A: No. Composer Atlas is an educational resource. All strategies are presented for informational purposes only. Past performance does not guarantee future results. Always do your own research before investing.
+A: No. Everything here is educational and informational. Past backtest performance does not
+guarantee future results, and many of the featured strategies use leveraged funds that can lose
+value very quickly.
 
 **Q: Can I clone these strategies on Composer.trade?**
-A: Yes. Each strategy page includes a direct link to clone the symphony on Composer.trade.
+A: Yes. Every strategy page links directly to the symphony on Composer.trade.
 
 **Q: Is Composer Atlas free?**
-A: Yes. The site is free to access. If you find it valuable, you can support development via a donation at https://azqato.com/support.html.
+A: Yes, entirely. There is no paid tier, no account, and no ads. If you find it valuable there is a
+voluntary donation link at https://azqato.com/support.html.
+
+**Q: Do I need an account?**
+A: No, and you never will. Composer Atlas has no accounts and collects no user data. This is a
+permanent design decision, not a launch simplification.
+
+**Q: Do you track me?**
+A: Not personally. The site itself sets no cookies, stores nothing about you, and has no login. The
+host adds a cookieless analytics beacon that reports aggregate page counts and web-vitals timings
+and does not identify anyone. Nothing you type into any tool leaves your browser.
 
 **Q: Who curates the strategies?**
-A: Strategies are selected and maintained by the site owner. All featured strategies are presented with full transparency on their logic and metrics.
+A: The site owner selects and maintains the curated library. Every featured strategy is presented
+with its full logic and its full metrics, including the bad ones.
+
+**Q: What is the difference between the curated Strategies page and the Database?**
+A: The curated library is a small, hand-explained set: each has a written breakdown of its logic, an
+AI-authored analysis, tags and a full metrics table. The Database is thousands of community
+symphonies gathered from many sources, with metrics and a ranking but no hand-written explanation.
+The library is for understanding; the database is for finding.
 
 **Q: How often are metrics updated?**
-A: Metrics are updated manually via GitHub commits. Each strategy page displays a last updated date.
+A: The community database refreshes on an automated weekly schedule, the RSI page several times each
+weekday, and the Signal Miner's price history weekly. Curated strategy metrics are refreshed on
+demand. Every page that shows data shows when that data was last refreshed.
+
+**Q: How is the Leaderboard score calculated?**
+A: Twenty metrics, weighted to a 1,000-point total, scored by percentile rank against every eligible
+symphony rather than against a fixed threshold. The full methodology is on the page behind the
+Methodology button, and any individual score breaks down metric by metric on click. It is designed
+to be argued with.
+
+**Q: Why does a strategy with an enormous return rank below one with a smaller return?**
+A: Because return is one of twenty inputs. Drawdown, backtest length, risk-adjusted ratios and how
+concentrated the returns are all count. A spectacular two-year record scores worse on longevity than
+a good fifteen-year one, which is deliberate.
+
+**Q: Why do some database entries have no metrics?**
+A: Because Composer's API could not backtest them. A symphony can be deleted, made private, or built
+in a way that cannot be backtested at all. Those rows are flagged and hidden from the default views.
+
+**Q: What does the Signal Miner actually do?**
+A: It takes the tickers you pick and brute-forces millions of "if this condition, then hold that"
+rules against sixteen years of daily price history, then shows you which ones performed best and
+hands them back as pasteable Composer JSON. It runs entirely in your browser, which is why it can
+take minutes and warms your machine up.
+
+**Q: Should I trust the Signal Miner's top result?**
+A: Treat it as an upper bound, not an expectation. The tool tests millions of candidates and reports
+the best number it found, and the best of a very large sample is biased upward by construction.
+A rule that only works at exactly one threshold is fitting noise. Robustness testing that would flag
+this is designed and not yet built; until it ships, prefer results that still look reasonable when
+you nudge the parameters yourself.
+
+**Q: Why does the Signal Miner heat my laptop up?**
+A: Because it is doing real work on your CPU, single-threaded, for as long as the run takes. The CPU
+load control throttles it, and the levels are deliberately capped below 100% for exactly this
+reason. Lower it if the machine gets uncomfortable.
+
+**Q: Why can I only see 100 results?**
+A: The table shows the top 100 by the current ranking metric. A large run produces millions of rows,
+and ordering all of them would freeze the tab. Change the sort or the filters to look at a different
+100.
+
+**Q: Are my Signal Miner settings saved?**
+A: Yes, locally in your browser: your ticker selection, your signal families, the section-3 settings
+and your last run's top rows. None of it is transmitted anywhere. The Default button resets
+everything.
 
 **Q: Is Composer Atlas affiliated with Composer.trade?**
-A: No. Composer Atlas is an independent, community-built resource. Composer.trade is a separate company and platform.
+A: No. It is an independent, community-built resource. Composer.trade is a separate company. No
+compensation is received for featuring any strategy.
 
-### Operational FAQ
+**Q: Can I submit a strategy?**
+A: A submission route is planned via an external form. In the meantime the community database is
+refreshed from a URL list that grows continuously.
 
-**Q: Why build this as a static site?**
-A: Zero server cost, zero maintenance overhead, maximum reliability. GitHub Pages is free, fast, and requires no infrastructure management.
+**Q: Something is wrong on the site. How do I report it?**
+A: Open an issue on the GitHub repository. That includes broken external links, incorrect strategy
+logic, and stale or wrong metrics.
 
-**Q: Why JSON instead of a real database?**
-A: At MVP scale (10-100 strategies), a flat JSON file is sufficient, fast, and requires no backend. The schema is designed to migrate easily to a real database if scale demands it.
+**Q: Is the site open source?**
+A: The repository is public and every change is in its commit history. See Section 25 on the
+licensing question, which is currently unresolved.
 
-**Q: How does the site make money?**
-A: Google AdSense (post-MVP) and direct user donations via https://azqato.com/support.html.
+### Internal / Stakeholder FAQ
 
-**Q: What happens if Composer.trade changes their URLs?**
-A: The `symphony_url` field in the JSON can be updated per strategy via a commit. A future script will automate this check.
+For the maintainer, and for anyone (human or AI) picking the repository up.
 
-**Q: How do I add a new strategy?**
-A: See Section 11 (Operational Runbook) for the full process. The preferred method is providing a Composer URL to Claude Code.
+**Q: Why build this as a static site with no framework and no build step?**
+A: Zero operating cost, zero maintenance overhead, and nothing that can rot. The project started on
+Astro, Tailwind and TypeScript and abandoned all three before launch (v1.0.2) because they required
+a Node installation for what is fundamentally a set of documents. Tenets 4 and 8.
 
-**Q: What is the long-term vision?**
-A: Become the canonical public reference for Composer.trade strategy discovery and education, eventually hosting thousands of strategies with search, filtering, and comparison tools.
+**Q: Why JSON files instead of a database?**
+A: At this scale a flat file is faster than a query, costs nothing, and is diffable in git. The
+community database is 6,669 entries and the site loads a columnar summary of it in about 2.3MB.
+A database service would add cost, an availability dependency and an operational surface, in
+exchange for nothing the site needs.
+
+**Q: Why does every JSON file have a `.js` twin?**
+A: So the site works when opened by double-clicking a file. Browsers block `fetch()` over `file://`.
+The twin assigns the same data to a `window.*_DATA` global. Writing one without the other splits the
+HTTP site from the local site with no error anywhere, which is why it is in Section 23's never-do
+table.
+
+**Q: Why two hosts?**
+A: Cloudflare Pages is canonical (`composeratlas.com`); GitHub Pages
+(`azqato.github.io/composer/`) predates it and still runs. They do not behave identically: Cloudflare
+honours `.assetsignore` and GitHub Pages currently serves the whole repository regardless of the
+workflow's exclusion list. See Section 25 risk 1, including the open question of whether the mirror
+still earns its keep.
+
+**Q: Why is the Signal Miner one 2,400-line HTML file?**
+A: Because there is no build step, so there are no modules to split it into without adding one. The
+whole tool is self-contained: markup, styles and logic in one file that can be opened directly. The
+cost is that it is a large file to navigate. That trade was made deliberately and holds.
+
+**Q: Why is the leaderboard scoring model in `database.html` rather than in data?**
+A: Because the score depends on the pool. Percentile rank is computed across whatever set is
+eligible at load time, so it cannot be precomputed and shipped without freezing the pool. It is
+recomputed client-side on every load.
+
+**Q: Why does the roadmap have items built out of order?**
+A: Because the owner asked for them out of order, repeatedly and deliberately. V1.16 shipped before
+V1.11 to V1.15; V2.1 shipped before V1.17. Where it happened, the phase says so. The numbering
+describes scope, not sequence.
+
+**Q: Why is so much rejected work written down at length?**
+A: Because the reasoning is the expensive part and it does not survive in anyone's head. Several
+sections record something that was tried, measured, and found wrong (sqrt-scaling RSI levels, a
+uniform two-point level step, the assumption that cross-ticker price comparisons are constant-false).
+Without the write-up each of those gets re-proposed as a fresh good idea.
+
+**Q: Why can the north-star metric not be measured?**
+A: Because measuring it means following a visitor into their Composer account. See Section 20. The
+metric is kept anyway, as a direction for deciding arguments rather than a number on a dashboard.
+
+**Q: What is the biggest unaddressed risk in the product?**
+A: The Signal Miner's exposure to overfitting. It searches millions of candidates and reports the
+maximum, with no robustness check on the result. Designed, not built. Section 25 risk 6.
+
+**Q: What is the biggest unaddressed risk in the infrastructure?**
+A: That GitHub Pages publishes the entire repository while two documents say it does not. Nothing
+secret is exposed, but a stated boundary is not being enforced. Section 25 risk 1.
+
+**Q: What should an AI assistant read first?**
+A: Section 23 (Working Practice), then Section 25 (Risks and Open Questions), then the part of
+Section 14 covering whatever is being changed. Section 23's never-do table exists because most of
+its rows describe something that already went wrong once.
+
 
 ### Content Notes
 
@@ -2739,34 +3082,144 @@ Do not use RSI or return checks shorter than 10 days (e.g., `1d`). Very short wi
 
 ## 18. Documentation Process
 
-### 4-File Structure
+### The Four-Document Structure
 
-As of v1.3.0 (2026-06-14), Composer Atlas documentation lives in exactly 4 files:
+Composer Atlas documentation lives in exactly four files, and has since v1.3.0 (2026-06-14). The
+count has not changed. What each file is **for** was revised on 2026-08-24, and the revision is
+recorded here in full because it reverses a rule this section previously stated.
 
-| File | Purpose | Who Updates It |
-|---|---|---|
-| `README.md` | Developer quick-start: setup, run, deploy, links to /docs | Update when install steps, tech stack, or scripts change |
-| `docs/PRD.md` | Master reference: everything except design | Update for any product, architecture, schema, API, or process change |
-| `docs/DESIGN.md` | Design system: colors, type, spacing, components | Update when CSS tokens, component specs, or layout changes |
-| `docs/PATCHNOTES.md` | Changelog | Add an entry for every change |
+| File | Purpose | Audience | Update when |
+|---|---|---|---|
+| `README.md` (repository root, never inside `/docs`) | The front door. What Composer Atlas is, what it offers, who it is for, where it stands, and where the real documentation lives | **A general reader.** Someone who found the repository or the site and wants to know what this is | The product's shape, offering, or status changes |
+| `docs/PRD.md` | The master reference. Everything except design | The maintainer, and any AI assistant working on the repository | Any product, architecture, schema, API, policy, roadmap, metric, convention or process change |
+| `docs/DESIGN.md` | The design system: tokens, type, spacing, breakpoints, components, accessibility, motion | Anyone changing how the site looks | Any CSS token, component spec or layout change |
+| `docs/PATCHNOTES.md` | The changelog, append-only | Everyone, including future readers reconstructing why something is the way it is | **Every change, without exception, including data-only ones** |
+
+### What Changed About the README, and Why
+
+> **Rule reversal, 2026-08-24, owner instruction.** This section previously described `README.md`
+> as a "Developer quick-start: setup, run, deploy, links to /docs", and that is what the README was.
+> It carried a tech-stack table, prerequisites, a clone command, two ways to run a local server, an
+> environment-variables section, a per-script reference with commands, and build and deploy
+> instructions.
+>
+> **The new rule: the README is written for a general reader and contains no install steps, no
+> commands, no ports, no environment variables, no build instructions, no version numbers and no
+> dependency lists.** Its required sections are: the project name with a one or two sentence
+> description, the live site link, what the site offers, who it is for, current status, and where to
+> learn more.
+>
+> **Why the change is right.** The README is the first thing anyone sees, on GitHub and in any
+> listing, and the overwhelming majority of people who see it are not about to clone the repository.
+> A quick-start serves the one reader who already knows they want to build, at the cost of the many
+> who wanted to know what this is. It also duplicated content that Sections 10 and 11 own, and
+> duplicated content drifts: the old README carried both "28 strategies" and "29 strategies" in the
+> same file, plus a "Hosting: GitHub Pages" row that stopped being the whole truth when Cloudflare
+> became canonical.
+>
+> **Nothing was lost.** Every operational detail removed from the README already lived in, or was
+> merged into, Section 10 (architecture, tech stack, deploy pipeline) and Section 11 (local setup,
+> the script reference, the runbook). The README's job is now to point at them.
+>
+> **The one hard rule: `README.md` is always at the repository root and never inside `/docs`.**
 
 ### Where Content Lives
 
-- **New product requirement or feature decision** → `docs/PRD.md` Part A (Sections 1-9)
-- **Architecture change, new utility function, deploy change** → `docs/PRD.md` Section 10
-- **New operational workflow or troubleshooting step** → `docs/PRD.md` Section 11
-- **Schema field added or changed** → `docs/PRD.md` Section 12
-- **Composer API notes** → `docs/PRD.md` Section 13
-- **Roadmap update** → `docs/PRD.md` Section 14
-- **Security posture change** → `docs/PRD.md` Section 15
-- **Color token or component spec change** → `docs/DESIGN.md`
-- **Every change** → `docs/PATCHNOTES.md` (new entry)
+- **New product requirement, feature decision, or policy** goes to `docs/PRD.md` Part A (Sections 1 to 9)
+- **Architecture change, new utility, deploy change, hosting change** goes to Section 10
+- **New operational workflow or troubleshooting step** goes to Section 11
+- **Schema field added or changed** goes to Section 12
+- **Composer API observations** go to Section 13
+- **Roadmap movement, including deferrals and declines** goes to Section 14
+- **Security posture change** goes to Section 15
+- **A measurement, target, or reporting change** goes to Section 20
+- **A code convention, discovered or decided** goes to Section 21
+- **Anything retired, renamed, or given a redirect shim** goes to Section 22
+- **A rule about how to work in this repository** goes to Section 23
+- **A place where a document and the code disagree** goes to Section 24
+- **A known risk or unresolved question** goes to Section 25
+- **A colour token or component spec change** goes to `docs/DESIGN.md`
+- **Every change** goes to `docs/PATCHNOTES.md`, as a new entry
 
 ### What Not to Do
 
-- Do not create new documentation files for individual topics. Consolidate into the existing 4 files.
-- Do not let `README.md` grow beyond the quick-start role. Deep technical content belongs in `docs/PRD.md`.
-- Do not skip `docs/PATCHNOTES.md` entries, even for data-only updates.
+- **Do not create new documentation files.** Four is the whole structure. A fifth file is how the
+  twelve-file sprawl that v1.3.0 consolidated got started.
+- **Do not let `README.md` drift back into a quick-start.** See the rule reversal above.
+- **Do not skip a `docs/PATCHNOTES.md` entry**, even for a data-only update.
+- **Do not copy a count forward.** Re-derive every number from the files it describes. Most of the
+  drift the 2026-08-24 audit found was a stale count that had been carried through several
+  revisions unexamined.
+- **Do not resolve a disagreement between a document and the code by deleting the document's text.**
+  See the merge rule below.
+- **Do not edit `docs/PATCHNOTES.md` history to match later reality.** Append a marked correction.
+  See Section 22.
+
+### The Merge Rule
+
+**When code and a document disagree, the document is not simply overwritten.** The original text is
+kept, the observed reality is recorded beside it, and the disagreement is marked as a discrepancy
+with a stated judgement about which source to trust and why.
+
+**The reason is that code is wrong as often as documentation is.** A document saying `#444444` where
+the CSS says `#c0c0c0` might be a stale doc, or might be a change nobody meant to make. Deciding
+which requires evidence, and in that specific case the evidence was a patch note recording the
+change as a deliberate legibility fix, so the code won. In other cases the code lost: `robots.txt`
+advertises a sitemap that does not exist, and the right answer is not "update the docs to say the
+sitemap is missing" but to fix one side or the other.
+
+**Where the evidence settles it**, the text is corrected and the correction is stated, so a reader
+can see what it used to say and why it changed. **Where it does not**, both readings stay and the
+item goes into Section 25 for the owner to resolve. Every such case is registered in Section 24,
+including the resolved ones, which are kept rather than deleted so the same question is not
+re-litigated in the next audit.
+
+### The Full Documentation Audit
+
+A full documentation audit has now been run three times: v1.1.4 (2026-06-08, twelve files),
+v1.5.9 (2026-06-15, a site-wide accuracy pass) and 2026-08-24 (the audit that produced Sections 20
+to 26). It is worth running whenever the documents have stopped being trusted, which in practice
+means after a long run of releases that each touched only what they needed to.
+
+**The sequence, in order, and the first three steps are strictly read-only:**
+
+1. **Crawl the whole codebase.** Every page, script, workflow, data file and config. Read files
+   rather than inferring from their names.
+2. **Read every document in `/docs` in full**, one at a time, start to finish. Not a skim, not a
+   search. The three self-contradictions the 2026-08-24 audit found were only visible to someone who
+   had read the whole file.
+3. **Compare each document against the code**, claim by claim. Re-derive every count. Fetch the live
+   site and check what it actually serves rather than what the deploy config says it serves; that is
+   how the GitHub Pages exposure in Section 25 was found, and it was invisible from inside the
+   repository.
+4. **Only then write.** Merge rather than overwrite, per the rule above. Mark uncertainty as
+   uncertainty rather than resolving it by assertion.
+5. **Skip no document.**
+6. **Report what changed in each file and why**, including the steps that turned up nothing. An
+   audit that reports only its findings is indistinguishable from one that did not look.
+
+**A default is not a rule.** An audit will usually bring an external standard with it. Where this
+project already states its own rule, the project's rule wins and the standard is recorded as a
+difference rather than applied over the top. The 2026-08-24 audit produced three of these: eight
+tenets against a proposed maximum of seven (Section 16), a changelog that uses descriptive headlines
+instead of Added/Changed/Fixed/Removed blocks (Section 19 and PATCHNOTES), and a removal policy the
+project had already arrived at independently (Section 22). All three kept the existing form.
+
+**The exception is an explicit instruction from the owner**, which outranks both the existing rule
+and the default. The README reversal above is exactly that case, and it is documented as a reversal
+rather than presented as though the rule had always been this way.
+
+### Going Forward
+
+- Every release updates whichever of the four documents it affects, **in the same commit as the
+  code**. A documentation change landing a release later is how drift starts.
+- Counts that appear in documentation should be re-derived, not carried forward. See Section 25
+  item 20 on whether they should live in exactly one place.
+- The discrepancy register in Section 24 is permanent. Resolved rows stay, marked resolved.
+- Risks in Section 25 keep their numbers so they can be cited. Closed items stay, marked closed.
+- The next audit starts by reading Section 24 and Section 25, then checking whether any of it has
+  quietly changed.
+
 
 ### Consolidation History
 
@@ -2797,7 +3250,7 @@ On 2026-06-14, 12 documentation files were consolidated into the current 4-file 
 Em-dashes are prohibited in all project files: HTML pages, documentation (.md files), JavaScript, CSS, and JSON data. This applies to both forms:
 
 - **Literal Unicode character** (U+2014): the literal character (cannot be stored in this file)
-- **HTML entity**: `&mdash;`
+- **HTML entity**: `: `
 
 A text search for one form will not catch the other. Both must be searched independently when auditing for compliance.
 
@@ -2848,7 +3301,704 @@ for root, dirs, files in os.walk('.'):
 "
 
 # Search for HTML entity (grep)
-grep -r '&mdash;' --include='*.html' --include='*.md' .
+grep -r ', ' --include='*.html' --include='*.md' .
 ```
 
 The `scripts/add_ai_summary.py` script contains the canonical AI Summary content. When updating summaries, verify the new text contains no em-dashes before committing.
+
+---
+
+### Audit Result, 2026-08-24
+
+The 2026-08-24 documentation audit swept the whole project for both forms. **304 instances were
+found in 13 files**, which is the largest count since the original 696-instance sweep in v1.7.2. The
+prohibition had been in force the whole time; what had not been happening was the sweeping.
+
+| File | Literal U+2014 | Entity form | Disposition |
+|---|---|---|---|
+| `docs/PRD.md` | 167 | 2 | Fixed |
+| `docs/PATCHNOTES.md` | 78 | 2 | Fixed |
+| `converter.html` | 8 | 0 | 5 fixed, **3 kept**, see below |
+| `etf-cloner.html` | 4 | 0 | Fixed |
+| `data/strategies.json` | 2 | 0 | Fixed |
+| `data/strategies.js` | 2 | 0 | Fixed |
+| `signal-miner.html` | 1 | 0 | Fixed |
+| `docs/DESIGN.md` | 1 | 0 | Fixed |
+| `database.html` | 0 | 1 | Fixed |
+| `data/database.json` | 9 | 0 | **Not touched**, see below |
+| `data/database.js` | 9 | 0 | **Not touched** |
+| `data/database_summary.json` | 9 | 0 | **Not touched** |
+| `data/database_summary.js` | 9 | 0 | **Not touched** |
+
+**Replacements followed the approved list above:** a colon after a bold label, an inline-code label, or a
+closing parenthesis; a comma for a mid-sentence aside. Two headings took a colon under the heading
+rule. Four `U+FFFD` replacement characters in `docs/PRD.md`, mangled em-dashes left by an earlier
+sweep, were repaired in the same pass.
+
+**Two categories were deliberately left alone, and both are permanent exceptions.**
+
+**1. Third-party symphony names in the community database (36 instances).** The names in
+`data/database.json` and its derivatives were written by thousands of anonymous Composer users. They
+are quoted data, not this project's prose. Editing someone's strategy name to satisfy an internal
+style rule would misrepresent what they called it, and would break the correspondence between a row
+here and the same symphony on Composer.trade. **Never sweep the database files.**
+
+**2. Three em-dashes in `converter.html` used as an empty-value glyph**, at the `field('Name',
+sym.name || '<dash>')` calls. These are not punctuation. They are the "no value" placeholder printed
+into a table cell where a symphony has no name, no rebalance setting, or no indicators. Replacing a
+placeholder glyph with a colon or a comma would produce nonsense on screen. They render, they are
+not prose, and they stay.
+
+**Both exceptions mean a raw count will never reach zero.** A future audit should expect **39
+surviving instances** across those four data files and that one page, and should investigate any
+number other than 39 rather than trying to drive it to nought.
+
+
+## 20. Metrics
+
+**Read this section together with Tenet 7 and Section 4's Non-Goals before proposing any measurement
+change.** Composer Atlas collects no user data, has no accounts, and sets no cookies. That is a
+permanent design choice, not a phase. It means most of the metrics a product document normally
+specifies **cannot be measured here, and must not be measured by adding the machinery that would
+make them measurable.** The honest thing is to say which numbers exist, which are proxies, and which
+are simply unavailable, rather than to invent a funnel the site is incapable of observing.
+
+### North Star
+
+**Symphonies a visitor understood well enough to clone.**
+
+Not pageviews and not visits. The whole product thesis in Section 1 is that Composer users clone
+strategies they do not understand; the site exists to close that gap. A visitor who reads a strategy
+page, follows two glossary links, and then opens the symphony on Composer.trade is the entire
+success case in one motion.
+
+**It cannot be measured directly and will not be.** Measuring it end to end would require following
+a visitor off-site into their Composer account. That is exactly the tracking this project refuses.
+The north star is therefore a **direction, not a dashboard**: it decides arguments, not releases.
+When two options are on the table, the one that leaves the visitor better able to explain what a
+strategy does wins.
+
+**The closest honest proxy** is outbound clicks on "Open in Composer" links relative to strategy
+page views, which Cloudflare Web Analytics can report at the page level without identifying anyone.
+It is a proxy, not the thing.
+
+### What Is Actually Measured
+
+| Class | Metric | Source | Cadence |
+|---|---|---|---|
+| Acquisition | Page views and unique visits per path | Cloudflare Web Analytics | Continuous, reviewed monthly |
+| Acquisition | Referrer breakdown (Composer Discord, search, direct) | Cloudflare Web Analytics | Monthly |
+| Engagement | Which pages are viewed at all, and their relative share | Cloudflare Web Analytics | Monthly |
+| Engagement | Outbound clicks to Composer.trade | Cloudflare Web Analytics | Monthly, the north-star proxy |
+| Performance | Core Web Vitals as measured on real visits | Cloudflare Web Analytics | Monthly |
+| Performance | Lighthouse Performance, Accessibility, LCP, page weight | Manual run against the live site | Per release that touches page weight |
+| Content health | Curated strategy count, glossary concept count, database entry count | Counted from `data/*.json` | Every release that changes them |
+| Data health | Share of database entries carrying a `sharpe_ratio` (the "has been refreshed" proxy) | Counted from `data/database.json` | After each weekly refresh |
+| Data health | Flag distribution across `null` / `retry` / `caution` / `excluded` / `duplicate` | Counted from `data/database.json` | After each weekly refresh |
+| Availability | Every live clean URL returns 200 and matches the committed bytes | `python scripts/check_live.py` | Every deploy |
+
+### What Is Not Measured, and Why
+
+| Normally measured | Status here |
+|---|---|
+| Retention / returning visitors | **Not measured.** Requires a persistent identifier. Cloudflare Web Analytics deliberately does not set one, and neither will the site |
+| Conversion funnel | **Not measured.** There is nothing to convert to. No account, no signup, no purchase |
+| Session length, scroll depth, heatmaps | **Not measured.** All require client instrumentation the site refuses to load |
+| Individual user journeys | **Not measured, and never will be.** This is the whole point of Tenet 7 |
+| Revenue | **Zero, by design.** Buy Me a Coffee donations are the only inflow and are not tracked against site activity |
+
+### Targets
+
+| Metric | Target | Standing |
+|---|---|---|
+| Lighthouse Performance | 85+ | Set at MVP, Section 10 |
+| Lighthouse Accessibility | 90+ | Set at MVP, Section 10 |
+| Largest Contentful Paint | Under 2s, desktop | Set at MVP, Section 10 |
+| Total page weight, homepage | Under 500KB uncompressed | Set at MVP, Section 10. **Scoped to the homepage only.** V1.16 established this explicitly after the target was mistakenly applied to `database.html`, which loads a multi-megabyte dataset by design |
+| Live-URL integrity | 100% of checked URLs pass `check_live.py` | Every deploy. Currently 8 checked, 0 failing |
+| Database refresh coverage | Every entry has had at least one real API attempt | Met since V1.15. Maintained by the weekly workflow |
+
+**Deliberately unset.** There is no traffic target, no growth target and no engagement target. Setting
+one would create pressure to optimise for it, and the only levers a site like this has for moving a
+traffic number are the ones Tenets 1 and 3 exist to prevent. Growth is welcome, not managed.
+
+### Measurement Method
+
+**Cloudflare Web Analytics**, injected by the host at serve time on `composeratlas.com`. It is
+cookieless, sets no client-side storage, does not fingerprint, and adds about 359 bytes per page. It
+was reviewed against Tenet 7 and **accepted by the owner. That decision is settled and is not to be
+re-litigated as a privacy concern in future audits.**
+
+Everything else is counted directly from the repository with Python, or measured by running
+Lighthouse by hand against the live site. The data-health numbers in this document should always be
+reproducible by someone with a checkout and no credentials, which is the reason they are counted
+from files rather than reported by a service.
+
+### Reporting Cadence
+
+| When | What |
+|---|---|
+| Every deploy | `check_live.py`, plus the two deploy gates (`check_html_js.py`, `check_composer_ladder.py`) |
+| Every release touching counts | Re-count strategies, glossary entries and database rows; update this document and the patch note in the same commit |
+| Weekly, after the database refresh | Flag distribution and refresh coverage |
+| Monthly | Cloudflare Web Analytics review: paths, referrers, outbound clicks, Core Web Vitals |
+| Per audit | A full documentation audit re-derives every count in this document from the files (see Section 18) |
+
+There is no external reporting and no stakeholder deck. The audience for all of this is one
+maintainer and whatever AI assistant is working on the repository at the time.
+
+---
+
+## 21. Conventions
+
+**These are derived from the code as it actually stands, not prescribed at it.** Where a form is
+dominant it is stated as the convention. Where meaningful deviation exists, the deviants are named,
+because an undocumented exception looks like a bug to the next reader and gets "fixed" into an
+inconsistency. Counts below were taken on 2026-08-24.
+
+### JavaScript
+
+| Convention | Observed | Deviants |
+|---|---|---|
+| Declarations | `const` everywhere: **39 of 39** in `js/app.js`. Zero `let`, zero `var` | None. This is the cleanest convention in the codebase |
+| Indentation | Two spaces per level | None |
+| Quotes | Single quotes dominate (roughly 2:1 over double). Double quotes appear inside HTML attribute strings in template literals, which is correct rather than deviant | None |
+| Semicolons | Always terminated | None |
+| Function form | Mixed by role: **20 `function` declarations** for top-level named helpers and renderers, **16 arrow functions** for callbacks and short expressions | Not a deviation. The split is consistent: named declarations for anything called by name, arrows for anything passed to something else |
+| Strings | Template literals for anything producing HTML; concatenation only inside `u()` path building | None |
+| Module system | None. `js/app.js` is a plain script defining globals; the tool pages are single inline `<script>` blocks | Deliberate. See Tenet 8 |
+| DOM writes | `innerHTML` with template literals | **Community-sourced text must be escaped first.** `escapeHtml()` exists for exactly this and is mandatory for any value originating in `database.json`, whose `name` field comes from thousands of anonymous authors. Curated content in `strategies.json`/`glossary.json` is author-controlled and is inserted directly. Getting this backwards is an XSS bug; it was one, in v1.9.3 |
+
+### Python
+
+Every script is Python 3, standard library only, no `pip` requirements, and lives in `scripts/`. That
+last rule was made explicit in v1.5.5 after two scripts were found loose in the project root.
+
+| Convention | Observed | Deviants |
+|---|---|---|
+| Shebang `#!/usr/bin/env python3` | 13 of 18 scripts | **Missing on the five newest:** `check_html_js.py`, `check_composer_ladder.py`, `check_live.py`, `measure_throughput.py`, `run_harness.py`. All five are invoked as `python3 script.py`, never executed directly, so nothing is broken. The convention is nonetheless drifting, and the drift correlates with recency |
+| Module docstring stating what the script does and why | Effectively universal, and unusually thorough: several carry multi-paragraph rationale including what was tried and rejected | None |
+| `pathlib` for file paths | 12 of 18 | The six without it are the newest gate and measurement scripts, which mostly use `os.path`. Same drift as the shebang |
+| Type hints | **4 of 18** (`update_metrics.py`, `refresh_prices.py`, `refresh_rsi.py`, and partially elsewhere) | This is a minority form, so the honest statement is that **the codebase does not use type hints**, and the four that do are the exception. Do not "restore consistency" by stripping them; do not mass-add them either |
+| `argparse` | **0 of 18.** Flags are parsed by hand from `sys.argv` | Uniform. Not worth changing for the number of flags in play |
+| Data writes | Always write the `.json` and its `.js` twin in the same run | Non-negotiable. See below |
+
+### Data Files
+
+**Every JSON data file has a `.js` twin, and they must be written together.** The twin assigns the
+same content to a `window.*_DATA` global so pages work when opened over `file://`, where `fetch()`
+is blocked. `strategies` / `glossary` / `database` / `database_summary` / `prices` / `rsi` all follow
+this. Any script that writes one and not the other has introduced a silent split-brain: the site
+served over HTTP and the site opened by double-click will disagree, and nothing will error.
+
+Generated files carry a banner naming the script that regenerates them, so a maintainer editing one
+by hand is told not to. The banner text was corrected across five scripts in v1.24.8 when it began
+naming a script that no longer existed.
+
+| Convention | Detail |
+|---|---|
+| Field order | Stable and meaningful. `database.json` entries end `oos_date`, `refresh_date`, `flag`, `error`, fixed in that order in v1.11.13 |
+| Null handling | Every entry always carries every key. Unknown values are explicit `null`, never an omitted key |
+| Float precision | `database_summary` rounds to 4 decimal places. These are ratios and percentages; 4 places is already more precision than any UI renders |
+| Encoding | UTF-8, no BOM. Working copies are CRLF; `check_live.py` normalises line endings before comparing to what the host serves |
+
+### HTML and CSS
+
+| Convention | Observed |
+|---|---|
+| Page structure | Flat `.html` files at the repository root. No subdirectories, no router, no build step. A detail view is the same file with `?slug=X` |
+| Shared chrome | Nav and footer are rendered by `renderNav()` / `renderFooter()` into `<nav id="nav-root">` and `<footer id="footer-root">`, never hand-written per page |
+| Internal links | Always built through `u(path)`. Never hardcode a leading `/`: it breaks on the GitHub Pages project-path mirror and on `file://` |
+| External links | Always `target="_blank" rel="noopener noreferrer"` |
+| Design tokens | Colours, radii, fonts and layout constants come from the `:root` custom properties in `css/main.css`. Literal hex in a rule is a deviation and needs a stated reason. The one accepted exception is the RSI tier palette in `rsi.html`, documented in DESIGN.md |
+| Inline `<style>` | Three tool pages only: `signal-miner.html`, `converter.html`, `etf-cloner.html`. See DESIGN.md Section 8 |
+
+### Naming
+
+- **Files:** lowercase with hyphens (`signal-miner.html`, `etf-cloner.html`). Python uses underscores (`refresh_full_database.py`), matching the language.
+- **CSS classes:** page-prefixed for page-local work (`.db-*` for the database page, `.sl-*` for the Signal Miner, `.conv-*`, `.ec-*`), unprefixed for shared components (`.card`, `.tag`, `.badge`).
+- **Slugs:** lowercase, hyphen-separated, stable. A slug is a public URL and changing one breaks links, so it is treated as permanent.
+- **Storage keys:** namespaced and versioned, `composer-atlas.<tool>.<thing>.v<N>`. Bumping the version is how a stored payload whose shape changed is discarded rather than misread.
+- **"zoop" is always lowercase**, including at the start of a sentence and in strategy names. It is a brand name in the style of "iPhone". This holds in prose, in data, and in commit messages.
+
+### Commits and Versioning
+
+Versioning is documented in Section 11 and holds: semantic versioning, and **every change gets a
+patch-note entry, including data-only ones**. Commit subjects use a `type: summary (vX.Y.Z)` shape
+(`feat:`, `fix:`, `docs:`, `chore:`, `data:`).
+
+**Two files must never be committed:** `strategies.xlsx` and `watched_sanity_check.xlsx`.
+
+---
+
+## 22. Deprecation and Removal
+
+### The Removal Policy
+
+The project already has a rule and has followed it consistently. Stated explicitly for the first
+time here, derived from what the code actually does rather than newly invented:
+
+**A public-facing address is never simply deleted. An internal source file is.**
+
+The dividing line is whether the thing has a URL a stranger might hold. If it does, removing it
+strands somebody, and a bookmark or a Discord link that 404s is a real cost paid by someone who did
+nothing wrong. If it does not, deletion costs nothing and leaving the file costs clarity.
+
+**For a public address, the pattern is a permanent redirect shim.** `signal-lab.html` is the worked
+example, from the v1.16.6 rename to Signal Miner. The old file still exists, and it:
+
+- carries `<meta name="robots" content="noindex, nofollow">` so search engines drop it,
+- carries a `<meta http-equiv="refresh">` as the no-JavaScript path,
+- calls `location.replace()` so the redirect leaves no history entry to trap the back button,
+- **preserves the query string**, so a deep link with parameters still lands correctly,
+- says in plain text where the page went, for anyone who lands with both mechanisms disabled.
+
+The shim is permanent. There is no scheduled removal date, because the cost of keeping a 1KB HTML
+file forever is nil and the cost of breaking a link years later is not.
+
+**For an internal file, deletion is correct**, once it is genuinely finished and nothing references
+it. v1.24.8 is the worked example: `import_full_database.py` and `add_original_tag.py` were both
+one-shot scripts that had done their one job. Before deleting, three things were checked: that the
+work was actually complete and reflected in the committed data, that no other script, workflow or
+document referenced them, and that the live site did not depend on them. A generated-file banner
+that named one of them was updated in the same commit, because a pointer to a deleted file is worse
+than no pointer.
+
+> **Note on the audit default.** The audit specification this section was written under proposes the
+> same policy as its default. The project's existing rule and the default agree, so there is nothing
+> to reconcile. It is recorded here as the project's own rule, which is what it has been since
+> v1.16.6.
+
+### Public Surface, Item by Item
+
+Everything with a URL a stranger could hold. Removing or renaming any of these requires a shim.
+
+| Address | Status | Notes |
+|---|---|---|
+| `/` (`index.html`) | Stable | Landing page. Redesigned from a strategy grid to a marketing page in v1.14.5; the address never moved |
+| `/strategies.html` | Stable | Listing, and detail via `?slug=X` |
+| `/strategies.html?slug=<slug>` | Stable | **Every slug is a permanent public address.** Renaming a strategy does not rename its slug |
+| `/glossary.html` and `?slug=<slug>` | Stable | Same rule for concept slugs |
+| `/database.html` | Stable | Tabs are selected by in-page state, not by URL, so tab links are not deep-linkable and never were |
+| `/rsi.html` | Stable | |
+| `/signal-miner.html` | Stable | |
+| `/signal-lab.html` | **Retired, shim kept permanently** | Redirects to `signal-miner.html`, `noindex`, query string preserved |
+| `/converter.html` | Stable | Indexable since v1.15.4 |
+| `/etf-cloner.html` | Stable, **deliberately unlinked from the primary nav** | Reachable from the footer sitemap and the homepage grid. Keeping it out of the nav is an owner decision, not an oversight, and must be preserved |
+| `/about.html` | Stable | Out of the primary nav since v1.16.5; still in the footer sitemap |
+| `/404.html` | Stable | Served by both hosts for unmatched routes |
+| `/robots.txt` | Stable | Allows all crawlers, advertises `/sitemap.xml`. That URL 404'd from the file's creation until v1.25.1 |
+| `/sitemap.xml` | Stable, **generated** (v1.25.1) | Written by `scripts/build_sitemap.py`, never hand-edited. 40 URLs: 9 indexable pages plus 31 curated strategy slugs. See Section 11 |
+| `/data/*.json` and `/data/*.js` | Stable, load-bearing | The `.js` twins are fetched by every page. Renaming one is a breaking change; `full_database` to `database` in v1.10.1 is the precedent for doing it properly |
+
+### Compatibility
+
+| Item | Guarantee |
+|---|---|
+| Strategy and concept slugs | Permanent. Never rename one to fix a typo; the URL is the contract |
+| `window.*_DATA` global names | Stable. Renaming one breaks `file://` loading on every page that reads it |
+| `localStorage` keys | Versioned, and a bump is the deprecation mechanism. `composer-atlas.signal-miner.lastrun.v3` has been through v1 and v2; each bump silently discarded snapshots whose metric definitions had changed, which is correct, because showing a stale snapshot scored under different arithmetic is worse than showing none |
+| Schema fields | Added freely; removed only with a migration that touches every entry, both twins, the summary export and the xlsx exporter. v1.11.9 through v1.11.13 are the worked example |
+| Composer API shape | **Not ours, and not guaranteed.** `refresh_full_database.py` captures the API's actual error text on failure rather than assuming a shape, which is what makes an upstream change visible instead of silent |
+
+### Retired Items
+
+| Item | Retired | Disposition |
+|---|---|---|
+| Signal Lab (the name) | v1.16.6 | Renamed to Signal Miner. Address kept as a permanent shim |
+| `scripts/import_full_database.py` | v1.24.8 | Deleted. One-shot xlsx bootstrap, completed at v1.9.0 |
+| `scripts/add_original_tag.py` | v1.24.8 | Deleted. One-shot rename and tag pass, completed July 2026 |
+| `script_errors` / `data_warnings` fields | v1.11.9 | Consolidated into `flag`, then split into `flag` plus `error` at v1.11.11 |
+| `last_updated` / `last_semantic_update_at` fields | v1.11.10 | Renamed to `refresh_date` / `oos_date` across every consumer |
+| `data/full_database.json` / `.js` | v1.10.1 | Renamed to `database.json` / `.js`; `window.FULL_DATABASE_DATA` became `window.DATABASE_DATA` |
+| Google AdSense integration | Dropped pre-launch; plan removed 2026-08-15 | **Never implemented.** No ad script has ever been on the site |
+| V3.0 Monetization Expansion (roadmap) | 2026-08-15 | Removed entirely, not deferred |
+| User accounts / saved strategies | 2026-08-15 | **Removed permanently, not iceboxed.** Will never be built |
+| Screener's 3-state flag toggle | 2026-07-13 | Removed. Screener is always Working-only |
+| Astro / Tailwind / TypeScript stack | v1.0.2 | Abandoned before launch in favour of vanilla HTML/CSS/JS |
+| `--color-green-muted` token | v1.1.1 | Removed as unused |
+| Curated "zoop's X (2026 Edition)" set | Planned, not applied | 11 replacements and 1 removal are decided and recorded in Section 14 V2.2. Not yet executed |
+
+### Historical Records Are Not Rewritten
+
+`docs/PATCHNOTES.md` is an append-only record of what happened, and entries are **not edited to
+match later reality.** A patch note that says "80 tickers" was true when written, and v1.21.2's
+entry recording the drop to 72 is the correction. The same applies to superseded roadmap sections:
+V1.13's scoring model is left intact above V1.17's, which supersedes it, because the launch record
+is worth more than a tidy document.
+
+Two exceptions, both narrow and both used:
+
+1. **A correction may be added inline**, marked as a correction and dated, when a published entry
+   was factually wrong rather than merely superseded. v1.24.2 carries a `> **Correction (v1.24.4).**`
+   block admitting its throughput figure was wrong by a factor of five. The original text stays.
+2. **Mechanical punctuation compliance** may be applied across the whole file, as it was in v1.7.2
+   and again in this audit. Replacing an em-dash with a colon changes no fact.
+
+---
+
+## 23. Working Practice
+
+This section is instructions, not description. It is written for whoever picks the repository up
+next, including an AI assistant with no memory of the previous session.
+
+### Before You Change Anything
+
+1. **Read the file, do not infer it from its name.** `signal-miner.html` is a single 2,400-line page
+   with one inline script; `database.html` is 1,348 lines with the whole leaderboard, screener and
+   filter engine inside it. Neither is what its name suggests in size.
+2. **Check Section 14 before proposing a feature.** A surprising amount has already been decided,
+   built, measured, or explicitly declined with a recorded reason. Re-proposing something the owner
+   declined, without acknowledging that they declined it, wastes everyone's time.
+3. **Check Section 25 before reporting a problem.** Known open items are listed there with their
+   current state.
+
+### Where to Work: Kind of Work to File
+
+| If you are changing... | Open |
+|---|---|
+| Anything about the Signal Miner: search space, families, throttle, results, export | `signal-miner.html` (one file, one inline script) |
+| The leaderboard scoring model, tiers, screener, filter panel, database tables | `database.html`, and `SCORE_METRICS` / `CLAMP_Q` / `TIER_CUTS` inside it |
+| Nav, footer, breadcrumbs, tag rendering, shared formatters, `u()` | `js/app.js` |
+| Colours, type, spacing, any shared component | `css/main.css` first, then `docs/DESIGN.md` in the same commit |
+| A tool page's own look | That page's inline `<style>` block, per DESIGN.md Section 8 |
+| Curated strategy content, metrics, tags, AI summaries | `data/strategies.json` **and** `data/strategies.js`, plus `scripts/add_ai_summary.py` if a summary is involved |
+| Glossary content | `data/glossary.json` **and** `data/glossary.js` |
+| The community database pipeline | `scripts/refresh_full_database.py`, then `scripts/export_summary.py` to regenerate what the site reads |
+| The Signal Miner's price history or ticker universe | `scripts/refresh_prices.py`, which writes `data/prices.json` and `.js` |
+| The RSI page's data | `scripts/refresh_rsi.py` |
+| Deploy behaviour or the deploy gates | `.github/workflows/deploy.yml`, `scripts/check_html_js.py`, `scripts/check_composer_ladder.py` |
+| What Cloudflare serves publicly | `.assetsignore` (not `deploy.yml`, which governs GitHub Pages only) |
+| Product decisions, architecture, schemas, roadmap, policy | `docs/PRD.md`, this file |
+| Anything at all | `docs/PATCHNOTES.md`, always, in the same commit |
+
+### How to Verify a Change
+
+**Verification is by running the thing, not by reading the diff.** This project has repeatedly found
+that a change which looks obviously correct is not.
+
+| What you changed | How to verify |
+|---|---|
+| `signal-miner.html` | `python scripts/run_harness.py all`. This runs the three gates: `verify` (spec-count lockstep plus dual-path equality), `live` (an end-to-end run, window and rendering), `settings` (persistence and the Default button). All three must pass before pushing. `memory` and `inertness` are measurement tools, not gates |
+| Any inline `<script>` on any page | `python scripts/check_html_js.py`. A broken inline script still serves a 200 with its static HTML intact, so a bad publish looks healthy from outside. This is the gate that would have caught v1.22.2 |
+| The Composer export shape | `python scripts/check_composer_ladder.py`. Valid JSON in the wrong shape is what shipped in v1.22.0 and was not caught for five releases |
+| Any JSON data file | `python -c "import json; json.load(open('data/FILE.json', encoding='utf-8'))"`, and confirm the `.js` twin was written in the same run |
+| Anything at all, after deploying | `python scripts/check_live.py`. Fetches each live clean URL, compares byte-for-byte against the committed file, and reports failures. Currently 8 URLs, 0 failing |
+| Page appearance or behaviour end to end | Drive it in **headless Edge**. See below |
+| Documentation counts | Re-count from the files. Never copy a number forward from a previous revision |
+
+### Browser Testing
+
+**Use Microsoft Edge, never Chrome.** There is no JavaScript runtime on the maintenance machine, so
+end-to-end testing is done by driving a headless browser, and Chrome is the owner's day-to-day
+browser. Driving it would disturb a live session. Edge runs the same engine and is free to use.
+
+The rig lives in `scripts/harness/`, entered through `scripts/run_harness.py`, and
+`scripts/harness/README.md` documents eleven traps that have each cost a debugging session. Read it
+before writing a new harness. The most expensive one, Trap 11, is worth repeating here: **a shared
+Edge profile directory must not have a fixed name.** A killed or backgrounded harness leaves an
+`msedge.exe` holding the directory, the cleanup fails silently, and the next run's Edge exits in a
+tenth of a second against a locked profile. That surfaces as "NO HARNESS OUTPUT", which looks
+exactly like a broken driver. `run_harness.py` now uses a per-process profile name and says so
+explicitly if it cannot clear one.
+
+### What Never to Do, and Why
+
+| Never | Because |
+|---|---|
+| **Add user accounts, logins, or any user-data collection** | Permanent product decision (Tenet 7, Section 4). Not a phase, not a backlog item, not something to revisit. It was removed from the roadmap permanently on 2026-08-15 |
+| **Add ads, a premium tier, affiliate links, or any monetization** | Same decision. Buy Me a Coffee donations only |
+| **Raise the Signal Miner's CPU ceilings** (Max ~80%, High ~40%, Medium ~20%, Low ~10%) | They are capped for **heat**, on hardware belonging to whoever opens the page, not because of the memory bug. The memory bug was fixed in v1.22.13 and v1.22.15, which invites the conclusion that the caps can now be lifted. They cannot. Owner decision, reaffirmed 2026-08-20 after the fix |
+| **Re-raise the Cloudflare Web Analytics beacon as a privacy concern** | Reviewed and accepted by the owner. It is cookieless, sets no storage, and the decision is settled |
+| **Put the ETF Cloner in the primary nav** | Owner decision. It is reachable from the footer sitemap and the homepage grid, and that is where it stays |
+| **Build a self-hosted strategy submission form** | Decided 2026-08-15: submissions go through an external Google Form. A self-hosted intake would be an input surface on a site that deliberately has none |
+| **Commit `strategies.xlsx` or `watched_sanity_check.xlsx`** | Standing instruction |
+| **Write a `.json` without its `.js` twin** | Splits the HTTP site from the `file://` site with no error anywhere |
+| **Run another script that writes `database.json` while `refresh_full_database.py` is running** | It holds the whole file in memory and overwrites on every checkpoint, so a concurrent writer's changes are silently discarded. This happened once, in v1.11.3, and the rule is in both scripts' docstrings |
+| **Insert community-sourced text into `innerHTML` without `escapeHtml()`** | `database.json` names come from thousands of anonymous authors. This was a live XSS hole until v1.9.3 |
+| **Use an em-dash, or `--` as punctuation** | Section 19. It reads as machine-written and undermines the site's voice |
+| **Capitalise "zoop"** | It is a lowercase brand name, always |
+| **Rename a strategy or concept slug** | It is a public URL. See Section 22 |
+| **Edit `docs/PATCHNOTES.md` history to match later reality** | Append a correction instead. See Section 22 |
+| **Add a build step, an npm dependency, or a server** | Tenets 4 and 8. Every technical decision is evaluated against staying static and dependency-free |
+| **Push to `main` without running the gates for what you touched** | The gates exist because each one has already caught a real outage |
+
+### Adding a Release
+
+1. Make the change and verify it by the table above.
+2. Update `docs/PRD.md` if any decision, schema, architecture, count or policy moved.
+3. Update `docs/DESIGN.md` if any token, component or layout moved.
+4. Add a `docs/PATCHNOTES.md` entry: new `## [X.Y.Z] - YYYY-MM-DD` heading at the top, a descriptive
+   `###` headline, past-tense prose explaining what changed and why, and a bolded
+   **Files changed:** line.
+5. Bump the version in the PRD header.
+6. Commit with `type: summary (vX.Y.Z)`.
+7. Push, wait for the deploy, then run `python scripts/check_live.py`.
+
+---
+
+## 24. Documentation Versus Reality
+
+Every place a document and the code disagreed, found in the full audit of 2026-08-24. **Nothing in
+this table was resolved by deleting the original text.** Each entry names which source to trust and
+why, and the losing text is either kept in place with a marked discrepancy note beside it, or
+corrected with the correction stated.
+
+**The general rule: trust the code, but not automatically.** Code can be wrong as easily as a
+document, and two of the rows below are cases where the code was the problem. What decides it is
+evidence, usually a patch note recording the change as deliberate.
+
+### Open
+
+| # | Doc said | Reality | Trust | Why |
+|---|---|---|---|---|
+| 1 | `deploy.yml`'s exclusion list keeps `docs/`, `scripts/`, `README.md` and `symphony_scores.json` off the public web | **All four return HTTP 200 on GitHub Pages**, byte-identical to the working copy. They correctly 404 on Cloudflare | **The docs describe the intent; neither host fully delivers it** | The byte-exact match proves GitHub Pages serves the raw repository rather than the workflow artifact. Leading hypothesis: the repository's Pages source is set to "Deploy from a branch" instead of "GitHub Actions". Unconfirmed, `gh` is not installed. **Owner action required** |
+| 2 | `data/symphony_scores.json` is "not served publicly" (README, `update_metrics.py`, Section 10) | **200 on both hosts**, 22.8MB. `.assetsignore` never listed it | **The code**, meaning the file genuinely is public | One-line fix: add it to `.assetsignore`. Also true of `data/database.json` (18.7MB) and `data/Full Database.xlsx` (5.8MB), neither of which any page requests |
+| 4 | README stated `## License` / `MIT` | **No `LICENSE` file exists in the repository** | **The code**, meaning the project is currently unlicensed | A bare "MIT" line with no licence text is not a grant. Removed from the rewritten README rather than asserted. **Owner decision needed:** add a real `LICENSE` file, or leave it unlicensed deliberately |
+| 6 | Section 12: "All 8 current tags" | **13 tags in use** across `strategies.json` | **The code** | The 8 were the MVP set. All 13 correctly resolve to a glossary slug, so the rule the section states still holds; only the count went stale. Table kept, framing corrected |
+| 7 | Section 6: "6,640 total entries, 6,221 clean, 229 duplicate, 88 excluded, 88 caution, 14 retry" | **6,669 entries; 6,324 unflagged, 248 retry, 81 caution, 16 excluded, 0 duplicate** | **The code** | The v1.11.23 figures were correct on the day. The weekly refresh has been moving them ever since. Original kept as the historical record, current figures added beside it |
+| 8 | Section 13: "All 24 Composer Atlas strategies" | The table beneath it has **31 rows**, matching `strategies.json` | **The code, and the table** | Only the heading's count was wrong. Removed rather than re-fixed to a number that will go stale again |
+| 9 | Section 15: "`data/strategies.json` is the only data source" | **Nine committed data sources** under `data/` | **The code** | True at MVP. Everything the sentence goes on to assert still holds for all of them |
+| 10 | Section 10 directory tree: `glossary.json # 8 glossary concept entries` | **20 entries** | **The code** | Corrected. Section 12's own canonical table already said 20, so the document disagreed with itself |
+| 11 | Section 10 directory tree: `prices.json (37 tickers from 2018)` | **72 tickers, from 2010-01-01**, 4,184 trading days | **The code** | Two separate changes landed (v1.18.0 expanded the universe, v1.20.1 extended the history) and this line tracked neither |
+| 12 | DESIGN.md: `--color-disabled` is `#444444` | `css/main.css` has **`#c0c0c0`** | **The code** | PATCHNOTES v1.5.4 records the change as a deliberate legibility fix. Doc went stale on 2026-08-15 and stayed that way for two months. Secondary issue flagged: the token's name now reads backwards |
+| 13 | DESIGN.md breakpoints list four `min-width` queries | A **`max-width: 640px`** query also exists | **The code** | Added |
+| 14 | DESIGN.md documents the shared component set | **Six shared components were undocumented**, plus three tool pages' entire inline stylesheets | **The code** | All six now documented; the three inline sheets are named and scoped in a new DESIGN.md Section 8 |
+| 15 | Section 15: HTTPS "GitHub Pages enforces HTTPS", Tenet 4 "runs on GitHub Pages" | Canonical host is **Cloudflare Pages** (`composeratlas.com`); GitHub Pages is a mirror | **The code** | Both statements were written before the Cloudflare move and are still true of the mirror, just no longer the whole picture |
+
+### Resolved in This Audit
+
+Kept, per the practice of not erasing a resolved discrepancy. **Numbers are permanent.** A row that
+moves from Open to Resolved keeps the number it was registered under, so anything citing it still
+resolves; that is why this table is not in numeric order.
+
+| # | Was | Resolution |
+|---|---|---|
+| 3 | `robots.txt` advertises `https://composeratlas.com/sitemap.xml`, which 404'd | **Fixed in v1.25.1**, by generating the sitemap rather than dropping the line. `scripts/build_sitemap.py` derives it from the indexable pages plus the curated slugs, so it does not go stale by hand. See Section 11 |
+| 5 | `data/database_summary.json` held 6,665 rows against `database.json`'s 6,669 | **Fixed in v1.25.1.** Export re-run; all 6,669 rows present and in source order, `.js` twin verified identical. `export_summary.py` also hardened against silently dropping a field that only later entries carry |
+| 16 | Section 15 carried live Google AdSense integration guidance | Contradicted Tenet 7, Section 4's Non-Goals, and Section 14's V3.0 removal. Four statements against one, and the one was the oldest. Retired with the reason recorded; AdSense was never implemented |
+| 17 | Section 17 FAQ: "How does the site make money? A: Google AdSense (post-MVP) and direct user donations" | Same contradiction. Answer rewritten to state the site makes no money |
+| 18 | Section 17 FAQ and Section 10: "25 curated strategies" | **31.** Corrected, with the count sourced from the file rather than restated |
+| 19 | Section 10: "Analytics: None currently" | Cloudflare Web Analytics has been injected at serve time since the Cloudflare move. Row corrected rather than annotated, because it asserted an absence that is no longer true, and the policy it set (cookieless, no personal data) is satisfied |
+| 20 | Section 10 deploy snippet listed `--exclude='strategies.xlsx'` and `--exclude='README.MD'` | Neither matches `deploy.yml`, and no `strategies.xlsx` exists in the repository. Snippet corrected to the real list |
+| 21 | Four `U+FFFD` replacement characters in this document | Mangled em-dashes from an earlier sweep, all in the form `(done vX.Y.Z) <FFFD> text`. Repaired to a colon |
+| 22 | 304 em-dashes across the project, against Section 19's own prohibition | Swept. See Section 19 for the count and the three deliberate survivors |
+| 23 | Section 18 said README's role is "developer quick-start: setup, run, deploy" | Superseded by the owner's 2026-08-24 instruction that the README is a general-reader front door with no install steps, commands, versions or dependency lists. Section 18 rewritten; the removed content was merged into Sections 10 and 11 rather than dropped |
+| 24 | PATCHNOTES: `[1.15.5]` and `[1.5.8]` each appear twice; `[1.15.0]` sits above `[1.15.5]` in a newest-first file | Real defects in the changelog. **Annotated in place, not renumbered**, because these version strings appear in commit messages and in cross-references elsewhere. See Section 22 on not rewriting history |
+
+---
+
+## 25. Risks and Open Questions
+
+Numbered for reference. Open unless marked otherwise.
+
+1. **GitHub Pages publishes the entire repository, including `/docs` and `/scripts`.** The exclusion
+   list in `deploy.yml` has no effect on what is actually served. Nothing here is secret, but two
+   documents describe a boundary that only Cloudflare enforces. **Most likely cause:** the
+   repository's Pages source is set to "Deploy from a branch" rather than "GitHub Actions".
+   Unverifiable from inside the repo. **Owner action:** check the Pages settings. Also worth deciding
+   whether the GitHub Pages mirror still earns its keep now that Cloudflare is canonical.
+
+2. **`data/symphony_scores.json` (22.8MB) is publicly served by both hosts** despite three documents
+   saying otherwise, and nothing on the site fetches it. Same for `data/database.json` (18.7MB) and
+   `data/Full Database.xlsx` (5.8MB). About 47MB of publicly reachable files nothing requests.
+   **Fix:** add them to `.assetsignore`. Low effort, no risk.
+
+3. **CLOSED 2026-08-24 (v1.25.1). `robots.txt` advertised a sitemap that did not exist.** Every
+   crawler that read it was sent to a 404. Resolved by generating the sitemap rather than dropping
+   the line, since the line was the correct intention and the missing file was the defect.
+   `scripts/build_sitemap.py` now writes 40 URLs, 9 indexable pages plus 31 curated strategy slugs,
+   deriving both from the repository rather than a hardcoded list so it cannot silently go stale.
+   **Residual, not a risk:** page `lastmod` values come from git commit dates, so a regeneration run
+   before its own commit reports the previous date for any file changed in that commit.
+
+4. **The project has no `LICENSE` file** while the README asserted MIT. As it stands, the code is
+   published without a licence grant, which by default means all rights reserved, the opposite of
+   what the README implied. **Owner decision needed.**
+
+5. **CLOSED 2026-08-24 (v1.25.1). `database_summary.json` was four rows behind `database.json`.**
+   Four symphonies were in the data and invisible on the site. Resolved by re-running
+   `scripts/export_summary.py`; the summary now carries all 6,669 rows in source order and the `.js`
+   twin was verified byte-equivalent to the JSON. `export_summary.py` was hardened at the same time,
+   because it derived its column list from the first entry alone and would have dropped any field
+   added to later entries without a word.
+
+   **Why it drifted, which is the part worth keeping.** The weekly `refresh-full-database.yml` job
+   does regenerate the summary, so the automated path was never the problem. None of the four rows
+   arrived through it. Two came from the `AddSymphony.csv` route, one was a lone direct addition, and
+   one was the curated addition of "The Gold Miner (Original)", which writes both `strategies.json`
+   and `database.json`. Every one of those is a hand-run workflow that appends to `database.json`
+   and regenerates `database.js` but not the summary, and each patch note's "Files changed" list
+   shows the omission plainly. **The automated path is safe; the manual ones are the leak, and they
+   leak silently because nothing compares the two files.** Open question 21 below asks whether that
+   should be enforced rather than remembered.
+
+6. **The Signal Miner has no defence against overfitting**, and this is the largest open product
+   risk on the site. It searches millions of candidates and reports the best number it found, which
+   is the maximum of a large sample and biased upward by construction. Three designed-but-unbuilt
+   answers are recorded in Section 14 as items A (parameter plateau scoring), B (walk-forward
+   validation) and C (an overfitting rating combining them). A is nearly free and is the
+   prerequisite for the rest. **Until at least A ships, the tool's headline numbers should be read
+   as upper bounds, not expectations.**
+
+7. **`estimate()` keeps its own copy of the spec-count formula.** Collapsed into a shared
+   `countSpecs()` at v1.23.0, which fixed the immediate problem, but the pattern has needed a
+   matching edit three separate times (v1.18.4, v1.20.0, v1.21.1). Watch for it recurring.
+
+8. **The database modal does not trap focus** and sets no `role="dialog"` / `aria-modal="true"`.
+   Tabbing out of an open modal reaches the page behind it. This is the largest known gap against
+   the WCAG 2.1 AA target in DESIGN.md Section 9.
+
+9. **The three tool pages' inline stylesheets are undocumented** beyond the scoping note now in
+   DESIGN.md Section 8. Roughly 250 lines of CSS covering a third of the site's interface has no
+   component documentation. **Open work**, not a defect.
+
+10. **The `.j-*` JSON highlighter is duplicated** between `converter.html` and `etf-cloner.html`.
+    Not yet drifted. Promote to `css/main.css` if a third page ever needs it.
+
+11. **Python conventions are drifting with recency.** The five newest scripts lack the shebang that
+    the other thirteen carry, and mostly use `os.path` where the rest use `pathlib`. Nothing is
+    broken. **Open question:** ratify the new form or restore the old one, but pick one.
+
+12. **Type hints exist in only 4 of 18 Python scripts.** Currently documented honestly as a minority
+    form. **Open question:** adopt them properly or remove them, rather than leaving a coin flip.
+
+13. **The curated "zoop's X (2026 Edition)" replacement plan is decided but unexecuted.** Eleven
+    replacements and one removal, all with confirmed new symphony IDs already refreshed in the
+    database as of 2026-07-15. It is a bigger lift than a normal addition because each replacement
+    re-runs the whole add-a-strategy workflow. **The longer it waits, the staler the curated set's
+    headline metrics get.**
+
+14. **Backtest metrics on the curated set are refreshed independently from the same symphonies'
+    rows in the community database.** Two pipelines, one source of truth upstream. Option B in
+    Section 14 (single source of truth) is explicitly deferred, not rejected. Until then, the same
+    symphony can show two slightly different numbers on two pages.
+
+15. **Composer's API rate limit behaves as a token bucket** (~25 request burst, refilling near
+    0.5 req/sec), not the documented 500 req/sec. Four tests confirmed this. **Do not re-test higher
+    rates without a specific reason;** each test burns roughly 25 wasted calls and the finding is
+    already solid.
+
+16. **The Signal Miner's `ti` column is a `Uint8Array`,** capping a run at 255 targets. The universe
+    is 72 tickers so this cannot bind today, and Pass 1 throws explicitly rather than truncating
+    silently if it ever does. Recorded so it is not rediscovered as a mystery.
+
+17. **A browser tab's heap ceiling is a property of the browser build, not the machine.** Measured
+    at 3,586 MB once and 4,192 MB later on the same 48GB hardware. **Never treat a single reading as
+    a constant.** Memory is currently not the binding constraint: a maximal run peaks near 24% of
+    the ceiling.
+
+18. **`dedupe_symphonies.py` has a known keeper-rule limitation**, recorded at v1.17.1: the
+    deterministic tiebreak (longest `oos_date`, then earliest `symphony_id`) can pick a
+    counterintuitive winner, such as a `TESTPORT #` row over a cleanly named identical one. Owner
+    confirmed the tiebreak is to be used exactly as specified, with no name-based priority. Manual
+    overrides have been applied twice (v1.14.9, v1.14.10). **Open want:** tiebreak on "watched by N"
+    popularity, which the API this pipeline uses does not expose.
+
+19. **Two AI-facing conventions are load-bearing and easy to break silently:** writing a `.json`
+    without its `.js` twin, and inserting community text into `innerHTML` without `escapeHtml()`.
+    Neither produces an error. Both are in Section 23's never-do table.
+
+20. **This document is 3,000-plus lines and growing.** Completeness is the stated preference and it
+    is the right one, but the audit found the document contradicting itself in three places
+    (glossary count, strategy count, monetization) purely because a fact lived in more than one
+    section. **Open question:** whether counts should be stated in exactly one place and
+    cross-referenced everywhere else.
+
+21. **Nothing enforces that `database_summary.json` matches `database.json`.** Risk 5 above is
+    closed, but only the instance, not the class. The weekly job regenerates the summary; every
+    hand-run addition path writes the full file and leaves the summary behind, and the site reads
+    the summary, so the failure mode is a symphony that exists in the data and cannot be seen. It is
+    silent by construction: no error, no warning, and a row count nobody compares. **Open question:**
+    add a deploy gate asserting the two row counts match, in the shape of the existing
+    `check_html_js.py` and `check_composer_ladder.py` gates. The argument for is that this drifted
+    once already and the check is a few lines. The argument against is a fourth gate to maintain and
+    an 18.7MB file to parse on every run. Not decided; deliberately left as a question rather than
+    built in v1.25.1, which was a fix release.
+
+22. **`data/database.json` contains one exact duplicate row.** Two entries share
+    `symphony_id` `chkrQ6BnXCw31n7OIEaK`, both named "Hedged Sector Rotator " with the same trailing
+    space, both unflagged, with identical metrics. 6,669 rows resolve to 6,668 distinct symphony ids.
+    Found during the v1.25.1 summary fix, **not fixed there**, because removing a row from the
+    canonical dataset is a data change rather than a sync fix and deserves its own decision.
+    **Open question:** delete one, and separately decide whether `dedupe_symphonies.py` should treat
+    an identical `symphony_id` as an unconditional duplicate regardless of name, which is a stronger
+    and simpler rule than the name-cluster tiebreak in item 18. Impact today is cosmetic: one row
+    appears twice in list views and is counted twice in every total.
+
+---
+
+## 26. Press Release
+
+Written in the working-backwards style: what the announcement would say if Composer Atlas launched
+today, as a check on whether the product is describable without hedging.
+
+---
+
+**FOR IMMEDIATE RELEASE**
+
+### Composer Atlas puts thousands of real trading strategies in plain English, for free, with no account
+
+#### An independent reference library that shows you exactly how a Composer.trade strategy works, what it actually returned, and what it lost along the way, before you risk anything on it
+
+**Online, 2026-08-24.** Composer Atlas is live at composeratlas.com. It is a free, independent
+reference for people who build and run automated investing strategies on Composer.trade: a curated
+library of 31 strategies explained in plain English, a 20-concept glossary of the ideas behind them,
+a searchable database of thousands of community symphonies with a published ranking model, and four
+tools for building strategies of your own. There is no account, no signup, no ads, and no data
+collection of any kind.
+
+**The problem.** Composer.trade makes it trivially easy to clone somebody else's strategy. It does
+not make it easy to understand one. A newcomer finds a symphony in a Discord thread with an eye-
+watering annualised return attached, clones it, and has no idea that the number came from a
+two-year backtest of a 3x leveraged fund, or that the same strategy was down 80% at one point along
+the way. The information needed to make that judgement exists, scattered across the platform,
+community threads and screenshots. Nowhere does it sit in one place, in order, in language a person
+can read.
+
+**The solution.** Composer Atlas is that place. Every curated strategy gets a page that explains its
+logic branch by branch, names the exact signals it watches, and prints a full metrics table with the
+drawdown next to the return rather than beneath it. Every technical term links to a glossary entry
+that explains the concept properly rather than defining it in one line. The community database
+covers thousands of symphonies with a leaderboard that scores each one against a published
+twenty-metric model, with every score breaking down on click so a ranking can be argued with rather
+than merely trusted. And four tools go the other way: a Signal Miner that searches millions of
+candidate rules against sixteen years of real price history, an ETF Cloner, a symphony-to-JSON
+converter, and a live RSI page.
+
+Everything runs in the visitor's own browser. Nothing typed, selected or mined is transmitted
+anywhere, because there is nowhere for it to go.
+
+**Customer quote.** "I'd cloned three symphonies off Discord before I could have told you what any
+of them actually did. What got me was reading the drawdown column next to the return column. One of
+them had made an incredible number and lost four fifths of its value getting there. I still run it.
+I just size it completely differently now."
+
+**Call to action.** Visit composeratlas.com. Start with any strategy on the Strategies page, or open
+the Leaderboard and sort. No account is needed, because there are no accounts.
+
+**Boilerplate.** Composer Atlas is an independent educational resource built and maintained by
+Azqato. It is not affiliated with Composer Technologies, Inc., receives no compensation for
+featuring any strategy, and runs no advertising. It is free to use and funded entirely by voluntary
+reader donations. Nothing on the site is financial advice; all strategies are presented for
+informational purposes only, past backtest performance does not guarantee future results, and many
+of the strategies covered use leveraged funds capable of losing value very quickly.
+
+---
+
+### Does the Press Release Hold Up?
+
+The exercise is only useful if it is allowed to fail. Three things it exposes:
+
+**It is honest about the hard part.** The customer quote is about a drawdown, not a return, which is
+Tenet 1 working. A press release that had to lead with a performance number would be evidence the
+product had drifted.
+
+**"Four tools" is doing a lot of work in one sentence.** The Signal Miner alone is the most
+technically substantial thing on the site and gets nine words. Either it deserves its own
+announcement or the tools are genuinely secondary to the library, and the honest answer is probably
+the first.
+
+**It cannot claim the north star.** The release says the site explains strategies; it cannot say
+visitors understood them, because the site deliberately cannot observe that. That gap is real and
+permanent, and Section 20 says so rather than papering over it.

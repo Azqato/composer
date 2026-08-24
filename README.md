@@ -1,137 +1,82 @@
 # Composer Atlas
 
-A curated strategy library and educational reference for Composer.trade users. Covers 29 symphonies with plain-English logic breakdowns, backtested metrics, and a concept glossary.
-
-**Full Database (live):** `database.html` is a separate section covering the full community symphony database (thousands of entries, not just the 29 curated strategies), with an All Strategies table (search + filter + a Working/Broken/Duplicates/All toggle), a Screener with switchable metric views and a bucketed filter grid (Working-only, no toggle), and a Leaderboard with a 20-metric percentile-rank scoring model (also Working-only). Non-strategy noise and near-identical duplicates are flagged and filterable. See `docs/PRD.md` Section 14 (Roadmap) for the full status.
+Composer Atlas is a free, independent reference library for people who build and run automated
+investing strategies on Composer.trade. It explains how real strategies work in plain English,
+publishes their backtested numbers without cherry-picking, and gives you tools to search, compare
+and build your own.
 
 ## Live Site
 
-https://composeratlas.com
+**https://composeratlas.com**
 
-## Tech Stack
+## What the Site Offers
 
-| Layer | Choice |
+**A curated strategy library.** Every featured symphony gets its own page with a plain-English
+breakdown of its logic, the exact signals it watches, an honest risk profile, and a full metrics
+table covering returns, drawdown, Sharpe, Calmar and monthly distribution. Each page links straight
+to the symphony on Composer.trade so you can clone it yourself.
+
+**A concept glossary.** Long-form explainers for the ideas the strategies are built from: RSI,
+moving averages, momentum, VIX tiers, leveraged and inverse ETFs, managed futures, mean reversion,
+volatility decay, and the risk metrics used to judge any of it. Every strategy page cross-links to
+the concepts it uses, and every concept links back to the strategies that use it.
+
+**A community strategy database.** Thousands of Composer symphonies gathered from across the
+community, in one searchable place, with three ways to work through it:
+
+- **All Strategies**, a dense sortable table of the whole set.
+- **Leaderboard**, which scores every eligible symphony against a published twenty-metric model and
+  ranks it into tiers. The full methodology is on the page, and each score breaks down on click.
+- **Screener**, a bucketed filter grid for narrowing thousands of rows to the handful worth reading.
+
+**Tools that build things.** A **Signal Miner** that brute-forces millions of "if this, then hold
+that" rules against real price history and hands you the survivors as pasteable Composer JSON. An
+**ETF Cloner** that turns any ETF's holdings into a Composer symphony. A **Converter** that turns
+any symphony URL into clean, readable JSON. A **live RSI page** tracking the signal universe the
+popular Frontrunner-style strategies watch.
+
+Everything runs in your browser. Nothing you type, select or mine is sent anywhere.
+
+## Who It Is For
+
+Self-directed retail investors who already use Composer.trade, or are considering it, and want to
+understand what a strategy actually does before trusting money to it. It assumes you are curious
+and willing to read, not that you have a finance background: the glossary exists precisely so the
+strategy pages can use real terms without stranding anyone.
+
+It is also useful to anyone studying systematic investing generally. The strategies are real, the
+metrics come from live backtests rather than illustrations, and the drawdowns are printed next to
+the returns rather than buried.
+
+## What It Is Not
+
+Composer Atlas is not affiliated with Composer.trade, and it is not financial advice. Nothing here
+is a recommendation to buy or hold anything. Past backtest performance does not predict future
+results, and several of the strategies covered use leveraged funds that can lose value very quickly.
+
+There are no accounts and no sign-up, because the site collects no user data at all and never will.
+It runs no ads and sells nothing. If it is useful to you, there is a voluntary donation link.
+
+## Current Status
+
+Live and actively maintained. The curated library, the glossary, the full community database with
+its leaderboard and screener, and all four tools are built and public. Strategy metrics and the
+community database refresh on an automated schedule, and the RSI page refreshes several times each
+weekday.
+
+Work in progress is mostly depth rather than breadth: refreshing the curated set to newer versions
+of several strategies, cross-linking the curated pages to their rows in the community database, and
+adding robustness testing to the Signal Miner so a mined rule can be judged on whether it survives
+having its parameters nudged, not just on the best number it found.
+
+## Where to Learn More
+
+Full documentation lives in [`/docs`](docs/):
+
+| Document | What is in it |
 |---|---|
-| HTML | Vanilla `.html` files: no framework, no build step |
-| CSS | CSS custom properties for design tokens; no preprocessor |
-| JavaScript | Vanilla ES2020: `fetch()` for data, DOM manipulation for rendering |
-| Data | `data/strategies.json` + `data/glossary.json` (source of truth); `.js` mirror files for `file://` compatibility |
-| Hosting | GitHub Pages: serves the repository root directly |
-| CI/CD | GitHub Actions: rsync to `_site/`, then upload; no build step |
-| Scripts | Python 3 (stdlib only): no pip dependencies |
+| [`docs/PRD.md`](docs/PRD.md) | The master reference: product requirements, tenets, architecture, runbook, data schemas, API notes, roadmap, metrics, conventions, security, and working practice |
+| [`docs/DESIGN.md`](docs/DESIGN.md) | The design system: colour palette, typography, spacing, breakpoints, component patterns, accessibility, and motion |
+| [`docs/PATCHNOTES.md`](docs/PATCHNOTES.md) | The changelog, every release since launch |
 
-## Prerequisites
-
-- **Python**: any version; used for local HTTP server and `scripts/update_metrics.py`
-- **Git**
-- **No Node.js required.** There is no `package.json`, no `node_modules`, and no build step.
-
-## Installation
-
-```bash
-git clone https://github.com/Azqato/composer.git
-```
-
-No further install step.
-
-## Running Locally
-
-**Option 1; Python HTTP server (recommended for testing fetch behavior):**
-
-```bash
-python -m http.server 8000
-# Site at http://localhost:8000/
-```
-
-**Option 2; Open directly in browser:**
-
-Double-click any `.html` file (e.g. `index.html`). This works because data is loaded via `window.STRATEGIES_DATA` / `window.GLOSSARY_DATA` globals set by `data/strategies.js` and `data/glossary.js` before `app.js` runs.
-
-## Environment Variables
-
-None. The Composer API endpoints used by `scripts/update_metrics.py` require no authentication.
-
-## Scripts
-
-### `scripts/update_metrics.py`
-
-Fetches fresh data from the Composer API and rewrites three files:
-
-- `data/strategies.json`: backtest metrics for all 28 strategies (ARR, max drawdown, Sharpe, Calmar, standard deviation, trailing returns, backtest days)
-- `data/strategies.js`: same data assigned to `window.STRATEGIES_DATA`
-- `data/symphony_scores.json`: full IF/ELSE logic trees for all 28 symphonies (for AI analysis only; not served publicly)
-
-```bash
-python scripts/update_metrics.py
-```
-
-Run from the project root. No API key required. Run monthly or after any symphony logic changes.
-
-After running, commit the updated data files:
-
-```bash
-git add data/strategies.json data/strategies.js data/symphony_scores.json
-git commit -m "data: refresh metrics and symphony scores - YYYY-MM-DD"
-git push origin main
-```
-
-### `scripts/refresh_rsi.py`
-
-Fetches Yahoo Finance daily bars for the 20-ticker Frontrunner signal universe and computes 10-day RSI (Wilder's smoothing), rewriting `data/rsi.json` + `data/rsi.js` (`window.RSI_DATA`), used by `rsi.html`.
-
-```bash
-python scripts/refresh_rsi.py
-```
-
-Run from the project root. No API key required. Automated 3x/day on weekdays via `.github/workflows/refresh-rsi.yml`; safe to run manually any time.
-
-### Full Database scripts (`database.html`)
-
-Separate pipeline for the full community symphony database, not the curated 28. See `docs/PRD.md` Section 10 for the full directory listing and Section 14 for status. `refresh_full_database.py` runs automatically every Sunday via `.github/workflows/refresh-full-database.yml`; everything else in this table is manual-only by design, see each script's docstring.
-
-| Script | Purpose |
-|---|---|
-| `refresh_full_database.py` | Resumable, checkpointed API refresh; automated weekly. **Do not run other scripts that write `database.json` while this is running**, see the script's docstring |
-| `sync_storage_to_database.py` | Adds any URL in `data/storage.csv` missing from `database.json` as a new unrefreshed row |
-| `export_summary.py` | Derives the slim `data/database_summary.json`/`.js` used by the site from the full `database.json`; run after every refresh |
-| `export_full_database_to_xlsx.py` | Local-only, occasional: regenerates a spreadsheet snapshot from the JSON |
-| `flag_name_noise.py` | Flags non-strategy noise (test ports, WIP builds) by name pattern; manual-only |
-| `dedupe_symphonies.py` | Flags near-identical duplicate symphonies via logic-tree comparison; manual-only, makes hundreds of live API calls per run |
-| `purge_flagged_entries.py` | Removes entries by `flag` level from `database.json`, enforcing a `storage.csv` safety check first |
-
-`database.json`, `database_summary.json`, and `storage.csv` are committed and live as of v1.12.0.
-
-There is no importer for `data/Full Database.xlsx` any more. `import_full_database.py` did the one-time v1.9.0 bootstrap of `database.json` from that spreadsheet and was deleted in v1.24.8: `database.json` has been the canonical source ever since, the script's column layout had drifted out of sync with what `export_full_database_to_xlsx.py` now writes, and running it would have overwritten the live dataset with a stale, mis-parsed import. The xlsx stays as an offline snapshot, written by the export script and read by nothing.
-
-## Build and Deploy
-
-There is no build step. Push to `main` and GitHub Actions deploys automatically within 1-2 minutes.
-
-The workflow (`/.github/workflows/deploy.yml`) uses `rsync` to copy the repository to a `_site/` staging folder, excluding internal files that are not user-facing, then uploads `_site/` to GitHub Pages.
-
-**Excluded from public deployment:**
-- `data/symphony_scores.json` (14MB AI analysis file)
-- `docs/`
-- `scripts/`
-- `strategies.xlsx`
-- `.gitignore`, `.github/`
-
-Monitor deploy status at: `https://github.com/Azqato/composer/actions`
-
-## Documentation
-
-Full documentation is in [`/docs`](docs/):
-
-| File | Contents |
-|---|---|
-| [`docs/PRD.md`](docs/PRD.md) | Master reference: product requirements, architecture, runbook, data schemas, API reference, roadmap, security, tenets, FAQ |
-| [`docs/DESIGN.md`](docs/DESIGN.md) | Design system: color palette, typography, spacing, breakpoints, component specs, accessibility |
-| [`docs/PATCHNOTES.md`](docs/PATCHNOTES.md) | Changelog |
-
-## Disclaimer
-
-Composer Atlas is an independent educational resource. It is not affiliated with Composer Technologies, Inc. or any strategy authors. All featured strategies are presented for informational purposes only. Past performance does not guarantee future results. Nothing on this site constitutes financial advice.
-
-## License
-
-MIT
+Built by [Azqato](https://azqato.com).

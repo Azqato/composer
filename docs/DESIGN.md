@@ -1,10 +1,18 @@
 # Composer Atlas: Design System
 
-**Version:** 1.6
+**Version:** 1.7
 **Status:** Active
-**Last Updated:** 2026-07-09
+**Last Updated:** 2026-08-24
 
-All values in this document are derived from `css/main.css` and `js/app.js`: the source files are the ground truth.
+All values in this document are derived from `css/main.css` and `js/app.js`: the source files are the
+ground truth. Where this document and the CSS disagree, the CSS wins and the disagreement is marked
+inline as a **Discrepancy** rather than quietly overwritten, so the author can decide which side was
+the mistake. See PRD.md Section 24, "Documentation Versus Reality", for the full register.
+
+**Scope, stated plainly.** This document covers the shared design system in `css/main.css`, which is
+what every page loads. It does **not** yet cover the three tool pages that carry their own inline
+`<style>` blocks on top of it. See Section 10, "Undocumented Surfaces", for what those are and why
+they are called out rather than left silently missing.
 
 ---
 
@@ -32,6 +40,17 @@ All colors are defined as CSS custom properties in the `:root` block of `css/mai
 | `--color-primary` | `#f0f0f0` | Body text, headings, primary content |
 | `--color-secondary` | `#b0b0b0` | Labels, captions, metadata, muted text, `<p>` elements |
 | `--color-disabled` | `#444444` | Disabled states, breadcrumb separators, metric labels |
+
+> **Discrepancy (found 2026-08-24).** The row above is the original text and is kept as written. The
+> observed value in `css/main.css` is **`#c0c0c0`**, not `#444444`. The evidence says the code is
+> right and this table went stale: PATCHNOTES v1.5.4 (2026-06-15), "Fix: Improve disabled text
+> legibility", records the change from `#444444` to `#c0c0c0` as deliberate, made because `#444444`
+> was illegible on `#0d0d0d`. Trust `css/main.css`.
+>
+> A second-order note for the author, not a change made here: at `#c0c0c0` the token is a *light*
+> grey, so the name `--color-disabled` now reads backwards and the usage column above ("disabled
+> states") describes an intent the value no longer serves. Renaming it is a real refactor across
+> every page, so it is flagged, not done.
 | `--color-green` | `#00e676` | Positive returns, CTAs, active nav, highlights, "View Strategy" links |
 | `--color-pink` | `#ff4d8d` | Negative returns, max drawdown, warning states |
 | `--color-blue` | `#4d9fff` | Links, interactive element hover borders, focus rings, "Built by" link |
@@ -80,6 +99,7 @@ The following color variants appear as inline `rgba()` values in `css/main.css` 
 | `#f0f0f0` (primary) | `#0d0d0d` (bg) | ~15:1 |
 | `#b0b0b0` (secondary) | `#0d0d0d` (bg) | ~9.4:1 |
 | `#00e676` (green) | `#0d0d0d` (bg) | ~8.4:1 |
+| `#c0c0c0` (disabled, observed) | `#0d0d0d` (bg) | ~11:1 |
 | `#ff4d8d` (pink) | `#0d0d0d` (bg) | ~4.6:1 (minimum) |
 | `#0d0d0d` (bg) | `#00e676` (CTA button) | ~15:1 |
 
@@ -211,6 +231,19 @@ Mobile-first. Base styles target the smallest viewport; media queries add comple
 | `640px` | `.grid-3` | Strategy/glossary card grid changes from 1-column to 2-column |
 | `768px` | `.nav-links`, `.nav-cta`, `.nav-hamburger` | Desktop nav links appear; hamburger hides; nav CTA appears |
 | `1024px` | `.grid-3`, `.grid-2`, `.detail-sidebar-sticky` | Grid-3 goes to 3-column; Grid-2 (detail layout) goes to `2fr 1fr`; sidebar becomes sticky |
+
+**One max-width query also exists**, and it is the only rule in the stylesheet that runs the other
+direction:
+
+| Max Width | Applied To | What Changes |
+|---|---|---|
+| `640px` | `.tagfilter-label` | The tag-filter bar's label takes `flex-basis: 100%`, dropping the filter chips onto their own row below it (`css/main.css:657`) |
+
+**Narrow-screen hardening (v1.16.7).** `body` carries `overflow-x: clip` and `overflow-wrap:
+break-word`. This is not a breakpoint but it governs behaviour below roughly 390px: it stops a stray
+overflowing child from letting the whole page scroll sideways and clipping the fixed nav. `clip` is
+used rather than `hidden` deliberately, because `hidden` would make `<body>` a scroll container and
+break `position: sticky` and `position: fixed` inside it.
 
 **Max content width:** `1280px` (`--max-width`), centered via `.container { max-width: var(--max-width); margin: 0 auto; padding: 0 var(--page-px); }`.
 
@@ -569,7 +602,7 @@ Used on `database.html`'s All Strategies tab to render the full raw symphony dat
 .db-pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 20px; }
 ```
 
-**Why a table instead of cards:** at full-database scale (~6,500 rows), the card grid used for the curated 25 strategies does not scale; a dense table with client-side pagination (50 rows/page) keeps the DOM light while still fitting the site's existing color-coded metric conventions (Section 12/PRD.md Metric Display Guidelines apply identically here: green positive, pink negative).
+**Why a table instead of cards:** at full-database scale (~6,500 rows), the card grid used for the curated strategy library (31 entries as of 2026-08-24) does not scale; a dense table with client-side pagination (50 rows/page) keeps the DOM light while still fitting the site's existing color-coded metric conventions (Section 12/PRD.md Metric Display Guidelines apply identically here: green positive, pink negative).
 
 **Resolved (V1.16, Performance Fix):** the table loads `data/database_summary.json` (a columnar, float-rounded derivative of the full `database.json`, ~2.3MB vs. ~11.5MB, ~540KB gzipped), not the full file. Note the site's `<500KB` target (Section 13) is scoped to the homepage specifically; it never literally bound this page, an earlier version of this note over-generalized it. See PRD.md Section 14, V1.16 for the full before/after and what actually drove the size down (columnar layout beat dropping fields alone by a wide margin).
 
@@ -604,7 +637,7 @@ Six tiers (S+, S, A, B, C, F), color intensity roughly tracking favorability: S+
 
 ---
 
-### RSI Signal Colors (rsi.html, V2.1)
+### RSI Signal Colors (rsi.html, shipped V2.1)
 
 ```css
 .db-table td.rsi-extreme-oversold   { color: #ff0000; font-weight: 700; }
@@ -614,7 +647,9 @@ Six tiers (S+, S, A, B, C, F), color intensity roughly tracking favorability: S+
 .db-table td.rsi-extreme-overbought { color: #00ff00; font-weight: 700; }
 ```
 
-Five tiers, thresholds ≥79 / 70–78 / 42–69 / 29–41 / ≤28 (see PRD.md Section 14, V2.1). These are **literal hex values, not the standard token palette** — a deliberate exception. The user specified a green (oversold, "buy the dip") → red (overbought) gradient for this page rather than the site's usual green-good/pink-bad convention (`--color-green`/`--color-pink`), so the colors are hardcoded rather than aliased to tokens that carry a different semantic elsewhere on the site. Both extreme tiers are bold; the three inner tiers are not. The user's original inner-tier values (`#890000` / `#008900`) were too low-contrast against the dark table background (`--color-surface` `#141414`) to read at all; brightened to `#e04545` / `#2fb92f` while keeping the bright `#ff0000`/`#00ff00` extremes unchanged.
+Five tiers, thresholds ≥79 / 70–78 / 42–69 / 29–41 / ≤28 (see PRD.md Section 14, V2.1; the section comment in `css/main.css:1634` says V2.2, which is a
+stale label on the code side, not a second palette). These are **literal hex values, not the
+standard token palette**, a deliberate exception. The user specified a green (oversold, "buy the dip") → red (overbought) gradient for this page rather than the site's usual green-good/pink-bad convention (`--color-green`/`--color-pink`), so the colors are hardcoded rather than aliased to tokens that carry a different semantic elsewhere on the site. Both extreme tiers are bold; the three inner tiers are not. The user's original inner-tier values (`#890000` / `#008900`) were too low-contrast against the dark table background (`--color-surface` `#141414`) to read at all; brightened to `#e04545` / `#2fb92f` while keeping the bright `#ff0000`/`#00ff00` extremes unchanged.
 
 **Selector specificity note:** these rules must be scoped as `.db-table td.rsi-x`, not a bare `.rsi-x` class. `.db-table td` (class+type, specificity 0,1,1) otherwise wins over a bare single-class selector (0,1,0) regardless of source order, which silently prevented any of these colors from rendering until this was caught and fixed.
 
@@ -721,11 +756,205 @@ Shown when JSON parse fails:
 .empty-desc { max-width: 380px; }
 ```
 
-The custom `404.html` uses this pattern. GitHub Pages serves it automatically for unmatched routes.
+The custom `404.html` uses this pattern. Both hosts serve it automatically for unmatched routes:
+Cloudflare Pages (the canonical host, `composeratlas.com`) and GitHub Pages
+(`azqato.github.io/composer/`). See PRD.md Section 10 for the two-host arrangement.
 
 ---
 
-## 8. Accessibility Standards
+### Explore / Step Cards (Homepage)
+
+Two small modifiers layered on the standard `.card` base, used by the homepage's "Everything on this
+site" grid and its numbered how-it-works row. There is no `.explore-card` or `.step-card` class: the
+card itself is a plain `.card`, and only the ornament is styled.
+
+```css
+.explore-icon { font-size: 1.5rem; margin-bottom: 12px; }   /* the emoji at the top of a card */
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--color-green); color: var(--color-bg);
+  font-family: var(--font-mono); font-weight: 700; font-size: 0.8125rem;
+  margin-bottom: 12px; flex-shrink: 0;
+}
+```
+
+`.step-num` is the one place in the system where green is used as a **fill behind text** rather than
+as the text colour, which is why it inverts to `--color-bg` for legibility.
+
+---
+
+### Tag Filter Bar (strategies.html, V1.17)
+
+The filter panel above the strategy index. Reuses the `.tag` pills from the cards below it rather
+than inventing a second chip style, so a filter chip and the tag it filters on are visibly the same
+object.
+
+```css
+.tagfilter { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 16px 18px; margin-bottom: 32px; }
+.tagfilter-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.tagfilter-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-disabled); }
+.tagfilter-group { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; padding: 6px 0; }
+.tagfilter-group + .tagfilter-group { border-top: 1px solid var(--color-border); }
+.tagfilter-label { flex: 0 0 88px; font-size: 0.75rem; color: var(--color-disabled); }
+.tagfilter-tags { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.tagfilter-tag { opacity: 0.62; font: inherit; font-size: 0.75rem; font-weight: 500; }
+.tagfilter-tag:hover { opacity: 0.85; }
+.tagfilter-tag.active { opacity: 1; box-shadow: 0 0 0 1px currentColor inset; }
+.tagfilter-count { margin-left: 5px; opacity: 0.7; font-size: 0.6875rem; }
+```
+
+**Selection is expressed by opacity plus an inset ring, not by a different colour.** An inactive chip
+sits at `opacity: 0.62` and an active one at `1` with a `currentColor` inset ring, so each chip keeps
+its own semantic tag colour in both states. This is deliberate: recolouring a chip on selection would
+break the Section 2 rule that a tag's colour identifies its concept.
+
+**Accessibility caveat, recorded rather than fixed:** opacity plus a one-pixel ring is a weak
+distinction on its own, and the ring is the part carrying the state for anyone who cannot separate
+the two opacity levels. Worth revisiting if the bar grows.
+
+Below `640px` the label takes a full row (see Breakpoints above) so the chips are not squeezed into
+the remaining 88px-offset column.
+
+---
+
+### Database Toolbar (database.html)
+
+The header row above each database table: heading, live result-count pill, name search, and the
+Filter button.
+
+```css
+.db-toolbar { display: flex; gap: 8px 16px; }
+.db-toolbar h2 { display: inline; color: var(--color-primary); font-size: 1.125rem; }
+.db-count-pill {
+  display: inline-flex; padding: 2px 10px; border-radius: 999px;
+  background: var(--color-surface-raised); border: 1px solid var(--color-border);
+  color: var(--color-secondary); font-size: 0.75rem;
+}
+.db-search-input {
+  background: var(--color-surface-raised); border: 1px solid var(--color-border);
+  color: var(--color-primary); border-radius: var(--radius-sm);
+  padding: 6px 10px; font-size: 0.8125rem; width: 200px; max-width: 100%;
+}
+```
+
+`border-radius: 999px` is the pill idiom used here and by `.updated-badge` below. It is the only
+radius in the system not drawn from the `--radius-*` tokens, because a pill is "fully round" rather
+than a size choice.
+
+---
+
+### Last-Updated Badge (database.html, rsi.html)
+
+A green-dot pill stating when the underlying data last refreshed. Replaced the old "this section is a
+work in progress" line in v1.13.5.
+
+```css
+.updated-badge {
+  display: inline-flex; gap: 8px; padding: 6px 14px; border-radius: 999px;
+  background: var(--color-surface-raised); border: 1px solid var(--color-border);
+  color: var(--color-green); font-size: 0.8125rem;
+}
+.updated-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-green); }
+```
+
+The dot is decorative and duplicated by the adjacent text, so it needs no accessible name.
+
+---
+
+### Screener Bucketed Filter Grid (database.html, V1.12 redesign)
+
+The Screener's always-visible filter grid, one labelled dropdown per numeric field, which replaced
+the hidden click-to-open Filter Panel on that tab only.
+
+```css
+.screener-filter-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px 12px; background: var(--color-surface);
+  border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px;
+}
+.screener-filter-cell { display: flex; flex-direction: column; gap: 4px; }
+.screener-filter-cell label { color: var(--color-secondary); font-size: 0.6875rem; }
+.screener-filter-cell select,
+.screener-filter-cell input {
+  background: var(--color-surface-raised); border: 1px solid var(--color-border);
+  color: var(--color-primary); border-radius: var(--radius-sm);
+  padding: 6px 8px; font-size: 0.8125rem; width: 100%;
+}
+```
+
+`auto-fill` with a `160px` minimum is what makes this responsive without a breakpoint: the grid sheds
+columns on its own as the viewport narrows.
+
+---
+
+### Modal (database.html, V1.13)
+
+One shared overlay serves both the per-row score breakdown and the Methodology explainer. There is a
+single `#modal-overlay` in the page, driven by `openModal()` / `closeModal()`.
+
+```css
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 24px;
+}
+.modal-overlay[hidden] { display: none; }
+.modal-panel {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); max-width: 880px; width: 100%;
+  display: flex; flex-direction: column;
+}
+.modal-header { display: flex; padding: 16px 20px; border-bottom: 1px solid var(--color-border); }
+.modal-header h2 { font-size: 1.0625rem; color: var(--color-primary); }
+.modal-close { background: none; border: none; color: var(--color-secondary); font-size: 1.5rem; padding: 4px 8px; }
+.modal-close:hover { color: var(--color-primary); }
+```
+
+`z-index: 1000` sits deliberately above the fixed nav's `z-index: 100`, so an open modal covers the
+nav rather than letting it float over the panel. Closable by the X, by clicking the overlay, and by
+Escape.
+
+**Accessibility gap, recorded not fixed:** the panel does not trap focus and does not set
+`role="dialog"` / `aria-modal="true"`. Tabbing out of an open modal reaches the page behind it. This
+is the largest known gap against the Section 9 target and is listed in PRD.md Section 25 as an open
+risk.
+
+---
+
+## 8. Undocumented Surfaces
+
+Three tool pages carry their own inline `<style>` block on top of `css/main.css`. They are listed
+here rather than left silently absent, because a design system that quietly omits a third of the
+site's interface is worse than one that admits the boundary.
+
+| Page | Inline CSS | Prefix | What it styles |
+|---|---|---|---|
+| `signal-miner.html` | ~126 lines | `.sl-*` | The whole Signal Miner interface: ticker chip rows and groups, the family checkbox grid, the parameter fields, the run status and progress line, the results table and its wrapper, the buy-and-hold baseline strip, and the combine bar |
+| `converter.html` | ~53 lines | `.conv-*`, `.t-*`, `.j-*` | Panels and actions, plus two syntax highlighters: `.t-*` for the rendered logic tree (`.t-fn`, `.t-cond`, `.t-asset`, `.t-wt`, `.t-kw`, `.t-muted`) and `.j-*` for raw JSON (`.j-key`, `.j-str`, `.j-num`, `.j-bool`, `.j-null`) |
+| `etf-cloner.html` | ~70 lines | `.ec-*`, `.j-*` | Panels, the file drop zone, the live/full mode toggle, the holdings table wrapper, and the same `.j-*` JSON highlighter |
+
+`rsi.html`, `database.html`, `index.html`, `about.html`, `strategies.html`, `glossary.html` and
+`404.html` carry **no** inline style at all; everything they render is in `css/main.css` and
+documented above.
+
+**The `.j-*` JSON highlighter is duplicated** between `converter.html` and `etf-cloner.html`. Both
+copies define the same five classes. Nothing has gone wrong with that yet, but it is exactly the kind
+of pair that drifts, and it is the strongest candidate for promotion into `css/main.css` if a third
+page ever needs to print JSON.
+
+**Why these were never folded into the shared stylesheet.** Each tool is a single self-contained page
+whose styles are used nowhere else, so keeping them inline means one file to open when working on
+that tool, and no dead rules loaded by every other page on the site. That trade is defensible and is
+not being reversed here. What was not defensible was leaving it undocumented.
+
+**Documenting them properly is open work**, listed in PRD.md Section 25. Anyone changing a tool's
+appearance should keep to the tokens in Section 2 and the type scale in Section 3, which all three
+pages already do.
+
+---
+
+## 9. Accessibility Standards
 
 **Target: WCAG 2.1 Level AA**
 
@@ -771,7 +1000,7 @@ Tab order follows visual reading order. Mobile nav hamburger: `aria-expanded` at
 
 ---
 
-## 9. Animation and Motion
+## 10. Animation and Motion
 
 Keep motion minimal and purposeful. No page transitions at MVP.
 

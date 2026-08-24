@@ -1449,7 +1449,7 @@
 
       // CPU throttle (rate limiter): after each batch, idle for a multiple of the
       // time that batch spent computing, so the processor holds a target *duty
-      // cycle* (CPU-busy fraction) regardless of machine speed — heat tracks duty
+      // cycle* (CPU-busy fraction) regardless of machine speed; heat tracks duty
       // cycle, not absolute idle time. sleep = busy * FACTOR, so duty ~= 1/(1+F)
       // and FACTOR = 100/duty - 1: Max .25 -> 80%, High 1.5 -> 40%,
       // Medium 4 -> 20%, Low 9 -> 10%.

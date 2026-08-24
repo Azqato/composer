@@ -68,10 +68,30 @@ def round_floats(obj):
     return obj
 
 
+def collect_fields(entries):
+    """Every field any entry carries, in first-seen order, minus the dropped ones.
+
+    This used to read entries[0].keys() alone. Every entry happens to carry an
+    identical key set today, so the two agree, but the old form would silently
+    drop a field the day one was added to later entries without backfilling the
+    first: the column would vanish from the summary with no error anywhere, and
+    the site reads the summary, not database.json. First-seen order is preserved
+    so the column layout stays byte-stable when nothing has changed.
+    """
+    fields = []
+    seen = set()
+    for entry in entries:
+        for k in entry.keys():
+            if k not in seen:
+                seen.add(k)
+                fields.append(k)
+    return [k for k in fields if k not in DROPPED_FIELDS]
+
+
 def main():
     entries = json.loads(FULL_JSON_PATH.read_text(encoding="utf-8"))
 
-    fields = [k for k in entries[0].keys() if k not in DROPPED_FIELDS]
+    fields = collect_fields(entries)
     rows = [round_floats([entry.get(f) for f in fields]) for entry in entries]
     payload = {"fields": fields, "rows": rows}
 
