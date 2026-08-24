@@ -5,6 +5,46 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.25.5] - 2026-08-24
+
+### Docs: outside input on plateau scoring logged against roadmap item A
+
+A friend of the owner, working from an independent conversation with Claude, proposed a plateau check
+of plus or minus 3 to 5 RSI points, a window tolerance of plus or minus 15% to 20% of the window
+length, and two passes: one to find single values that show promise, then a second running the
+plateau-neighbourhood check on them. Recorded in `docs/PRD.md` Section 14 under item C1, the
+neighbourhood grid, as the first outside read on that design. **No roadmap item changed status and
+nothing was built**; item A remains designed-but-unbuilt and PRD risk 6 remains the largest open
+product risk on the site.
+
+**Two of the three points turned out to be corroboration rather than novelty**, which is worth more
+than either would be alone. The window tolerance is the same figure this spec already carries: C1
+sweeps "10 days plus or minus 2", which is plus or minus 20%, reached independently. The two-pass
+structure is the architecture C1 already requires, that the rating runs on demand for displayed or
+selected rows and never as a third pass over the whole search. A terminology warning went in beside
+it, since the Miner already uses "Pass 1" and "Pass 2" to mean single signals and pair rows, and
+reading the proposed second pass as the existing Pass 2 would describe a plan to rate every pair row
+in a full search, the one thing the design rules out.
+
+**The level range is the one genuinely new proposal, and it is deliberately not adopted as a fixed
+number.** C1's grid is plus or minus 1 RSI point at 0.25 steps, a fine local refinement probing
+off-lattice values the Miner cannot report; plus or minus 3 to 5 points is the separate plateau-width
+statistic from item A, the one quoted as "holds from 20 to 28". Both scales were already specced, and
+the standing decision holds: build the scoring first, see what widths real results produce, and let
+the data choose rather than guessing. If real plateaus cluster at 3 to 5 points, it will say so with
+evidence behind it.
+
+**The proposal came with an intent to run it overnight, and that is recorded as wrong on the
+measurements already in the section.** At the proposed width the grid is about 41 level cells by 5
+window cells, 205 per row against C1's 45. At the measured 90 microseconds per backtest that is
+roughly 18 ms per row, under 2 seconds for a 100-row leaderboard. Widening the range as proposed
+costs nothing anyone would notice. Overnight only becomes real if the rating is applied to every row
+of a full run, which the design rules out.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.25.4] - 2026-08-24
 
 ### Every approved symphony is archived in storage.csv, and it is now enforced

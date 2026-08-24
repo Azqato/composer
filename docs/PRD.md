@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.25.4
+**Version:** 1.25.5
 **Status:** Active
 **Last Updated:** 2026-08-24
 
@@ -2681,6 +2681,41 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
   - **The window axis is the stronger of the two.** Sweeping 8 to 12 days at a fixed threshold moves the fired-day count by about 140 days, roughly twice what the level sweep moves. If only one axis is ever built, build this one.
   - **Both axes probe OFF-lattice points, deliberately.** The RSI level grid steps by 2 (10, 12 ... 90) and the window grid is the log-uniform list, so `RSI 79` is not a value the Miner can currently report at all, and windows 8, 9 and 11 were never evaluated. That is a feature: the rating is a **finer local refinement than the search**, which is what makes it an independent check rather than a re-read of the same numbers. It also means the refinement may find a better value between lattice points, which should be shown rather than hidden.
   - **Verified: the fine step is not sampling the same signal repeatedly.** The obvious failure mode is that adjacent 0.25 thresholds select an identical set of days, making a "plateau" one measurement repeated nine times. Measured across SMH, QQQ, SPY and XLY: **all nine thresholds produce nine distinct signals, and all five windows produce five distinct signals.** The design is safe at this step size. It would not necessarily be safe at a much finer one, so the tool should count distinct signals in the grid and say so if the number is below the number of cells.
+
+  **External input, relayed 2026-08-24.** A friend of the owner, working from an independent
+  conversation with Claude, proposed a plateau check of **plus or minus 3 to 5 RSI points**, a
+  **window tolerance of plus or minus 15% to 20% of the window length**, and **two passes: one to
+  find single values that show promise, then a second running the plateau-neighbourhood check on
+  them.** Logged here because it is the first outside read on this design, and because two of the
+  three points are corroboration rather than novelty.
+
+  - **The window tolerance is the same number this spec already carries.** C1 above sweeps "10 days
+    plus or minus 2", which is plus or minus 20%. Two independent derivations landing on the same
+    figure is worth more than either on its own. Worth relaying back: **the window axis is the
+    stronger of the two**, moving the fired-day count by roughly twice what the level sweep moves,
+    and it is the one to build if only one ever gets built.
+  - **The level range is genuinely wider than what is specced, and it is a different question.** C1's
+    grid is plus or minus 1 RSI point at 0.25 steps, a deliberately fine *local refinement* that
+    probes off-lattice values the Miner cannot report. Plus or minus 3 to 5 points is the *plateau
+    width* statistic from item A, the one quoted in real units as "holds from 20 to 28", which is
+    plus or minus 4 around its centre and sits squarely in the proposed range. So both granularities
+    are already here at different scales, and the proposal is to widen the coarse one. **Not adopted
+    as a fixed number, on the reasoning already stated above:** build the scoring first, look at what
+    plateau widths real results actually produce, and let the data choose the width instead of
+    guessing it. If real plateaus cluster at 3 to 5 points, that is what it will say, and it will say
+    so with evidence.
+  - **The two-pass structure is the architecture this spec already requires**, arrived at
+    independently. The rating runs on demand for displayed or selected rows, never as a third pass
+    over the whole search. **One terminology warning for anyone relaying this:** the Miner already
+    uses "Pass 1" and "Pass 2" to mean single signals and pair rows. The proposed second pass is the
+    on-demand rating, not the existing Pass 2, and conflating the two would read as a plan to rate
+    every pair row in a full search, which is the one thing this design rules out.
+  - **The proposal came with an intent to run it overnight. That instinct is wrong, and usefully so**,
+    because it is the same misjudgement the next paragraph corrects. At the proposed width the grid
+    is roughly 41 level cells by 5 window cells, 205 per row against C1's 45. At 90 microseconds per
+    backtest that is about **18 ms per row, so under 2 seconds for a 100-row leaderboard**. Widening
+    the range as proposed costs nothing anyone would notice. Overnight only becomes real if the
+    rating is applied to every row of a full run, which is exactly what this design rules out.
 
   **On cost, which is the one place the owner's intuition is too pessimistic.** "Obviously very computational" is the natural read, and it is wrong by about three orders of magnitude, because this is 45 backtests per rated row rather than millions. At the measured 23 ns per spec-target-day, one backtest over a 3,931-day sample is roughly **90 microseconds**, so a 9-by-5 grid is about **4 ms per row** and the entire displayed leaderboard of 100 rows is **under half a second**. Building the handful of off-lattice indicator series costs one pass over the axis each and rounds to nothing.
 
