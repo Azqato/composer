@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deploy gate: data/database.json is keyed by symphony_id, and the summary matches it.
+"""Deploy gate: database.json is keyed by symphony_id, and its two companion files agree.
 
 `symphony_id` is the primary key of the community database. Nothing enforced
 that until v1.25.2, and by then one duplicate had been sitting in the file for
@@ -12,7 +12,7 @@ ad-hoc cluster corrections), and a hand edit cannot be prevented by fixing a
 script. So this gate checks the invariant on the artifact itself, whatever
 produced it.
 
-Four checks, each on a failure that is silent without one:
+Five checks, each on a failure that is silent without one:
 
   1. Every entry has a non-empty symphony_id. A null key makes every
      downstream join wrong and nothing would say so.
@@ -26,12 +26,22 @@ Four checks, each on a failure that is silent without one:
      summary makes real symphonies invisible with no error anywhere. This
      drifted once already: four symphonies were unreachable on the live site
      until v1.25.1 (see docs/PRD.md Section 24, discrepancy 5).
+  5. Every symphony in database.json has its URL archived in storage.csv.
+     storage.csv holds every symphony URL ever seen and never loses one, so an
+     approved symphony must always be in it: database.json is a subset of the
+     archive, never the other way round (docs/PRD.md Section 12). Five entries
+     violated this at v1.25.4, four of them the same ones check 4 exists for,
+     which is one cause showing up twice: the hand-run addition routes write
+     database.json and stop. Fix with scripts/sync_database_to_storage.py.
+     The reverse gap is not checked and must not be: storage.csv holding
+     symphonies that database.json does not is the design working.
 
 Read-only. Exits non-zero on any failure, so it can gate a release.
 
     python scripts/check_database_keys.py
 """
 
+import csv
 import json
 import re
 import sys
@@ -41,6 +51,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 FULL_JSON_PATH = BASE_DIR / "data" / "database.json"
 SUMMARY_JSON_PATH = BASE_DIR / "data" / "database_summary.json"
+STORAGE_PATH = BASE_DIR / "data" / "storage.csv"
 
 URL_ID_RE = re.compile(r"/symphony/([A-Za-z0-9]+)")
 
@@ -111,9 +122,23 @@ def main():
             drift.append("same ids, different order: re-run scripts/export_summary.py")
     report(failures, "database_summary.json is in sync", drift)
 
+    with open(STORAGE_PATH, encoding="utf-8", newline="") as f:
+        archived = set()
+        for row in csv.DictReader(f):
+            url = row["url"]
+            match = URL_ID_RE.search(url or "")
+            archived.add(match.group(1) if match else url)
+    unarchived = [
+        f"{e['symphony_id']} ({e.get('name') or 'unnamed'})"
+        for e in entries
+        if e.get("symphony_id") and e["symphony_id"] not in archived
+    ]
+    report(failures, "every symphony is archived in storage.csv", unarchived)
+
     if failures:
         print("\nFAIL")
         print("Fix: re-run scripts/export_summary.py if only the summary drifted.")
+        print("Fix: run scripts/sync_database_to_storage.py if only the archive lags.")
         print("A duplicate or mismatched key is a data defect; see docs/PRD.md Section 11.")
         return 1
     print("\nPASS")

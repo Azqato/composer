@@ -5,6 +5,57 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.25.4] - 2026-08-24
+
+### Every approved symphony is archived in storage.csv, and it is now enforced
+
+**The containment rule, stated: `database.json` is a subset of `storage.csv`, never the other way
+round.** The archive holds every symphony URL ever seen, alive or dead, and never loses one. The
+database holds only the symphonies approved for the site. So an approved symphony must always have
+an archived URL, while the archive holding symphonies the database does not is the design working.
+
+**Five approved symphonies had no archived URL, and now do:** `0jPwZ5Lm2Y3xH24oEijB` (Triple
+Accelerator), `zY4jRnXoFC9e1Pt97YDS`, `P7RLUTtWmTjkJBaNBQT9`, `tlDwKY3NRXjYU61jCt0g` (The Gold Miner
+(Original)) and `jjIQMCxLK5P98Zpczktk`. **Four of the five are the same symphonies that were missing
+from `database_summary.json` until v1.25.1**, which is one cause showing up twice: the hand-run
+addition routes write `database.json` and stop, updating neither the archive before it nor the
+derived summary after it.
+
+It failed safe rather than losing anything, since `purge_flagged_entries.py` aborts rather than drop
+a row whose URL it cannot find in the archive, so those five could not have been purged at all. But
+an incomplete archive is the one thing `storage.csv` exists not to be.
+
+### Added: scripts/sync_database_to_storage.py
+
+The mirror of `sync_storage_to_database.py`, and the safe one of the pair. **The two are not
+symmetrical in risk:** promotion moves archived URLs into the approved database, which is an approval
+decision and can resurrect symphonies purged as dead. This one only widens the archive, which is what
+the archive is for.
+
+Idempotent, and **keyed on `symphony_id` rather than the URL string**, which matters more here than
+anywhere else: Composer serves the same symphony under more than one path, and archiving a redundant
+second URL in a file that never deletes anything would be permanent. New rows are appended at the
+end, the way the file has grown since it was seeded, keeping the diff to the five lines added.
+
+### Added: a fifth check on the database gate
+
+`scripts/check_database_keys.py` now also asserts that every `database.json` symphony has its URL in
+`storage.csv`. Run against the pre-fix data it named all five offenders and exited non-zero.
+
+**It checks one direction on purpose.** The reverse gap, `storage.csv` holding symphonies
+`database.json` does not, is deliberate and currently stands at 1,045 symphonies, most of them from
+the v1.11.14 purge of permanently-dead entries. Gating that direction would fail every deploy for
+doing exactly what the design asks.
+
+The hand-addition workflow in `docs/PRD.md` Section 23 now names all four steps in order: write the
+row, archive the URL, regenerate the summary, run the gate. Skipping either middle step is silent,
+and both have already happened. A matching never-do row was added. Closes PRD open question 25.
+
+**Files changed:** `scripts/sync_database_to_storage.py` (added), `scripts/check_database_keys.py`,
+`data/storage.csv`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.25.3] - 2026-08-24
 
 ### Docs: storage.csv is larger than database.json on purpose, and v1.25.2 said otherwise

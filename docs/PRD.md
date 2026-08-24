@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.25.3
+**Version:** 1.25.4
 **Status:** Active
 **Last Updated:** 2026-08-24
 
@@ -334,7 +334,8 @@ ComposerAtlas/
 │   ├── export_full_database_to_xlsx.py # Local-only, occasional: regenerates the xlsx from the JSON (v1.9.4)
 │   ├── export_summary.py       # Derives database_summary.json/.js from database.json (v1.16); run after every refresh
 │   ├── build_sitemap.py        # Regenerates sitemap.xml from the indexable pages + curated slugs (v1.25.1)
-│   ├── check_database_keys.py  # Deploy gate: symphony_id unique + summary in sync (v1.25.2)
+│   ├── check_database_keys.py  # Deploy gate: symphony_id unique, summary in sync, every symphony archived (v1.25.2)
+│   ├── sync_database_to_storage.py # Archives any database.json URL missing from storage.csv (v1.25.4)
 │   ├── sync_storage_to_database.py # Adds storage.csv URLs missing from database.json as new unrefreshed rows (v1.11.1)
 │   ├── refresh_rsi.py          # Fetches Yahoo Finance daily bars, computes Wilder's RSI(10) (V2.1)
 │   └── refresh_prices.py       # Fetches full Yahoo Finance daily-close history for the Signal Miner universe (v1.15.0)
@@ -1333,6 +1334,25 @@ largest single contributor is the v1.11.14 purge, which removed 1,004 permanentl
 every one of their URLs in `storage.csv` forever. That purge only ran because the safety invariant
 held: `purge_flagged_entries.py` aborts rather than remove a row whose URL is not already in
 `storage.csv`, so nothing is ever lost outright and any purged symphony can be re-promoted later.
+
+**The containment runs one way, and only one way.** Every symphony in `database.json` must have its
+URL in `storage.csv`; `storage.csv` holding symphonies that `database.json` does not is the design
+working. **`database.json` is a subset of the archive, never the other way round.** Check 5 of
+`scripts/check_database_keys.py` gates the direction that can be wrong, and deliberately does not
+check the direction that cannot.
+
+**Keeping the archive complete: `scripts/sync_database_to_storage.py` (v1.25.4).** The mirror of the
+promotion script, and the safe one of the pair: it only widens the archive, which is what the archive
+is for. Run it after adding anything to `database.json` by hand. It is idempotent and keyed on
+`symphony_id`, so a second URL for a symphony already archived is not appended, which matters in a
+file nothing is ever deleted from.
+
+> **Fixed in v1.25.4.** Five approved symphonies had no archived URL: `0jPwZ5Lm2Y3xH24oEijB`,
+> `zY4jRnXoFC9e1Pt97YDS`, `P7RLUTtWmTjkJBaNBQT9`, `tlDwKY3NRXjYU61jCt0g` and `jjIQMCxLK5P98Zpczktk`.
+> **Four of the five were the same symphonies missing from `database_summary.json` until v1.25.1**,
+> which is one cause showing up twice: the hand-run addition routes wrote `database.json` and stopped,
+> updating neither the archive before it nor the derived summary after it. All five are archived and
+> the gate now holds the invariant.
 
 **This is why `sync_storage_to_database.py` must not be run casually.** It cannot distinguish "a URL
 nobody has processed yet" from "a URL deliberately purged as dead", so a blind run resurrects every
@@ -3793,7 +3813,8 @@ next, including an AI assistant with no memory of the previous session.
 | A tool page's own look | That page's inline `<style>` block, per DESIGN.md Section 8 |
 | Curated strategy content, metrics, tags, AI summaries | `data/strategies.json` **and** `data/strategies.js`, plus `scripts/add_ai_summary.py` if a summary is involved |
 | Glossary content | `data/glossary.json` **and** `data/glossary.js` |
-| The community database pipeline | `scripts/refresh_full_database.py`, then `scripts/export_summary.py` to regenerate what the site reads, then `scripts/check_database_keys.py` to confirm the two agree |
+| The community database pipeline | `scripts/refresh_full_database.py`, then `scripts/export_summary.py` to regenerate what the site reads, then `scripts/check_database_keys.py` to confirm everything agrees |
+| **Adding a symphony to `database.json` by hand** | The row itself, then `scripts/sync_database_to_storage.py` to archive its URL, then `scripts/export_summary.py` so the site can see it, then `scripts/check_database_keys.py`. Skipping either middle step is silent, and both have already happened |
 | The Signal Miner's price history or ticker universe | `scripts/refresh_prices.py`, which writes `data/prices.json` and `.js` |
 | The RSI page's data | `scripts/refresh_rsi.py` |
 | Deploy behaviour or the deploy gates | `.github/workflows/deploy.yml`, `scripts/check_html_js.py`, `scripts/check_composer_ladder.py`, `scripts/check_database_keys.py` |
@@ -3813,7 +3834,7 @@ that a change which looks obviously correct is not.
 | Any inline `<script>` on any page | `python scripts/check_html_js.py`. A broken inline script still serves a 200 with its static HTML intact, so a bad publish looks healthy from outside. This is the gate that would have caught v1.22.2 |
 | The Composer export shape | `python scripts/check_composer_ladder.py`. Valid JSON in the wrong shape is what shipped in v1.22.0 and was not caught for five releases |
 | Any JSON data file | `python -c "import json; json.load(open('data/FILE.json', encoding='utf-8'))"`, and confirm the `.js` twin was written in the same run |
-| `data/database.json`, by any route | `python scripts/check_database_keys.py`. Asserts `symphony_id` is present and unique, agrees with the URL, and that `database_summary.json` holds the same ids in the same order. A duplicate key and a stale summary are both invisible without it, and both have shipped |
+| `data/database.json`, by any route | `python scripts/check_database_keys.py`. Asserts `symphony_id` is present and unique, agrees with the URL, that `database_summary.json` holds the same ids in the same order, and that every symphony's URL is archived in `storage.csv`. Every one of those failures is invisible without it, and three of the five have already shipped |
 | Anything at all, after deploying | `python scripts/check_live.py`. Fetches each live clean URL, compares byte-for-byte against the committed file, and reports failures. Currently 8 URLs, 0 failing |
 | Page appearance or behaviour end to end | Drive it in **headless Edge**. See below |
 | Documentation counts | Re-count from the files. Never copy a number forward from a previous revision |
@@ -3845,6 +3866,7 @@ explicitly if it cannot clear one.
 | **Build a self-hosted strategy submission form** | Decided 2026-08-15: submissions go through an external Google Form. A self-hosted intake would be an input surface on a site that deliberately has none |
 | **Commit `strategies.xlsx` or `watched_sanity_check.xlsx`** | Standing instruction |
 | **Write a `.json` without its `.js` twin** | Splits the HTTP site from the `file://` site with no error anywhere |
+| **Add a symphony to `database.json` without archiving its URL in `storage.csv`** | `storage.csv` is the long-term record of every symphony ever seen and is meant to never lose one. An approved symphony absent from it cannot even be purged later, since `purge_flagged_entries.py` aborts rather than drop a URL it cannot find. Run `scripts/sync_database_to_storage.py`; check 5 of the gate catches you either way |
 | **Deduplicate `database.json` on `symphony_url`** | The URL is not unique per symphony. Composer serves at least `/details` and `/factsheet` for the same one, and keying on the URL is how a duplicate row got in and stayed in. **`symphony_id` is the primary key.** Section 12 |
 | **Regenerate `database.json` without regenerating `database_summary.json`** | The site reads the summary. A symphony present in the full file and absent from the summary does not exist as far as any visitor is concerned, and nothing raises an error. This is what hid four symphonies until v1.25.1 |
 | **Run `scripts/sync_storage_to_database.py` casually, or to see what it would do** | It has no dry-run mode and writes on every invocation. Worse than the write is what it writes: `storage.csv` deliberately keeps every URL ever seen, including 1,004 symphonies purged as permanently dead in v1.11.14, so a blind run **resurrects dead symphonies into the approved database**. It cannot tell "never processed" from "removed on purpose". This has happened twice, 2026-07-15 and 2026-08-24, both reverted. Promotion is an approval decision, not a sync. Section 12 |
@@ -4086,7 +4108,7 @@ Numbered for reference. Open unless marked otherwise.
     than a flag, since promotion is an approval decision rather than a sync (Section 12), so a
     dry-run makes the wrong operation safer rather than making it right.
 
-25. **Five entries are in `database.json` but not in `storage.csv`**, which inverts the
+25. **CLOSED 2026-08-24 (v1.25.4), owner instruction. Five entries were in `database.json` but not in `storage.csv`**, which inverted the
     "never lose a URL once seen" rule in the direction nobody checks: `0jPwZ5Lm2Y3xH24oEijB` (Triple
     Accelerator), `zY4jRnXoFC9e1Pt97YDS`, `P7RLUTtWmTjkJBaNBQT9`, `tlDwKY3NRXjYU61jCt0g` (The Gold
     Miner (Original)) and `jjIQMCxLK5P98Zpczktk`. Four of the five are the same symphonies that were
@@ -4094,10 +4116,13 @@ Numbered for reference. Open unless marked otherwise.
     addition routes write `database.json` and stop there**, updating neither the durable backup
     before it nor the derived summary after it. **It fails safe today**, because
     `purge_flagged_entries.py` aborts rather than remove a row whose URL is absent from
-    `storage.csv`, so these five simply cannot be purged. But the archive is incomplete, which is the
-    one thing `storage.csv` exists to never be. **Open question, and it is a small one:** append the
-    five URLs, and decide whether the addition workflow in Section 11 should write `storage.csv`
-    first rather than relying on it being remembered.
+    `storage.csv`, so these five could not be purged at all. But the archive was incomplete, which is
+    the one thing `storage.csv` exists to never be. **Resolved on all three counts:** the five URLs
+    were archived by the new `scripts/sync_database_to_storage.py`; check 5 of
+    `scripts/check_database_keys.py` now fails the deploy if an approved symphony is ever unarchived
+    again, so it is enforced rather than remembered; and Section 23's tables name the archive step as
+    part of the hand-addition workflow. The gate checks only that direction: `storage.csv` holding
+    symphonies the database does not is the design, not a defect.
 
 ---
 
