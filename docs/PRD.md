@@ -170,12 +170,24 @@ reasoning). As of v1.12.0, `data/database.json`/`.js`, `data/database_summary.js
 
 > **Discrepancy (measured 2026-08-24).** The line above is the v1.11.23 figure and is kept as the
 > historical record of that moment. Counted directly from `data/database.json` today the database
-> holds **6,669 entries**, and the flag distribution is **6,324 unflagged, 248 `retry`, 81
-> `caution`, 16 `excluded`, and 0 `duplicate`**. Two things moved: the weekly
+> holds **6,669 entries**, and the flag distribution is **6,474 unflagged, 69 `retry`, 94
+> `caution`, 32 `excluded`, and 0 `duplicate`**. Two things moved: the weekly
 > `refresh-full-database.yml` job has been adding rows and re-classifying failures ever since, and
 > the `duplicate` population is now empty, which the v1.11.12 reset (flags cleared back to null so
 > rows requeue) plus subsequent successful refreshes would produce. **6,655 entries carry a
 > `sharpe_ratio`**, which is the Leaderboard's eligibility proxy.
+>
+> **How fast these move, measured rather than guessed.** The flag counts in the paragraph above were
+> rewritten once during the day of 2026-08-24. The audit measured 6,324 unflagged, 248 `retry`, 81
+> `caution` and 16 `excluded`; the weekly refresh job landed hours later and left 6,474 / 69 / 94 /
+> 32. The total held at 6,669 and the `sharpe_ratio` count held at 6,655, so the churn is
+> re-classification of failures, not new rows: the `retry` backlog drained by 179 as transient
+> failures resolved, and the ones that did not resolve hardened into `caution` or `excluded`.
+> **Treat every flag figure in this document as a reading with a date on it, not a property of the
+> dataset.** The total and the eligibility count are the stable numbers.
+>
+> **Also observed, and left alone: 6,669 rows resolve to 6,668 distinct `symphony_id` values.** One
+> exact duplicate survives the refresh. See Section 25 open question 22.
 >
 > `data/database_summary.json` held **6,665 rows against the full file's 6,669**, so the derived
 > summary was four rows behind. `scripts/export_summary.py` had not been re-run since the last four
@@ -3756,7 +3768,7 @@ evidence, usually a patch note recording the change as deliberate.
 | 2 | `data/symphony_scores.json` is "not served publicly" (README, `update_metrics.py`, Section 10) | **200 on both hosts**, 22.8MB. `.assetsignore` never listed it | **The code**, meaning the file genuinely is public | One-line fix: add it to `.assetsignore`. Also true of `data/database.json` (18.7MB) and `data/Full Database.xlsx` (5.8MB), neither of which any page requests |
 | 4 | README stated `## License` / `MIT` | **No `LICENSE` file exists in the repository** | **The code**, meaning the project is currently unlicensed | A bare "MIT" line with no licence text is not a grant. Removed from the rewritten README rather than asserted. **Owner decision needed:** add a real `LICENSE` file, or leave it unlicensed deliberately |
 | 6 | Section 12: "All 8 current tags" | **13 tags in use** across `strategies.json` | **The code** | The 8 were the MVP set. All 13 correctly resolve to a glossary slug, so the rule the section states still holds; only the count went stale. Table kept, framing corrected |
-| 7 | Section 6: "6,640 total entries, 6,221 clean, 229 duplicate, 88 excluded, 88 caution, 14 retry" | **6,669 entries; 6,324 unflagged, 248 retry, 81 caution, 16 excluded, 0 duplicate** | **The code** | The v1.11.23 figures were correct on the day. The weekly refresh has been moving them ever since. Original kept as the historical record, current figures added beside it |
+| 7 | Section 6: "6,640 total entries, 6,221 clean, 229 duplicate, 88 excluded, 88 caution, 14 retry" | **6,669 entries; 6,474 unflagged, 69 retry, 94 caution, 32 excluded, 0 duplicate** | **The code** | The v1.11.23 figures were correct on the day. The weekly refresh has been moving them ever since, and moved them again between the audit's measurement and this document being committed. Original kept as the historical record, current figures added beside it, and Section 6 now says plainly that flag counts are readings with dates rather than properties |
 | 8 | Section 13: "All 24 Composer Atlas strategies" | The table beneath it has **31 rows**, matching `strategies.json` | **The code, and the table** | Only the heading's count was wrong. Removed rather than re-fixed to a number that will go stale again |
 | 9 | Section 15: "`data/strategies.json` is the only data source" | **Nine committed data sources** under `data/` | **The code** | True at MVP. Everything the sentence goes on to assert still holds for all of them |
 | 10 | Section 10 directory tree: `glossary.json # 8 glossary concept entries` | **20 entries** | **The code** | Corrected. Section 12's own canonical table already said 20, so the document disagreed with itself |
