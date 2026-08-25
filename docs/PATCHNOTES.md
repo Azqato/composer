@@ -73,10 +73,11 @@ Nodes is in the nav **Tools** dropdown, the footer sitemap, and the homepage Exp
 cards, not seven). `sitemap.xml` regenerated: **41 URLs**, 10 indexable pages plus the 31 curated
 strategy slugs. The node definition and the step mapping are documented in `docs/PRD.md` Section 13
 under the Logic Tree Endpoint, next to the CORS note, since that is reference knowledge about
-Composer's API rather than about this page. `check_html_js.py` passes on all 14 HTML files.
+Composer's API rather than about this page. `check_html_js.py` passes on all 14 HTML files, and `scripts/check_live.py` now covers the new
+page too (9 checked, 0 failed), so a future deploy that breaks it is caught rather than assumed.
 
-**Files changed:** `nodes.html` (added), `js/app.js`, `index.html`, `sitemap.xml`, `docs/PRD.md`,
-`docs/DESIGN.md`, `docs/PATCHNOTES.md`
+**Files changed:** `nodes.html` (added), `js/app.js`, `index.html`, `sitemap.xml`,
+`scripts/check_live.py`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
 
 ---
 

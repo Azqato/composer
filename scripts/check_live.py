@@ -62,6 +62,7 @@ PAGES = {
     'glossary': ('glossary.html', [], []),
     'rsi': ('rsi.html', [], []),
     'converter': ('converter.html', [], []),
+    'nodes': ('nodes.html', ['Count nodes'], []),
     'about': ('about.html', [], []),
 }
 
