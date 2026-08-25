@@ -15,8 +15,18 @@ jobs:
   update-metrics:
     runs-on: ubuntu-latest
     steps:
+      # fetch-depth: 0 is load-bearing, not a habit. build_sitemap.py reads each
+      # page's lastmod from `git log -1 -- <path>`. On a shallow checkout the one
+      # fetched commit is grafted as the root, so git reports that EVERY file was
+      # last modified in it: not an error, not an empty result, just today's date
+      # on every page, every day. Verified on a real --depth 1 clone. The script
+      # cannot defend against that, because it only omits lastmod when it knows it
+      # does not know. Full history costs a larger clone and buys a true file.
+      # See docs/PRD.md Section 11, Regenerating the Sitemap.
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -26,11 +36,20 @@ jobs:
       - name: Run update_metrics.py
         run: python scripts/update_metrics.py
 
+      # Strategy lastmod values in sitemap.xml come from each entry's
+      # last_updated, which the step above rewrites. Without this the sitemap
+      # goes stale on every metrics refresh and only a hand run fixes it, which
+      # is what happened between v1.25.1 and v1.26.1. Runs unconditionally: it
+      # is cheap, and a no-op run produces no diff, so the commit step below
+      # simply finds nothing to commit.
+      - name: Regenerate sitemap.xml
+        run: python scripts/build_sitemap.py
+
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/strategies.json data/strategies.js data/symphony_scores.json
+          git add data/strategies.json data/strategies.js data/symphony_scores.json sitemap.xml
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else

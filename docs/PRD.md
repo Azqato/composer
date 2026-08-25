@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.26.0
+**Version:** 1.26.1
 **Status:** Active
 **Last Updated:** 2026-08-25
 
@@ -898,6 +898,39 @@ python scripts/build_sitemap.py
 the curated set in `data/strategies.json`. Because page `lastmod` comes from git, regenerating
 *after* the commit that changed a page gives a more accurate file than regenerating before it; this
 is a minor inaccuracy, not a correctness problem, and is not worth a second commit on its own.
+
+**Automated since v1.26.1.** `.github/workflows/update-metrics.yml` runs this script immediately
+after `update_metrics.py` and commits `sitemap.xml` alongside the strategy data. That workflow is the
+only one that writes `data/strategies.json`, so it is the only one whose output can staledate the 31
+strategy `lastmod` values. Running by hand is still correct and still the right move after adding a
+page, but forgetting no longer leaves the file wrong indefinitely: the next daily run repairs both
+the strategy dates and the page dates.
+
+> **`fetch-depth: 0` on that workflow's checkout is load-bearing, and removing it corrupts the
+> sitemap silently.** Page `lastmod` comes from `git log -1 --format=%cs -- <path>`. On
+> `actions/checkout`'s default shallow clone, the single fetched commit is grafted as the root, so
+> git believes **every file in the tree was last modified in it**. The command does not fail and does
+> not return empty; it returns *today's date, for every page, every day*. Measured on a real
+> `--depth 1` clone of this repo at v1.26.1: all ten pages came back `2026-08-25`, against true dates
+> ranging from `2026-06-22` to `2026-08-24`.
+>
+> That is the bad case, not the harmless one. `build_sitemap.py` omits `lastmod` when it cannot know
+> the date, on the principle that an absent `lastmod` beats a wrong one, and a shallow checkout
+> defeats that protection by handing it a date that is confidently wrong instead of missing. Every
+> page would claim to have changed today, forever, which is precisely the signal `lastmod` exists to
+> give and precisely the way to make a crawler stop trusting it. The cost of the fix is a full clone
+> of a 122MB history on a daily job, weighed and accepted against publishing a daily lie.
+>
+> **This was written the other way round first**, predicting an empty result and a churning diff. It
+> was only corrected because the shallow clone was actually made and the command actually run. Worth
+> keeping as an instance of the repo's own rule: read the artifact, do not infer it.
+
+**A deploy-time staleness gate was considered and declined at v1.26.1.** A fourth gate could
+regenerate the sitemap in memory and fail the deploy if the committed file differed, which would
+catch "added a page and forgot" at once rather than a day later. It was not built: it needs
+`fetch-depth: 0` on `deploy.yml` too, slowing every deploy for a failure whose entire cost is one day
+of a slightly stale `lastmod` on one page. The three existing gates all guard failures that are
+silent *and* damaging; this one is neither.
 
 **Only the canonical host gets a sitemap.** It points at `https://composeratlas.com`. The GitHub
 Pages mirror is not given one on purpose, since it serves the same content and should not compete
@@ -3824,7 +3857,7 @@ Everything with a URL a stranger could hold. Removing or renaming any of these r
 | `/about.html` | Stable | Out of the primary nav since v1.16.5; still in the footer sitemap |
 | `/404.html` | Stable | Served by both hosts for unmatched routes |
 | `/robots.txt` | Stable | Allows all crawlers, advertises `/sitemap.xml`. That URL 404'd from the file's creation until v1.25.1 |
-| `/sitemap.xml` | Stable, **generated** (v1.25.1) | Written by `scripts/build_sitemap.py`, never hand-edited. 41 URLs as of v1.26.0: 10 indexable pages plus 31 curated strategy slugs. See Section 11 |
+| `/sitemap.xml` | Stable, **generated** (v1.25.1), **automated** (v1.26.1) | Written by `scripts/build_sitemap.py`, never hand-edited; re-run by `update-metrics.yml` on every metrics refresh. 41 URLs as of v1.26.0: 10 indexable pages plus 31 curated strategy slugs. See Section 11 |
 | `/data/*.json` and `/data/*.js` | Stable, load-bearing | The `.js` twins are fetched by every page. Renaming one is a breaking change; `full_database` to `database` in v1.10.1 is the precedent for doing it properly |
 
 ### Compatibility
@@ -3905,7 +3938,7 @@ next, including an AI assistant with no memory of the previous session.
 | The Signal Miner's price history or ticker universe | `scripts/refresh_prices.py`, which writes `data/prices.json` and `.js` |
 | The RSI page's data | `scripts/refresh_rsi.py` |
 | Deploy behaviour or the deploy gates | `.github/workflows/deploy.yml`, `scripts/check_html_js.py`, `scripts/check_composer_ladder.py`, `scripts/check_database_keys.py` |
-| Which pages search engines are told about | `scripts/build_sitemap.py`, then re-run it. Never hand-edit `sitemap.xml` |
+| Which pages search engines are told about | `scripts/build_sitemap.py`, then re-run it. Never hand-edit `sitemap.xml`. Re-run automatically by `update-metrics.yml` since v1.26.1, so a forgotten run self-corrects within a day |
 | What Cloudflare serves publicly | `.assetsignore` (not `deploy.yml`, which governs GitHub Pages only) |
 | Product decisions, architecture, schemas, roadmap, policy | `docs/PRD.md`, this file |
 | Anything at all | `docs/PATCHNOTES.md`, always, in the same commit |
@@ -4017,7 +4050,7 @@ resolves; that is why this table is not in numeric order.
 
 | # | Was | Resolution |
 |---|---|---|
-| 3 | `robots.txt` advertises `https://composeratlas.com/sitemap.xml`, which 404'd | **Fixed in v1.25.1**, by generating the sitemap rather than dropping the line. `scripts/build_sitemap.py` derives it from the indexable pages plus the curated slugs, so it does not go stale by hand. See Section 11 |
+| 3 | `robots.txt` advertises `https://composeratlas.com/sitemap.xml`, which 404'd | **Fixed in v1.25.1**, by generating the sitemap rather than dropping the line. `scripts/build_sitemap.py` derives it from the indexable pages plus the curated slugs. The claim that it therefore "does not go stale" was **half true until v1.26.1**: nothing ran the script, so every weekly metrics refresh staledated all 31 strategy entries anyway. Now run by `update-metrics.yml`. See Section 11 |
 | 5 | `data/database_summary.json` held 6,665 rows against `database.json`'s 6,669 | **Fixed in v1.25.1.** Export re-run; all 6,669 rows present and in source order, `.js` twin verified identical. `export_summary.py` also hardened against silently dropping a field that only later entries carry |
 | 16 | Section 15 carried live Google AdSense integration guidance | Contradicted Tenet 7, Section 4's Non-Goals, and Section 14's V3.0 removal. Four statements against one, and the one was the oldest. Retired with the reason recorded; AdSense was never implemented |
 | 17 | Section 17 FAQ: "How does the site make money? A: Google AdSense (post-MVP) and direct user donations" | Same contradiction. Answer rewritten to state the site makes no money |

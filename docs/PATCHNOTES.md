@@ -5,6 +5,64 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.26.1] - 2026-08-25
+
+### The sitemap regenerates itself now
+
+`scripts/build_sitemap.py` has existed since v1.25.1 and **nothing ran it**. Strategy `lastmod`
+values come from each entry's `last_updated`, which `update_metrics.py` rewrites, so every weekly
+metrics refresh staledated all 31 strategy entries and only a hand run put them right. That was
+logged during the v1.25.1 work and left open until now.
+
+`.github/workflows/update-metrics.yml` now runs the script straight after `update_metrics.py` and
+commits `sitemap.xml` with the strategy data. That workflow is the only one that writes
+`data/strategies.json`, so it is the only one that can cause the staleness. Page `lastmod` values
+self-heal on the same daily run, so forgetting to regenerate after adding a page now costs one day
+of a slightly stale date rather than lasting indefinitely.
+
+### fetch-depth: 0, and a prediction that was wrong
+
+**The naive wiring would have made the file worse, not better.** `build_sitemap.py` reads each
+page's `lastmod` from `git log -1 --format=%cs -- <path>`, and `actions/checkout` clones shallow by
+default.
+
+The first version of this note predicted that a shallow clone returns an empty result, that the
+script would omit `lastmod` as designed, and that the file would simply churn. **That was wrong, and
+it was only caught by making a real `--depth 1` clone and running the command.** On a shallow clone
+the single fetched commit is grafted as the root, so git believes every file in the tree was last
+modified in it. The command succeeds and returns **today's date, for every page, every day**.
+Measured: all ten pages came back `2026-08-25` against true dates from `2026-06-22` to `2026-08-24`.
+
+That is the worse failure, not the harmless one. The script omits `lastmod` when it cannot know the
+date, on the principle that an absent value beats a wrong one, and a shallow checkout defeats that
+protection by handing it a date that is confidently wrong rather than missing. Every page would
+claim to have changed today, forever, which is exactly how a crawler learns to ignore `lastmod`.
+
+The job therefore checks out with `fetch-depth: 0`. That is a full clone of a 122MB history on a
+daily job, weighed and accepted against publishing a daily lie. Both the workflow comment and
+`docs/PRD.md` Section 11 record the real behaviour and the corrected prediction, because the
+reasoning matters more than the flag.
+
+### A deploy-time gate was considered and declined
+
+A fourth gate could regenerate the sitemap in memory and fail the deploy when the committed file
+differs, catching "added a page and forgot" immediately. Not built: it needs `fetch-depth: 0` on
+`deploy.yml` as well, slowing every deploy, and the failure it prevents costs one day of a stale
+`lastmod` on one page. The three existing gates each guard something silent **and** damaging. This
+one is neither. Recorded in Section 11 so the decision is not re-litigated from scratch.
+
+### Fixed: nodes.html had no lastmod in the live sitemap
+
+`sitemap.xml` was regenerated during v1.26.0 while `nodes.html` was still untracked, so `git log`
+could not date it and the entry shipped without a `lastmod`. Regenerated after the commit landed.
+This is the exact inaccuracy Section 11 already warned about, which is a fair argument that the
+automation above should have come first.
+
+**Files changed:** `.github/workflows/update-metrics.yml`, `sitemap.xml`, `docs/PRD.md`,
+`docs/PATCHNOTES.md`
+
+---
+
 ## [1.26.0] - 2026-08-25
 
 ### Added: Nodes, a symphony node counter
