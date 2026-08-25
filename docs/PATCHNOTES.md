@@ -5,6 +5,81 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.26.0] - 2026-08-25
+
+### Added: Nodes, a symphony node counter
+
+**Paste a Composer symphony URL and get its node count.** Composer prices its tiers by node count
+($40/month against $10/month) and **does not show that number anywhere in the platform**. Composer
+support confirmed on 2026-08-17 that the feature is planned but not built, and gave the definition
+in the meantime. `nodes.html` implements that definition against the real `/score` tree, and shows
+the breakdown rather than only the total, so the number can be checked rather than trusted.
+
+**Named `nodes`, not `node-calculator`.** One word, matching `converter`, `glossary`, `database`,
+`strategies`. "Calculator" also oversells it: nothing is calculated, a tree is counted.
+
+### How a node is counted
+
+Composer's five categories, mapped onto the `step` values the API actually returns:
+
+| Composer's category | `step` |
+|---|---|
+| Each asset (stock or ETF) | `asset` |
+| Each IF statement | `if` |
+| Each FILTER block | `filter` |
+| Each GROUP container | `group` |
+| Each weighting method block | any `wt-*` |
+
+**Two steps are deliberately not counted, and the page says so on screen rather than hiding it.**
+`root` is the symphony itself. `if-child` is the THEN/ELSE branch container Composer generates
+underneath every IF, and it is the one judgement call in the whole tool: across 15 real symphonies
+sampled while building this, it appeared **exactly twice per `if`, without exception** (5,162
+against 2,581), so it is generated structure rather than anything a user placed. Counting it would
+treble every conditional.
+
+**Weighting blocks are matched on the `wt-` prefix rather than against a fixed list**, so a
+weighting method this repo has not seen still lands in the right row. Anything genuinely
+unrecognised is counted as one node each **and flagged in the breakdown**, so a Composer schema
+change surfaces as a visible warning instead of silently skewing the total.
+
+**The count runs far higher than people expect**, because an asset counts every time it appears. A
+filter over six tickers is six asset nodes plus the filter, and reusing that set inside several IF
+branches counts it again each time. Verified totals: a single-asset symphony is **2**, zoop's 2026
+Frontrunner is **21** (7 assets, 6 IF, 1 group, 7 weighting), and one real community symphony,
+"Portfolio Consolidation 1", is **5,935**, of which 4,470 are assets. Every total was checked
+against an independent count over the same JSON.
+
+### The CORS problem, and what the page does about it
+
+**Composer's `/score` endpoint returns HTTP 200 with no `access-control-allow-origin` header**, so a
+browser can reach it but cannot read the response. There is no header or origin that lifts this. The
+page therefore tries four sources in order: **direct first**, so it starts working on its own the
+day Composer adds the header, then the same three public relays the ETF Cloner already uses
+(`proxy.cors.sh`, allorigins, codetabs), and finally a link to the raw JSON plus a paste box.
+
+**Worth recording honestly: two of those three relays were returning 502/522 during this build**, so
+the URL path currently rests on `proxy.cors.sh` alone. The paste fallback is what makes that
+survivable rather than fatal. The durable fix would be a Cloudflare Pages Function proxying the
+endpoint, which is not being done here because it adds a server component to a site that
+deliberately has none and would not work on the GitHub Pages mirror.
+
+A relay that reaches Composer passes its status through, so **a 404 is reported as "no such
+symphony"** rather than as a relay failure. The two have completely different fixes and an error
+message that confuses them sends people to debug the wrong thing.
+
+### Wiring and docs
+
+Nodes is in the nav **Tools** dropdown, the footer sitemap, and the homepage Explore grid (now eight
+cards, not seven). `sitemap.xml` regenerated: **41 URLs**, 10 indexable pages plus the 31 curated
+strategy slugs. The node definition and the step mapping are documented in `docs/PRD.md` Section 13
+under the Logic Tree Endpoint, next to the CORS note, since that is reference knowledge about
+Composer's API rather than about this page. `check_html_js.py` passes on all 14 HTML files.
+
+**Files changed:** `nodes.html` (added), `js/app.js`, `index.html`, `sitemap.xml`, `docs/PRD.md`,
+`docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.25.5] - 2026-08-24
 
 ### Docs: outside input on plateau scoring logged against roadmap item A

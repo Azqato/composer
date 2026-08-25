@@ -933,6 +933,7 @@ site's interface is worse than one that admits the boundary.
 | `signal-miner.html` | ~126 lines | `.sl-*` | The whole Signal Miner interface: ticker chip rows and groups, the family checkbox grid, the parameter fields, the run status and progress line, the results table and its wrapper, the buy-and-hold baseline strip, and the combine bar |
 | `converter.html` | ~53 lines | `.conv-*`, `.t-*`, `.j-*` | Panels and actions, plus two syntax highlighters: `.t-*` for the rendered logic tree (`.t-fn`, `.t-cond`, `.t-asset`, `.t-wt`, `.t-kw`, `.t-muted`) and `.j-*` for raw JSON (`.j-key`, `.j-str`, `.j-num`, `.j-bool`, `.j-null`) |
 | `etf-cloner.html` | ~70 lines | `.ec-*`, `.j-*` | Panels, the file drop zone, the live/full mode toggle, the holdings table wrapper, and the same `.j-*` JSON highlighter |
+| `nodes.html` | ~36 lines | `.nd-*` | Panels and actions, the oversized node total, the breakdown table (including the muted `tr.excluded` rows for what is deliberately not counted), and the quoted node definition. No syntax highlighter: this page prints one number and a table, not JSON (v1.26.0) |
 
 `rsi.html`, `database.html`, `index.html`, `about.html`, `strategies.html`, `glossary.html` and
 `404.html` carry **no** inline style at all; everything they render is in `css/main.css` and

@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.25.5
+**Version:** 1.26.0
 **Status:** Active
-**Last Updated:** 2026-08-24
+**Last Updated:** 2026-08-25
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -347,6 +347,7 @@ ComposerAtlas/
 ├── converter.html               # Tool: Symphony → JSON converter + logic tree; indexable, in nav Tools dropdown + footer + homepage card (v1.16.3)
 ├── signal-miner.html              # Tool: client-side IF/THEN signal miner + backtester; in nav Tools dropdown + footer + home (renamed from Signal Lab v1.16.6) (v1.15.2)
 ├── signal-lab.html              # Redirect stub → signal-miner.html (noindex); preserves old Signal Lab links (v1.16.6)
+├── nodes.html                   # Tool: symphony URL → node count + breakdown by node type; indexable, in nav Tools dropdown + footer + homepage card (v1.26.0)
 ├── etf-cloner.html              # Tool: type an ETF (or upload its holdings file) → Composer symphony that clones the holdings; indexable, in footer + homepage card, intentionally NOT in nav (v1.16.0)
 ├── about.html                   # About page
 ├── 404.html                    # Custom 404 page
@@ -478,13 +479,26 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/signal-miner.html` | `signal-miner.html` | Tool: IF/THEN signal miner + backtester, runs fully client-side. In the nav **Tools** dropdown, footer sitemap, and homepage Explore card; indexable. Renamed from "Signal Lab" at v1.16.6 (v1.15.2) |
 | `/composer/signal-lab.html` | `signal-lab.html` | Redirect stub → `signal-miner.html` (preserves query string); `noindex`. Kept so old Signal Lab links do not break (v1.16.6) |
 | `/composer/converter.html` | `converter.html` | Tool: Symphony → JSON converter + logic tree. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.16.3) |
+| `/composer/nodes.html` | `nodes.html` | Tool: paste a symphony URL, get its node count and a breakdown by node type. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.26.0) |
 | `/composer/etf-cloner.html` | `etf-cloner.html` | Tool: ETF → Composer holdings-clone generator. Live top-holdings fetch by ticker + full-basket upload of an issuer CSV/xlsx. Indexable; in the footer sitemap + homepage Explore card, but intentionally **not** in the primary nav (v1.16.3) |
 | `/composer/about.html` | `about.html` | Static HTML |
 | `/composer/404.html` | `404.html` | GitHub Pages error page |
 
 **Listing/detail routing:** Each combined page checks `new URLSearchParams(window.location.search).get('slug')` on load. `null` → listing view; non-null → detail view for that slug.
 
-**Tool pages:** `converter.html`, `signal-miner.html`, and `etf-cloner.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). All are indexable. As of v1.16.3 the three tools reachable from the primary nav (RSI Signals, Signal Miner, Converter) are grouped under a single **Tools** dropdown rather than sitting as separate top-level links; all three also appear in the footer sitemap and homepage Explore grid. The ETF Cloner is lower-profile: it is live and indexable and appears in the footer sitemap + homepage Explore card, but at the user's request is intentionally held out of the primary nav (including the Tools dropdown). As of v1.15.4 no page carries a `noindex` robots meta.
+**Tool pages:** `converter.html`, `signal-miner.html`, `nodes.html`, and `etf-cloner.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). All are indexable. As of v1.16.3 the tools reachable from the primary nav (RSI Signals, Signal Miner, Converter, and Nodes since v1.26.0) are grouped under a single **Tools** dropdown rather than sitting as separate top-level links; all of them also appear in the footer sitemap and homepage Explore grid. The ETF Cloner is lower-profile: it is live and indexable and appears in the footer sitemap + homepage Explore card, but at the user's request is intentionally held out of the primary nav (including the Tools dropdown). As of v1.15.4 no page carries a `noindex` robots meta.
+
+**Nodes data flow (v1.26.0):** the tool takes a symphony URL, ID, or pasted JSON, walks the tree
+from the `/score` endpoint, and counts nodes. It has no data file and no server component. **The
+fetch is the hard part:** Composer's API answers the score request with HTTP 200 and **no
+`access-control-allow-origin` header**, so a browser cannot read the response directly. The page
+therefore tries four sources in order, direct first (so it starts working on its own the day
+Composer adds the header), then the same three public relays the ETF Cloner uses (`proxy.cors.sh`,
+allorigins, codetabs), and falls back to a link to the raw JSON plus a paste box if all four fail.
+**Two of the three relays were returning 502/522 during the v1.26.0 build**, so the URL path
+currently rests on `proxy.cors.sh` alone; the paste fallback is the reason that is survivable rather
+than fatal. A relay that reaches Composer passes its status through, so a 404 is reported as "no
+such symphony" rather than as a relay failure, since the two have completely different fixes.
 
 **ETF Cloner data flow:** the tool has two independent input paths, both fully client-side. (1) **Live fetch by ticker**: reads a fund's top ~25 holdings from stockanalysis.com's SvelteKit `__data.json` route via a CORS relay (`proxy.cors.sh`, with allorigins/codetabs fallbacks), since issuer files and most holdings APIs are CORS-blocked or key-gated. (2) **Full-basket upload**: the user downloads the issuer's own holdings file (a top-level download, not a `fetch()`, so CORS never applies) and drops it in; CSV is parsed directly, and `.xlsx` is unzipped natively in the browser (`DecompressionStream('deflate-raw')` + `DOMParser`, no library) with a generic column-mapper that locates the Ticker/Weight/Name columns across issuer layouts. Both paths filter out non-company line items (cash, futures, collateral, pending dividends, currency, which can carry tickers that collide with real securities, e.g. cash "USD" vs. the USD ETF), normalize share-class tickers to Composer/Crescendo format (a trailing `.X`/`-X` class suffix becomes `/X`, e.g. `BRK.B`/`BRK-B` → `BRK/B`, in `cleanSym()`, since the dot/dash forms will not save or backtest on either platform, v1.16.7), renormalize weights across the remaining companies, and emit a Composer symphony (`root` → `wt-cash-specified` or `wt-cash-equal` → `asset` nodes). Nothing is uploaded anywhere; there is no server component and no committed data file for this tool.
 
@@ -1921,7 +1935,44 @@ Full response also includes `dvm_capital`, `tdvm_weights`, `rebalance_days`, `la
 
 Returns the symphony's full IF/ELSE logic tree as a nested JSON object. The `step` field on each node indicates its type: `"root"`, `"if"`, `"asset"`, `"group"`, `"filter"`, etc. The `children` array contains nested nodes.
 
-Used by `update_metrics.py` to refresh `data/symphony_scores.json`.
+Used by `update_metrics.py` to refresh `data/symphony_scores.json`, and by `nodes.html` to count nodes.
+
+**Note that this endpoint is CORS-blocked.** It returns HTTP 200 with `vary: Origin` and **no
+`access-control-allow-origin` header**, so a browser can reach it but cannot read the response. This
+is not a transient failure and there is no header or origin that lifts it. Python has no such
+problem; anything running in a page needs a relay or a paste fallback. See the Nodes data flow in
+Section 10.
+
+#### Counting Nodes
+
+Composer prices its tiers by node count and **does not show that number anywhere in the platform**.
+Composer support, relayed 2026-08-17, gave the definition: each asset, each IF statement, each
+FILTER block, each GROUP container, and each weighting method block. Mapped onto the `step` values
+this endpoint actually returns:
+
+| Composer's category | `step` value | Counted |
+|---|---|---|
+| Each asset (stock or ETF) | `asset` | yes |
+| Each IF statement | `if` | yes |
+| Each FILTER block | `filter` | yes |
+| Each GROUP container | `group` | yes |
+| Each weighting method block | any `wt-*` (`wt-cash-equal`, `wt-cash-specified`, `wt-inverse-vol` observed) | yes |
+| (not a node) | `root`, the symphony itself | **no** |
+| (not a node) | `if-child`, the THEN/ELSE branch container | **no** |
+
+**Why `if-child` is excluded, since it is the one judgement call here.** It is generated structure
+rather than anything visible in the editor: across 15 real symphonies sampled at v1.26.0, `if-child`
+appeared **exactly twice per `if`, without exception** (5,162 against 2,581). Counting it would
+treble every conditional. `nodes.html` matches `wt-*` by prefix rather than against a fixed list, so
+a weighting method this repo has not seen still lands in the right category, and any unrecognised
+step is counted as one node each **and flagged on screen**, so a Composer schema change surfaces
+instead of silently skewing the total.
+
+**The count runs far higher than people expect**, because an asset counts every time it appears. A
+filter over six tickers is six asset nodes plus the filter, and reusing that set inside several IF
+branches counts it again each time. Measured examples: a single-asset symphony is 2 nodes, zoop's
+2026 Frontrunner is 21, and one real community symphony ("Portfolio Consolidation 1") is **5,935**,
+of which 4,470 are assets.
 
 ### Symphony ID Reference
 
@@ -3695,7 +3746,7 @@ naming a script that no longer existed.
 | Internal links | Always built through `u(path)`. Never hardcode a leading `/`: it breaks on the GitHub Pages project-path mirror and on `file://` |
 | External links | Always `target="_blank" rel="noopener noreferrer"` |
 | Design tokens | Colours, radii, fonts and layout constants come from the `:root` custom properties in `css/main.css`. Literal hex in a rule is a deviation and needs a stated reason. The one accepted exception is the RSI tier palette in `rsi.html`, documented in DESIGN.md |
-| Inline `<style>` | Three tool pages only: `signal-miner.html`, `converter.html`, `etf-cloner.html`. See DESIGN.md Section 8 |
+| Inline `<style>` | Four tool pages only: `signal-miner.html`, `converter.html`, `etf-cloner.html`, `nodes.html`. See DESIGN.md Section 8 |
 
 ### Naming
 
@@ -3768,11 +3819,12 @@ Everything with a URL a stranger could hold. Removing or renaming any of these r
 | `/signal-miner.html` | Stable | |
 | `/signal-lab.html` | **Retired, shim kept permanently** | Redirects to `signal-miner.html`, `noindex`, query string preserved |
 | `/converter.html` | Stable | Indexable since v1.15.4 |
+| `/nodes.html` | Stable | New at v1.26.0. Named `nodes`, not `node-calculator`: the one-word form matches the rest of the site, and nothing is calculated, a tree is counted |
 | `/etf-cloner.html` | Stable, **deliberately unlinked from the primary nav** | Reachable from the footer sitemap and the homepage grid. Keeping it out of the nav is an owner decision, not an oversight, and must be preserved |
 | `/about.html` | Stable | Out of the primary nav since v1.16.5; still in the footer sitemap |
 | `/404.html` | Stable | Served by both hosts for unmatched routes |
 | `/robots.txt` | Stable | Allows all crawlers, advertises `/sitemap.xml`. That URL 404'd from the file's creation until v1.25.1 |
-| `/sitemap.xml` | Stable, **generated** (v1.25.1) | Written by `scripts/build_sitemap.py`, never hand-edited. 40 URLs: 9 indexable pages plus 31 curated strategy slugs. See Section 11 |
+| `/sitemap.xml` | Stable, **generated** (v1.25.1) | Written by `scripts/build_sitemap.py`, never hand-edited. 41 URLs as of v1.26.0: 10 indexable pages plus 31 curated strategy slugs. See Section 11 |
 | `/data/*.json` and `/data/*.js` | Stable, load-bearing | The `.js` twins are fetched by every page. Renaming one is a breaking change; `full_database` to `database` in v1.10.1 is the precedent for doing it properly |
 
 ### Compatibility
