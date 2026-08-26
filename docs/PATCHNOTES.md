@@ -5,6 +5,86 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.26.2] - 2026-08-25
+
+### Roadmap: V1.18, leaderboard out-of-sample weighting
+
+Documentation only. Nothing in the scoring model changed.
+
+The owner posted the live Leaderboard publicly and a community member (Spacer) came back with a
+specific, checkable observation: **a symphony at the top of the Leaderboard has underperformed SPY
+across its six months of out-of-sample time.** The owner agreed the OOS weight is "way too low"
+against backtest length, said the factor set was "kinda just thrown in there", and wants the model
+**simpler**. Logged as `docs/PRD.md` Section 14, **V1.18**, with a Milestones row.
+
+**The complaint is arithmetically fair.** V1.17 gives `backtest_days` **97 points** and OOS days
+**25**, so backtest length outweighs out-of-sample length roughly four to one.
+
+### The finding that reframes the request
+
+**The model has no out-of-sample performance metric at all, only out-of-sample duration**, and that
+matters more than the weighting. `oos_date` is the symphony's last logic edit, taken from the
+Composer API's `last_semantic_update_at`; the scored quantity is a day count off that date. All 29
+fields in `database_summary.json` were checked: nothing measures performance since `oos_date`, and
+there is **no benchmark of any kind in the dataset**. SPY appears nowhere.
+
+So **raising the OOS-days weight would not fix the case that prompted this and would probably make
+it worse.** The symphony named has six months of untouched history, which is a respectable OOS
+*duration*; scoring duration harder rewards it further. "It underperformed SPY out of sample" is
+about OOS *return against a benchmark*, which the model cannot currently express. Reweighting is the
+wrong lever for the stated problem. It is a real issue, but a different one.
+
+### A cheap first step, and what it still will not do
+
+**Some trailing-return windows are already fully out-of-sample and nothing exploits that.** Where OOS
+duration is at least 365 days, `trailing_one_year_return` covers only days after the last logic edit,
+so it already *is* a true out-of-sample return; likewise `trailing_three_month_return` past 90 days.
+Scoring the longest trailing window that fits inside the OOS period needs **no new fields, no new API
+calls, and no backtesting**, and it treats a symphony with no qualifying window as a hard zero,
+exactly as the model already treats missing data.
+
+**Measured against the live pool**, over the 6,471 eligible entries: **79.2% have at least 365 days
+of OOS**, so `trailing_one_year_return` is already a genuine out-of-sample return for four rows in
+five, and some window qualifies for 99.97% of the pool. That distribution also calibrates the floor
+proposal (a one-year floor cuts about 21% of the pool) and warns about the weighting one: since 79%
+already clear a year, **OOS duration barely separates the pool at the top**, so weighting it harder
+mostly reshuffles rows that already look fine on it.
+
+It still does not give the benchmark comparison, which needs SPY's trailing returns stored and
+refreshed on the same weekly cadence. Cheap, but a real scope addition and a real decision.
+
+### Spacer's two proposals, costed
+
+**A minimum OOS duration before boosting** fits the existing machinery: it is an eligibility rule,
+not a weighting change, and the model already has an eligibility gate. A floor like "no S+ or S
+without N days of OOS" needs no change to the point table at all.
+
+**Dynamic scaling of the OOS weight by OOS length conflicts with a load-bearing property.** Every
+metric has a fixed cap and the caps sum to exactly 1,000, which is what makes two rows comparable and
+lets missing data score zero without shrinking the denominator. A per-row weight means a per-row
+denominator. Two ways out are recorded with their costs: renormalise each row back to 1,000 (rows
+comparable again, but a row's score depends on its own weighting, which is hard to explain in the
+breakdown modal), or keep the cap fixed and vary the *input*, scoring a duration-adjusted OOS return
+instead. The second is smaller and preserves the fixed denominator, so it is flagged as the one to
+evaluate first.
+
+### Two strands, deliberately not conflated
+
+The simplification the owner wants is a separate axis from OOS weighting, and the roadmap says so:
+doing both in one pass makes it impossible to attribute a rank change to either. V1.17 already did
+this exercise once and identified the Asymmetry/Shape and Concentration/Fragility metrics (six
+metrics, 170 points) as least mission-aligned and most redundant with Max Drawdown and Standard
+Deviation, so the obvious cut is documented with reasons already and does not need re-deriving.
+
+Five open questions are recorded rather than answered, since all five are the owner's call. The
+validation route is not among them: V1.17's precedent of scoring candidate models against the live
+pool in a throwaway script before touching the site is carried forward, with the publicly named
+symphony as one of the test cases.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.26.1] - 2026-08-25
 
 ### The sitemap regenerates itself now

@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.26.1
+**Version:** 1.26.2
 **Status:** Active
 **Last Updated:** 2026-08-25
 
@@ -2091,6 +2091,7 @@ numbering schemes; they answer different questions.
 | V1.15 | Full-scale refresh: every entry through at least one real API attempt | Complete; now maintained weekly | v1.11.23 |
 | V1.16 | Performance fix: columnar summary export, page weight | Complete, built ahead of slot | v1.11.0 |
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
+| V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -2499,6 +2500,144 @@ Sums to exactly **1,000**. Same excluded-from-scoring set as V1.13 (`cumulative_
 - [x] Methodology modal narrative text rewritten to describe the new mechanics (4 categories, ~14% clamp threshold, S+/S/A/B/C/F rank cuts)
 - [x] Verified locally via a headless-Chrome screenshot of the live Leaderboard tab and Methodology modal before pushing, tier distribution (S+ 62 / S 560 / A 623 / B 1,868 / C 1,559 / F 1,553) and top-15 scores matched the validated Python test script exactly
 - [x] Eligibility gate unchanged from V1.13 (unflagged + `sharpe_ratio` present, not user-toggleable)
+
+### V1.18: Leaderboard Scoring Revision II (Out-of-Sample Weighting)
+
+**Status:** Not started. Logged 2026-08-25 from a public discussion of the live Leaderboard. This is
+the successor to V1.17 and nothing here is decided; it is a specification of the problem, what the
+data can and cannot currently support, and the open questions, so the work does not start from a
+blank page.
+
+**The trigger.** The owner posted the live Leaderboard publicly on 2026-08-25, describing the scoring
+as "a rough draft" that still needs work on "some criteria". A community member (Spacer) responded
+with a specific, checkable observation: **a symphony sitting at the top of the Leaderboard has
+underperformed SPY across its six months of out-of-sample time.** The owner agreed the OOS weight is
+"way too low" and backtest length correspondingly too high, and added that the factor set as a whole
+was "kinda just thrown in there" and that the goal is a **simpler** model, closer to the sibling
+Individual Stocks screener at `azqato.github.io/stocks/screener.html`.
+
+**What the model does today** (V1.17, live since 2026-07-13, full table above):
+
+| | Points, of 1,000 | Share |
+|---|---|---|
+| `backtest_days` | 97 | 9.7% |
+| OOS days, derived from `oos_date` | 25 | 2.5% |
+| Longevity category total | 122 | 12.2% |
+
+So backtest length outweighs out-of-sample length **roughly four to one**, which is the imbalance
+being complained about, and the complaint is arithmetically fair.
+
+#### The finding that reframes the request
+
+**The model has no out-of-sample *performance* metric at all, only out-of-sample *duration*.** This
+matters more than the weighting, and it should be settled before any weight is touched.
+
+- `oos_date` is **not** an out-of-sample return. It is the symphony's last logic edit, sourced from
+  the Composer API's `last_semantic_update_at` and truncated to a date (Section 12). `database.html`
+  derives "days since last edit" from it live. The stored quantity is a **date**, and the scored
+  quantity is a **day count**.
+- Every one of the 29 fields in `data/database_summary.json` was checked. There is no field
+  measuring performance since `oos_date`, and **no benchmark of any kind**: SPY appears nowhere in
+  the dataset.
+
+**Therefore raising the OOS-days weight would not fix the case that prompted this, and would most
+likely make it worse.** The symphony in question has six months of untouched history, which is a
+respectable OOS *duration*. Scoring OOS duration harder rewards it further. The actual complaint,
+"it underperformed SPY out of sample", is about OOS *return against a benchmark*, and the model
+currently cannot express that sentence at all. Reweighting is the wrong lever for the stated problem;
+it is a real but separate issue.
+
+#### A cheap first step that uses only fields already present
+
+**Some trailing-return windows are already fully out-of-sample, and nothing exploits that.** If a
+symphony's OOS duration is at least 365 days, then `trailing_one_year_return` covers only days after
+the last logic edit, so it *is* a true out-of-sample return. The same holds for
+`trailing_three_month_return` at 90 days, and so on down the trailing set. The data to identify
+which windows qualify is already in every row.
+
+That yields an **OOS-valid trailing return**: pick the longest trailing window that fits entirely
+inside the symphony's OOS period, score that, and score nothing where no window qualifies (a hard
+zero against the fixed denominator, exactly as the model already treats missing data). It needs no
+new API calls, no new fields, and no backtesting.
+
+**Measured against the live pool on 2026-08-25**, over the 6,471 eligible entries (unflagged,
+`sharpe_ratio` present):
+
+| OOS duration | Entries | Share | Longest fully-OOS trailing window |
+|---|---|---|---|
+| 365 days or more | 5,127 | **79.2%** | 1 year |
+| 90 to 364 days | 1,126 | 17.4% | 3 months |
+| 30 to 89 days | 185 | 2.9% | 1 month |
+| Under 30 days | 31 | 0.5% | 2 weeks or less |
+| No `oos_date` | 2 | 0.03% | none, scores zero |
+
+So `trailing_one_year_return` is **already a genuine out-of-sample return for four rows in five**,
+and some window qualifies for 99.97% of the pool. The cheap step is not only cheap, it applies almost
+everywhere.
+
+**That distribution also calibrates Spacer's floor proposal, and warns about the weighting one.**
+A one-year OOS floor would exclude about 21% of the pool, which is a real cut but not a drastic one.
+It cuts the other way for weighting: since 79% of rows already clear a year, **OOS duration barely
+separates the pool at the top**, so weighting duration harder mostly reshuffles rows that all already
+look fine on it. More evidence that duration is the wrong quantity to lean on, and OOS *return* is
+the one that would actually discriminate.
+
+**It still does not give the benchmark comparison**, which is the other half of what was asked for.
+That needs SPY's trailing returns stored alongside, one extra row refreshed on the same weekly
+cadence, so the score can ask "did this beat SPY over the window it was actually out of sample for"
+rather than "did this go up". Cheap, but a real scope addition and a real decision.
+
+#### Spacer's two proposals, and what each costs
+
+1. **A minimum OOS duration before OOS weight is boosted.** This fits the existing machinery well,
+   because it is an **eligibility rule, not a weighting change**, and the model already has an
+   eligibility gate (unflagged, `sharpe_ratio` present). A floor such as "no S+ or S tier without N
+   days of OOS" is expressible today with no change to the point table at all.
+
+2. **Dynamic scaling, where OOS weight rises with OOS length.** Attractive, and it **conflicts with a
+   load-bearing property of the current model**, so it cannot be dropped in unexamined. Every metric
+   has a fixed cap and the caps sum to exactly 1,000, which is what makes two rows' scores
+   comparable and what lets missing data score zero without shrinking the denominator. A weight that
+   varies per row means a denominator that varies per row, and scores stop being comparable across
+   rows. Two ways out, both worth costing before choosing: renormalise every row back to 1,000 after
+   applying its own weights (comparable again, but a row's score then depends on its own weighting,
+   which is hard to explain in the breakdown modal), or keep the cap fixed and vary the *input*
+   instead, for example by scoring a confidence-adjusted OOS return that already carries the
+   duration inside it. **The second is the smaller change and preserves the fixed denominator**,
+   which is the recommendation to evaluate first.
+
+3. **Spacer proposed "or both", and both is coherent**: the floor decides who is eligible for the
+   reward, the scaling decides how much of it they get. If only one is built, the floor is the
+   cheaper and the more explainable.
+
+#### The simplification strand, which is a separate decision
+
+The owner also wants the model **simpler**, in the direction of the Individual Stocks screener. That
+is a different axis from OOS weighting and the two should not be conflated in one pass. Worth
+recording that V1.17 already went through this exercise once, cutting 7 categories to 4 for display
+while keeping all 20 metrics scored, and that its own analysis found the Asymmetry/Shape and
+Concentration/Fragility groups (six metrics, 170 points) to be the least mission-aligned and most
+redundant with Max Drawdown and Standard Deviation. **That is the obvious place to cut**, and it is
+already documented above with reasons, so the simplification does not need to be re-derived.
+
+#### Open questions to settle before building
+
+1. Is the target OOS *return*, OOS *return against SPY*, or both? The public complaint was explicitly
+   the benchmark version.
+2. Does SPY (or another benchmark) get stored in the dataset? Nothing benchmarks anything today.
+3. Floor, dynamic scaling, or both, and if scaling, which of the two denominator-preserving routes.
+4. Does the metric count come down in the same pass, or a later one? Doing both at once makes it
+   impossible to attribute a rank change to either.
+5. **How is the change validated?** V1.17 set a good precedent worth repeating: score candidate
+   models against the live pool in a throwaway Python script mirroring `database.html` exactly,
+   review the output as a spreadsheet, and only then touch the site. The specific symphony Spacer
+   named should be one of the named test cases, the way two of the owner's own symphonies were at
+   V1.17.
+
+- [ ] Decide questions 1 to 4 above
+- [ ] Add an OOS-valid trailing return, using windows that already fit inside the OOS period
+- [ ] Decide on and, if adopted, add a stored benchmark
+- [ ] Re-validate against the live pool before shipping, including the symphony named publicly
 
 ### V2.0: Full Database Goes Public
 
