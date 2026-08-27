@@ -5,6 +5,124 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.27.0] - 2026-08-27
+
+### New tool: K1 Lookup (`/k1`)
+
+Type a ticker, find out whether holding it sends you a **Schedule K-1** instead of a 1099. Requested
+by the owner, who had been answering the question by hand from an 88-row spreadsheet.
+
+**Why it earns a page.** A K-1 arrives late, often after the April filing deadline, complicates a
+return, and can hand a holder taxable income in a year they sold nothing. Composer symphonies route
+into leveraged and inverse volatility products constantly, and those are exactly the funds that do
+this. Nothing on the site told anyone that before today.
+
+### The signal is legal structure, not a published K-1 flag
+
+**No source publishes the flag.** What is published is the fund's legal structure, and structure
+fixes the tax form: Commodity Pool means a K-1, ETF and UIT mean a 1099, ETN means a 1099-B, Grantor
+Trust means a 1099-B at the collectibles rate. Nothing is inferred from a ticker symbol or a fund's
+name.
+
+**A second, independent field corroborates every row**, which is why both are stored. Max short and
+long-term capital gains rates fall out of the structure rather than being copied from it, so they are
+a genuine cross-check: `27.84% / 27.84%` is the Section 1256 60/40 blend and only a commodity pool
+shows it; `39.60% / 28.00%` is the collectibles rate and means a grantor trust. Where the two
+readings contradict each other the row carries `agrees: false` and **the page says so rather than
+picking a winner**. That mechanism was not decorative. It caught a real error on its first run.
+
+### The lookup is local, and it had to be
+
+The upstream source sits behind Cloudflare bot mitigation and sends no `access-control-allow-origin`
+header, so neither a browser nor a public CORS relay can read it from the page. A live per-visitor
+lookup is not available at any price. `scripts/refresh_k1.py` therefore fetches on a maintainer's
+machine and the site ships the answers, which is also why the page is instant and works offline.
+
+**212 tickers: 41 issue a K-1, 143 do not, 28 are not exchange-traded products** (individual stocks
+in the Signal Miner universe, recorded rather than skipped so a re-run does not keep asking). The
+seed list is the owner's 88, the site's own ticker universes, and a candidate list of likely
+issuers. `data/k1_seed.txt` says what it is in its header, and the wording is load-bearing: **a
+ticker in that file is a request to check it, not a claim about it.**
+
+### Verified against sources the script never touches
+
+The owner asked for 10 K-1 tickers and 10 non-K-1 tickers to be pulled at random and checked
+independently. That was done against **SEC EDGAR**, and the "no" side needed a better test than the
+"yes" side did.
+
+**For the K-1 side, filing type is decisive:** all ten (UUP, DBC, VIXM, EUO, UGL, AGQ, USO, UDN,
+BOIL, UGA) file a **10-K** and no N-CSR, which no 1940-Act fund does, under entity names that say the
+same thing (`United States Oil Fund, LP`, `ProShares Trust II`). Ten of ten agreed.
+
+**For the non-K-1 side, absence from a file proves nothing**, so the first attempt was thrown out.
+The replacement is a positive test: EDGAR publishes `company_tickers_mf.json`, which lists **only**
+funds registered under the Investment Company Act of 1940, because series and class identifiers are a
+1940-Act construct. Presence there is proof of 1099 treatment rather than an argument for it. All ten
+(XHB, QID, IYK, PDBC, IOO, BOXX, MLPA, DBMF, BTAL, UPW) appear with a series and class ID. **Ten of
+ten agreed, and the control held**: none of the ten K-1 tickers appears in that file, which is what
+makes the test mean anything.
+
+### One real error, found and corrected
+
+The sample passed 20 for 20, so the same test was then swept across the **whole** database rather
+than stopping there. Of the 41 tickers called commodity pools, exactly one turned out to be a
+registered 1940-Act fund: **CMDY** (iShares Bloomberg Roll Select Commodity Strategy ETF). The source
+labelled it a Commodity Pool, which would mean a K-1. EDGAR gives it series `S000061337` and class
+`C000198581`, so it is a registered investment company and issues a 1099, and the capital gains rates
+on the source's own page (39.60%/20.00%) agreed with EDGAR rather than with its structure label. The
+corroboration check had already flagged the row before EDGAR was consulted.
+
+**The correction lives in an `OVERRIDES` table in the script, not in `data/k1.json`,** because a
+hand-edited row is silently undone by the next refresh. Each entry carries the reasoning that earned
+it and **the page prints that reasoning** rather than quietly showing a different answer.
+
+Five further rows carry a note without a changed verdict (SOYB, TAGS, IBIT, ETHA, OUNZ). Their two
+source fields contradict each other but the verdict was confirmed independently, and printing "treat
+this answer as unconfirmed" over an answer that has in fact been confirmed would be the wrong kind
+of caution. The run summary now separates rows already verified from rows that still need a look, so
+the second list does not get buried under a first list that never shrinks.
+
+### Three outcomes, deliberately distinguished
+
+A ticker in the database renders its verdict, structure, tax form, both rates, and a link to verify
+by hand. A ticker recorded as `not_found` says it is not an exchange-traded product on record. A
+ticker the database has never seen says exactly that: **"not in this database yet, which is not the
+same as saying it has no K-1."** The third case is the one worth getting right. Silently answering
+"No" for an unknown ticker would be a wrong answer about someone's taxes wearing a confident face.
+
+### Two parsing bugs fixed before shipping
+
+**A minority of fund pages title themselves with generic marketing copy** rather than the fund's
+name, so five rows had stored `"BOXX ETF Guide | Stock Quote, Holdings, Fact Sheet and More"` where a
+name belongs, and the page printed it. Now cut back to nothing, and the page shows the ticker alone.
+
+**The first fix did not work, and the reason is worth recording.** The cleanup regex was written
+through a shell heredoc where `\b` became a literal backspace byte, so the pattern silently required
+an unprintable character that no page contains. It parsed, ran, and did nothing. Found by dumping the
+line through `cat -A`.
+
+### Removed
+
+`data/K1 Lookup Example.xlsx`, the owner's manual spreadsheet, deleted at their request now that the
+database supersedes it. All 88 of its tickers were confirmed present in `data/k1.json` first, and the
+database agrees with the sheet's verdict on every one of them.
+
+### Roadmap
+
+**V1.19** added to `docs/PRD.md` Section 14 with a Milestones row. Its one open item is the owner's
+request to **display whether a fund is an ETN**, which is nearly free because `structure` already
+carries the value. It is worth a real callout rather than a quiet field: an ETN is not a fund but
+senior unsecured debt of the issuing bank, so the holder carries that bank's credit risk with no
+basket of assets behind the shares. That is a different risk from the tax question the page answers
+today, and someone checking one is very likely to want the other.
+
+**Files changed:** `k1.html` (new), `scripts/refresh_k1.py` (new), `data/k1.json` (new),
+`data/k1.js` (new), `data/k1_seed.txt` (new), `js/app.js`, `index.html`, `scripts/check_live.py`,
+`sitemap.xml`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`. Removed:
+`data/K1 Lookup Example.xlsx`
+
+---
+
 ## [1.26.2] - 2026-08-25
 
 ### Roadmap: V1.18, leaderboard out-of-sample weighting

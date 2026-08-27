@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Check whether an ETF issues a Schedule K-1 instead of a 1099. Type a ticker for an instant answer, with the fund's legal structure and the tax form it sends.">
+  <title>K1 Lookup: Does This ETF Issue a K-1?: Composer Atlas</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .k1-panel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .k1-label { display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-primary); margin-bottom: 8px; }
+    .k1-hint { font-size: 0.8125rem; color: var(--color-secondary); margin-bottom: 12px; line-height: 1.6; }
+    .k1-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    #k1-in {
+      flex: 1 1 220px; min-width: 0; box-sizing: border-box;
+      background: var(--color-bg); color: var(--color-primary);
+      border: 1px solid var(--color-border); border-radius: 8px; padding: 12px 14px;
+      font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase;
+    }
+    #k1-in:focus { outline: 2px solid var(--color-blue); outline-offset: -1px; }
+    .k1-msg { margin-top: 14px; font-size: 0.875rem; line-height: 1.6; }
+    .k1-msg.err { color: var(--color-pink); }
+    .k1-msg.info { color: var(--color-secondary); }
+    .k1-msg a { color: var(--color-blue); }
+
+    .k1-verdict { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+    .k1-verdict .v { font-family: var(--font-mono); font-size: 2.5rem; line-height: 1; font-weight: 600; }
+    .k1-verdict .v.yes { color: var(--color-yellow); }
+    .k1-verdict .v.no { color: var(--color-green); }
+    .k1-verdict .v.unknown { color: var(--color-disabled); }
+    .k1-verdict .lbl { font-size: 1rem; color: var(--color-secondary); }
+    .k1-sub { font-size: 0.9375rem; color: var(--color-primary); margin-top: 12px; }
+    .k1-sub .meta { color: var(--color-disabled); font-size: 0.8125rem; display: block; margin-top: 4px; font-family: var(--font-mono); }
+
+    .k1-facts { display: flex; flex-wrap: wrap; gap: 12px 28px; margin-top: 18px; }
+    .k1-facts .k { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-disabled); display: block; margin-bottom: 3px; }
+    .k1-facts .val { font-size: 0.9375rem; color: var(--color-primary); font-family: var(--font-mono); }
+
+    table.k1-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    table.k1-table th, table.k1-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--color-border); }
+    table.k1-table th { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-disabled); font-weight: 600; }
+    table.k1-table td.t { font-family: var(--font-mono); color: var(--color-yellow); }
+    table.k1-table td.nm { color: var(--color-secondary); }
+    .k1-wrap { overflow-x: auto; }
+    .k1-note { font-size: 0.8125rem; color: var(--color-secondary); line-height: 1.7; margin-top: 14px; }
+    .k1-note code { font-size: 0.75rem; }
+    .k1-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .k1-head h2 { color: var(--color-primary); font-size: 1rem; font-weight: 600; margin: 0; }
+    .k1-count { font-size: 0.8125rem; color: var(--color-disabled); font-family: var(--font-mono); }
+    .k1-body { font-size: 0.875rem; color: var(--color-secondary); line-height: 1.75; }
+    .k1-body strong { color: var(--color-primary); }
+    .k1-body p { margin: 0 0 10px; }
+    .k1-body table { margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="nav-root"></nav>
+
+  <div class="page">
+    <div class="container py-12">
+      <div id="breadcrumb-root"></div>
+
+      <div style="max-width:680px;margin-bottom:28px">
+        <h1 style="color:var(--color-primary);margin-bottom:8px">K1 Lookup</h1>
+        <p style="color:var(--color-secondary);font-size:1.0625rem;line-height:1.6">
+          Type a ticker and find out whether it sends you a <strong>Schedule K-1</strong> instead of
+          a 1099. A K-1 arrives late, complicates a return, and can hand you taxable income in a year
+          you sold nothing. Plenty of symphonies hold one without their author noticing.
+        </p>
+      </div>
+
+      <div class="k1-panel">
+        <label class="k1-label" for="k1-in">Ticker</label>
+        <p class="k1-hint">
+          For example <code>USO</code>, <code>UVXY</code>, <code>TQQQ</code>, or <code>GLD</code>.
+        </p>
+        <div class="k1-form">
+          <input id="k1-in" type="text" spellcheck="false" autocomplete="off"
+                 placeholder="Enter a ticker" maxlength="12">
+          <button id="btn-check" class="btn btn-green">Check</button>
+          <button id="btn-clear" class="btn btn-outline">Clear</button>
+        </div>
+        <div id="k1-msg" class="k1-msg"></div>
+      </div>
+
+      <div id="k1-out" style="display:none">
+        <div class="k1-panel">
+          <div class="k1-verdict">
+            <span class="v" id="k1-verdict">?</span>
+            <span class="lbl" id="k1-verdict-label"></span>
+          </div>
+          <div class="k1-sub" id="k1-name"></div>
+          <div class="k1-facts" id="k1-facts"></div>
+          <p class="k1-note" id="k1-note"></p>
+        </div>
+      </div>
+
+      <div class="k1-panel">
+        <div class="k1-head">
+          <h2>Every K-1 issuer in this database</h2>
+          <span class="k1-count" id="k1-summary"></span>
+        </div>
+        <div class="k1-wrap">
+          <table class="k1-table">
+            <thead><tr><th>Ticker</th><th>Fund</th><th>Structure</th></tr></thead>
+            <tbody id="k1-list"></tbody>
+          </table>
+        </div>
+        <p class="k1-note" id="k1-refreshed"></p>
+      </div>
+
+      <div class="k1-panel">
+        <div class="k1-head"><h2>How this is worked out</h2></div>
+        <div class="k1-body">
+          <p>
+            <strong>No data source publishes a "has K-1" flag.</strong> What decides it is the fund's
+            <strong>legal structure</strong>, which is published, and the structure determines the tax
+            form its holders receive.
+          </p>
+          <div class="k1-wrap">
+            <table class="k1-table">
+              <thead><tr><th>Structure</th><th>You receive</th><th>Why</th></tr></thead>
+              <tbody>
+                <tr><td>Commodity Pool</td><td>Schedule K-1</td><td>A partnership for tax purposes, so income, gains and losses pass through to holders</td></tr>
+                <tr><td>ETF</td><td>Form 1099</td><td>A regulated investment company under the 1940 Act</td></tr>
+                <tr><td>ETN</td><td>Form 1099-B</td><td>A senior unsecured debt note, not a fund at all</td></tr>
+                <tr><td>Grantor Trust</td><td>Form 1099-B</td><td>A direct undivided interest in the underlying, as with the physical metal trusts</td></tr>
+                <tr><td>UIT</td><td>Form 1099</td><td>A unit investment trust, which is what SPY, QQQ and DIA are</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="margin-top:14px">
+            <strong>Every verdict is corroborated by a second, independent field.</strong> Maximum
+            short- and long-term capital gains rates fall out of the structure rather than being
+            copied from it. A commodity pool reads <code>27.84% / 27.84%</code>, identical and
+            matching neither standard rate, because Section 1256 contracts get a fixed 60/40 blend. A
+            grantor trust reads <code>39.60% / 28.00%</code>, the collectibles rate. Everything else
+            reads <code>39.60% / 20.00%</code>. Where the two readings disagree this page says so
+            rather than picking one.
+          </p>
+          <p>
+            <strong>Limitations, stated plainly.</strong> This covers exchange-traded products that
+            appear in the database below; individual stocks and MLPs are out of scope, and an MLP
+            does issue a K-1. Structures change only if a fund reorganises, which is rare but not
+            impossible. The verdict here is a strong indicator and not tax advice: before it matters
+            to a return, confirm it against the fund's own prospectus or its issuer's tax centre.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer id="footer-root"></footer>
+
+  <script src="data/k1.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    (function () {
+      renderBreadcrumb('breadcrumb-root', [
+        { label: 'Home', href: u('/') },
+        { label: 'K1 Lookup' },
+      ]);
+
+      var HUMAN_URL = function (t) { return 'https://etfdb.com/etf/' + encodeURIComponent(t) + '/#expense'; };
+
+      var msgEl = document.getElementById('k1-msg');
+      var outEl = document.getElementById('k1-out');
+      var inputEl = document.getElementById('k1-in');
+      var DB = null;
+
+      function esc(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+      function setMsg(html, cls) {
+        msgEl.className = 'k1-msg ' + (cls || '');
+        msgEl.innerHTML = html || '';
+      }
+      function fact(k, v) {
+        return '<div><span class="k">' + esc(k) + '</span><span class="val">' + esc(v) + '</span></div>';
+      }
+
+      // The lookup is local: data/k1.js ships with the page, so an answer costs no
+      // network call and works offline. etfdb sits behind bot mitigation and sends no
+      // CORS header, so a live per-visitor lookup was never possible; the fetching
+      // happens in scripts/refresh_k1.py on a maintainer's machine instead.
+      function loadDb() {
+        if (window.K1_DATA) return Promise.resolve(window.K1_DATA);
+        return fetch(BASE + '/data/k1.json').then(function (r) {
+          if (!r.ok) throw new Error('Failed to load k1.json');
+          return r.json();
+        });
+      }
+
+      function render(ticker, row) {
+        var vEl = document.getElementById('k1-verdict');
+        var lEl = document.getElementById('k1-verdict-label');
+
+        if (row.k1 === true) {
+          vEl.textContent = 'Yes'; vEl.className = 'v yes';
+          lEl.textContent = 'this one sends a Schedule K-1';
+        } else if (row.k1 === false) {
+          vEl.textContent = 'No'; vEl.className = 'v no';
+          lEl.textContent = 'no K-1, you get a ' + (row.tax_form || '1099');
+        } else {
+          vEl.textContent = 'Unknown'; vEl.className = 'v unknown';
+          lEl.textContent = 'the structure was not recognised';
+        }
+
+        document.getElementById('k1-name').innerHTML =
+          '<strong>' + esc(ticker) + '</strong>' +
+          (row.name ? '  ' + esc(row.name) : '') +
+          '<span class="meta">' + esc(row.brand || 'unknown issuer') +
+          (row.checked ? '  &middot;  checked ' + esc(row.checked) : '') + '</span>';
+
+        var facts = '';
+        if (row.structure) facts += fact('Structure', row.structure);
+        if (row.tax_form) facts += fact('Tax form', row.tax_form);
+        if (row.st_rate) facts += fact('Max short-term rate', row.st_rate);
+        if (row.lt_rate) facts += fact('Max long-term rate', row.lt_rate);
+        document.getElementById('k1-facts').innerHTML = facts;
+
+        var note;
+        if (row.override) {
+          note = '<strong>This row was corrected by hand after an independent check.</strong> ' +
+            esc(row.override);
+        } else if (row.agrees === false) {
+          note = '<strong>The two readings disagree for this fund.</strong> Its structure says one ' +
+            'thing and its capital gains rates say another, which normally means the fund is ' +
+            'unusual or the source page changed shape. Treat this answer as unconfirmed and check ' +
+            'the prospectus.';
+        } else if (row.agrees === true) {
+          note = 'Structure and capital gains rates agree, which is the corroboration described below.';
+        } else {
+          note = 'Only the structure was available for this fund, with no capital gains rates to ' +
+            'corroborate it.';
+        }
+        note += ' Verify for yourself: <a href="' + HUMAN_URL(ticker) + '" target="_blank" rel="noopener noreferrer">etfdb.com/etf/' + esc(ticker) + '</a>';
+        document.getElementById('k1-note').innerHTML = note;
+
+        outEl.style.display = 'block';
+      }
+
+      function check() {
+        var raw = (inputEl.value || '').trim().toUpperCase().replace(/^\$/, '');
+        if (!raw) { setMsg('Enter a ticker first.', 'err'); outEl.style.display = 'none'; return; }
+        if (!DB) { setMsg('The database is still loading.', 'info'); return; }
+
+        var row = DB.tickers[raw];
+        if (!row) {
+          outEl.style.display = 'none';
+          setMsg(
+            '<strong>' + esc(raw) + '</strong> is not in this database yet, which is not the same ' +
+            'as saying it has no K-1. Check it directly: ' +
+            '<a href="' + HUMAN_URL(raw) + '" target="_blank" rel="noopener noreferrer">etfdb.com/etf/' + esc(raw) + '</a>, ' +
+            'and read the <strong>Structure</strong> field. Commodity Pool means a K-1.',
+            'info'
+          );
+          return;
+        }
+        if (row.not_found) {
+          outEl.style.display = 'none';
+          setMsg(
+            '<strong>' + esc(raw) + '</strong> was looked up and is not an exchange-traded product ' +
+            'on record. If it is an individual stock then no K-1 applies, unless it is an MLP, ' +
+            'which is out of scope here.',
+            'info'
+          );
+          return;
+        }
+        setMsg('', '');
+        render(raw, row);
+      }
+
+      function renderList() {
+        var tickers = Object.keys(DB.tickers).sort();
+        var yes = 0, no = 0, unknown = 0, rows = '';
+        tickers.forEach(function (t) {
+          var r = DB.tickers[t];
+          if (r.k1 === true) {
+            yes++;
+            rows += '<tr><td class="t">' + esc(t) + '</td><td class="nm">' +
+              esc(r.name || '') + '</td><td class="nm">' + esc(r.structure || '') + '</td></tr>';
+          } else if (r.k1 === false) { no++; } else { unknown++; }
+        });
+        document.getElementById('k1-list').innerHTML = rows ||
+          '<tr><td colspan="3" class="nm">No K-1 issuers in the database.</td></tr>';
+        document.getElementById('k1-summary').textContent =
+          yes + ' of ' + tickers.length + ' issue a K-1';
+        document.getElementById('k1-refreshed').textContent =
+          tickers.length + ' tickers checked against etfdb.com, ' + yes + ' issuing a K-1, ' +
+          no + ' not, ' + unknown + ' undetermined.' +
+          (DB.refreshed_at ? ' Last refreshed ' + DB.refreshed_at + '.' : '');
+      }
+
+      document.getElementById('btn-check').addEventListener('click', check);
+      inputEl.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); check(); }
+      });
+      document.getElementById('btn-clear').addEventListener('click', function () {
+        inputEl.value = '';
+        setMsg('', '');
+        outEl.style.display = 'none';
+        inputEl.focus();
+      });
+
+      loadDb().then(function (db) {
+        DB = db;
+        renderList();
+        // ?t=USO deep-links a verdict, so an answer can be linked to directly.
+        var q = new URLSearchParams(window.location.search).get('t');
+        if (q) { inputEl.value = q.toUpperCase(); check(); }
+      }).catch(function (err) {
+        setMsg('Could not load the K-1 database: ' + esc(err.message), 'err');
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.26.2
+**Version:** 1.27.0
 **Status:** Active
 **Last Updated:** 2026-08-25
 
@@ -322,7 +322,10 @@ ComposerAtlas/
 │   ├── rsi.json                # 10-day RSI (Wilder's smoothing) for the 20-ticker Frontrunner universe (V2.1)
 │   ├── rsi.js                  # Same data as window.RSI_DATA, for file:// compat (V2.1)
 │   ├── prices.json             # Full daily adjusted-close history (72 tickers from 2010) for Signal Miner (v1.15.0)
-│   └── prices.js               # Same data as window.PRICES_DATA, for file:// compat (v1.15.0)
+│   ├── prices.js               # Same data as window.PRICES_DATA, for file:// compat (v1.15.0)
+│   ├── k1.json                 # Master K-1 database: fund structure -> tax form, per ticker (v1.27.0)
+│   ├── k1.js                   # Same data as window.K1_DATA, for file:// compat (v1.27.0)
+│   └── k1_seed.txt             # Ticker candidate list refresh_k1.py reads with --seed; a request to check, not a claim (v1.27.0)
 ├── js/
 │   └── app.js                  # Shared utilities: format, nav, footer, render helpers
 ├── scripts/                    # All Python scripts live here, never in the project root
@@ -338,7 +341,8 @@ ComposerAtlas/
 │   ├── sync_database_to_storage.py # Archives any database.json URL missing from storage.csv (v1.25.4)
 │   ├── sync_storage_to_database.py # Adds storage.csv URLs missing from database.json as new unrefreshed rows (v1.11.1)
 │   ├── refresh_rsi.py          # Fetches Yahoo Finance daily bars, computes Wilder's RSI(10) (V2.1)
-│   └── refresh_prices.py       # Fetches full Yahoo Finance daily-close history for the Signal Miner universe (v1.15.0)
+│   ├── refresh_prices.py       # Fetches full Yahoo Finance daily-close history for the Signal Miner universe (v1.15.0)
+│   └── refresh_k1.py           # Builds data/k1.json: reads each fund's Structure field, derives its tax form (v1.27.0)
 ├── index.html                  # Home page: marketing/landing (hero, stats, explore cards, how-it-works) (V2.2, 2026-07-15)
 ├── strategies.html             # Strategy listing + detail (?slug=X), single file
 ├── glossary.html               # Glossary listing + concept detail (?slug=X), single file
@@ -348,6 +352,7 @@ ComposerAtlas/
 ├── signal-miner.html              # Tool: client-side IF/THEN signal miner + backtester; in nav Tools dropdown + footer + home (renamed from Signal Lab v1.16.6) (v1.15.2)
 ├── signal-lab.html              # Redirect stub → signal-miner.html (noindex); preserves old Signal Lab links (v1.16.6)
 ├── nodes.html                   # Tool: symphony URL → node count + breakdown by node type; indexable, in nav Tools dropdown + footer + homepage card (v1.26.0)
+├── k1.html                      # Tool: ticker → does it issue a Schedule K-1; local lookup over data/k1.json; indexable, in nav Tools dropdown + footer + homepage card (v1.27.0)
 ├── etf-cloner.html              # Tool: type an ETF (or upload its holdings file) → Composer symphony that clones the holdings; indexable, in footer + homepage card, intentionally NOT in nav (v1.16.0)
 ├── about.html                   # About page
 ├── 404.html                    # Custom 404 page
@@ -480,13 +485,32 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/signal-lab.html` | `signal-lab.html` | Redirect stub → `signal-miner.html` (preserves query string); `noindex`. Kept so old Signal Lab links do not break (v1.16.6) |
 | `/composer/converter.html` | `converter.html` | Tool: Symphony → JSON converter + logic tree. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.16.3) |
 | `/composer/nodes.html` | `nodes.html` | Tool: paste a symphony URL, get its node count and a breakdown by node type. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.26.0) |
+| `/composer/k1.html` | `k1.html` | Tool: type a ticker, get whether it issues a Schedule K-1 or a 1099, plus the structure that decides it. Answers come from `data/k1.json`, shipped with the site, so the lookup is local and works offline. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.27.0) |
 | `/composer/etf-cloner.html` | `etf-cloner.html` | Tool: ETF → Composer holdings-clone generator. Live top-holdings fetch by ticker + full-basket upload of an issuer CSV/xlsx. Indexable; in the footer sitemap + homepage Explore card, but intentionally **not** in the primary nav (v1.16.3) |
 | `/composer/about.html` | `about.html` | Static HTML |
 | `/composer/404.html` | `404.html` | GitHub Pages error page |
 
 **Listing/detail routing:** Each combined page checks `new URLSearchParams(window.location.search).get('slug')` on load. `null` → listing view; non-null → detail view for that slug.
 
-**Tool pages:** `converter.html`, `signal-miner.html`, `nodes.html`, and `etf-cloner.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). All are indexable. As of v1.16.3 the tools reachable from the primary nav (RSI Signals, Signal Miner, Converter, and Nodes since v1.26.0) are grouped under a single **Tools** dropdown rather than sitting as separate top-level links; all of them also appear in the footer sitemap and homepage Explore grid. The ETF Cloner is lower-profile: it is live and indexable and appears in the footer sitemap + homepage Explore card, but at the user's request is intentionally held out of the primary nav (including the Tools dropdown). As of v1.15.4 no page carries a `noindex` robots meta.
+**Tool pages:** `converter.html`, `signal-miner.html`, `nodes.html`, `k1.html`, and `etf-cloner.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). All are indexable. As of v1.16.3 the tools reachable from the primary nav (RSI Signals, Signal Miner, Converter, Nodes since v1.26.0, and K1 Lookup since v1.27.0) are grouped under a single **Tools** dropdown rather than sitting as separate top-level links; all of them also appear in the footer sitemap and homepage Explore grid. The ETF Cloner is lower-profile: it is live and indexable and appears in the footer sitemap + homepage Explore card, but at the user's request is intentionally held out of the primary nav (including the Tools dropdown). As of v1.15.4 no page carries a `noindex` robots meta.
+
+**K1 Lookup data flow (v1.27.0):** the tool takes a ticker and answers whether holding it issues a
+Schedule K-1 instead of a 1099. **The lookup is entirely local.** `k1.html` reads `data/k1.js`
+(falling back to `fetch` of `data/k1.json`), matches the typed ticker against the object, and renders
+the row. There is no network call at lookup time, which is why the answer is instant and why the page
+works from `file://` and offline.
+
+**That architecture was forced, not chosen.** The upstream source, etfdb.com, sits behind Cloudflare
+bot mitigation and sends no `access-control-allow-origin` header. A browser cannot read it from this
+page and neither can a public CORS relay, so a live per-visitor lookup is not available at any price.
+`scripts/refresh_k1.py` therefore fetches on a maintainer's machine and the site ships the answers.
+
+**Three outcomes, deliberately distinguished.** A ticker in the database renders its verdict, its
+structure, its tax form, both capital-gains rates and a link to verify by hand. A ticker recorded as
+`not_found` says it is not an exchange-traded product on record. A ticker the database has never seen
+says exactly that, **"not in this database yet, which is not the same as saying it has no K-1"**, and
+offers the source link. The third case is the one worth getting right: silently answering "No" for an
+unknown ticker would be a wrong answer about someone's taxes dressed as a confident one.
 
 **Nodes data flow (v1.26.0):** the tool takes a symphony URL, ID, or pasted JSON, walks the tree
 from the `/score` endpoint, and counts nodes. It has no data file and no server component. **The
@@ -937,6 +961,45 @@ Pages mirror is not given one on purpose, since it serves the same content and s
 with the canonical host for it.
 
 ---
+
+### Refreshing the K-1 Database
+
+`scripts/refresh_k1.py` (added v1.27.0) writes `data/k1.json` and `data/k1.js`, the database behind
+`k1.html`. **Nothing automated runs it**, by choice: a fund's legal structure changes only when the
+fund reorganises, so a daily or weekly job would spend thousands of requests to change nothing.
+
+```bash
+python scripts/refresh_k1.py                 # fetch anything missing or older than 180 days
+python scripts/refresh_k1.py SOXL USO UVXY   # add or refresh specific tickers
+python scripts/refresh_k1.py --seed          # add every ticker in data/k1_seed.txt first
+python scripts/refresh_k1.py --all           # re-fetch every known ticker, ignoring staleness
+```
+
+**Adding tickers is the common case, and it is a two-file edit.** Put the new symbols in
+`data/k1_seed.txt` (or pass them on the command line), run the script, then commit `data/k1.json`
+**and** `data/k1.js` together. The `.js` twin is what the page reads over `file://`; committing one
+without the other produces a page that works on the live site and silently shows stale data locally.
+
+**It is slow on purpose.** One request at a time, 1.5 seconds apart, with a browser User-Agent
+because the default urllib agent is refused. A full seed run of ~210 tickers takes roughly half an
+hour. A checkpoint is written every 10 tickers, so an interrupted run keeps its progress and
+re-running picks up where it stopped rather than starting over.
+
+**Read the tail of the run, not just the exit code.** The script ends by naming every ticker whose
+structure and capital-gains rates disagree. That list should normally be empty. A non-empty list is
+the early warning that the source page changed shape, and it is the one output worth acting on:
+
+```
+structure and tax rates disagree on 2: FOO, BAR
+Check those by hand before trusting them.
+```
+
+**If a whole run comes back with unrecognised structures**, the parser's regexes no longer match the
+page. `k1: null` renders as "unknown" rather than "no", so a broken run degrades to silence instead
+of to wrong tax advice, but it still needs fixing rather than shipping.
+
+**Run `python scripts/build_sitemap.py` only if you added a page**, not for a data refresh; `k1.html`
+itself is already in the sitemap and a data change does not alter its `lastmod`.
 
 ### Purging Flagged Full-Database Entries
 
@@ -1450,6 +1513,75 @@ never-do table.
 | `tickers[].price_date` | string | ISO date of that latest close |
 
 `data/rsi.js` is the `.js` twin, assigning `window.RSI_DATA` to the identical payload, same convention as `strategies.js`/`database.js`.
+
+---
+
+### K-1 Database Schema
+
+`data/k1.json` (added v1.27.0): per-ticker fund structure and the tax form it implies, powering
+`k1.html`. Not hand-edited, regenerated by `scripts/refresh_k1.py`. There is no workflow behind it;
+structures change only when a fund reorganises, so it is refreshed by hand. See Section 11.
+
+**The database records structure, and derives the K-1 answer from it.** No source publishes a "has
+K-1" flag. What is published is the fund's legal structure, and structure fixes the tax form:
+
+| `structure` | Tax form | Why |
+|---|---|---|
+| Commodity Pool | Schedule K-1 | A partnership for tax purposes. Income, gains and losses pass through to holders. Every leveraged and inverse volatility product, most futures-based commodity funds, and several leveraged Treasury funds |
+| ETF | Form 1099 | A regulated investment company under the 1940 Act |
+| UIT | Form 1099 | Unit investment trust. SPY, QQQ and DIA are these |
+| ETN | Form 1099-B | Senior unsecured debt of the issuing bank, not a fund at all. See V1.19 for the open item on surfacing this |
+| Grantor Trust | Form 1099-B | A direct undivided interest in the underlying, which is why the physical metal trusts are taxed at the 28% collectibles rate |
+
+**A second, independent field corroborates every row.** The max short- and long-term capital gains
+rates fall out of the structure rather than being copied from it, so they are a genuine cross-check
+rather than a restatement: `27.84% / 27.84%` is the 60/40 blend that Section 1256 contracts get and
+nothing but a commodity pool shows it; `39.60% / 28.00%` is the collectibles rate and means a grantor
+trust; `39.60% / 20.00%` is ordinary. Where structure and rates contradict each other the row carries
+`agrees: false` and **the page says so rather than picking a winner**, because a contradiction means
+either the source page changed shape or the fund is genuinely unusual, and both deserve a human.
+
+```json
+{
+  "refreshed_at": "2026-08-27 10:31:02",
+  "source": "etfdb.com",
+  "tickers": {
+    "USO": {
+      "name": "United States Oil Fund",
+      "brand": "United States Commodity Funds",
+      "structure": "Commodity Pool",
+      "k1": true,
+      "tax_form": "Schedule K-1",
+      "st_rate": "27.84%",
+      "lt_rate": "27.84%",
+      "agrees": true,
+      "checked": "2026-08-27"
+    }
+  }
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `refreshed_at` | string | Local timestamp of the run that last wrote the file |
+| `source` | string | Where structures were read from |
+| `tickers` | object | Keyed by uppercase ticker, sorted on write so a diff shows only real changes |
+| `.name`, `.brand` | string or null | Fund name and issuer, as published |
+| `.structure` | string or null | The raw structure string. **The load-bearing field**; everything else about the verdict is derived from it |
+| `.k1` | bool or null | `true` for a commodity pool, `false` for a recognised non-pool structure, **`null` for a structure the script does not recognise**. Null renders as "unknown", never as "no" |
+| `.tax_form` | string or null | The form a holder actually receives |
+| `.st_rate`, `.lt_rate` | string or null | Max short- and long-term capital gains rates, kept as the source's own percentage strings |
+| `.agrees` | bool or null | Whether structure and rates tell the same story. `false` means check it by hand; `null` means one of the rates was missing so there was nothing to compare |
+| `.checked` | string | ISO date this row was last fetched. Drives the 180-day staleness window |
+| `.not_found` | bool, optional | Present and `true` only when the source has no such ticker. Recorded rather than skipped, so the page can say "not an exchange-traded product on record" and a re-run does not keep asking |
+
+`data/k1.js` is the `.js` twin, assigning `window.K1_DATA` to the identical payload, same convention
+as `strategies.js`/`database.js`. **Commit both or neither**; the `.js` file is what the page reads
+over `file://`.
+
+`data/k1_seed.txt` is the candidate list `--seed` reads. Its header says what it is and is worth
+preserving: **a ticker in that file is a request to check it, not a claim about it.** Nothing in the
+database is ever inferred from a ticker symbol or a fund's name.
 
 ---
 
@@ -2092,6 +2224,7 @@ numbering schemes; they answer different questions.
 | V1.16 | Performance fix: columnar summary export, page weight | Complete, built ahead of slot | v1.11.0 |
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
+| V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete; ETN display open | v1.27.0 |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -2638,6 +2771,46 @@ already documented above with reasons, so the simplification does not need to be
 - [ ] Add an OOS-valid trailing return, using windows that already fit inside the OOS period
 - [ ] Decide on and, if adopted, add a stored benchmark
 - [ ] Re-validate against the live pool before shipping, including the symphony named publicly
+
+### V1.19: K1 Lookup
+
+**Status:** Shipped (v1.27.0). The page and its database are live; the ETN flag below is the one
+open item.
+
+**What it is.** `k1.html` answers a single question for a single ticker: **does holding this issue
+you a Schedule K-1 instead of a 1099?** It matters because a K-1 arrives late, often after the April
+filing deadline, complicates a return, and can produce taxable income in a year the holder sold
+nothing. Composer symphonies route into leveraged and inverse volatility products constantly, and
+those are exactly the funds that do this.
+
+**It replaces a manual spreadsheet.** The owner kept an 88-ticker sheet, checking each fund's page by
+hand and recording Yes or No. That sheet is the origin of the database and its 88 rows were the first
+thing loaded into it. The file itself was removed once the database carried everything it held.
+
+**The signal is legal structure, not a published K-1 flag.** No source publishes the flag directly.
+`Structure` on the fund page does determine it: Commodity Pool means K-1, ETF and UIT mean 1099, ETN
+means 1099-B, Grantor Trust means 1099-B at the collectibles rate. A second, independent field
+corroborates every row: the max short and long-term capital gains rates fall out of the structure
+rather than being copied from it, so 27.84/27.84 is the Section 1256 blend that only commodity pools
+get. Where the two readings contradict, the row is marked `agrees: false` and the page says so
+rather than picking a winner. See Section 13.
+
+**The lookup is local, and it had to be.** The upstream source sits behind bot mitigation and sends
+no CORS header, so no browser and no public relay can read it from the page. `scripts/refresh_k1.py`
+fetches on a maintainer's machine and the site ships the answers, which is also why the page is
+instant and works offline.
+
+- [x] `scripts/refresh_k1.py`, `data/k1.json` and its `.js` twin, seeded from `data/k1_seed.txt`
+- [x] `k1.html`, nav, footer, homepage card, `check_live.py` coverage
+- [x] Independent verification of a sample against sources the script does not use
+- [ ] **Display whether the ETF is an ETN.** Requested by the owner 2026-08-27. Nearly free: the
+  script already stores `structure`, and `ETN` is one of its values, so the data is in the database
+  today and no new fetching is needed. The work is presentational, deciding how prominent the ETN
+  call-out should be next to the K-1 verdict. **Worth a real callout rather than a quiet field,**
+  because an ETN is not a fund at all: it is senior unsecured debt of the issuing bank, so the holder
+  carries that bank's credit risk with no basket of assets behind the shares, and the issuer can call
+  or delist it. That is a distinct risk from the tax question the page currently answers, and a
+  visitor checking one is very likely to want the other
 
 ### V2.0: Full Database Goes Public
 
@@ -3918,7 +4091,7 @@ naming a script that no longer existed.
 | Internal links | Always built through `u(path)`. Never hardcode a leading `/`: it breaks on the GitHub Pages project-path mirror and on `file://` |
 | External links | Always `target="_blank" rel="noopener noreferrer"` |
 | Design tokens | Colours, radii, fonts and layout constants come from the `:root` custom properties in `css/main.css`. Literal hex in a rule is a deviation and needs a stated reason. The one accepted exception is the RSI tier palette in `rsi.html`, documented in DESIGN.md |
-| Inline `<style>` | Four tool pages only: `signal-miner.html`, `converter.html`, `etf-cloner.html`, `nodes.html`. See DESIGN.md Section 8 |
+| Inline `<style>` | Five tool pages only: `signal-miner.html`, `converter.html`, `etf-cloner.html`, `nodes.html`, `k1.html`. See DESIGN.md Section 8 |
 
 ### Naming
 
@@ -3991,12 +4164,13 @@ Everything with a URL a stranger could hold. Removing or renaming any of these r
 | `/signal-miner.html` | Stable | |
 | `/signal-lab.html` | **Retired, shim kept permanently** | Redirects to `signal-miner.html`, `noindex`, query string preserved |
 | `/converter.html` | Stable | Indexable since v1.15.4 |
+| `/k1.html` | Stable | New at v1.27.0. The slug is `k1`, not `k-1` or `k1-lookup`: it was specified by the owner, it is what people type, and the one-word form matches the rest of the site |
 | `/nodes.html` | Stable | New at v1.26.0. Named `nodes`, not `node-calculator`: the one-word form matches the rest of the site, and nothing is calculated, a tree is counted |
 | `/etf-cloner.html` | Stable, **deliberately unlinked from the primary nav** | Reachable from the footer sitemap and the homepage grid. Keeping it out of the nav is an owner decision, not an oversight, and must be preserved |
 | `/about.html` | Stable | Out of the primary nav since v1.16.5; still in the footer sitemap |
 | `/404.html` | Stable | Served by both hosts for unmatched routes |
 | `/robots.txt` | Stable | Allows all crawlers, advertises `/sitemap.xml`. That URL 404'd from the file's creation until v1.25.1 |
-| `/sitemap.xml` | Stable, **generated** (v1.25.1), **automated** (v1.26.1) | Written by `scripts/build_sitemap.py`, never hand-edited; re-run by `update-metrics.yml` on every metrics refresh. 41 URLs as of v1.26.0: 10 indexable pages plus 31 curated strategy slugs. See Section 11 |
+| `/sitemap.xml` | Stable, **generated** (v1.25.1), **automated** (v1.26.1) | Written by `scripts/build_sitemap.py`, never hand-edited; re-run by `update-metrics.yml` on every metrics refresh. 42 URLs as of v1.27.0: 11 indexable pages plus 31 curated strategy slugs. See Section 11 |
 | `/data/*.json` and `/data/*.js` | Stable, load-bearing | The `.js` twins are fetched by every page. Renaming one is a breaking change; `full_database` to `database` in v1.10.1 is the precedent for doing it properly |
 
 ### Compatibility
@@ -4076,6 +4250,7 @@ next, including an AI assistant with no memory of the previous session.
 | **Adding a symphony to `database.json` by hand** | The row itself, then `scripts/sync_database_to_storage.py` to archive its URL, then `scripts/export_summary.py` so the site can see it, then `scripts/check_database_keys.py`. Skipping either middle step is silent, and both have already happened |
 | The Signal Miner's price history or ticker universe | `scripts/refresh_prices.py`, which writes `data/prices.json` and `.js` |
 | The RSI page's data | `scripts/refresh_rsi.py` |
+| Whether a ticker issues a K-1, or adding tickers to the lookup | `data/k1_seed.txt`, then `scripts/refresh_k1.py`, then commit `data/k1.json` **and** `data/k1.js` together |
 | Deploy behaviour or the deploy gates | `.github/workflows/deploy.yml`, `scripts/check_html_js.py`, `scripts/check_composer_ladder.py`, `scripts/check_database_keys.py` |
 | Which pages search engines are told about | `scripts/build_sitemap.py`, then re-run it. Never hand-edit `sitemap.xml`. Re-run automatically by `update-metrics.yml` since v1.26.1, so a forgotten run self-corrects within a day |
 | What Cloudflare serves publicly | `.assetsignore` (not `deploy.yml`, which governs GitHub Pages only) |

@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.7
+**Version:** 1.8
 **Status:** Active
 **Last Updated:** 2026-08-24
 
@@ -924,7 +924,7 @@ risk.
 
 ## 8. Undocumented Surfaces
 
-Three tool pages carry their own inline `<style>` block on top of `css/main.css`. They are listed
+Five tool pages carry their own inline `<style>` block on top of `css/main.css`. They are listed
 here rather than left silently absent, because a design system that quietly omits a third of the
 site's interface is worse than one that admits the boundary.
 
@@ -934,6 +934,7 @@ site's interface is worse than one that admits the boundary.
 | `converter.html` | ~53 lines | `.conv-*`, `.t-*`, `.j-*` | Panels and actions, plus two syntax highlighters: `.t-*` for the rendered logic tree (`.t-fn`, `.t-cond`, `.t-asset`, `.t-wt`, `.t-kw`, `.t-muted`) and `.j-*` for raw JSON (`.j-key`, `.j-str`, `.j-num`, `.j-bool`, `.j-null`) |
 | `etf-cloner.html` | ~70 lines | `.ec-*`, `.j-*` | Panels, the file drop zone, the live/full mode toggle, the holdings table wrapper, and the same `.j-*` JSON highlighter |
 | `nodes.html` | ~36 lines | `.nd-*` | Panels and actions, the oversized node total, the breakdown table (including the muted `tr.excluded` rows for what is deliberately not counted), and the quoted node definition. No syntax highlighter: this page prints one number and a table, not JSON (v1.26.0) |
+| `k1.html` | ~46 lines | `.k1-*` | The lookup form and its hint line, the result panel, the oversized Yes/No verdict and its subtitle, the fact rows beneath it (`.k1-label` + value pairs), the caveat note, and the table of every K-1 issuer with its count. No syntax highlighter: this page prints a verdict and a table, not JSON (v1.27.0) |
 
 `rsi.html`, `database.html`, `index.html`, `about.html`, `strategies.html`, `glossary.html` and
 `404.html` carry **no** inline style at all; everything they render is in `css/main.css` and

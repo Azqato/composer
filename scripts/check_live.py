@@ -63,6 +63,7 @@ PAGES = {
     'rsi': ('rsi.html', [], []),
     'converter': ('converter.html', [], []),
     'nodes': ('nodes.html', ['Count nodes'], []),
+    'k1': ('k1.html', ['K1 Lookup'], []),
     'about': ('about.html', [], []),
 }
 
