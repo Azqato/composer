@@ -5,6 +5,50 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.27.4] - 2026-08-27
+
+### K1 Lookup: the fund table sorts
+
+All three columns. Clicking a header sorts by it, clicking the active header flips direction, and a
+new column always starts ascending rather than inheriting a direction the reader chose for a
+different column.
+
+**Ticker is both the default sort and the tiebreak on every other column.** That makes the ordering
+total, so two rows never swap places between renders of the same data, which is what stops a table
+from looking subtly unstable when a filter changes.
+
+**Sorting and filtering are independent.** A sort survives a filter change and a filter survives a
+sort. The chosen column and direction persist alongside them under the existing
+`composer-atlas.k1.view.v1` key, which was extended rather than re-versioned: the loader validates
+each field on its own, so an older stored value simply lacks the sort fields and falls back to the
+defaults instead of discarding someone's saved filter.
+
+**Headers are real buttons**, so they work from the keyboard, styled to look like the header text
+they replaced. The header row is `position: sticky`, since a sortable header you have to scroll back
+up to reach is a poor trade for 184 rows. The arrow is rendered only when the button carries
+`aria-sort`, so the visible indicator and the state announced to a screen reader cannot drift apart.
+
+### The verification harness had the bug, not the page
+
+Driving the table locally, the name column reported **BROKEN** in both directions: "abrdn Physical
+Silver Shares ETF" placed before "AGF U.S. Market Neutral Anti-Beta Fund", and "SPDR Gold Shares"
+before "Schwab US Dividend Equity ETF" descending.
+
+**The page was right and the check was wrong.** The page sorts names with `localeCompare`; the
+harness compared with `<`, which is ASCII, and ASCII puts every uppercase letter before every
+lowercase one. So it flagged the correct human ordering as an error. The fix was to the harness, not
+the page, and it is recorded here because the failure looked exactly like a real bug and the
+tempting move was to "fix" a correct sort until the wrong check went green.
+
+Nine steps verified after that: default ticker ascending, ticker descending, name both ways, K1 both
+ways, a reload returning on K1 descending, the sort surviving a switch to the K-1 filter, and
+re-sorting by name inside that filter. All nine ordered correctly, with the arrow and `aria-sort` on
+the right header each time.
+
+**Files changed:** `k1.html`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.27.3] - 2026-08-27
 
 ### K1 Lookup: the five funds with no name have one

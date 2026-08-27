@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.27.3
+**Version:** 1.27.4
 **Status:** Active
 **Last Updated:** 2026-08-25
 
@@ -524,7 +524,9 @@ Signal Miner universe that were checked and turned out not to be exchange-traded
 table of funds should not contain them. The footnote states how many were excluded, so the number
 is not silently missing.
 
-**The filter and collapsed state persist in `localStorage`** under
+**All three columns sort (v1.27.4).** Clicking a header sorts by it; clicking the active header flips direction. A new column always starts ascending rather than inheriting a direction chosen for a different column. **Ticker is both the default sort and the tiebreak on every other column**, which makes the order total: two rows never swap places between renders of the same data. Sorting and filtering are independent, so a sort survives a filter change and vice versa.
+
+**The filter, sort and collapsed state persist in `localStorage`** under
 `composer-atlas.k1.view.v1`, matching the `composer-atlas.<page>.<thing>.<version>` key convention
 `signal-miner.html` already uses. This is a per-viewer convenience, not user data: it never leaves
 the browser, is never sent anywhere, and is never read back by anything but this page. **Every

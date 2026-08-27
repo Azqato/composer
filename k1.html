@@ -51,6 +51,13 @@
     .k1-filter.k1-toggle { margin-left: auto; }
     table.k1-table td.yes { color: var(--color-green); font-family: var(--font-mono); }
     table.k1-table td.no { color: var(--color-secondary); font-family: var(--font-mono); }
+    table.k1-table th { position: sticky; top: 0; background: var(--color-surface); z-index: 1; padding: 0; }
+    button.k1-sort { width: 100%; font: inherit; color: inherit; text-transform: inherit;
+      letter-spacing: inherit; background: none; border: 0; padding: 8px 10px; text-align: left;
+      cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    button.k1-sort:hover { color: var(--color-primary); }
+    button.k1-sort .arrow { opacity: 0; font-size: 0.75rem; line-height: 1; }
+    button.k1-sort[aria-sort] .arrow { opacity: 1; color: var(--color-green); }
     .k1-note { font-size: 0.8125rem; color: var(--color-secondary); line-height: 1.7; margin-top: 14px; }
     .k1-note code { font-size: 0.75rem; }
     .k1-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -118,7 +125,11 @@
         </div>
         <div class="k1-wrap" id="k1-wrap" hidden>
           <table class="k1-table">
-            <thead><tr><th>Ticker</th><th>Name</th><th>K1</th></tr></thead>
+            <thead><tr>
+              <th><button type="button" class="k1-sort" data-col="ticker">Ticker<span class="arrow"></span></button></th>
+              <th><button type="button" class="k1-sort" data-col="name">Name<span class="arrow"></span></button></th>
+              <th><button type="button" class="k1-sort" data-col="k1">K1<span class="arrow"></span></button></th>
+            </tr></thead>
             <tbody id="k1-list"></tbody>
           </table>
         </div>
@@ -314,6 +325,8 @@
       var STORE_KEY = 'composer-atlas.k1.view.v1';
       var FILTER = 'all';
       var OPEN = false;
+      var SORT = 'ticker';
+      var ASC = true;
 
       function loadView() {
         var raw = null;
@@ -325,13 +338,16 @@
           // Validated rather than trusted: a stale or hand-edited value must not put the page
           // into a state it has no button for.
           if (v.filter === 'all' || v.filter === 'yes' || v.filter === 'no') { FILTER = v.filter; }
+          if (v.sort === 'ticker' || v.sort === 'name' || v.sort === 'k1') { SORT = v.sort; }
+          if (typeof v.asc === 'boolean') { ASC = v.asc; }
           OPEN = v.open === true;
         } catch (e) { /* unparseable, so keep the defaults */ }
       }
 
       function saveView() {
         try {
-          localStorage.setItem(STORE_KEY, JSON.stringify({ filter: FILTER, open: OPEN }));
+          localStorage.setItem(STORE_KEY, JSON.stringify(
+            { filter: FILTER, open: OPEN, sort: SORT, asc: ASC }));
         } catch (e) { /* storage unavailable. The page still works, it just forgets. */ }
       }
 
@@ -339,15 +355,38 @@
         // Rows recorded as not_found are not exchange-traded products at all, so they are
         // counted in the footnote but never listed: a table of funds should not contain
         // individual stocks that happen to have been checked.
-        var tickers = Object.keys(DB.tickers).sort();
-        var yes = 0, no = 0, other = 0, rows = '', shown = 0;
+        var yes = 0, no = 0, other = 0, visible = [];
 
-        tickers.forEach(function (t) {
+        Object.keys(DB.tickers).forEach(function (t) {
           var r = DB.tickers[t];
           if (r.k1 === true) { yes++; } else if (r.k1 === false) { no++; } else { other++; return; }
           if (FILTER === 'yes' && r.k1 !== true) { return; }
           if (FILTER === 'no' && r.k1 !== false) { return; }
-          shown++;
+          visible.push([t, r]);
+        });
+
+        visible.sort(function (a, b) {
+          var d = 0;
+          if (SORT === 'name') {
+            // A fund with no name sorts to the bottom either way rather than leading the
+            // table with a blank cell. There are none today; the parser can always meet a
+            // page it cannot read a name from.
+            var an = a[1].name || '', bn = b[1].name || '';
+            if (!an !== !bn) { return an ? -1 : 1; }
+            d = an.localeCompare(bn);
+          } else if (SORT === 'k1') {
+            d = (a[1].k1 ? 1 : 0) - (b[1].k1 ? 1 : 0);
+          }
+          // Ticker is both the default sort and the tiebreak, so the order is total: two
+          // rows never swap places between renders of the same data.
+          if (d === 0) { return a[0] < b[0] ? -1 : (a[0] > b[0] ? 1 : 0); }
+          return ASC ? d : -d;
+        });
+        if (!ASC && SORT === 'ticker') { visible.reverse(); }
+
+        var rows = '', shown = visible.length;
+        visible.forEach(function (pair) {
+          var t = pair[0], r = pair[1];
           rows += '<tr><td class="t">' + esc(t) + '</td>' +
             '<td class="nm">' + esc(r.name || '') + '</td>' +
             '<td class="' + (r.k1 ? 'yes' : 'no') + '">' + (r.k1 ? 'Yes' : 'No') + '</td></tr>';
@@ -378,6 +417,17 @@
           document.querySelectorAll('.k1-filter[data-filter]'),
           function (b) { b.classList.toggle('on', b.getAttribute('data-filter') === FILTER); }
         );
+        Array.prototype.forEach.call(
+          document.querySelectorAll('button.k1-sort'),
+          function (b) {
+            var on = b.getAttribute('data-col') === SORT;
+            // aria-sort is what the arrow's CSS keys off, so the visible state and the state
+            // announced to a screen reader cannot drift apart.
+            if (on) { b.setAttribute('aria-sort', ASC ? 'ascending' : 'descending'); }
+            else { b.removeAttribute('aria-sort'); }
+            b.querySelector('.arrow').textContent = on ? (ASC ? '\u25B2' : '\u25BC') : '';
+          }
+        );
         if (DB) { renderList(); }
       }
 
@@ -392,6 +442,20 @@
             FILTER = b.getAttribute('data-filter');
             // Picking a filter while collapsed would otherwise look like a dead button.
             OPEN = true;
+            applyView();
+            saveView();
+          });
+        }
+      );
+
+      Array.prototype.forEach.call(
+        document.querySelectorAll('button.k1-sort'),
+        function (b) {
+          b.addEventListener('click', function () {
+            var col = b.getAttribute('data-col');
+            // Clicking the active column flips direction; clicking a new one starts ascending,
+            // rather than inheriting a direction the reader set for a different column.
+            if (col === SORT) { ASC = !ASC; } else { SORT = col; ASC = true; }
             applyView();
             saveView();
           });
