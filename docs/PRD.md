@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.27.5
+**Version:** 1.27.6
 **Status:** Active
 **Last Updated:** 2026-08-25
 
@@ -500,10 +500,42 @@ Schedule K-1 instead of a 1099. **The lookup is entirely local.** `k1.html` read
 the row. There is no network call at lookup time, which is why the answer is instant and why the page
 works from `file://` and offline.
 
-**That architecture was forced, not chosen.** The upstream source, etfdb.com, sits behind Cloudflare
-bot mitigation and sends no `access-control-allow-origin` header. A browser cannot read it from this
-page and neither can a public CORS relay, so a live per-visitor lookup is not available at any price.
-`scripts/refresh_k1.py` therefore fetches on a maintainer's machine and the site ships the answers.
+**The database is the primary path, and it is the only reviewed one.** etfdb.com sits behind
+Cloudflare bot mitigation and sends no `access-control-allow-origin` header, so the page cannot read
+it directly. `scripts/refresh_k1.py` fetches on a maintainer's machine and the site ships the
+answers, which is why a hit is instant, works offline, and has been through a human.
+
+**A live fallback covers a miss (v1.27.6).** Where a ticker is absent from the shipped database, the
+browser fetches etfdb through `r.jina.ai`, a reader service that renders the page server-side and
+**does** send CORS headers. It was chosen on measurement, not preference: `proxy.cors.sh` returns
+Cloudflare's "Just a moment..." challenge, `codetabs` returns 522, `allorigins` times out,
+`corsproxy.io` is paid-only, and `cors.lol` rate-limited on the first request. `r.jina.ai` returned
+200 with usable content, and its extraction preserves both the `Structure` field and the capital
+gains rates.
+
+**A live answer is badged and never mistaken for a database answer.** It carries a `live, unverified`
+chip, says in full that it was parsed in the browser just now from a third party's rendering and that
+nobody has reviewed it, and runs the same structure-versus-rates corroboration, so a live row can
+report its own disagreement.
+
+**Two costs the owner accepted explicitly on 2026-08-27**, after both were put to them: each fallback
+lookup sends the visitor's ticker to `r.jina.ai`, a third party, so a query leaves the browser in a
+way nothing else on this site does; and the free tier is rate-limited and undocumented, so the
+fallback can degrade without warning. The page reports a rate-limit as a rate-limit rather than as
+"not found".
+
+**The fallback cannot always answer, and must not guess when it cannot.** Some funds have no
+`Structure` field on etfdb at all: `DRAM` (Roundhill Memory ETF) is the worked example. **The
+capital gains rates are deliberately not used as a substitute signal.** `SOYB` and `TAGS` are
+commodity pools that genuinely issue K-1s and publish `39.60%/20.00%`, the ordinary-rate signature,
+so inferring "no K-1" from ordinary-looking rates would produce a confident wrong answer about
+someone's taxes. The page says there is no answer instead.
+
+**`FORMS` in `k1.html` duplicates `TAX_FORMS` in `scripts/refresh_k1.py`.** Two copies of one fact,
+accepted because the alternative is shipping a data file to describe five strings. Change both in
+the same commit.
+
+**Clicking a ticker in the table looks it up (v1.27.6).** The cell is a real `?t=` link, so it can be copied, opened in a new tab and reached by keyboard; a plain click is intercepted and answered in place, and a modified click is left alone. The columns are **Ticker, K1, Name**.
 
 **Three outcomes, deliberately distinguished.** A ticker in the database renders its verdict, its
 structure, its tax form, both capital-gains rates and a link to verify by hand. A ticker recorded as

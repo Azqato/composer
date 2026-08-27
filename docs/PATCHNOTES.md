@@ -5,6 +5,85 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.27.6] - 2026-08-27
+
+### K1 Lookup: a live fallback for tickers the database has never seen
+
+Typing a ticker that is not in the shipped database used to end at "not in this database yet". It
+now fetches etfdb live and answers, with the result clearly marked as unreviewed.
+
+**This was measured, not assumed.** etfdb returns a real 200 page but sends no
+`access-control-allow-origin` header, so a direct browser fetch is discarded. Every general-purpose
+CORS relay tested failed for a different reason: `proxy.cors.sh` came back 403 with Cloudflare's
+"Just a moment..." challenge, `codetabs` 522, `allorigins` timed out, `corsproxy.io` is paid-only,
+`cors.lol` rate-limited on the first request. **`r.jina.ai` works**: a reader service that renders
+the page server-side and sends CORS headers, whose extraction preserves both the `Structure` field
+and the capital gains rates.
+
+**A live answer is badged and never dressed as a database answer.** It carries a `live, unverified`
+chip, states in full that it was parsed in the browser just now from a third party's rendering and
+has been reviewed by nobody, and runs the same structure-versus-rates corroboration every committed
+row gets. That check fired on the first real test: **GBTC** is labelled `ETF` by etfdb while
+publishing `39.60%/39.60%`, which is not an ETF's rate pair, so the page reports the disagreement
+and calls the result a lead rather than an answer. The verdict of No is right regardless, since GBTC
+is a grantor trust and a grantor trust issues a 1099-B.
+
+### What it refuses to do
+
+**Some funds have no `Structure` field on etfdb at all**, and `DRAM`, the ticker that prompted this,
+is one of them. The obvious patch is to read the capital gains rates instead, since DRAM publishes
+`39.60%/20.00%`.
+
+**That would be wrong, and this project already holds the counterexample.** `SOYB` and `TAGS` are
+commodity pools that genuinely issue K-1s and publish exactly `39.60%/20.00%`. Ordinary-looking
+rates therefore do not mean "no K-1". The page says there is no answer and explains why, rather than
+guessing confidently about someone's taxes.
+
+**A nonexistent ticker is detected properly.** The reader service answers 200 even for an upstream
+404, returning etfdb's own "Page Not Found" document with a title and a URL like any other page.
+Before this was handled, `ZZQQ` reported itself as a real fund named "ETF Database | Page Not Found"
+with no Structure field. The service records the upstream status in a `Target URL returned error
+404` line, and that is now what the check keys off.
+
+### Two costs, accepted deliberately
+
+Both were put to the owner before any of this was built, along with a recommendation **not** to
+build it, and the owner chose to proceed. Recorded so neither reads as an oversight:
+
+**Each fallback lookup sends the visitor's ticker to `r.jina.ai`.** A query leaves the browser in a
+way nothing else on this site does. The database path, which is every hit, still sends nothing.
+
+**The free tier is rate-limited and undocumented**, so the fallback can degrade without warning. A
+rate-limit is reported as a rate-limit rather than as "not found", so a throttled lookup does not
+masquerade as a missing fund.
+
+**`FORMS` in `k1.html` now duplicates `TAX_FORMS` in `scripts/refresh_k1.py`.** Two copies of one
+fact, accepted because the alternative is shipping a data file to describe five strings. A comment
+in both says to change them together.
+
+### Clicking a ticker in the table looks it up
+
+The ticker cell is a real `?t=` link, so it can be copied, opened in a new tab and reached from the
+keyboard. A plain click is intercepted and answered in place with a scroll to the result; a
+modified click (new tab, new window) is left alone so the link behaves like a link.
+
+### Column order
+
+Now **Ticker, K1, Name**, at the owner's request. The verdict sits next to the ticker rather than
+behind a long fund name.
+
+### Verified locally
+
+Five cases driven through the page over `python -m http.server`, against the real service: a table
+ticker click loading `?t=AGG` from the database with no live badge; `GBTC` fetched live with a
+verdict, a badge and its rate disagreement; `DRAM` fetched live and correctly refusing to answer;
+`ZZQQ` reported as no such fund; and the column order confirmed by parsing the rendered header and
+rows rather than looking at them.
+
+**Files changed:** `k1.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.27.5] - 2026-08-27
 
 ### K1 Lookup: individual stocks removed from the database
