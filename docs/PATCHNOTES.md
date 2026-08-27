@@ -5,6 +5,41 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.27.3] - 2026-08-27
+
+### K1 Lookup: the five funds with no name have one
+
+Five rows in the fund table had an empty Name cell (BOXX, ETHA, SBIT, SVIX, UVIX). They are the
+funds whose source page titles itself with generic marketing copy instead of the fund's name, which
+v1.27.0 correctly refused to store as a name but had nothing to put in its place.
+
+**The name was on the page the whole time, in the `<h1>`**, prefixed with the fund's own ticker
+("USO United States Oil Fund LP"). The parser now reads that first and falls back to `<title>`.
+This is not a second naming convention: on a sample of 12 existing rows, the `<h1>` produced a
+**byte-identical** name to the one already stored in all 12, so the two sources agree wherever both
+work and the `<h1>` is simply the more reliable place to read the same thing. No full re-fetch was
+needed, and the remaining 179 names were left untouched rather than churned.
+
+### The ticker prefix strip nearly inverted a fund's meaning
+
+Stripping the leading ticker started as `ticker` followed by any of whitespace, colon, dot or
+hyphen. **SVIX renders as `SVIX -1x Short VIX Futures ETF`**, so that ate the minus sign and left
+"1x Short VIX Futures ETF", turning an inverse fund into a long one in the one column a reader
+scans. Caught on the verification pass, before it reached the data. The strip now takes whitespace
+and a colon only, and the reason is a comment in the code so nobody widens it back.
+
+**The same backspace trap from v1.27.0 recurred**, in the same way: a `` written through a shell
+heredoc became a literal `0x08` byte in the source, so the regex silently required an unprintable
+character. Found by a check that now runs on every edit to this file rather than by noticing the
+output was wrong.
+
+All 184 listed funds now render a name; verified by parsing the rendered table and asserting no
+empty Name cell, not by looking at it.
+
+**Files changed:** `scripts/refresh_k1.py`, `data/k1.json`, `data/k1.js`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.27.2] - 2026-08-27
 
 ### K1 Lookup: the table lists every fund, and remembers how you left it

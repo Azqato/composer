@@ -1,5 +1,5 @@
 {
- "refreshed_at": "2026-08-27 10:11:08",
+ "refreshed_at": "2026-08-27 10:52:58",
  "source": "etfdb.com",
  "tickers": {
   "AAPL": {
@@ -208,7 +208,7 @@
    "checked": "2026-08-27"
   },
   "BOXX": {
-   "name": null,
+   "name": "Alpha Architect 1-3 Month Box ETF",
    "brand": "Alpha Architect",
    "structure": "ETF",
    "k1": false,
@@ -563,7 +563,7 @@
    "checked": "2026-08-27"
   },
   "ETHA": {
-   "name": null,
+   "name": "iShares Ethereum Trust ETF",
    "brand": "iShares",
    "structure": "ETF",
    "k1": false,
@@ -1271,7 +1271,7 @@
    "checked": "2026-08-27"
   },
   "SBIT": {
-   "name": null,
+   "name": "ProShares UltraShort Bitcoin ETF",
    "brand": "ProShares",
    "structure": "ETF",
    "k1": false,
@@ -1604,7 +1604,7 @@
    "not_found": true
   },
   "SVIX": {
-   "name": null,
+   "name": "-1x Short VIX Futures ETF",
    "brand": "Volatility Shares",
    "structure": "Commodity Pool",
    "k1": true,
@@ -2048,7 +2048,7 @@
    "checked": "2026-08-27"
   },
   "UVIX": {
-   "name": null,
+   "name": "2x Long VIX Futures ETF",
    "brand": "Volatility Shares",
    "structure": "Commodity Pool",
    "k1": true,

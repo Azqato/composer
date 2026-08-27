@@ -214,8 +214,20 @@ def parse(html, ticker):
         match = re.search(pattern, text)
         return match.group(1).strip() if match else None
 
-    name = grab(r"<title>(.*?)</title>")
-    if name is None:
+    # The <h1> is the fund's name, prefixed with its own ticker ("USO United States Oil Fund
+    # LP"). Preferred over <title> because a minority of pages title themselves with generic
+    # marketing copy ("SVIX ETF Guide | Stock Quote, Holdings, Fact Sheet and More") and carry
+    # the real name only here. Where both are usable they agree, so this is not a second
+    # convention, just the more reliable place to read the same thing.
+    name = None
+    match = re.search(r"<h1[^>]*>(.*?)</h1>", html, re.S)
+    if match:
+        name = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", match.group(1))).strip()
+        # Only whitespace and a colon are eaten after the ticker. A hyphen must not be:
+        # SVIX renders as "SVIX -1x Short VIX Futures ETF", and stripping the dash turns
+        # an inverse fund into a long one.
+        name = re.sub(r"^" + re.escape(ticker) + r"\b[\s:]*", "", name, flags=re.I).strip()
+    if not name:
         match = re.search(r"<title>(.*?)</title>", html, re.S)
         name = re.sub(r"\s+", " ", match.group(1)).strip() if match else None
     if name:
