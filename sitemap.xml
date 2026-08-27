@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://composeratlas.com/</loc>
-    <lastmod>2026-08-25</lastmod>
+    <lastmod>2026-08-27</lastmod>
   </url>
   <url>
     <loc>https://composeratlas.com/about.html</loc>
@@ -23,6 +23,10 @@
   <url>
     <loc>https://composeratlas.com/glossary.html</loc>
     <lastmod>2026-06-22</lastmod>
+  </url>
+  <url>
+    <loc>https://composeratlas.com/k1.html</loc>
+    <lastmod>2026-08-27</lastmod>
   </url>
   <url>
     <loc>https://composeratlas.com/nodes.html</loc>
