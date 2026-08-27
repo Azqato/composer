@@ -5,6 +5,69 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.27.7] - 2026-08-27
+
+### K1 Lookup: etfdb publishes the answer directly, and now that is the primary check
+
+**The tool was inferring an answer that the source states outright.** etfdb's Tax Analysis block
+carries a `Distributes K1` field, `Yes` or `No`, on every fund page. It was missed when this was
+built, so every verdict came from the fund's legal structure instead. The owner spotted the field on
+the live etfdb page for DRAM. It is now the primary check.
+
+**Structure was not removed, and the reason is a fund the flag gets wrong.** etfdb answers
+`Distributes K1: No` for **SOYB** and **TAGS**. Both send K-1s. Teucrium Commodity Trust's own 10-K
+says the funds "are treated as a partnership for U.S. federal income tax purposes" and that "the
+partners report their share of a Fund's income or loss on their income tax returns", naming TAGS
+explicitly, and the trust is absent from EDGAR's register of 1940-Act funds. **Had the new field
+simply replaced the old logic, this release would have flipped two correct rows into a wrong answer
+about someone's taxes.** It was caught because the structure reading was still there to disagree
+with it.
+
+**So a disagreement is now a visible warning, not a silent preference.** Where the flag and the
+structure contradict each other the row is marked `contested`, the structure-derived verdict is the
+one shown, and the result panel raises a pink-bordered warning naming both readings and telling the
+reader to confirm the fund in its own prospectus or annual report before acting. The warning says
+plainly that the structure winning is one precedent rather than a rule.
+
+**Across all 186 funds, nothing is left contested.** The full re-fetch found every fund carrying a
+`Distributes K1` value, and the only two that contradict their own structure are SOYB and TAGS,
+both resolved by overrides that record what the 10-K says. **No verdict in the database changed**:
+41 funds issue a K-1 and 145 do not, the same answers as before, now reached from the source's own
+field with two independent checks behind it.
+
+**Funds with no structure field now get answers.** DRAM (Roundhill Memory ETF) was the worked
+example of the old dead end: etfdb publishes no `Structure` for it, so the tool had nothing to say.
+It publishes `Distributes K1: No`, which is the whole answer. DRAM and BITO were added to
+`data/k1_seed.txt` and are now in the database. The live fallback reads the new field
+too, using the same precedence and the same contested rule as the build script.
+
+**What the answer no longer does is guess.** A "no" from the flag still cannot say whether the form
+is a 1099 or a 1099-B, and only the structure separates those, so a fund without one gets its
+verdict and no named form rather than a plausible-looking wrong one. Capital gains rates are still
+never used to infer a verdict, for the SOYB and TAGS reason.
+
+### K1 Lookup: Export button
+
+An **Export** button beside the table writes the current view to CSV: the active filter and sort, so
+the file matches the screen rather than quietly disagreeing with it, and with the default All filter
+that is the whole database. The filename records which view it was and the date the data was
+refreshed.
+
+**The file carries more columns than the table shows, on purpose.** Structure, tax form, etfdb's raw
+flag, the checked date, and the contested marker. A CSV that dropped the contested column would
+strip the warning off an answer while keeping the answer, which is the one export bug here that
+could cost someone money.
+
+Values beginning `=`, `+`, `-` or `@` are prefixed with an apostrophe, because spreadsheets execute
+them as formulas on open. That is not hypothetical: SVIX is named "-1x Short VIX Futures ETF". The
+file is written with a UTF-8 BOM and CRLF line endings so Excel reads it correctly rather than as
+the local codepage.
+
+**Files changed:** `scripts/refresh_k1.py`, `k1.html`, `data/k1.json`, `data/k1.js`, `docs/PRD.md`,
+`docs/DESIGN.md`, `docs/PATCHNOTES.md`, `data/k1_seed.txt`
+
+---
+
 ## [1.27.6] - 2026-08-27
 
 ### K1 Lookup: a live fallback for tickers the database has never seen
@@ -193,7 +256,7 @@ hyphen. **SVIX renders as `SVIX -1x Short VIX Futures ETF`**, so that ate the mi
 scans. Caught on the verification pass, before it reached the data. The strip now takes whitespace
 and a colon only, and the reason is a comment in the code so nobody widens it back.
 
-**The same backspace trap from v1.27.0 recurred**, in the same way: a `` written through a shell
+**The same backspace trap from v1.27.0 recurred**, in the same way: a `\b` written through a shell
 heredoc became a literal `0x08` byte in the source, so the regex silently required an unprintable
 character. Found by a check that now runs on every edit to this file rather than by noticing the
 output was wrong.

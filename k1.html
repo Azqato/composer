@@ -53,7 +53,8 @@
       border: 1px solid var(--color-border); background: transparent; color: var(--color-secondary); cursor: pointer; }
     .k1-filter:hover { color: var(--color-primary); border-color: var(--color-disabled); }
     .k1-filter.on { background: var(--color-green); border-color: var(--color-green); color: #0b0b0b; font-weight: 600; }
-    .k1-filter.k1-toggle { margin-left: auto; }
+    .k1-filter.k1-export { margin-left: auto; }
+    .k1-filter.k1-toggle { margin-left: 0; }
     table.k1-table td.yes { color: var(--color-green); font-family: var(--font-mono); }
     table.k1-table td.no { color: var(--color-secondary); font-family: var(--font-mono); }
     table.k1-table th { position: sticky; top: 0; background: var(--color-surface); z-index: 1; padding: 0; }
@@ -64,6 +65,11 @@
     button.k1-sort .arrow { opacity: 0; font-size: 0.75rem; line-height: 1; }
     button.k1-sort[aria-sort] .arrow { opacity: 1; color: var(--color-green); }
     .k1-note { font-size: 0.8125rem; color: var(--color-secondary); line-height: 1.7; margin-top: 14px; }
+    .k1-warn { margin-top: 14px; padding: 12px 14px; border-radius: 6px;
+      border: 1px solid var(--color-pink); background: rgba(255, 0, 102, 0.06);
+      color: var(--color-primary); font-size: 0.8125rem; line-height: 1.7; }
+    .k1-warn strong { color: var(--color-pink); }
+    .k1-warn a { color: var(--color-blue); }
     .k1-note code { font-size: 0.75rem; }
     .k1-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
     .k1-head h2 { color: var(--color-primary); font-size: 1rem; font-weight: 600; margin: 0; }
@@ -112,6 +118,7 @@
           </div>
           <div class="k1-sub" id="k1-name"></div>
           <div class="k1-facts" id="k1-facts"></div>
+          <div class="k1-warn" id="k1-warn" hidden></div>
           <p class="k1-note" id="k1-note"></p>
         </div>
       </div>
@@ -125,6 +132,7 @@
           <button type="button" class="k1-filter on" data-filter="all">All</button>
           <button type="button" class="k1-filter" data-filter="yes">K-1</button>
           <button type="button" class="k1-filter" data-filter="no">No K-1</button>
+          <button type="button" class="k1-filter k1-export" id="btn-export">Export</button>
           <button type="button" class="k1-filter k1-toggle" id="btn-collapse"
                   aria-expanded="false" aria-controls="k1-wrap">Expand</button>
         </div>
@@ -145,9 +153,16 @@
         <div class="k1-head"><h2>How this is worked out</h2></div>
         <div class="k1-body">
           <p>
-            <strong>No data source publishes a "has K-1" flag.</strong> What decides it is the fund's
-            <strong>legal structure</strong>, which is published, and the structure determines the tax
-            form its holders receive.
+            <strong>Three readings, and they have to agree.</strong> The first is etfdb's own
+            <code>Distributes K1</code> field, which answers this question directly and is the
+            primary check.
+          </p>
+          <p>
+            <strong>The second is the fund's legal structure</strong>, which reaches the same answer
+            independently, because structure determines the tax form its holders receive. It is not
+            redundant. Some funds carry no structure field, and this is the reading that answers the
+            question of <em>which</em> form a "no" means. It is also the tie-breaker, for the reason
+            below the table.
           </p>
           <div class="k1-wrap">
             <table class="k1-table">
@@ -167,8 +182,20 @@
             copied from it. A commodity pool reads <code>27.84% / 27.84%</code>, identical and
             matching neither standard rate, because Section 1256 contracts get a fixed 60/40 blend. A
             grantor trust reads <code>39.60% / 28.00%</code>, the collectibles rate. Everything else
-            reads <code>39.60% / 20.00%</code>. Where the two readings disagree this page says so
-            rather than picking one.
+            reads <code>39.60% / 20.00%</code>. Where readings disagree this page says so
+            rather than picking one quietly.
+          </p>
+          <p>
+            <strong>When the direct answer and the structure contradict each other, this page warns
+            you and asks you to go further.</strong> That is not caution for its own sake. etfdb
+            answers <code>Distributes K1: No</code> for <strong>SOYB</strong> and
+            <strong>TAGS</strong>, and both funds send K-1s: Teucrium's own annual report says the
+            funds are "treated as a partnership for U.S. federal income tax purposes" and that
+            partners report their share of the fund's income on their own returns, and the trust
+            does not appear in the SEC's register of 1940-Act funds. So the direct field is the best
+            single signal available and is still occasionally wrong. On a contested fund the verdict
+            shown follows the structure, and the warning tells you to confirm it in the fund's
+            prospectus or annual report before you act on it.
           </p>
           <p>
             <strong>Limitations, stated plainly.</strong> This covers exchange-traded products that
@@ -235,7 +262,7 @@
           lEl.textContent = 'no K-1, you get a ' + (row.tax_form || '1099');
         } else {
           vEl.textContent = 'Unknown'; vEl.className = 'v unknown';
-          lEl.textContent = 'the structure was not recognised';
+          lEl.textContent = 'neither source answered for this fund';
         }
 
         document.getElementById('k1-name').innerHTML =
@@ -248,11 +275,36 @@
           '</span>';
 
         var facts = '';
+        if (row.distributes_k1 === true || row.distributes_k1 === false) {
+          facts += fact('etfdb "Distributes K1"', row.distributes_k1 ? 'Yes' : 'No');
+        }
         if (row.structure) facts += fact('Structure', row.structure);
         if (row.tax_form) facts += fact('Tax form', row.tax_form);
         if (row.st_rate) facts += fact('Max short-term rate', row.st_rate);
         if (row.lt_rate) facts += fact('Max long-term rate', row.lt_rate);
         document.getElementById('k1-facts').innerHTML = facts;
+
+        // The loud case: etfdb's own two fields contradict each other. This is not styled
+        // like the rest of the notes on purpose. A reader who acts on a wrong answer here
+        // files their taxes wrong, so it must not read as one more caveat in grey text.
+        var warnEl = document.getElementById('k1-warn');
+        if (row.contested) {
+          warnEl.innerHTML =
+            '<strong>Sources disagree on this fund. Do not stop here.</strong> etfdb answers ' +
+            '"Distributes K1: ' + (row.distributes_k1 ? 'Yes' : 'No') + '" while describing the ' +
+            'fund as a <strong>' + esc(row.structure || 'unknown structure') + '</strong>, which ' +
+            'implies the opposite. The verdict above follows the structure, because the one time ' +
+            'this happened and was chased down (SOYB and TAGS, both Teucrium) the structure was ' +
+            'right and the flag was wrong. That is one precedent, not a rule. ' +
+            '<strong>Confirm this one yourself before you act on it:</strong> read the fund\'s ' +
+            'own prospectus or annual report, which states its tax treatment directly, or check ' +
+            'whether the issuer appears in SEC EDGAR\'s register of 1940-Act funds. A fund taxed ' +
+            'as a partnership sends a K-1.';
+          warnEl.hidden = false;
+        } else {
+          warnEl.innerHTML = '';
+          warnEl.hidden = true;
+        }
 
         var note;
         if (row.live) {
@@ -274,9 +326,13 @@
             'unusual or the source page changed shape. Treat this answer as unconfirmed and check ' +
             'the prospectus.';
         } else if (row.agrees === true) {
-          note = 'Structure and capital gains rates agree, which is the corroboration described below.';
+          note = row.source_field === 'structure'
+            ? 'etfdb publishes no "Distributes K1" answer for this fund, so the verdict comes from ' +
+              'its legal structure, and the capital gains rates agree with that structure.'
+            : 'etfdb answers this question directly for this fund, and its structure and capital ' +
+              'gains rates agree with that answer. All three readings point the same way.';
         } else {
-          note = 'Only the structure was available for this fund, with no capital gains rates to ' +
+          note = 'Only one reading was available for this fund, with nothing else on the page to ' +
             'corroborate it.';
         }
         note += ' Verify for yourself: <a href="' + HUMAN_URL(ticker) + '" target="_blank" rel="noopener noreferrer">etfdb.com/etf/' + esc(ticker) + '</a>';
@@ -341,6 +397,8 @@
         var structure = grab(/\nStructure ([^\n[]+)/);
         return {
           name: grab(/^Title:\s*(.+)$/m),
+          // The primary check, same field and same two literal answers the build script reads.
+          distributes_k1: grab(/Distributes K-?1\s+\|?\s*(Yes|No)\b/),
           brand: grab(/\nBrand\[([^\]]+)\]/),
           structure: structure,
           st_rate: grab(/Max ST Capital Gains Rate\s+([\d.]+%)/),
@@ -348,24 +406,44 @@
         };
       }
 
+      // Mirrors classify() in scripts/refresh_k1.py: same three signals, same precedence,
+      // same contested rule. If that function changes, change this one in the same commit.
       function classifyLive(parsed) {
         var key = (parsed.structure || '').trim().toLowerCase();
+        var stated = parsed.distributes_k1 === null || parsed.distributes_k1 === undefined
+          ? null : parsed.distributes_k1.toLowerCase() === 'yes';
+        var known = FORMS.hasOwnProperty(key);
+        var fromStructure = known ? key === 'commodity pool' : null;
+
         var row = {
           name: parsed.name, brand: parsed.brand, structure: parsed.structure,
-          k1: null, tax_form: null,
+          distributes_k1: stated, k1: null, source_field: null, contested: false,
+          tax_form: known ? FORMS[key] : null,
           st_rate: parsed.st_rate, lt_rate: parsed.lt_rate,
           agrees: null, live: true
         };
-        if (FORMS.hasOwnProperty(key)) {
-          row.k1 = key === 'commodity pool';
-          row.tax_form = FORMS[key];
+
+        if (stated !== null && fromStructure !== null && stated !== fromStructure) {
+          row.contested = true;
+          row.k1 = fromStructure;
+          row.source_field = 'structure';
+        } else if (stated !== null) {
+          row.k1 = stated;
+          row.source_field = 'distributes_k1';
+        } else if (fromStructure !== null) {
+          row.k1 = fromStructure;
+          row.source_field = 'structure';
         }
-        if (parsed.st_rate && parsed.lt_rate) {
+        if (row.tax_form === null && row.k1 === true) { row.tax_form = 'Schedule K-1'; }
+
+        var conflicts = row.contested;
+        if (parsed.st_rate && parsed.lt_rate && known) {
           var expected = key === 'commodity pool' ? ['27.84%', '27.84%']
                        : key === 'grantor trust' ? ['39.60%', '28.00%']
                        : ['39.60%', '20.00%'];
-          row.agrees = parsed.st_rate === expected[0] && parsed.lt_rate === expected[1];
+          conflicts = conflicts || parsed.st_rate !== expected[0] || parsed.lt_rate !== expected[1];
         }
+        if (stated !== null || known) { row.agrees = !conflicts; }
         return row;
       }
 
@@ -411,7 +489,10 @@
       function checkLive(raw) {
         setMsg('<strong>' + esc(raw) + '</strong> is not in this database. Checking etfdb live, one moment.', 'info');
         lookupLive(raw).then(function (row) {
-          if (row.structure === null) {
+          // Before v1.27.7 a missing Structure field meant no answer at all, which is what
+          // DRAM used to hit. The Distributes K1 flag answers most of those, so the dead end
+          // is now only for a page carrying neither field.
+          if (row.k1 === null) {
             outEl.style.display = 'none';
             // The capital gains rates are deliberately NOT used to guess here. SOYB and TAGS
             // are commodity pools that publish 39.60%/20.00%, the ordinary-rate signature, so
@@ -419,8 +500,9 @@
             // confident wrong answer about someone's taxes.
             setMsg(
               '<strong>' + esc(raw) + '</strong>' + (row.name ? ', ' + esc(row.name) + ',' : '') +
-              ' was fetched live, but <strong>etfdb publishes no Structure field for it</strong>, ' +
-              'which is the field this tool reads. There is no answer to give. Its capital ' +
+              ' was fetched live, but <strong>etfdb publishes neither a "Distributes K1" ' +
+              'answer nor a Structure field for it</strong>, and those are the two fields this ' +
+              'tool reads. There is no answer to give. Its capital ' +
               'gains rates are not a substitute: some funds that do send a K-1 publish ' +
               'ordinary-looking rates. Read the fund\'s own prospectus, or check ' +
               '<a href="' + HUMAN_URL(raw) + '" target="_blank" rel="noopener noreferrer">etfdb.com/etf/' + esc(raw) + '</a>.',
@@ -504,15 +586,18 @@
         } catch (e) { /* storage unavailable. The page still works, it just forgets. */ }
       }
 
-      function renderList() {
+      // The filtered, sorted row list the table shows. Factored out so the CSV export and
+      // the table cannot disagree about what "the table" currently is: one comparator, one
+      // filter, both readers.
+      function currentRows() {
         // Rows recorded as not_found are not exchange-traded products at all, so they are
         // counted in the footnote but never listed: a table of funds should not contain
         // individual stocks that happen to have been checked.
-        var yes = 0, no = 0, other = 0, visible = [];
+        var visible = [];
 
         Object.keys(DB.tickers).forEach(function (t) {
           var r = DB.tickers[t];
-          if (r.k1 === true) { yes++; } else if (r.k1 === false) { no++; } else { other++; return; }
+          if (r.k1 !== true && r.k1 !== false) { return; }
           if (FILTER === 'yes' && r.k1 !== true) { return; }
           if (FILTER === 'no' && r.k1 !== false) { return; }
           visible.push([t, r]);
@@ -536,7 +621,17 @@
           return ASC ? d : -d;
         });
         if (!ASC && SORT === 'ticker') { visible.reverse(); }
+        return visible;
+      }
 
+      function renderList() {
+        var yes = 0, no = 0, other = 0;
+        Object.keys(DB.tickers).forEach(function (t) {
+          var r = DB.tickers[t];
+          if (r.k1 === true) { yes++; } else if (r.k1 === false) { no++; } else { other++; }
+        });
+
+        var visible = currentRows();
         var rows = '', shown = visible.length;
         visible.forEach(function (pair) {
           var t = pair[0], r = pair[1];
@@ -629,6 +724,67 @@
         check();
         outEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
+
+      // ---------------------------------------------------------------- CSV export
+      //
+      // Exports exactly what the table is showing: the active filter and sort, so the file
+      // matches the screen rather than quietly disagreeing with it. With the default All
+      // filter that is the whole database, and the filename says which of the three it is.
+      //
+      // The columns go beyond the three on screen on purpose. A row whose sources contest
+      // each other carries a warning on the page, and a CSV that dropped that column would
+      // strip the warning off the answer while keeping the answer, which is the one export
+      // bug here that could actually cost someone money.
+      function csvCell(value) {
+        var s = value === null || value === undefined ? '' : String(value);
+        // A leading =, +, - or @ is executed as a formula by Excel and Sheets when the file
+        // is opened. This is not hypothetical here: SVIX is named "-1x Short VIX Futures
+        // ETF". Prefixing with an apostrophe is the standard defusing, and spreadsheets hide
+        // the apostrophe on display.
+        if (/^[=+\-@\t\r]/.test(s)) { s = "'" + s; }
+        if (/[",\r\n]/.test(s)) { s = '"' + s.replace(/"/g, '""') + '"'; }
+        return s;
+      }
+
+      function exportCsv() {
+        var rows = currentRows();
+        var head = ['Ticker', 'K1', 'Name', 'Structure', 'Tax form',
+                    'etfdb Distributes K1', 'Sources disagree', 'Checked'];
+        var lines = [head.join(',')];
+        rows.forEach(function (pair) {
+          var t = pair[0], r = pair[1];
+          lines.push([
+            t,
+            r.k1 ? 'Yes' : 'No',
+            r.name || '',
+            r.structure || '',
+            r.tax_form || '',
+            r.distributes_k1 === true ? 'Yes' : r.distributes_k1 === false ? 'No' : '',
+            r.contested ? 'Yes, verify this row' : '',
+            r.checked || ''
+          ].map(csvCell).join(','));
+        });
+
+        // CRLF per RFC 4180, and a BOM so Excel reads it as UTF-8 rather than as the local
+        // codepage, which is what turns fund names with accents into mojibake.
+        var blob = new Blob(['\ufeff' + lines.join('\r\n') + '\r\n'],
+                            { type: 'text/csv;charset=utf-8' });
+        var name = 'composer-atlas-k1-' +
+          (FILTER === 'yes' ? 'issuers' : FILTER === 'no' ? 'no-k1' : 'all') +
+          '-' + (DB.refreshed_at || '').slice(0, 10) + '.csv';
+
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        // Revoked on a later tick: revoking synchronously can beat the download starting.
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      }
+
+      document.getElementById('btn-export').addEventListener('click', exportCsv);
 
       document.getElementById('btn-collapse').addEventListener('click', function () {
         OPEN = !OPEN;

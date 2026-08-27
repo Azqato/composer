@@ -7,9 +7,18 @@ It matters because a K-1 arrives late (often after the April filing deadline), c
 a return, and can create taxable income even in a year the holder sold nothing. Plenty of
 Composer symphonies hold these instruments without their authors realising it.
 
-**The signal is the fund's legal structure, not a "has K-1" field.** No data source
-publishes a K-1 flag directly. etfdb.com publishes a `Structure` field on every fund page,
-and structure determines the tax form:
+**etfdb publishes a `Distributes K1` field, and it is the primary check (v1.27.7).** It sits
+in the Tax Analysis block of every fund page and answers this tool's exact question directly
+rather than by inference. It was missed when this script was first written, which is why much
+of what follows reads as though structure were the only route.
+
+**Structure remains the check on it, and the tie-breaker when they disagree.** etfdb omits
+`Structure` on some funds, DRAM (Roundhill Memory ETF) being the worked example, while still
+publishing `Distributes K1` for them; before v1.27.7 those funds got no answer at all. Where
+both exist and contradict each other, the structure-derived verdict is the one shown and the
+row is marked contested, because the one time it has happened the structure was right and the
+flag was wrong. Structure also determines the tax form, which the flag cannot: a "No"
+separates neither 1099 from 1099-B nor ETF from ETN.
 
     Commodity Pool  -> Schedule K-1.  A partnership for tax purposes; income, gains and
                        losses pass through to holders. This is the whole answer: every
@@ -36,6 +45,16 @@ contradiction between two independent readings. The script records `agrees: fals
 row rather than silently preferring one, because a disagreement means the page shape
 changed or the fund is genuinely unusual, and both deserve a human look. Nothing in this
 file is inferred from the ticker symbol or the fund's name.
+
+**The `Distributes K1` field is the best single signal available and is still not infallible.**
+etfdb publishes `Distributes K1: No` for SOYB and TAGS. That is wrong. Teucrium Commodity
+Trust's own 10-K states the funds "are treated as a partnership for U.S. federal income tax
+purposes" and that "the partners report their share of a Fund's income or loss on their income
+tax returns", naming TAGS explicitly, and the trust is absent from EDGAR's register of 1940-Act
+funds. Both send K-1s. Had the flag been trusted alone, promoting it would have flipped two
+correct rows into a wrong answer about someone's taxes. That is the entire argument for keeping
+three signals rather than one, and for `contested` rows carrying a warning on the page instead
+of a quiet verdict.
 
 **When a human look finds the source wrong, the correction lives in `OVERRIDES` below**, not in
 `data/k1.json`, because a hand-edited row is silently undone by the next refresh. Each entry
@@ -144,19 +163,31 @@ OVERRIDES = {
     # other on these rows, which would otherwise print "treat this answer as unconfirmed" over an
     # answer that has in fact been confirmed. An entry that only carries a note is the honest way
     # to say "checked, and the verdict stands".
+    # SOYB and TAGS are the reason the primary check is not trusted alone. etfdb publishes
+    # "Distributes K1: No" for both, and both send K-1s.
     "SOYB": {
+        "k1": True,
+        "tax_form": "Schedule K-1",
         "override": (
-            "etfdb's capital gains rates for this fund (39.60%/20.00%) do not match its own "
-            "Commodity Pool structure, so the two readings disagree. The structure is the correct "
-            "one: SEC EDGAR shows the shares are issued by Teucrium Commodity Trust, which files a "
-            "10-K and does not appear in EDGAR's register of 1940-Act funds. It sends a K-1."
+            "etfdb answers 'Distributes K1: No' for this fund and that is wrong. Teucrium "
+            "Commodity Trust's own 10-K says the funds 'are treated as a partnership for U.S. "
+            "federal income tax purposes' and that 'the partners report their share of a Fund's "
+            "income or loss on their income tax returns', which is a K-1. EDGAR shows the trust "
+            "files a 10-K and is absent from the register of 1940-Act funds, so it cannot be a "
+            "registered investment company. etfdb's own Commodity Pool structure label agrees "
+            "with the 10-K. Its capital gains rates (39.60%/20.00%) do not, which is a third "
+            "reading and the reason ordinary-looking rates are never treated as proof of no K-1."
         ),
     },
     "TAGS": {
+        "k1": True,
+        "tax_form": "Schedule K-1",
         "override": (
-            "Same as SOYB, and the same issuer. The rates on etfdb disagree with its own Commodity "
-            "Pool structure; EDGAR shows Teucrium Commodity Trust, a 10-K filer absent from the "
-            "1940-Act fund register. It sends a K-1."
+            "Same issuer and the same error as SOYB: etfdb answers 'Distributes K1: No'. The "
+            "Teucrium 10-K names TAGS explicitly, saying each fund 'except TAGS, will be "
+            "treated, and it is more likely than not that TAGS will be treated as a partnership "
+            "that is not taxable as a corporation'. A partnership sends a K-1. EDGAR shows a "
+            "10-K filer absent from the 1940-Act fund register."
         ),
     },
     "IBIT": {
@@ -245,39 +276,81 @@ def parse(html, ticker):
         "name": name,
         "brand": grab(r"Brand\s+(.+?)\s+Structure"),
         "structure": grab(r"Structure\s+(.+?)\s+Expense Ratio"),
+        # The primary check. Anchored to the two literal answers etfdb uses, so a page whose
+        # Tax Analysis block has been reshaped reads as absent rather than as a stray word.
+        "distributes_k1": grab(r"Distributes K-?1\s+(Yes|No)\b"),
         "st_rate": grab(r"Max ST Capital Gains Rate\s+([\d.]+%)"),
         "lt_rate": grab(r"Max LT Capital Gains Rate\s+([\d.]+%)"),
     }
 
 
 def classify(parsed, today):
-    """Turn a parsed page into a database row, including the corroboration check."""
+    """Turn a parsed page into a database row, including the corroboration checks.
+
+    Three signals:
+
+        1. `Distributes K1`, etfdb's own answer to this exact question. The primary check.
+        2. `Structure`, which reaches the same answer from the fund's legal form. It fills in
+           where the flag is absent, always determines the tax form, and **wins where the two
+           contradict each other**, because the one time that has happened (SOYB, TAGS) the
+           structure was right. Such a row is marked `contested` and the page warns on it.
+        3. The capital gains rate pair, which corroborates the structure.
+
+    `agrees` is false when any two available signals contradict. It is not a confidence score:
+    it means a human should look, and the resolution belongs in OVERRIDES.
+    """
     structure = parsed.get("structure")
     key = (structure or "").strip().lower()
+
+    stated = parsed.get("distributes_k1")
+    stated = None if stated is None else (stated.strip().lower() == "yes")
+    from_structure = key in K1_STRUCTURES if key in TAX_FORMS else None
 
     row = {
         "name": parsed.get("name"),
         "brand": parsed.get("brand"),
         "structure": structure,
+        "distributes_k1": stated,
         "k1": None,
-        "tax_form": TAX_FORMS.get(key),
+        "source_field": None,
+        "contested": False,
+        "tax_form": TAX_FORMS.get(key) if key in TAX_FORMS else None,
         "st_rate": parsed.get("st_rate"),
         "lt_rate": parsed.get("lt_rate"),
         "agrees": None,
         "checked": today,
     }
 
-    if key in TAX_FORMS:
-        row["k1"] = key in K1_STRUCTURES
-    else:
-        # Unrecognised structure. Do not guess: leave k1 null so the page says
-        # "unknown" rather than asserting a wrong answer about someone's taxes.
-        row["tax_form"] = None
+    if stated is not None and from_structure is not None and stated != from_structure:
+        # Both signals present and contradicting. Show the structure-derived verdict, and
+        # say plainly that the sources disagree rather than presenting either as settled.
+        row["contested"] = True
+        row["k1"] = from_structure
+        row["source_field"] = "structure"
+    elif stated is not None:
+        row["k1"] = stated
+        row["source_field"] = "distributes_k1"
+    elif from_structure is not None:
+        row["k1"] = from_structure
+        row["source_field"] = "structure"
+    # Neither signal present: leave k1 null so the page says "unknown" rather than
+    # asserting a wrong answer about someone's taxes.
+
+    # A fund whose verdict is K-1 sends a K-1 whatever else the page says, so name the form.
+    # The reverse does not hold: "No" leaves 1099 and 1099-B open and only the structure
+    # separates them, so an absent structure means the form goes unnamed.
+    if row["tax_form"] is None and row["k1"] is True:
+        row["tax_form"] = "Schedule K-1"
+
+    conflicts = [row["contested"]]
 
     rates = (parsed.get("st_rate"), parsed.get("lt_rate"))
-    if all(rates):
+    if all(rates) and key in TAX_FORMS:
         expected = EXPECTED_RATES.get(key, DEFAULT_RATES)
-        row["agrees"] = rates == expected
+        conflicts.append(rates != expected)
+
+    if stated is not None or key in TAX_FORMS:
+        row["agrees"] = not any(conflicts)
     return row
 
 
@@ -370,6 +443,11 @@ def main():
                 # page can show its reasoning instead of just asserting a different answer.
                 if ticker in OVERRIDES:
                     row.update(OVERRIDES[ticker])
+                    # An override is a human finding, so the row is no longer contested: the
+                    # page prints the reasoning instead of the generic "sources disagree"
+                    # warning, which would otherwise tell a reader to go research a question
+                    # that has already been researched and answered here.
+                    row["contested"] = False
                     # The agrees flag was computed against the structure the source published,
                     # so it has to be recomputed against the corrected one. Leaving it alone
                     # would make the page report a disagreement it had just resolved.
@@ -378,7 +456,9 @@ def main():
                         key = (row.get("structure") or "").strip().lower()
                         row["agrees"] = rates == EXPECTED_RATES.get(key, DEFAULT_RATES)
                 db["tickers"][ticker] = row
-                flag = "" if row["agrees"] is not False else "   <-- RATES DISAGREE"
+                flag = ("   <-- CONTESTED: Distributes K1 and Structure disagree"
+                        if row.get("contested")
+                        else "" if row["agrees"] is not False else "   <-- RATES DISAGREE")
                 print(
                     f"  ok {ticker:<6} {str(row['structure']):<16} "
                     f"K-1={str(row['k1']):<5} {row['st_rate']}/{row['lt_rate']}{flag}"
@@ -401,11 +481,16 @@ def main():
     disagree = [t for t, r in rows.items()
                 if r.get("agrees") is False and not r.get("override")]
     resolved = sum(1 for r in rows.values() if r.get("override"))
+    contested = sorted(t for t, r in rows.items() if r.get("contested"))
 
     print(f"\n{fetched} fetched, {missing} not on etfdb, {failed} failed")
     print(f"{len(rows)} ticker(s) in {JSON_PATH.name}: {yes} issue a K-1, {no} do not, {unknown} unknown")
     if resolved:
         print(f"{resolved} row(s) carry a verified override; see OVERRIDES in this file")
+    if contested:
+        print(f"\nCONTESTED, etfdb's Distributes K1 flag disagrees with its own Structure field "
+              f"on {len(contested)}: {', '.join(contested)}")
+        print("The page warns on these. Research each one and record the finding in OVERRIDES.")
     if disagree:
         print(f"structure and tax rates disagree on {len(disagree)}: {', '.join(sorted(disagree))}")
         print("Check those by hand before trusting them, then record what you found in OVERRIDES.")
