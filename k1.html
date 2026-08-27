@@ -241,10 +241,30 @@
         outEl.style.display = 'block';
       }
 
+      // Keep the address bar showing what is on screen, so the URL is always copyable and
+      // reloading reproduces the same answer. replaceState rather than pushState on purpose:
+      // pushState would make Back walk through every ticker someone tried instead of leaving
+      // the page. Wrapped because replaceState throws a SecurityError over file://, which this
+      // page is expected to work under, and a failed URL update must not stop the lookup.
+      function setUrl(ticker) {
+        if (!window.history || !window.history.replaceState) { return; }
+        try {
+          window.history.replaceState(
+            null, '',
+            window.location.pathname +
+            (ticker ? '?t=' + encodeURIComponent(ticker) : '') +
+            window.location.hash
+          );
+        } catch (err) { /* file://, or a browser that refuses. Not worth surfacing. */ }
+      }
+
       function check() {
         var raw = (inputEl.value || '').trim().toUpperCase().replace(/^\$/, '');
         if (!raw) { setMsg('Enter a ticker first.', 'err'); outEl.style.display = 'none'; return; }
         if (!DB) { setMsg('The database is still loading.', 'info'); return; }
+
+        // Set before branching, so all three outcomes are linkable, not just a found row.
+        setUrl(raw);
 
         var row = DB.tickers[raw];
         if (!row) {
@@ -301,6 +321,7 @@
         inputEl.value = '';
         setMsg('', '');
         outEl.style.display = 'none';
+        setUrl('');
         inputEl.focus();
       });
 

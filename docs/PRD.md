@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.27.0
+**Version:** 1.27.1
 **Status:** Active
 **Last Updated:** 2026-08-25
 
@@ -4262,11 +4262,33 @@ next, including an AI assistant with no memory of the previous session.
 **Verification is by running the thing, not by reading the diff.** This project has repeatedly found
 that a change which looks obviously correct is not.
 
+**Verify locally, not against the live site.** Owner instruction, 2026-08-27, and it is now the
+rule. Run the page from the working copy: `file://` for anything that does not need a real origin,
+or `python -m http.server 8731 --bind 127.0.0.1` from the repository root for anything that does.
+Once a change is proven locally, it is proven. Do not then sit on `composeratlas.com` waiting for a
+deployment to appear, and **do not troubleshoot Cloudflare Pages or GitHub Pages when the local run
+is correct**: a page that works locally and is missing from a host is a deployment matter, which is
+the owner's to look at, not a defect in the change.
+
+**What still needs a real origin, and why.** `file://` is not an origin, so anything touching
+`history.pushState`/`replaceState`, `fetch()` of a local path, `localStorage`, or module scripts
+either throws or silently no-ops there. `k1.html`'s URL syncing is the worked example: it is
+correct under `file://` precisely because it is wrapped in a `try`/`catch` that swallows the
+`SecurityError`, which means `file://` **cannot** prove the feature works, only that its absence
+breaks nothing. Serve over `127.0.0.1` for those. `python -m http.server` needs no configuration
+because the site has no build step.
+
+**Still test both loading paths for a data-driven page.** `file://` and a local server exercise
+different halves of the `.js` twin arrangement described in Section 10: the twin under `file://`,
+the `fetch()` fallback over http. A change that breaks one commonly leaves the other working.
+
 | What you changed | How to verify |
 |---|---|
 | `signal-miner.html` | `python scripts/run_harness.py all`. This runs the three gates: `verify` (spec-count lockstep plus dual-path equality), `live` (an end-to-end run, window and rendering), `settings` (persistence and the Default button). All three must pass before pushing. `memory` and `inertness` are measurement tools, not gates |
 | Any inline `<script>` on any page | `python scripts/check_html_js.py`. A broken inline script still serves a 200 with its static HTML intact, so a bad publish looks healthy from outside. This is the gate that would have caught v1.22.2 |
 | The Composer export shape | `python scripts/check_composer_ladder.py`. Valid JSON in the wrong shape is what shipped in v1.22.0 and was not caught for five releases |
+| `k1.html`, or any tool page's behaviour | Run it locally and drive it. `file://` for the `.js` twin path, `python -m http.server 8731 --bind 127.0.0.1` for anything needing a real origin. A headless browser can click the page's own buttons and read back the result, which is how the URL syncing at v1.27.1 was verified across all six of its cases |
+| Whether a deploy actually landed | `python scripts/check_live.py`. **Useful, but not a gate and not a blocker.** It reports on the hosts, so a failure here after a correct local run means a deployment did not happen, not that the change is wrong. Report it and move on rather than troubleshooting the host |
 | Any JSON data file | `python -c "import json; json.load(open('data/FILE.json', encoding='utf-8'))"`, and confirm the `.js` twin was written in the same run |
 | `data/database.json`, by any route | `python scripts/check_database_keys.py`. Asserts `symphony_id` is present and unique, agrees with the URL, that `database_summary.json` holds the same ids in the same order, and that every symphony's URL is archived in `storage.csv`. Every one of those failures is invisible without it, and three of the five have already shipped |
 | Anything at all, after deploying | `python scripts/check_live.py`. Fetches each live clean URL, compares byte-for-byte against the committed file, and reports failures. Currently 8 URLs, 0 failing |

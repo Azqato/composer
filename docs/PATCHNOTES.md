@@ -5,6 +5,51 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.27.1] - 2026-08-27
+
+### K1 Lookup: the address bar now follows the lookup
+
+Pressing **Check** rewrites the URL to `?t=<TICKER>`, so what is on screen is always what is in the
+address bar. Reported by the owner from a real case: the URL still read `?t=UVXY` while the panel
+showed BIL, which made the link uncopyable and a reload show something other than the answer on
+screen.
+
+**`replaceState`, not `pushState`, on purpose.** Pushing would make the Back button walk through
+every ticker someone tried before leaving the page, which is not what Back means to a person using a
+lookup box. Replacing keeps the URL copyable and keeps Back as "leave".
+
+**The URL is set before the result branches**, so all three outcomes are linkable, not just a found
+row. A ticker that is unknown to the database, or one recorded as not an exchange-traded product,
+produces a link that reproduces that same message. **Clear** strips the parameter rather than
+leaving a stale one behind.
+
+**Wrapped in a try/catch because `file://` refuses it.** `replaceState` throws a `SecurityError`
+there, and this page is expected to work from a local file. A failed URL update must not stop the
+lookup, so the failure is swallowed.
+
+### Testing policy: local first, and stop there
+
+**Owner instruction, and now the documented rule:** verify changes by running them from the working
+copy, and **do not troubleshoot Cloudflare Pages or GitHub Pages when the local run is correct**. A
+page that works locally and is missing from a host is a deployment matter, not a defect in the
+change. Written up in `docs/PRD.md` Section 23 with two new rows in the verification table.
+
+**`file://` alone cannot verify everything, and this release is the example.** It is not an origin,
+so `replaceState`, `fetch()` of a local path and `localStorage` throw or no-op there. The URL syncing
+above is *correct* under `file://` precisely because its failure is caught, which means `file://`
+proves only that its absence breaks nothing. `python -m http.server 8731 --bind 127.0.0.1` from the
+repository root is the answer, and needs no configuration because the site has no build step.
+
+**Verified by driving the page rather than reading its DOM.** A throwaway harness loaded `k1.html`
+in an iframe over `127.0.0.1`, clicked its own buttons, and read the URL back after each: the
+`?t=UVXY` deep link resolved to Yes; a lowercase `bil` normalised to `?t=BIL`; `USO` gave `?t=USO`;
+an unknown `ZZZZ` and a non-ETP `AAPL` both linked correctly with the panel hidden; **Clear** emptied
+the query string. Then re-checked under `file://` to confirm the guard leaves the lookup working.
+
+**Files changed:** `k1.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.27.0] - 2026-08-27
 
 ### New tool: K1 Lookup (`/k1`)
