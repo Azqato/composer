@@ -8,6 +8,14 @@
 # Nothing in the third group is an assertion. It exists so the script has something to
 # ASK about: the verdicts all come from etfdb's Structure field, never from this list.
 # Adding a ticker here is a request to check it, not a claim about it.
+#
+# INDIVIDUAL STOCKS DO NOT BELONG HERE. The Signal Miner price universe contains company
+# tickers (AAPL, NVDA, the semiconductor names) as well as funds, and seeding from it
+# dragged 27 of them in. They were removed at the owner's request on 2026-08-27. A company
+# is not a fund and has no structure to read, so each one only ever produced a "not on
+# etfdb" row that the page had to explain and the table had to exclude. If you re-seed from
+# a ticker universe, filter the companies out first rather than letting the script discover
+# them one 404 at a time.
 UPRO
 TECS
 EEM
@@ -96,22 +104,13 @@ FNGD
 KMLM
 BOXX
 TAIL
-AAPL
-ADI
 AGQ
-AMAT
-AMD
-AMZN
-ASML
-AVGO
 BITX
 BND
 BNDW
-BRK/B
 DBC
 DBMF
 DPST
-ENPH
 ETHA
 FXI
 GDXD
@@ -119,23 +118,11 @@ GDXU
 GLL
 IBIT
 IEI
-INTC
 IOO
 IVV
-KLAC
-KO
 KORU
 LQD
-LRCX
-MCHP
 MDY
-MRVL
-MSTR
-MU
-NVDA
-NXPI
-ON
-QCOM
 QQQ
 QQQE
 RETL
@@ -143,18 +130,13 @@ SBIT
 SCHD
 SCHG
 SCO
-SNPS
 SPHB
 SPY
 SPYV
 SSG
 SSO
-STM
 SVIX
 SVXY
-TSLA
-TSM
-TXN
 UGL
 UUP
 UVXY
@@ -166,7 +148,6 @@ VIXY
 VOX
 VTI
 VXUS
-WMT
 XLB
 XLI
 XLY

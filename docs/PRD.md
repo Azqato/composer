@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.27.4
+**Version:** 1.27.5
 **Status:** Active
 **Last Updated:** 2026-08-25
 
@@ -519,10 +519,7 @@ is what the page is for; the table is reference material underneath it. Picking 
 collapsed expands the table, since a filter button that appears to do nothing is worse than an
 unrequested expansion.
 
-**Rows recorded as `not_found` are counted but never listed.** They are individual stocks from the
-Signal Miner universe that were checked and turned out not to be exchange-traded products, and a
-table of funds should not contain them. The footnote states how many were excluded, so the number
-is not silently missing.
+**Rows recorded as `not_found` are counted but never listed.** These are tickers that were checked and turned out to have no etfdb fund page, so there is no structure to read. The footnote states how many were excluded, so the number is not silently missing. **Individual stocks were removed from the database entirely at v1.27.5** and `data/k1_seed.txt` says they do not belong in it; the one row left is VBF, a closed-end fund rather than an ETF.
 
 **All three columns sort (v1.27.4).** Clicking a header sorts by it; clicking the active header flips direction. A new column always starts ascending rather than inheriting a direction chosen for a different column. **Ticker is both the default sort and the tiebreak on every other column**, which makes the order total: two rows never swap places between renders of the same data. Sorting and filtering are independent, so a sort survives a filter change and vice versa.
 

@@ -2,30 +2,6 @@ window.K1_DATA = {
  "refreshed_at": "2026-08-27 10:52:58",
  "source": "etfdb.com",
  "tickers": {
-  "AAPL": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
-  "ADI": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
   "AGG": {
    "name": "iShares Core U.S. Aggregate Bond ETF",
    "brand": "iShares",
@@ -48,30 +24,6 @@ window.K1_DATA = {
    "agrees": true,
    "checked": "2026-08-27"
   },
-  "AMAT": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
-  "AMD": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
   "AMLP": {
    "name": "Alerian MLP ETF",
    "brand": "Alerian",
@@ -82,42 +34,6 @@ window.K1_DATA = {
    "lt_rate": "20.00%",
    "agrees": true,
    "checked": "2026-08-27"
-  },
-  "AMZN": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
-  "ASML": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
-  "AVGO": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
   },
   "BAR": {
    "name": "GraniteShares Gold Trust",
@@ -217,18 +133,6 @@ window.K1_DATA = {
    "lt_rate": "20.00%",
    "agrees": true,
    "checked": "2026-08-27"
-  },
-  "BRK/B": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
   },
   "BRZU": {
    "name": "Direxion Daily MSCI Brazil Bull 2X ETF",
@@ -528,18 +432,6 @@ window.K1_DATA = {
    "agrees": true,
    "checked": "2026-08-27"
   },
-  "ENPH": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
   "EPI": {
    "name": "WisdomTree India Earnings Fund",
    "brand": "WisdomTree",
@@ -784,18 +676,6 @@ window.K1_DATA = {
    "agrees": true,
    "checked": "2026-08-27"
   },
-  "INTC": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
   "IOO": {
    "name": "iShares Global 100 ETF",
    "brand": "iShares",
@@ -840,18 +720,6 @@ window.K1_DATA = {
    "agrees": true,
    "checked": "2026-08-27"
   },
-  "KLAC": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
   "KMLM": {
    "name": "KFA Mount Lucas Managed Futures Index Strategy ETF",
    "brand": "KraneShares",
@@ -862,18 +730,6 @@ window.K1_DATA = {
    "lt_rate": "20.00%",
    "agrees": true,
    "checked": "2026-08-27"
-  },
-  "KO": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
   },
   "KOLD": {
    "name": "ProShares UltraShort Bloomberg Natural Gas",
@@ -941,30 +797,6 @@ window.K1_DATA = {
    "agrees": true,
    "checked": "2026-08-27"
   },
-  "LRCX": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
-  "MCHP": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
   "MDY": {
    "name": "State Street SPDR S&P MIDCAP 400 ETF Trust",
    "brand": "SPDR",
@@ -998,42 +830,6 @@ window.K1_DATA = {
    "agrees": true,
    "checked": "2026-08-27"
   },
-  "MRVL": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
-  "MSTR": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
-  "MU": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
   "MVV": {
    "name": "ProShares Ultra MidCap400",
    "brand": "ProShares",
@@ -1056,30 +852,6 @@ window.K1_DATA = {
    "agrees": true,
    "checked": "2026-08-27"
   },
-  "NVDA": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
-  "NXPI": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
   "OILK": {
    "name": "ProShares K-1 Free Crude Oil ETF of Benef Interest",
    "brand": "ProShares",
@@ -1090,18 +862,6 @@ window.K1_DATA = {
    "lt_rate": "20.00%",
    "agrees": true,
    "checked": "2026-08-27"
-  },
-  "ON": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
   },
   "OUNZ": {
    "name": "VanEck Merk Gold ETF",
@@ -1169,18 +929,6 @@ window.K1_DATA = {
    "lt_rate": "20.00%",
    "agrees": true,
    "checked": "2026-08-27"
-  },
-  "QCOM": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
   },
   "QID": {
    "name": "ProShares UltraShort QQQ",
@@ -1402,18 +1150,6 @@ window.K1_DATA = {
    "agrees": true,
    "checked": "2026-08-27"
   },
-  "SNPS": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
   "SOXL": {
    "name": "Direxion Daily Semiconductor Bull 3X ETF",
    "brand": "Direxion",
@@ -1591,18 +1327,6 @@ window.K1_DATA = {
    "agrees": true,
    "checked": "2026-08-27"
   },
-  "STM": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
   "SVIX": {
    "name": "-1x Short VIX Futures ETF",
    "brand": "Volatility Shares",
@@ -1758,30 +1482,6 @@ window.K1_DATA = {
    "agrees": true,
    "checked": "2026-08-27"
   },
-  "TSLA": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
-  "TSM": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
-  },
   "TTT": {
    "name": "ProShares UltraPro Short 20+ Year Treasury",
    "brand": "ProShares",
@@ -1792,18 +1492,6 @@ window.K1_DATA = {
    "lt_rate": "20.00%",
    "agrees": true,
    "checked": "2026-08-27"
-  },
-  "TXN": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
   },
   "TYO": {
    "name": "Direxion Daily 7-10 Year Treasury Bear 3X ETF",
@@ -2212,18 +1900,6 @@ window.K1_DATA = {
    "lt_rate": "27.84%",
    "agrees": true,
    "checked": "2026-08-27"
-  },
-  "WMT": {
-   "name": null,
-   "brand": null,
-   "structure": null,
-   "k1": null,
-   "tax_form": null,
-   "st_rate": null,
-   "lt_rate": null,
-   "agrees": null,
-   "checked": "2026-08-27",
-   "not_found": true
   },
   "XHB": {
    "name": "State Street SPDR S&P Homebuilders ETF",

@@ -402,8 +402,9 @@
 
         document.getElementById('k1-refreshed').textContent =
           listed + ' funds checked against etfdb.com, ' + yes + ' issuing a K-1 and ' + no +
-          ' not.' + (other ? ' A further ' + other + ' tickers were checked and are not ' +
-          'exchange-traded products, so they are not listed here.' : '') +
+          ' not.' + (other ? ' A further ' + other + (other === 1 ? ' ticker was' : ' tickers were') +
+          ' checked and turned out not to be an ETF, so ' + (other === 1 ? 'it is' : 'they are') +
+          ' not listed here.' : '') +
           (DB.refreshed_at ? ' Last refreshed ' + DB.refreshed_at + '.' : '');
       }
 

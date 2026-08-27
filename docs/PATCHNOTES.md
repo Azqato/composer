@@ -5,6 +5,48 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.27.5] - 2026-08-27
+
+### K1 Lookup: individual stocks removed from the database
+
+**27 company tickers are gone** (AAPL, ADI, AMAT, AMD, AMZN, ASML, AVGO, BRK/B, ENPH, INTC, KLAC,
+KO, LRCX, MCHP, MRVL, MSTR, MU, NVDA, NXPI, ON, QCOM, SNPS, STM, TSLA, TSM, TXN, WMT). Removed at
+the owner's request: a database about fund structure has no business holding companies.
+
+**They came in through the seed list.** The Signal Miner price universe contains company tickers as
+well as funds, and seeding from it dragged them along. A company has no fund structure to read, so
+each one only ever produced a "not on etfdb" row that the page had to explain away and the table had
+to exclude. `data/k1_seed.txt` now carries an explicit note saying individual stocks do not belong
+in it, so a future re-seed from a ticker universe filters them out rather than rediscovering them
+one 404 at a time.
+
+**The database went 212 rows to 185.** The listed fund count is unchanged at 184, since none of
+these was ever listed.
+
+### VBF was kept, and the footnote was wrong about it
+
+The one remaining `not_found` row is **VBF, Invesco Bond Fund**. It is not an individual stock and
+so was out of scope of the removal: EDGAR shows it filing N-CSR and N-CEN, making it a **closed-end
+fund**, a registered investment company. It has no etfdb page because that site covers ETFs and a
+CEF is not one.
+
+**Which made the footnote inaccurate.** It read "are not exchange-traded products", and a closed-end
+fund *is* exchange-traded, it simply is not an ETF. It also would have read "A further 1 tickers
+were checked". Both fixed: the sentence now says "turned out not to be an ETF" and agrees in number.
+
+### A tradeoff worth stating
+
+**Typing a stock ticker now gives a weaker answer than it did.** Before this change, AAPL returned
+"was looked up and is not an exchange-traded product on record", which is a checked, confident
+result. It now falls through to "not in this database yet, which is not the same as saying it has no
+K-1", because the page can no longer know AAPL is a company rather than an unchecked fund. That is
+the honest message for a ticker the database has no record of, and it is the price of not storing
+companies. Recorded so it reads as a known consequence rather than a regression nobody noticed.
+
+**Files changed:** `data/k1.json`, `data/k1.js`, `data/k1_seed.txt`, `k1.html`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.27.4] - 2026-08-27
 
 ### K1 Lookup: the fund table sorts
