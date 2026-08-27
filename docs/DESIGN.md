@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.8
+**Version:** 1.9
 **Status:** Active
 **Last Updated:** 2026-08-24
 
@@ -934,7 +934,7 @@ site's interface is worse than one that admits the boundary.
 | `converter.html` | ~53 lines | `.conv-*`, `.t-*`, `.j-*` | Panels and actions, plus two syntax highlighters: `.t-*` for the rendered logic tree (`.t-fn`, `.t-cond`, `.t-asset`, `.t-wt`, `.t-kw`, `.t-muted`) and `.j-*` for raw JSON (`.j-key`, `.j-str`, `.j-num`, `.j-bool`, `.j-null`) |
 | `etf-cloner.html` | ~70 lines | `.ec-*`, `.j-*` | Panels, the file drop zone, the live/full mode toggle, the holdings table wrapper, and the same `.j-*` JSON highlighter |
 | `nodes.html` | ~36 lines | `.nd-*` | Panels and actions, the oversized node total, the breakdown table (including the muted `tr.excluded` rows for what is deliberately not counted), and the quoted node definition. No syntax highlighter: this page prints one number and a table, not JSON (v1.26.0) |
-| `k1.html` | ~46 lines | `.k1-*` | The lookup form and its hint line, the result panel, the oversized Yes/No verdict and its subtitle, the fact rows beneath it (`.k1-label` + value pairs), the caveat note, and the table of every K-1 issuer with its count. No syntax highlighter: this page prints a verdict and a table, not JSON (v1.27.0) |
+| `k1.html` | ~54 lines | `.k1-*` | The lookup form and its hint line, the result panel, the oversized Yes/No verdict and its subtitle, the fact rows beneath it (`.k1-label` + value pairs), the caveat note, and the collapsible fund table: `.k1-filters` and `.k1-filter` for the All/K-1/No K-1 pills and the Expand toggle (`.on` marks the active pill, `.k1-toggle` pushes the toggle to the right edge), and `td.yes`/`td.no` for the verdict column. `.k1-wrap` caps at `60vh` and scrolls, since the table is 184 rows expanded. No syntax highlighter: this page prints a verdict and a table, not JSON (v1.27.0, table reworked v1.27.2) |
 
 `rsi.html`, `database.html`, `index.html`, `about.html`, `strategies.html`, `glossary.html` and
 `404.html` carry **no** inline style at all; everything they render is in `css/main.css` and

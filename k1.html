@@ -42,7 +42,15 @@
     table.k1-table th { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-disabled); font-weight: 600; }
     table.k1-table td.t { font-family: var(--font-mono); color: var(--color-yellow); }
     table.k1-table td.nm { color: var(--color-secondary); }
-    .k1-wrap { overflow-x: auto; }
+    .k1-wrap { overflow-x: auto; max-height: 60vh; overflow-y: auto; }
+    .k1-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .k1-filter { font-family: inherit; font-size: 0.8125rem; padding: 5px 12px; border-radius: 6px;
+      border: 1px solid var(--color-border); background: transparent; color: var(--color-secondary); cursor: pointer; }
+    .k1-filter:hover { color: var(--color-primary); border-color: var(--color-disabled); }
+    .k1-filter.on { background: var(--color-green); border-color: var(--color-green); color: #0b0b0b; font-weight: 600; }
+    .k1-filter.k1-toggle { margin-left: auto; }
+    table.k1-table td.yes { color: var(--color-green); font-family: var(--font-mono); }
+    table.k1-table td.no { color: var(--color-secondary); font-family: var(--font-mono); }
     .k1-note { font-size: 0.8125rem; color: var(--color-secondary); line-height: 1.7; margin-top: 14px; }
     .k1-note code { font-size: 0.75rem; }
     .k1-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -98,12 +106,19 @@
 
       <div class="k1-panel">
         <div class="k1-head">
-          <h2>Every K-1 issuer in this database</h2>
+          <h2>Every fund in this database</h2>
           <span class="k1-count" id="k1-summary"></span>
         </div>
-        <div class="k1-wrap">
+        <div class="k1-filters">
+          <button type="button" class="k1-filter on" data-filter="all">All</button>
+          <button type="button" class="k1-filter" data-filter="yes">K-1</button>
+          <button type="button" class="k1-filter" data-filter="no">No K-1</button>
+          <button type="button" class="k1-filter k1-toggle" id="btn-collapse"
+                  aria-expanded="false" aria-controls="k1-wrap">Expand</button>
+        </div>
+        <div class="k1-wrap" id="k1-wrap" hidden>
           <table class="k1-table">
-            <thead><tr><th>Ticker</th><th>Fund</th><th>Structure</th></tr></thead>
+            <thead><tr><th>Ticker</th><th>Name</th><th>K1</th></tr></thead>
             <tbody id="k1-list"></tbody>
           </table>
         </div>
@@ -292,31 +307,103 @@
         render(raw, row);
       }
 
+      // The table and its collapsed state are a per-visitor convenience, so they live in
+      // localStorage: never sent anywhere, never read back by anything but this page in this
+      // browser. Every access is wrapped, because a private window or a browser set to block
+      // site data throws on the accessor itself rather than returning empty.
+      var STORE_KEY = 'composer-atlas.k1.view.v1';
+      var FILTER = 'all';
+      var OPEN = false;
+
+      function loadView() {
+        var raw = null;
+        try { raw = localStorage.getItem(STORE_KEY); } catch (e) { return; }
+        if (!raw) { return; }
+        try {
+          var v = JSON.parse(raw);
+          if (!v || typeof v !== 'object') { return; }
+          // Validated rather than trusted: a stale or hand-edited value must not put the page
+          // into a state it has no button for.
+          if (v.filter === 'all' || v.filter === 'yes' || v.filter === 'no') { FILTER = v.filter; }
+          OPEN = v.open === true;
+        } catch (e) { /* unparseable, so keep the defaults */ }
+      }
+
+      function saveView() {
+        try {
+          localStorage.setItem(STORE_KEY, JSON.stringify({ filter: FILTER, open: OPEN }));
+        } catch (e) { /* storage unavailable. The page still works, it just forgets. */ }
+      }
+
       function renderList() {
+        // Rows recorded as not_found are not exchange-traded products at all, so they are
+        // counted in the footnote but never listed: a table of funds should not contain
+        // individual stocks that happen to have been checked.
         var tickers = Object.keys(DB.tickers).sort();
-        var yes = 0, no = 0, unknown = 0, rows = '';
+        var yes = 0, no = 0, other = 0, rows = '', shown = 0;
+
         tickers.forEach(function (t) {
           var r = DB.tickers[t];
-          if (r.k1 === true) {
-            yes++;
-            rows += '<tr><td class="t">' + esc(t) + '</td><td class="nm">' +
-              esc(r.name || '') + '</td><td class="nm">' + esc(r.structure || '') + '</td></tr>';
-          } else if (r.k1 === false) { no++; } else { unknown++; }
+          if (r.k1 === true) { yes++; } else if (r.k1 === false) { no++; } else { other++; return; }
+          if (FILTER === 'yes' && r.k1 !== true) { return; }
+          if (FILTER === 'no' && r.k1 !== false) { return; }
+          shown++;
+          rows += '<tr><td class="t">' + esc(t) + '</td>' +
+            '<td class="nm">' + esc(r.name || '') + '</td>' +
+            '<td class="' + (r.k1 ? 'yes' : 'no') + '">' + (r.k1 ? 'Yes' : 'No') + '</td></tr>';
         });
+
         document.getElementById('k1-list').innerHTML = rows ||
-          '<tr><td colspan="3" class="nm">No K-1 issuers in the database.</td></tr>';
+          '<tr><td colspan="3" class="nm">Nothing matches this filter.</td></tr>';
+
+        var listed = yes + no;
         document.getElementById('k1-summary').textContent =
-          yes + ' of ' + tickers.length + ' issue a K-1';
+          FILTER === 'all' ? shown + ' funds, ' + yes + ' issuing a K-1'
+                           : shown + ' of ' + listed + ' funds';
+
         document.getElementById('k1-refreshed').textContent =
-          tickers.length + ' tickers checked against etfdb.com, ' + yes + ' issuing a K-1, ' +
-          no + ' not, ' + unknown + ' undetermined.' +
+          listed + ' funds checked against etfdb.com, ' + yes + ' issuing a K-1 and ' + no +
+          ' not.' + (other ? ' A further ' + other + ' tickers were checked and are not ' +
+          'exchange-traded products, so they are not listed here.' : '') +
           (DB.refreshed_at ? ' Last refreshed ' + DB.refreshed_at + '.' : '');
+      }
+
+      function applyView() {
+        var wrap = document.getElementById('k1-wrap');
+        var toggle = document.getElementById('btn-collapse');
+        wrap.hidden = !OPEN;
+        toggle.textContent = OPEN ? 'Collapse' : 'Expand';
+        toggle.setAttribute('aria-expanded', OPEN ? 'true' : 'false');
+        Array.prototype.forEach.call(
+          document.querySelectorAll('.k1-filter[data-filter]'),
+          function (b) { b.classList.toggle('on', b.getAttribute('data-filter') === FILTER); }
+        );
+        if (DB) { renderList(); }
       }
 
       document.getElementById('btn-check').addEventListener('click', check);
       inputEl.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') { e.preventDefault(); check(); }
       });
+      Array.prototype.forEach.call(
+        document.querySelectorAll('.k1-filter[data-filter]'),
+        function (b) {
+          b.addEventListener('click', function () {
+            FILTER = b.getAttribute('data-filter');
+            // Picking a filter while collapsed would otherwise look like a dead button.
+            OPEN = true;
+            applyView();
+            saveView();
+          });
+        }
+      );
+
+      document.getElementById('btn-collapse').addEventListener('click', function () {
+        OPEN = !OPEN;
+        applyView();
+        saveView();
+      });
+
       document.getElementById('btn-clear').addEventListener('click', function () {
         inputEl.value = '';
         setMsg('', '');
@@ -324,6 +411,9 @@
         setUrl('');
         inputEl.focus();
       });
+
+      loadView();
+      applyView();
 
       loadDb().then(function (db) {
         DB = db;

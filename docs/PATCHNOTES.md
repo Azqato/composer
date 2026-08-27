@@ -5,6 +5,60 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.27.2] - 2026-08-27
+
+### K1 Lookup: the table lists every fund, and remembers how you left it
+
+Four changes to the table below the lookup box, all requested by the owner.
+
+**It lists every fund now, not only the K-1 issuers.** Columns are **Ticker, Name, K1**, where K1
+reads Yes or No. The Structure column was dropped: it explains *why* a fund gets the answer it does,
+which belongs next to a single verdict where there is room to say what it means, not repeated down
+184 rows.
+
+**Three filter pills: All, K-1, No K-1.** 184 funds, 41 of them K-1 issuers.
+
+**A collapse toggle, and it ships collapsed.** The lookup box is what the page is for; the table is
+reference material underneath it, and 184 rows of it pushed everything else off the screen.
+**Picking a filter while collapsed expands the table**, because a filter button that appears to do
+nothing is worse than an expansion nobody asked for.
+
+**Rows recorded as `not_found` are counted but never listed.** Those are individual stocks from the
+Signal Miner ticker universe that were checked and turned out not to be exchange-traded products. A
+table of funds should not contain them, so the footnote reports the 28 excluded rather than leaving
+the number to silently not add up.
+
+### The view persists between visits
+
+Filter and collapsed state are stored under `composer-atlas.k1.view.v1`, following the
+`composer-atlas.<page>.<thing>.<version>` key convention `signal-miner.html` already uses.
+
+**This is a per-viewer convenience, not user data.** It never leaves the browser, is never sent
+anywhere, and nothing but this page in that browser ever reads it, so it does not touch the site's
+no-accounts, no-data-collection policy.
+
+**Every access is wrapped, and the stored value is validated rather than trusted.** A private window
+or a browser set to block site data throws on the accessor itself rather than returning empty, so an
+unwrapped read is a broken page and not a missing preference. A stale or hand-edited entry cannot
+put the page into a state it has no button for. Under `file://` the write throws, is swallowed, and
+the page works and simply forgets between visits.
+
+### Verified locally, by driving the page
+
+Per the testing rule set at v1.27.1, this was proven from the working copy and nowhere else.
+`localStorage` needs a real origin, so `file://` could not have verified it: a harness loaded
+`k1.html` in an iframe over `python -m http.server`, clicked the page's own buttons, and read the
+table back after each step.
+
+Eight steps, all correct: first visit collapsed on All with 184 rows; K-1 clicked while collapsed
+expanded to 41; Collapse and Expand round-tripped; No K-1 gave 143; **a reload came back on No K-1
+and expanded**; All plus collapsed was set; **a second reload came back on All and collapsed**. Then
+re-checked under `file://` to confirm the page still renders when storage refuses.
+
+**Files changed:** `k1.html`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.27.1] - 2026-08-27
 
 ### K1 Lookup: the address bar now follows the lookup

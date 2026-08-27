@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.27.1
+**Version:** 1.27.2
 **Status:** Active
 **Last Updated:** 2026-08-25
 
@@ -511,6 +511,27 @@ structure, its tax form, both capital-gains rates and a link to verify by hand. 
 says exactly that, **"not in this database yet, which is not the same as saying it has no K-1"**, and
 offers the source link. The third case is the one worth getting right: silently answering "No" for an
 unknown ticker would be a wrong answer about someone's taxes dressed as a confident one.
+
+**The fund table below the lookup (reworked v1.27.2).** It lists **every** fund in the database,
+not only the K-1 issuers, with three columns: Ticker, Name, K1. Three pills filter it (All, K-1,
+No K-1) and a toggle collapses it. **It ships collapsed**, because it is 184 rows and the lookup box
+is what the page is for; the table is reference material underneath it. Picking a filter while
+collapsed expands the table, since a filter button that appears to do nothing is worse than an
+unrequested expansion.
+
+**Rows recorded as `not_found` are counted but never listed.** They are individual stocks from the
+Signal Miner universe that were checked and turned out not to be exchange-traded products, and a
+table of funds should not contain them. The footnote states how many were excluded, so the number
+is not silently missing.
+
+**The filter and collapsed state persist in `localStorage`** under
+`composer-atlas.k1.view.v1`, matching the `composer-atlas.<page>.<thing>.<version>` key convention
+`signal-miner.html` already uses. This is a per-viewer convenience, not user data: it never leaves
+the browser, is never sent anywhere, and is never read back by anything but this page. **Every
+access is wrapped**, because a private window or a browser set to block site data throws on the
+accessor itself rather than returning empty, and the stored value is validated rather than trusted
+so a stale or hand-edited entry cannot put the page into a state it has no button for. Under
+`file://` the write throws and is swallowed, so the page works and simply forgets between visits.
 
 **Nodes data flow (v1.26.0):** the tool takes a symphony URL, ID, or pasted JSON, walks the tree
 from the `/score` endpoint, and counts nodes. It has no data file and no server component. **The
