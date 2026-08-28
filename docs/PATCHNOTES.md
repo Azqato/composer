@@ -5,6 +5,62 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.27.9] - 2026-08-28
+
+### `/k1` now says when a ticker is an ETN, not a fund
+
+Six of the 187 rows in the K-1 database are exchange-traded notes: **FNGD, FNGU, GDXD, GDXU, VXX and
+VXZ.** They are among the most heavily traded tickers the site touches, and two of them are held by a
+featured symphony today. Until now the page told you the least interesting true thing about them,
+that they send a 1099-B.
+
+**An ETN is not a fund.** It is senior unsecured debt of the issuing bank and a promise to pay the
+index return. Nothing is held on your behalf, so there is no basket to liquidate if the issuer fails:
+you are an unsecured creditor of a failed bank rather than an owner of securities. The issuer can
+also call the note, suspend new issuance, or delist it, and a note trading with creations suspended
+can drift far from what it tracks and stay there.
+
+Three surfaces, deliberately different in weight:
+
+1. **A blue callout on the answer panel**, shown whenever the structure is `ETN`. It works for live
+   unverified lookups too, since that path parses the same field.
+2. **An `ETN` tag** on the ticker in the fund table, so the fact shows up while scanning rather than
+   only after a lookup.
+3. **An `ETN` filter pill.** It cuts across the K-1 axis instead of sitting beside it: every ETN is
+   also a "No", so it narrows that list rather than adding a fourth state. The CSV export follows the
+   filter and names the file `composer-atlas-k1-etn-<date>.csv`.
+
+**The callout is quieter than the contested-sources warning on purpose.** Pink means the answer on
+the page may be wrong. Blue means the answer is right and a different risk sits beside it. Styling
+both the same would teach a reader to skim both.
+
+The count in the explainer paragraph is written from the database at render time rather than typed,
+so it cannot go stale the next time the refresh script picks up an ETN.
+
+No new fetching was needed. `structure` has been in the database since v1.27.0; this release only
+reads it.
+
+### New symphony: "The Golden KMLM Switch"
+
+Processed from `data/AddSymphony.csv`. ARR 14.22, max drawdown -51.83%, Sharpe 3.168 over 1,096 days,
+last logic edit 2026-08-25. The database goes 6,668 to 6,669.
+
+Added to `storage.csv` and `database.json` by hand rather than through
+`sync_storage_to_database.py`, which resurrects purged dead symphonies, then refreshed that one row
+through `refresh_full_database.apply_backtest_result`. 104 other rows were past the seven-day
+staleness mark; refreshing those is the weekly job.
+
+**`data/database.js` was briefly out of sync with its JSON twin during this work** (6,668 against
+6,669), because refreshing a single row bypasses the `main()` that writes the twin. It was
+regenerated before the commit and the two now round-trip identical. Worth recording because
+**`check_database_keys.py` passed while they disagreed**: the gate checks keys, not that the twins
+match. Nothing enforces commit-both-or-neither for this pair today.
+
+**Files changed:** `k1.html`, `data/database.json`, `data/database.js`, `data/database_summary.json`,
+`data/database_summary.js`, `data/storage.csv`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.27.8] - 2026-08-28
 
 ### Fix: the daily distribution metrics were labelled as monthly

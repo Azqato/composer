@@ -70,6 +70,17 @@
       color: var(--color-primary); font-size: 0.8125rem; line-height: 1.7; }
     .k1-warn strong { color: var(--color-pink); }
     .k1-warn a { color: var(--color-blue); }
+    /* Deliberately quieter than .k1-warn. The pink block means "the answer on this page may
+       be wrong"; this one means "the answer is right, and here is a different risk that the
+       answer does not cover". Same weight would train a reader to skim both. */
+    .k1-etn { margin-top: 14px; padding: 12px 14px; border-radius: 6px;
+      border: 1px solid var(--color-blue); background: rgba(0, 132, 255, 0.06);
+      color: var(--color-primary); font-size: 0.8125rem; line-height: 1.7; }
+    .k1-etn strong { color: var(--color-blue); }
+    .k1-tag { display: inline-block; font-size: 0.625rem; text-transform: uppercase;
+      letter-spacing: 0.05em; font-weight: 600; padding: 1px 5px; border-radius: 3px;
+      border: 1px solid var(--color-blue); color: var(--color-blue);
+      font-family: var(--font-mono); margin-left: 7px; vertical-align: middle; }
     .k1-note code { font-size: 0.75rem; }
     .k1-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
     .k1-head h2 { color: var(--color-primary); font-size: 1rem; font-weight: 600; margin: 0; }
@@ -119,6 +130,7 @@
           <div class="k1-sub" id="k1-name"></div>
           <div class="k1-facts" id="k1-facts"></div>
           <div class="k1-warn" id="k1-warn" hidden></div>
+          <div class="k1-etn" id="k1-etn" hidden></div>
           <p class="k1-note" id="k1-note"></p>
         </div>
       </div>
@@ -132,6 +144,7 @@
           <button type="button" class="k1-filter on" data-filter="all">All</button>
           <button type="button" class="k1-filter" data-filter="yes">K-1</button>
           <button type="button" class="k1-filter" data-filter="no">No K-1</button>
+          <button type="button" class="k1-filter" data-filter="etn">ETN</button>
           <button type="button" class="k1-filter k1-export" id="btn-export">Export</button>
           <button type="button" class="k1-filter k1-toggle" id="btn-collapse"
                   aria-expanded="false" aria-controls="k1-wrap">Expand</button>
@@ -170,12 +183,24 @@
               <tbody>
                 <tr><td>Commodity Pool</td><td>Schedule K-1</td><td>A partnership for tax purposes, so income, gains and losses pass through to holders</td></tr>
                 <tr><td>ETF</td><td>Form 1099</td><td>A regulated investment company under the 1940 Act</td></tr>
-                <tr><td>ETN</td><td>Form 1099-B</td><td>A senior unsecured debt note, not a fund at all</td></tr>
+                <tr><td>ETN</td><td>Form 1099-B</td><td>A senior unsecured debt note, not a fund at all. <strong>See the warning below</strong></td></tr>
                 <tr><td>Grantor Trust</td><td>Form 1099-B</td><td>A direct undivided interest in the underlying, as with the physical metal trusts</td></tr>
                 <tr><td>UIT</td><td>Form 1099</td><td>A unit investment trust, which is what SPY, QQQ and DIA are</td></tr>
               </tbody>
             </table>
           </div>
+          <p style="margin-top:14px">
+            <strong>One row in that table is worth more than the tax answer beside it.</strong> An
+            ETN sends you a 1099-B, which is the easy form, and that is the least interesting thing
+            about it. An exchange-traded note is a bank's unsecured promise to pay you the index
+            return. Nothing is held on your behalf, so there is no basket to liquidate if the issuer
+            fails, and the issuer may call the note or stop creating new units whenever it likes.
+            A note with creations suspended can trade well away from the value it tracks and stay
+            there. This database flags every ETN it knows about, on the answer panel and with a tag
+            in the table, and the <strong>ETN</strong> filter lists them on their own. There are
+            <strong id="k1-etn-count">several</strong> of them here, and they are among the most
+            heavily traded tickers on the site.
+          </p>
           <p style="margin-top:14px">
             <strong>Every verdict is corroborated by a second, independent field.</strong> Maximum
             short- and long-term capital gains rates fall out of the structure rather than being
@@ -304,6 +329,30 @@
         } else {
           warnEl.innerHTML = '';
           warnEl.hidden = true;
+        }
+
+        // An ETN is the one structure where the tax answer is the less important fact.
+        // The verdict above is still correct (no K-1, a 1099-B), but a reader who came for
+        // the tax question and leaves without knowing they are holding unsecured bank debt
+        // has been told the smaller half of the truth. Shown for live rows too, since
+        // classifyLive parses the same Structure field.
+        var etnEl = document.getElementById('k1-etn');
+        if ((row.structure || '').toUpperCase() === 'ETN') {
+          etnEl.innerHTML =
+            '<strong>This is an ETN, not a fund.</strong> You do not own a basket of anything. ' +
+            'An exchange-traded note is <strong>senior unsecured debt of the bank that issued ' +
+            'it</strong>, and a promise to pay whatever the index returns. There are no assets ' +
+            'held on your behalf and nothing to liquidate, so if the issuer fails you are an ' +
+            'unsecured creditor of a failed bank rather than an owner of securities. ' +
+            'The issuer can also <strong>call it, suspend new issuance, or delist it</strong> ' +
+            'at its discretion, and a note trading with issuance suspended can drift far from ' +
+            'the value of the index it tracks. That is a separate question from the tax form, ' +
+            'and this page only answers the tax form. Read the issuer\'s pricing supplement ' +
+            'before holding one.';
+          etnEl.hidden = false;
+        } else {
+          etnEl.innerHTML = '';
+          etnEl.hidden = true;
         }
 
         var note;
@@ -572,7 +621,8 @@
           if (!v || typeof v !== 'object') { return; }
           // Validated rather than trusted: a stale or hand-edited value must not put the page
           // into a state it has no button for.
-          if (v.filter === 'all' || v.filter === 'yes' || v.filter === 'no') { FILTER = v.filter; }
+          if (v.filter === 'all' || v.filter === 'yes' || v.filter === 'no' ||
+              v.filter === 'etn') { FILTER = v.filter; }
           if (v.sort === 'ticker' || v.sort === 'name' || v.sort === 'k1') { SORT = v.sort; }
           if (typeof v.asc === 'boolean') { ASC = v.asc; }
           OPEN = v.open === true;
@@ -600,6 +650,10 @@
           if (r.k1 !== true && r.k1 !== false) { return; }
           if (FILTER === 'yes' && r.k1 !== true) { return; }
           if (FILTER === 'no' && r.k1 !== false) { return; }
+          // The ETN filter cuts across the other two rather than sitting beside them: it
+          // asks about structure, not about the tax form. Every ETN is also a No, so it
+          // reads as a narrowing of that list rather than a fourth mutually exclusive state.
+          if (FILTER === 'etn' && (r.structure || '').toUpperCase() !== 'ETN') { return; }
           visible.push([t, r]);
         });
 
@@ -636,7 +690,9 @@
         visible.forEach(function (pair) {
           var t = pair[0], r = pair[1];
           rows += '<tr><td class="t"><a href="?t=' + encodeURIComponent(t) + '">' +
-            esc(t) + '</a></td>' +
+            esc(t) + '</a>' +
+            ((r.structure || '').toUpperCase() === 'ETN' ? '<span class="k1-tag">ETN</span>' : '') +
+            '</td>' +
             '<td class="' + (r.k1 ? 'yes' : 'no') + '">' + (r.k1 ? 'Yes' : 'No') + '</td>' +
             '<td class="nm">' + esc(r.name || '') + '</td></tr>';
         });
@@ -647,7 +703,15 @@
         var listed = yes + no;
         document.getElementById('k1-summary').textContent =
           FILTER === 'all' ? shown + ' funds, ' + yes + ' issuing a K-1'
-                           : shown + ' of ' + listed + ' funds';
+            : FILTER === 'etn' ? shown + ' of ' + listed + ' are ETNs, not funds'
+            : shown + ' of ' + listed + ' funds';
+
+        var etnCount = 0;
+        Object.keys(DB.tickers).forEach(function (t) {
+          if ((DB.tickers[t].structure || '').toUpperCase() === 'ETN') { etnCount++; }
+        });
+        var etnEl2 = document.getElementById('k1-etn-count');
+        if (etnEl2) { etnEl2.textContent = etnCount === 1 ? 'one' : etnCount; }
 
         document.getElementById('k1-refreshed').textContent =
           listed + ' funds checked against etfdb.com, ' + yes + ' issuing a K-1 and ' + no +
@@ -770,7 +834,8 @@
         var blob = new Blob(['\ufeff' + lines.join('\r\n') + '\r\n'],
                             { type: 'text/csv;charset=utf-8' });
         var name = 'composer-atlas-k1-' +
-          (FILTER === 'yes' ? 'issuers' : FILTER === 'no' ? 'no-k1' : 'all') +
+          (FILTER === 'yes' ? 'issuers' : FILTER === 'no' ? 'no-k1'
+            : FILTER === 'etn' ? 'etn' : 'all') +
           '-' + (DB.refreshed_at || '').slice(0, 10) + '.csv';
 
         var url = URL.createObjectURL(blob);

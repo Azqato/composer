@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.27.8
+**Version:** 1.27.9
 **Status:** Active
-**Last Updated:** 2026-08-25
+**Last Updated:** 2026-08-28
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -1603,7 +1603,7 @@ ETN.
 | Commodity Pool | Schedule K-1 | A partnership for tax purposes. Income, gains and losses pass through to holders. Every leveraged and inverse volatility product, most futures-based commodity funds, and several leveraged Treasury funds |
 | ETF | Form 1099 | A regulated investment company under the 1940 Act |
 | UIT | Form 1099 | Unit investment trust. SPY, QQQ and DIA are these |
-| ETN | Form 1099-B | Senior unsecured debt of the issuing bank, not a fund at all. See V1.19 for the open item on surfacing this |
+| ETN | Form 1099-B | Senior unsecured debt of the issuing bank, not a fund at all. **Surfaced on the page since v1.27.9:** a blue callout on the answer panel, an `ETN` tag in the table, and an `ETN` filter |
 | Grantor Trust | Form 1099-B | A direct undivided interest in the underlying, which is why the physical metal trusts are taxed at the 28% collectibles rate |
 
 **A third, independent field corroborates every row.** The max short- and long-term capital gains
@@ -2318,7 +2318,7 @@ numbering schemes; they answer different questions.
 | V1.16 | Performance fix: columnar summary export, page weight | Complete, built ahead of slot | v1.11.0 |
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
-| V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete; ETN display open | v1.27.0 |
+| V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
 | V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | Specified and approved 2026-08-28; item 17 shipped | v1.27.8 (partial) |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
@@ -2869,8 +2869,7 @@ already documented above with reasons, so the simplification does not need to be
 
 ### V1.19: K1 Lookup
 
-**Status:** Shipped (v1.27.0). The page and its database are live; the ETN flag below is the one
-open item.
+**Status:** Shipped and complete (v1.27.0, closed out at v1.27.9). Every item below is done.
 
 **What it is.** `k1.html` answers a single question for a single ticker: **does holding this issue
 you a Schedule K-1 instead of a 1099?** It matters because a K-1 arrives late, often after the April
@@ -2898,14 +2897,30 @@ instant and works offline.
 - [x] `scripts/refresh_k1.py`, `data/k1.json` and its `.js` twin, seeded from `data/k1_seed.txt`
 - [x] `k1.html`, nav, footer, homepage card, `check_live.py` coverage
 - [x] Independent verification of a sample against sources the script does not use
-- [ ] **Display whether the ETF is an ETN.** Requested by the owner 2026-08-27. Nearly free: the
-  script already stores `structure`, and `ETN` is one of its values, so the data is in the database
-  today and no new fetching is needed. The work is presentational, deciding how prominent the ETN
-  call-out should be next to the K-1 verdict. **Worth a real callout rather than a quiet field,**
-  because an ETN is not a fund at all: it is senior unsecured debt of the issuing bank, so the holder
-  carries that bank's credit risk with no basket of assets behind the shares, and the issuer can call
-  or delist it. That is a distinct risk from the tax question the page currently answers, and a
-  visitor checking one is very likely to want the other
+- [x] **Display whether the ETF is an ETN (v1.27.9).** Requested by the owner 2026-08-27,
+  shipped 2026-08-28. No new fetching: `structure` was already in the database, and `ETN` is one of
+  its six values. **Six of the 187 rows are ETNs:** FNGD, FNGU, GDXD, GDXU, VXX and VXZ, which are
+  among the most heavily traded tickers the site touches. GDXD and GDXU are held by a featured
+  symphony today.
+
+  Three surfaces, deliberately different in weight:
+
+  1. **A blue callout on the answer panel** (`.k1-etn`), shown whenever `structure` is `ETN`,
+     including for live unverified lookups since `classifyLive` parses the same field. It states
+     that no assets are held on the holder's behalf, that the holder is an unsecured creditor of the
+     issuing bank rather than an owner of securities, and that the issuer may call the note, suspend
+     issuance, or delist it, at which point the note can trade away from the index and stay there.
+  2. **An `ETN` tag** on the ticker cell in the fund table, so the fact is visible when scanning
+     rather than only after a lookup.
+  3. **An `ETN` filter pill**, which cuts across the K-1 axis rather than sitting beside it: every
+     ETN is also a "No", so the filter narrows that list rather than adding a fourth state. The CSV
+     export follows the filter and names the file `...-etn-<date>.csv`.
+
+  **The callout is quieter than `.k1-warn` on purpose.** Pink means the answer on the page may be
+  wrong; blue means the answer is right and a different risk sits beside it. Styling both the same
+  would teach a reader to skim both. The count in the explainer paragraph is written from
+  `DB.tickers` at render time rather than typed, so it cannot go stale when the refresh script adds
+  an ETN
 
 ### V1.20: Strategy Page Rebuild
 
