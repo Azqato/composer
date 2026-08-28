@@ -5,6 +5,70 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.27.8] - 2026-08-28
+
+### Fix: the daily distribution metrics were labelled as monthly
+
+Every strategy page showed `min`, `mean`, `median` and `max` under a "Monthly Distribution" heading,
+as "Min Month" through "Max Month". **They are daily returns.** A visitor reading a strategy page was
+told the worst month was -15% when that number is a single day, which understates how violent these
+strategies are rather than overstating it.
+
+**Three independent checks agree, and none of them relies on the source's documentation.** Volatility
+drag means an arithmetic mean compounded over a year must exceed the geometric annualized return:
+that holds for **31 of 31** featured strategies read as daily and **0 of 31** read as monthly. The
+monthly reading implies 3% to 7% annual returns against stated ARRs of 90% to 277%. And the stored
+`max` of 54.63% for strategies holding SOXL matches SOXL's own best single day, 54.79% on
+2025-04-09, computed independently from `data/prices.json`.
+
+The PRD contradicted itself on this, describing the fields as "single-period" in the schema section
+and "Monthly distribution" in the API mapping table. Both now say daily, and the group is relabelled
+**Daily Distribution** with rows **Worst Day**, **Mean Day**, **Median Day** and **Best Day**.
+
+### Glossary: seven metric terms added, 20 to 27
+
+Sortino Ratio, Win Rate, Skewness, Kurtosis, Tail Ratio, Herfindahl Index and Annualized Turnover.
+
+**These were written before the sections that will use them, not after.** All seven already exist in
+`data/database.json` and are queued for display on strategy pages under V1.20. Shipping a number a
+visitor cannot look up adds jargon rather than understanding, so the definitions land first.
+
+Each entry follows the existing six-section shape and each one states what the metric **cannot** tell
+you, because these are the statistics most often quoted as though they settle something: win rate is
+trivially gameable by taking small profits and letting losses run, skewness and kurtosis are
+dominated by the few largest observations and unstable across windows, and a Herfindahl index knows
+nothing about correlation, so eight leveraged funds tracking one index score as diversified while
+behaving as one position.
+
+### Roadmap: V1.20, the strategy page rebuild
+
+Specified and approved after the owner shared a third-party Composer analysis page. Seventeen items
+in four tiers, with full sequencing, recorded in `docs/PRD.md`.
+
+**The finding that shapes it:** all 31 featured strategies join cleanly to `data/database.json` on
+`symphony_id`, exposing 20 fields the strategy pages have never shown. **Nine of the seventeen items
+need no new writing and no new fetching.** Three are worth naming: outlier dependence is already
+computed and never displayed (the best 5% of days produced 137.5% of `zoops-holy-grail-2026`'s total
+return, and above 100% means the strategy is a net loser without them); `oos_date` supports a real
+out-of-sample claim (`holy-grail` unedited for 1,500 days against 165 to 214 for the 2026 zoop
+editions); and turnover runs 23x to 75x annually with `total_costs` beside it.
+
+**Joining holdings against the v1.19 K-1 database shows 12 of the 31 featured strategies currently
+hold a fund that issues a Schedule K-1.** That is a tax fact about a real holding, computable today
+from two files already in the repo, which Composer itself does not surface.
+
+**One idea from the source page was tested and rejected on the measurement.** It shows real and
+simulated backtests side by side, modelling leveraged ETFs backwards from their underlyings.
+Comparing every featured strategy's `backtest_days` against the inception of its youngest holding
+gives a gap of zero or negative in every case, so Composer already truncates to real traded history
+and the distinction does not apply here. The useful inversion, stating why a window is as short as
+it is, is item 9.
+
+**Files changed:** `js/app.js`, `data/glossary.json`, `data/glossary.js`, `docs/PRD.md`,
+`docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.27.7] - 2026-08-27
 
 ### K1 Lookup: etfdb publishes the answer directly, and now that is the primary check

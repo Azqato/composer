@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.27.7
+**Version:** 1.27.8
 **Status:** Active
 **Last Updated:** 2026-08-25
 
@@ -1338,10 +1338,10 @@ All fields in `data/strategies.json`. Both `strategies.json` and `strategies.js`
 | `calmar_ratio` | float | Yes | Annualized return / abs(max drawdown). Higher is better. |
 | `sharpe_ratio` | float | Yes | (Return − risk-free rate) / std deviation. Higher is better. |
 | `standard_deviation` | float | Yes | Annualized standard deviation of returns |
-| `min` | float | Yes | Minimum single-period return observed |
-| `mean` | float | Yes | Mean single-period return |
-| `median` | float | Yes | Median single-period return |
-| `max` | float | Yes | Maximum single-period return observed |
+| `min` | float | Yes | **Worst single-day return.** The period is daily, verified in v1.27.8; see the note below this table |
+| `mean` | float | Yes | Mean daily return |
+| `median` | float | Yes | Median daily return |
+| `max` | float | Yes | **Best single-day return** |
 | `trailing_one_month_return` | float | Yes | Return over trailing 1-month period |
 | `trailing_three_month_return` | float | Yes | Return over trailing 3-month period |
 | `trailing_one_year_return` | float | Yes | Return over trailing 1-year period |
@@ -1984,7 +1984,8 @@ A run with an empty Signal set is now rejected with an explanatory message rathe
 1. Returns: Ann. Return, Cumulative Return
 2. Risk: Max Drawdown, Std Deviation
 3. Risk-Adjusted: Sharpe Ratio, Calmar Ratio
-4. Monthly Distribution: Min Month, Mean Month, Median Month, Max Month
+4. Daily Distribution: Worst Day, Mean Day, Median Day, Best Day (**relabelled in v1.27.8**;
+   these were shown as "Min Month" through "Max Month" and the period was wrong)
 5. Trailing Returns: 1-Month, 3-Month, 1-Year
 6. Metadata: Backtest Period, Last Updated
 
@@ -2152,7 +2153,7 @@ The sequential, 1-call-per-2-seconds throttle already used by `update_metrics.py
 | `calmar_ratio` | float | Maps 1:1 |
 | `sharpe_ratio` | float | Maps 1:1 |
 | `standard_deviation` | float | Maps 1:1 |
-| `min`, `mean`, `median`, `max` | float | Monthly distribution: maps 1:1 |
+| `min`, `mean`, `median`, `max` | float | **Daily** distribution: maps 1:1 |
 | `trailing_one_month_return`, etc. | float | Maps 1:1 |
 | `max_drawdown` | float | **Returned as positive by API; stored as negative in schema** |
 | `size` | integer | Backtest days; stored as `backtest_days` in schema |
@@ -2318,6 +2319,7 @@ numbering schemes; they answer different questions.
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete; ETN display open | v1.27.0 |
+| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | Specified and approved 2026-08-28; item 17 shipped | v1.27.8 (partial) |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -2904,6 +2906,183 @@ instant and works offline.
   carries that bank's credit risk with no basket of assets behind the shares, and the issuer can call
   or delist it. That is a distinct risk from the tax question the page currently answers, and a
   visitor checking one is very likely to want the other
+
+### V1.20: Strategy Page Rebuild
+
+**Status:** Specified 2026-08-28, approved by the owner the same day. Item 17 is already shipped
+(v1.27.8); everything else is not started.
+
+**Origin.** The owner shared a third-party Composer strategy analysis page and asked what could be
+taken from it. The analysis that followed is summarised here rather than in a chat log, because the
+half of it that matters is the data audit, not the design admiration. **The screenshot is a source
+of structure, not of palette:** it is a light editorial print-style page and this site is dark
+(`#0d0d0d`). What is worth copying is how it organises information, and specifically that it turns
+prose into structures that force an author to name failure modes.
+
+**The finding that shapes the whole phase: the data is already here.** All 31 featured strategies in
+`data/strategies.json` join cleanly to `data/database.json` on `symphony_id`, with zero misses. That
+join exposes **20 fields the strategy pages have never shown**, including `sortino_ratio`,
+`win_rate`, `skewness`, `kurtosis`, `tail_ratio`, the three `top_*_contribution` outlier fields,
+`herfindahl_index`, `annualized_turnover`, `total_costs`, `last_market_days_holdings` and
+`oos_date`. **Nine of the seventeen items below need no new writing and no new fetching at all**,
+which is why the sequencing puts them first.
+
+**Three of those fields are strong content on their own:**
+
+- **Outlier dependence is already computed and never displayed.** For `zoops-holy-grail-2026` the
+  best 5% of days produced **137.5%** of total return. Above 100% means that without those days the
+  strategy is a net loser. Section 14's C3 write-up already argues for exactly this test on mined
+  signals and even specifies the phrasing; the featured strategies have had the number sitting in
+  the file the whole time.
+- **`oos_date` makes a real out-of-sample claim possible.** It records the last logic edit, so
+  days-since is genuine out-of-sample time. `holy-grail` has been unchanged for **1,500 days**
+  while the 2026 zoop editions sit at **165 to 214**. That is a quality difference between
+  strategies that the pages currently hide entirely.
+- **Turnover is extreme and undisclosed:** 23x to 75x annually across the featured set, with
+  `total_costs` beside it. A backtest that models no spread overstates a 75x strategy far more than
+  a 5x one, so this is a direct qualifier on every headline number on the page.
+
+**The cross-link nothing else can make.** Joining holdings against the v1.19 K-1 database shows
+**12 of the 31 featured strategies currently hold a fund that issues a Schedule K-1**:
+`s90-half-low-catch` (AGQ, ZSL, UGL, GLL, VIXY, UVXY), `four-horsemen` (SCO, SVXY, UUP, VIXY,
+UVXY), `super-semiconductors` (UUP, VIXY, UVXY), `simons-kmlm-switcher` (SVIX, UVXY),
+`spy-energy-chips` (DBC, VIXM), `nancy-pelosi-chips` (DBC), and six more holding UVXY. This is a tax
+fact about a real holding that Composer itself does not surface, and it is computable today from two
+files already in the repo.
+
+---
+
+**Tier 1: free. The data exists, the work is joining and rendering it.**
+
+- [ ] **1. Join the featured strategies to `database.json` at build time.** Prerequisite for items 2
+  to 9. Do it in the build rather than the browser: shipping `database.js` to a strategy page to read
+  one row would undo the v1.16 page-weight work. The join key is `symphony_id` and it currently
+  matches 31 of 31, but **the build must fail loudly on a miss** rather than silently rendering a
+  page with an empty metrics block.
+- [ ] **2. Hero metric strip above the fold.** CAGR, max drawdown, Sharpe, backtest period, as four
+  tiles. Today the metrics table is sidebar-only on desktop and pushed below all the prose on
+  mobile, so the first thing a visitor sees on a phone is three paragraphs.
+- [ ] **3. Secondary metric grid.** Sortino, win rate, tail ratio, skewness, kurtosis, turnover,
+  costs. Uses the glossary links from item 12, which is why that item is not optional.
+- [ ] **4. Outlier-dependence disclosure.** State it as plain arithmetic, following C3's own
+  instruction: "the best 5% of days produced 137% of this strategy's total return". Do not convert
+  it to a score or a badge. The number is more persuasive than any rating derived from it.
+- [ ] **5. Out-of-sample panel.** Days since the last logic edit, with the date. **Word it as a
+  measurement, not a guarantee:** unedited logic is genuinely out of sample, but a strategy can also
+  sit unedited because nobody is maintaining it.
+- [ ] **6. Assets tab.** Reuse the existing `.db-tabs` / `.db-tab` / `.db-tab-panel` components from
+  `database.html` rather than building a second tab system. `last_market_days_holdings` gives both
+  halves for free: its **keys** are the ticker universe the logic can reach, its **values** are the
+  current position, so the tab can show what a strategy may hold and what it holds today.
+- [ ] **7. K-1 warning line, cross-linked to `/k1`.** Affects 12 of 31. Link each ticker to
+  `k1.html?t=TICKER`, which the v1.27.1 URL work already supports. **Read the K-1 verdict from
+  `data/k1.json` at build time rather than restating it**, so a correction to the K-1 database
+  propagates instead of going stale in two places.
+- [ ] **8. Provenance chip at the top of the page.** `last_updated` and `refresh_date` exist and are
+  shown nowhere. A visitor should know the age of a number before reading it, not after.
+- [ ] **9. Backtest-window explainer.** State why a window is the length it is, naming the limiting
+  holding: "14.8 years, limited by UVXY (inception October 2011)". Inception can be derived as a
+  lower bound from `prices.json` by taking each ticker's first non-null close, which detects any
+  ticker launched after the 2010 window opens (24 of the 72 covered). **It cannot detect anything
+  older than 2010**, and `prices.json` covers 72 of the 105 tickers the featured strategies hold, so
+  the copy must say "at least" rather than asserting an exact inception, or a real source for
+  inception dates is needed first.
+
+**Tier 2: restructuring content that already exists.**
+
+- [ ] **10. Split `risk_profile` into named categories.** It is one string today, up to 1,130
+  characters. The screenshot's grouping (Leverage and Structural, Whipsaw and Signal, Hedge,
+  Concentration) is the right shape because it lets a reader find the failure family they care
+  about. Schema change plus a rewrite of 31 existing strings.
+- [ ] **11. Convert `signals` cards into a Signal Types table.** Add `type` (Threshold, Trend,
+  Selection) and `indicator` (RSI(10), Price(200), etc.) columns to the existing `name`, `tag`,
+  `description`. Deduplicate repeated signals with a `x2` badge, as the screenshot does. The 31
+  strategies carry 2 to 6 signals each, so this is a schema addition plus a pass over roughly 130
+  signal objects.
+- [ ] **12. Link metric labels to the glossary.** **The seven missing terms were written first and
+  shipped in v1.27.8** (Sortino Ratio, Win Rate, Skewness, Kurtosis, Tail Ratio, Herfindahl Index,
+  Annualized Turnover), taking the glossary from 20 terms to 27, because surfacing a metric a
+  visitor cannot look up adds jargon rather than understanding. What remains is the linking itself.
+
+**Tier 3: new written content, and this is where the real cost is. Every item multiplies by 31.**
+
+- [ ] **13. TL;DR card** with a Core Thesis callout and opposed **Works well in** / **Struggles in**
+  columns. The opposed columns are the point: the format does not let an author describe a strategy
+  without naming what breaks it.
+- [ ] **14. Underlying Assumptions**, split into market and macro beliefs against technical and
+  structural assumptions. This is the section that surfaces the choices a backtest cannot justify,
+  such as whether three RSI thresholds 1 to 2 points apart are meaningfully distinct.
+- [ ] **15. Market Regime Analysis table**: regime, expected performance, why, example period. **The
+  example-period column is what makes it falsifiable** rather than a set of adjectives, and it
+  should not be dropped for space.
+
+**Tier 4: needs data the pipeline sees but does not keep.**
+
+- [ ] **16. Store per-strategy daily returns during refresh.** The refresh pipeline already receives
+  a daily return series from `/backtest` and discards it. Keeping it unlocks worst month, VaR and
+  CVaR, time in market, the year-jackknife and outlier-removal tests specified in Section 14's C3,
+  and would let item 15's regime table be **computed rather than written**, which is the only way
+  that section scales past a curated 31. **Cost is storage and refresh time, not compute:** C3's own
+  note is that re-scoring an existing series is microseconds. Size the storage before committing,
+  since 31 strategies at roughly 3,700 days each is manageable and 6,668 database rows is not.
+
+**Fixes, independent of the above.**
+
+- [x] **17. The distribution metrics were mislabeled, and are now correct (v1.27.8).**
+  `renderMetricsTable` showed `min`/`mean`/`median`/`max` as "Min Month" through "Max Month". They
+  are **daily**. Three independent checks agree: volatility drag requires an arithmetic mean
+  compounded over a year to exceed the geometric annualized return, which holds for **31 of 31**
+  strategies read as daily and **0 of 31** read as monthly; the monthly reading implies 3% to 7%
+  annual returns against stated ARRs of 90% to 277%; and the stored `max` of 54.63% for strategies
+  holding SOXL matches SOXL's best single day of 54.79% on 2025-04-09. The PRD contradicted itself
+  too, calling them "single-period" in Section 12 and "Monthly distribution" in the API mapping
+  table. **This was a live correctness bug, not a cosmetic one:** it told visitors the worst month
+  was -15% when that figure is a single day.
+
+---
+
+**Deliberately not copied from the source page**, recorded so the reasoning is not rediscovered:
+
+- **The "simulated history" row.** The source models leveraged ETFs backwards from their
+  underlyings and shows real and simulated backtests side by side. **That distinction does not apply
+  to us, and this was measured rather than assumed:** comparing every featured strategy's
+  `backtest_days` against the inception of its youngest holding gives a gap of zero or negative in
+  every case, so Composer already truncates to real traded history. Item 9 is the useful inversion.
+- **VaR, CVaR, Kelly, worst month, time in market.** Not computable from what the site ships. They
+  need item 16 first.
+- **The Logic Flow tree.** Excluded by the owner: too large for most symphonies.
+- **The light editorial palette.** Structure only; the site's dark system stays.
+
+---
+
+**Recommended sequencing.** The ordering is driven by one fact: Tier 1 costs no writing, Tier 3
+costs writing times 31, so anything that changes the schema should land before the writing starts.
+
+1. **Item 1 first, alone.** Everything in Tier 1 depends on the join, and it is the only item that
+   can fail in a way that silently empties a page. Land it with the build-time miss check and
+   nothing else.
+2. **Items 4, 5 and 7 next.** The highest differentiation per unit of work on the list, and none of
+   them need a single word written per strategy. Outlier dependence, out-of-sample duration, and the
+   K-1 cross-link are each things no competing page shows.
+3. **Items 2, 3, 8 with item 12's linking.** The visual reorganisation, done in one pass so the page
+   is not restructured twice. Item 3 without item 12 ships unexplained jargon, so they go together.
+4. **Item 6, then item 9.** The Assets tab is self-contained. Item 9 goes after it because the
+   inception caveat is easier to word once the holdings are already displayed beside it.
+5. **Items 10 and 11 before any of Tier 3.** Both are schema changes. Doing them after the new prose
+   is written would mean rewriting it, and item 10 already requires reworking 31 existing strings.
+6. **Item 13, then 14, then 15**, in that order and ideally on a few strategies first. **Write three
+   strategies fully before writing thirty-one**, because the value of the Works well in / Struggles
+   in format cannot be judged from a template, only from whether it produces something honest on a
+   strategy whose weaknesses are already known.
+7. **Item 16 last, and only if item 15 proves worth scaling.** It is the only item requiring a
+   pipeline change and a storage decision, and its main justification is computing item 15 rather
+   than writing it. If the regime tables turn out to be better written by hand for a curated set,
+   this item does not need to happen at all.
+
+**One scoping warning.** Tiers 1 and 2 apply cleanly to the 31 featured strategies. **They do not
+generalise to the 6,668 rows in the full database**, which have no `description`, `signals`,
+`risk_profile` or any other written content, and never will. Nothing in this phase should be
+designed in a way that implies the full database will eventually get the same treatment.
 
 ### V2.0: Full Database Goes Public
 

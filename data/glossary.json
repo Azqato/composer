@@ -1599,5 +1599,400 @@
         ]
       }
     ]
+  },
+  {
+    "slug": "sortino-ratio",
+    "name": "Sortino Ratio",
+    "category": "risk-metric",
+    "description": "A variant of the Sharpe ratio that divides excess return by downside deviation only, so upside volatility is not treated as risk.",
+    "formula": "Sortino Ratio = (Rp - Rf) / sigma_down",
+    "related_tags": [
+      "sharpe-ratio",
+      "standard-deviation"
+    ],
+    "last_updated": "2026-08-28",
+    "sections": [
+      {
+        "title": "Definition",
+        "paragraphs": [
+          "The Sortino ratio measures return per unit of downside risk. It is the Sharpe ratio with one change: the denominator counts only returns below a target (usually zero), rather than the spread of all returns.",
+          "The argument for it is that an investor does not experience a large gain as risk. Standard deviation punishes a strategy for a spectacular week exactly as hard as for a terrible one, and the Sortino ratio removes that symmetry."
+        ]
+      },
+      {
+        "title": "Formula",
+        "paragraphs": [
+          "Sortino Ratio = (Rp - Rf) / sigma_down. Where: Rp = portfolio return (annualized), Rf = risk-free rate, sigma_down = standard deviation computed using only periods with returns below the target.",
+          "Because the denominator discards roughly half the observations, the Sortino ratio is almost always larger than the Sharpe ratio for the same strategy. Comparing a Sortino to a Sharpe across two strategies is meaningless; compare like with like."
+        ]
+      },
+      {
+        "title": "How It Works",
+        "paragraphs": [
+          "Two strategies can share a Sharpe ratio while behaving completely differently. One grinds out steady small gains and occasionally falls off a cliff; the other is flat most of the time and occasionally jumps. Standard deviation sees the same number for both. Downside deviation separates them.",
+          "A large gap between a strategy's Sharpe and Sortino ratios is itself information: it means the volatility is lopsided. A strategy with a Sharpe of 1.6 and a Sortino of 5.7 is generating most of its variance on the upside."
+        ]
+      },
+      {
+        "title": "In Practice",
+        "paragraphs": [
+          "Leveraged and volatility-linked strategies frequently show a flattering Sortino ratio, because a long volatility position produces rare enormous up days that inflate total variance without contributing any downside deviation.",
+          "Read it alongside max drawdown. Downside deviation treats a series of small losses and one catastrophic loss as broadly similar if the totals match, while drawdown does not."
+        ]
+      },
+      {
+        "title": "Limitations",
+        "paragraphs": [
+          "Discarding the upside halves the sample, so the estimate is noisier than a Sharpe ratio computed over the same window, and it becomes unstable for strategies that rarely lose.",
+          "It says nothing about the order of losses. Ten scattered bad days and ten consecutive bad days produce the same downside deviation, and only one of them is a drawdown a holder would sit through.",
+          "A strategy that is out of the market most of the time can post an excellent Sortino ratio simply by not participating, which is a statement about time in market rather than skill."
+        ]
+      },
+      {
+        "title": "Using the Sortino Ratio in Composer.trade",
+        "paragraphs": [
+          "Composer reports Sortino alongside Sharpe on the symphony details page. The useful habit is to look at the two together rather than picking whichever is higher.",
+          "When a symphony's Sortino greatly exceeds its Sharpe, check what is producing the upside variance. Frequently it is a hedge sleeve that spikes during crises, and that sleeve is also the part decaying quietly the rest of the time."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "win-rate",
+    "name": "Win Rate",
+    "category": "risk-metric",
+    "description": "The share of periods with a positive return. On its own it says nothing about whether a strategy makes money.",
+    "formula": "Win Rate = winning periods / total periods",
+    "related_tags": [
+      "backtesting"
+    ],
+    "last_updated": "2026-08-28",
+    "sections": [
+      {
+        "title": "Definition",
+        "paragraphs": [
+          "Win rate is the fraction of periods, usually days, in which a strategy returned more than zero. A 55% win rate means 55 of every 100 days closed up.",
+          "It is the most intuitive statistic on any strategy page and one of the least informative in isolation, because it deliberately ignores the size of each win and loss."
+        ]
+      },
+      {
+        "title": "Formula",
+        "paragraphs": [
+          "Win Rate = number of periods with return > 0 / total number of periods.",
+          "Example: a strategy with 2,050 up days out of 3,741 trading days has a win rate of 54.8%."
+        ]
+      },
+      {
+        "title": "How It Works",
+        "paragraphs": [
+          "Win rate only becomes meaningful when paired with the average size of a win against the average size of a loss. A strategy winning 40% of the time with wins twice the size of losses is profitable; one winning 70% of the time with occasional catastrophic losses is not.",
+          "This is why trend-following strategies routinely post win rates below 50% and still compound, while strategies that sell volatility post high win rates and periodically lose years of gains in a week."
+        ]
+      },
+      {
+        "title": "In Practice",
+        "paragraphs": [
+          "Daily win rates cluster tightly. Almost every long-biased equity strategy lands between 52% and 58%, because it is dominated by the underlying market's own up-day frequency. A win rate inside that band tells you very little about the logic on top.",
+          "The number becomes interesting when it is far outside the band, or when it is paired with outlier dependence: a 55% win rate combined with the best 5% of days producing more than the total return means most winning days are trivial and a handful carry everything."
+        ]
+      },
+      {
+        "title": "Limitations",
+        "paragraphs": [
+          "It is trivially gameable. Any strategy can raise its win rate by taking small frequent profits and letting losses run, which improves the statistic while worsening the outcome.",
+          "It is sensitive to the period chosen. The same strategy measured monthly rather than daily will report a different, usually higher, win rate, so a win rate quoted without its period is not comparable to anything.",
+          "It ignores position size entirely, so a strategy in cash on most days can post whatever win rate its few active days happen to produce."
+        ]
+      },
+      {
+        "title": "Reading Win Rate in the Composer Atlas Library",
+        "paragraphs": [
+          "Win rates in this library are computed on daily returns across the full backtest window, so they are comparable across strategies here but not against a figure quoted elsewhere on a monthly basis.",
+          "Treat it as a texture statistic rather than a quality one. It describes what holding the strategy feels like day to day, not whether it works."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "skewness",
+    "name": "Skewness",
+    "category": "risk-metric",
+    "description": "A measure of asymmetry in the return distribution. Positive skew means rare large gains; negative skew means rare large losses.",
+    "formula": "Skewness = E[(R - mu)^3] / sigma^3",
+    "related_tags": [
+      "standard-deviation",
+      "leveraged-etfs"
+    ],
+    "last_updated": "2026-08-28",
+    "sections": [
+      {
+        "title": "Definition",
+        "paragraphs": [
+          "Skewness describes which tail of the return distribution is longer. A symmetric distribution has a skew of zero. Positive skew means the extreme moves are mostly upward; negative skew means they are mostly downward.",
+          "It is one of the few statistics that speaks directly to the shape of a bad outcome rather than its frequency."
+        ]
+      },
+      {
+        "title": "Formula",
+        "paragraphs": [
+          "Skewness = E[(R - mu)^3] / sigma^3, the third standardized moment of the return series. Where: R = period return, mu = mean return, sigma = standard deviation.",
+          "Cubing the deviations is what makes the measure directional: negative deviations stay negative when cubed, so a few large losses drag the whole statistic below zero."
+        ]
+      },
+      {
+        "title": "How It Works",
+        "paragraphs": [
+          "Most equity strategies carry mild negative skew, because markets fall faster than they rise. Strategies that sell insurance of any kind, including short volatility positions, carry pronounced negative skew: many small gains funded by rare large losses.",
+          "Strongly positive skew usually indicates a long volatility or long options position, where the strategy bleeds slowly and occasionally makes a great deal at once."
+        ]
+      },
+      {
+        "title": "In Practice",
+        "paragraphs": [
+          "A very large positive skew on a leveraged strategy in this library is normally the signature of a volatility hedge sleeve. It is not a sign of safety; it means the return series is dominated by a small number of enormous days.",
+          "Skew and outlier dependence tell the same story from different directions. If the best 5% of days account for more than the total return, the skew will be strongly positive, and both numbers are saying the record rests on a handful of sessions."
+        ]
+      },
+      {
+        "title": "Limitations",
+        "paragraphs": [
+          "It is extremely unstable in small samples. A single extraordinary day can move the skew of a multi-year series substantially, so a skew computed over four years of history should not be treated as a property of the strategy.",
+          "Cubing exaggerates outliers by construction, which means skewness is close to a restatement of the largest few observations rather than a summary of the whole distribution.",
+          "Positive skew is not automatically desirable. A strategy that loses steadily and wins rarely has attractive skew and an unattractive outcome."
+        ]
+      },
+      {
+        "title": "Reading Skewness in Composer.trade Strategies",
+        "paragraphs": [
+          "Check skew before assuming a high Sortino ratio means safety. The two are related: a strategy with large positive skew will show a flattering Sortino because its variance sits on the upside.",
+          "For symphonies that route into volatility products, expect large positive skew and read it as a description of the hedge, not as evidence the hedge is cheap."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "kurtosis",
+    "name": "Kurtosis",
+    "category": "risk-metric",
+    "description": "A measure of how much of a return series comes from extreme moves. High kurtosis means fat tails and a record built on a few sessions.",
+    "formula": "Kurtosis = E[(R - mu)^4] / sigma^4",
+    "related_tags": [
+      "standard-deviation",
+      "leveraged-etfs"
+    ],
+    "last_updated": "2026-08-28",
+    "sections": [
+      {
+        "title": "Definition",
+        "paragraphs": [
+          "Kurtosis measures the weight of the tails of a return distribution relative to a normal distribution, which has a kurtosis of 3. Values well above 3 mean extreme moves are far more common than a normal distribution would predict.",
+          "In plain terms it answers: how much of what this strategy did came from a handful of exceptional days?"
+        ]
+      },
+      {
+        "title": "Formula",
+        "paragraphs": [
+          "Kurtosis = E[(R - mu)^4] / sigma^4, the fourth standardized moment. Raising to the fourth power makes every deviation positive, so unlike skewness it does not distinguish between good and bad extremes, only their size.",
+          "Some sources report excess kurtosis, which subtracts 3 so that a normal distribution reads zero. Check which convention a figure uses before comparing it to another."
+        ]
+      },
+      {
+        "title": "How It Works",
+        "paragraphs": [
+          "Financial returns always have fat tails. This is a universal property of markets, not a defect of a particular strategy, which is why a high kurtosis on its own is not a finding.",
+          "What matters is the degree. A kurtosis in the tens is ordinary for a leveraged strategy. A kurtosis in the hundreds means the series is effectively a small number of enormous observations surrounded by noise, and every other statistic computed from it, including Sharpe and standard deviation, is resting on very few data points."
+        ]
+      },
+      {
+        "title": "In Practice",
+        "paragraphs": [
+          "Read kurtosis together with the outlier-dependence figures. They are two views of the same fact, and the arithmetic version, such as the best 5% of days producing more than the total return, is the more legible one.",
+          "Extremely high kurtosis is a warning that the backtest window contained one or two regime events, and that the strategy's record is really a claim about those events repeating."
+        ]
+      },
+      {
+        "title": "Limitations",
+        "paragraphs": [
+          "Testing whether returns are normally distributed is not a useful exercise. They never are, for good strategies and bad ones alike, so a normality test would reject essentially every row and carry no information.",
+          "Like skewness, kurtosis is dominated by the few largest observations and is unstable across windows. Adding or removing one crisis changes it substantially.",
+          "It says nothing about direction. A strategy with fat tails on the upside and one with fat tails on the downside can report the same kurtosis."
+        ]
+      },
+      {
+        "title": "Reading Kurtosis in the Composer Atlas Library",
+        "paragraphs": [
+          "Use it as a prompt rather than a score: a high value means go and look at how concentrated the returns are in time before trusting the headline figures.",
+          "A strategy whose edge disappears when the largest few days are removed is a strategy fitted to those days, and kurtosis is the fastest way to notice that is worth checking."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "tail-ratio",
+    "name": "Tail Ratio",
+    "category": "risk-metric",
+    "description": "The size of a strategy's best extreme returns relative to its worst, comparing the right tail of the distribution against the left.",
+    "formula": "Tail Ratio = abs(95th percentile return) / abs(5th percentile return)",
+    "related_tags": [
+      "standard-deviation"
+    ],
+    "last_updated": "2026-08-28",
+    "sections": [
+      {
+        "title": "Definition",
+        "paragraphs": [
+          "Tail ratio compares how large a strategy's best outcomes are against how large its worst ones are, usually by dividing the 95th percentile return by the absolute value of the 5th percentile return.",
+          "A ratio of 1 means the good and bad extremes are the same size. Above 1 means the upside tail is larger; below 1 means losses are more extreme than gains."
+        ]
+      },
+      {
+        "title": "Formula",
+        "paragraphs": [
+          "Tail Ratio = abs(95th percentile of returns) / abs(5th percentile of returns).",
+          "Example: a strategy whose 95th percentile daily return is +6.8% and whose 5th percentile is -3.4% has a tail ratio of 2.0, meaning its good extremes are twice the size of its bad ones."
+        ]
+      },
+      {
+        "title": "How It Works",
+        "paragraphs": [
+          "Where skewness and kurtosis are moments dominated by the single most extreme observations, tail ratio uses percentiles, which makes it noticeably more stable. One remarkable day moves it far less.",
+          "It is best read as a statement about payoff shape: a strategy with a high tail ratio wins big and loses small when it moves at all, regardless of how often it does either."
+        ]
+      },
+      {
+        "title": "In Practice",
+        "paragraphs": [
+          "A high tail ratio pairs naturally with a low win rate. Trend-following and long volatility strategies typically show both: they are wrong often and cheaply, and right rarely and expensively.",
+          "The reverse combination, a high win rate with a tail ratio below 1, describes a strategy collecting small premiums against occasional large losses, and is worth identifying before rather than after a bad month."
+        ]
+      },
+      {
+        "title": "Limitations",
+        "paragraphs": [
+          "It ignores everything between the fifth and ninety-fifth percentiles, which is 90% of the strategy's history.",
+          "It says nothing about frequency. A strategy with an excellent tail ratio can still lose money if the small losses arrive often enough.",
+          "Percentile estimates need a reasonable sample. On a short backtest the fifth and ninety-fifth percentiles are themselves estimated from relatively few observations."
+        ]
+      },
+      {
+        "title": "Reading Tail Ratio in Composer.trade Strategies",
+        "paragraphs": [
+          "Read it beside win rate. The pair together describes the payoff profile far better than either does alone, and the combination is what determines whether a strategy is psychologically holdable.",
+          "For symphonies with a volatility hedge, expect a tail ratio above 1 and recognise that the cost of that shape is the steady decay of the hedge during the long stretches when nothing happens."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "herfindahl-index",
+    "name": "Herfindahl Index",
+    "category": "risk-metric",
+    "description": "A concentration measure. Applied to a portfolio it reports how much of the position sits in a single holding, from diversified to entirely concentrated.",
+    "formula": "HHI = sum of squared portfolio weights",
+    "related_tags": [
+      "leveraged-etfs"
+    ],
+    "last_updated": "2026-08-28",
+    "sections": [
+      {
+        "title": "Definition",
+        "paragraphs": [
+          "The Herfindahl index, borrowed from competition economics where it measures market concentration, is the sum of the squared weights of the components of a portfolio.",
+          "It runs from close to zero for a very evenly spread portfolio up to 1.0 for a portfolio holding a single asset. A value of 1.0 means everything is in one position."
+        ]
+      },
+      {
+        "title": "Formula",
+        "paragraphs": [
+          "HHI = sum of w_i squared, where w_i is the fraction of the portfolio in holding i.",
+          "Example: an equal-weighted four-asset portfolio has weights of 0.25 each, so HHI = 4 x 0.0625 = 0.25. A portfolio entirely in one asset has HHI = 1.0. The reciprocal, 1 / HHI, gives the effective number of holdings, which is often the more intuitive way to state it."
+        ]
+      },
+      {
+        "title": "How It Works",
+        "paragraphs": [
+          "Squaring the weights is what makes the measure useful: it grows disproportionately as any single position dominates, so a portfolio with one 90% holding and ten small ones scores as concentrated rather than diversified.",
+          "The reciprocal is worth computing. An HHI of 0.25 means an effective four holdings; an HHI of 0.5 means an effective two, whatever the raw count of tickers."
+        ]
+      },
+      {
+        "title": "In Practice",
+        "paragraphs": [
+          "Most Composer symphonies rotate between a small number of positions and hold exactly one at a time, so an HHI at or very near 1.0 is normal here rather than alarming. It reflects the switching design.",
+          "The number is more informative when it is not 1.0, and when read against the ticker universe: a symphony that can hold eight instruments but concentrates fully into one at any moment carries the risk of a single-position portfolio while appearing diversified in its asset list."
+        ]
+      },
+      {
+        "title": "Limitations",
+        "paragraphs": [
+          "It is a snapshot of weights and knows nothing about correlation. Eight leveraged US technology funds held in equal weight would score as diversified while behaving as one position.",
+          "Measured on a single day, it says nothing about how concentrated the strategy is over time. A rotating strategy is fully concentrated every day and well spread across a year.",
+          "It treats a cash position as a holding like any other, so a strategy sitting in Treasury bills can look concentrated when it is in fact not invested."
+        ]
+      },
+      {
+        "title": "Reading Concentration in the Composer Atlas Library",
+        "paragraphs": [
+          "Pair the index with the ticker universe shown on a strategy page. The universe describes what the logic can reach; the index describes how much of it is in use right now.",
+          "Where correlation matters more than count, judge the universe directly: a list of eight tickers all expressing one leveraged view on the same index is a concentrated strategy no matter what the arithmetic says."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "annualized-turnover",
+    "name": "Annualized Turnover",
+    "category": "risk-metric",
+    "description": "How many times a year a strategy replaces its entire position. High turnover drives trading costs, slippage, and short-term tax treatment.",
+    "formula": "Annualized Turnover = annual value traded / average portfolio value",
+    "related_tags": [
+      "backtesting"
+    ],
+    "last_updated": "2026-08-28",
+    "sections": [
+      {
+        "title": "Definition",
+        "paragraphs": [
+          "Annualized turnover measures how much trading a strategy does, expressed as the number of times per year it replaces its entire portfolio. A turnover of 1x means the strategy rebuilds its position once a year; 50x means roughly once a week.",
+          "It is the bridge between a backtest and what actually reaches an account, because every unit of turnover carries cost."
+        ]
+      },
+      {
+        "title": "Formula",
+        "paragraphs": [
+          "Annualized Turnover = total value traded over a year / average portfolio value.",
+          "Example: a strategy that rotates fully between two instruments every fortnight trades its whole book about 26 times a year, giving a turnover near 26x."
+        ]
+      },
+      {
+        "title": "How It Works",
+        "paragraphs": [
+          "Turnover translates into three separate costs. Commissions and fees are the most visible and often the smallest. Bid-ask spread is paid on every entry and exit and is far larger for leveraged and volatility products than for broad index funds. Slippage grows with position size.",
+          "A backtest that models none of these will overstate a high-turnover strategy far more than a low-turnover one, so turnover is a good proxy for how much a paper record is likely to shrink in practice."
+        ]
+      },
+      {
+        "title": "In Practice",
+        "paragraphs": [
+          "Threshold-based symphonies that switch on a daily signal generate turnover in the tens of times a year, and tiered designs that scale between several states can generate considerably more.",
+          "Turnover also determines tax treatment. A strategy that holds nothing for a year produces short-term capital gains taxed as ordinary income, which can be a larger drag than trading costs and does not appear in any backtest."
+        ]
+      },
+      {
+        "title": "Limitations",
+        "paragraphs": [
+          "It counts trades without regard to what they cost. Rotating between two liquid large-cap funds and rotating between two thin leveraged products produce the same turnover and very different bills.",
+          "It is an average and hides clustering. A strategy that sits still for months and then trades every day during a crisis reports a moderate figure while concentrating its costs at the worst possible moment.",
+          "It does not capture the difference between a scheduled rebalance and a signal that whipsaws in and out of the same position repeatedly."
+        ]
+      },
+      {
+        "title": "Reading Turnover in Composer.trade Symphonies",
+        "paragraphs": [
+          "Compare turnover against the instruments in the strategy's universe. High turnover in liquid index funds is manageable; the same figure in leveraged volatility products is a much larger real cost.",
+          "Read it alongside the K-1 and tax considerations for the holdings involved. A high-turnover strategy in commodity pool funds combines short-term gains with a Schedule K-1, and both arrive after the fact."
+        ]
+      }
+    ]
   }
 ]

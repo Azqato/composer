@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.11
+**Version:** 1.12
 **Status:** Active
 **Last Updated:** 2026-08-24
 
@@ -384,7 +384,7 @@ Structure: grouped `<div class="metrics-section">` blocks, each with a section l
 - `<dt>` (label): `0.875rem`, `--color-secondary`
 - `<dd>` (value): `--font-mono`, `0.875rem`, `500`, color-coded
 
-Groups: Returns, Risk, Risk-Adjusted, Monthly Distribution, Trailing Returns, Metadata.
+Groups: Returns, Risk, Risk-Adjusted, Daily Distribution, Trailing Returns, Metadata.
 
 ---
 

@@ -383,12 +383,20 @@ function renderMetricsTable(s) {
       ],
     },
     {
-      label: 'Monthly Distribution',
+      // These four are DAILY returns, not monthly, and were labelled "Month" until v1.27.8.
+      // The arithmetic settles it: volatility drag means an arithmetic mean compounded over
+      // a year must come out above the geometric annualized return, and it does for all 31
+      // featured strategies read as daily (mean 0.353% -> 143% a year against a stated ARR
+      // of 110%) and for none of them read as monthly (the same figure gives 4.3% a year
+      // against that 110%). The stored `max` corroborates it: 54.63% for strategies holding
+      // SOXL, whose best single day was 54.79% on 2025-04-09. A monthly reading would have
+      // told a visitor the worst month was -15% when that is a single day.
+      label: 'Daily Distribution',
       rows: [
-        row('Min Month', formatPct(s.min), colorClass(s.min)),
-        row('Mean Month', formatPct(s.mean), colorClass(s.mean)),
-        row('Median Month', formatPct(s.median), colorClass(s.median)),
-        row('Max Month', formatPct(s.max), colorClass(s.max)),
+        row('Worst Day', formatPct(s.min), colorClass(s.min)),
+        row('Mean Day', formatPct(s.mean), colorClass(s.mean)),
+        row('Median Day', formatPct(s.median), colorClass(s.median)),
+        row('Best Day', formatPct(s.max), colorClass(s.max)),
       ],
     },
     {
