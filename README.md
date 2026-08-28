@@ -90,6 +90,8 @@ Composer-derived and market data in `data/` is not the copyright holder's to lic
 engines may crawl, index, quote, summarise, link to and cite this site freely, with attribution
 requested. That is deliberate and encouraged.
 
-Everything else is available on request and is often given. Ask via [azqato.com](https://azqato.com).
+Everything else is available on request and is often given. Ask by opening an
+[issue](https://github.com/Azqato/composer/issues). Requests and answers are public there on
+purpose, so the record of what has been permitted is visible.
 
 Built by [Azqato](https://azqato.com).
