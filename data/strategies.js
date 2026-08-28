@@ -1980,6 +1980,74 @@ window.STRATEGIES_DATA = [
       }
     ],
     "risk_profile": "Extremely Aggressive. The 697% ARR and 72,872x cumulative return over approximately 5.4 years (March 2021 to August 2026) are among the highest figures in this library, driven primarily by the explosive 2024 to 2026 gold bull market. The 47.6% max drawdown is substantial in absolute terms but modest relative to the returns, producing a 14.64 Calmar, exceptional by any measure. The 90.0% annualized standard deviation is the highest of any strategy in the library, reflecting the inherent volatility of 3x leveraged gold miner ETFs. The strategy has 60.7 annual portfolio rebalances on average, meaning it switches roughly every 4 trading days. The win rate of 54.3% is only slightly above coin-flip, but the right-skewed distribution means winning days are larger than losing days on average. The trailing 1-year return of 931.7% reflects a historic gold miner re-rating. The backtest covers only 5.4 years and includes none of the 2022 commodity bear market (GDXU launched March 2021); the full drawdown profile over a longer cycle is unknown. Current holdings are 100% GDXU.",
-    "author_note": "Originally created by plaindamnscared on Composer. This version is identical to the original except BIL (cash) has been replaced with GLD (physical gold) as the defensive holding. The backtest begins March 2021 coinciding with the GDXU and GDXD inception dates. Last semantic update per Composer: 2026-08-19. Symphony ID: tlDwKY3NRXjYU61jCt0g."
+    "author_note": "Originally created by plaindamnscared on Composer. This version is identical to the original except BIL (cash) has been replaced with GLD (physical gold) as the defensive holding. The backtest begins March 2021 coinciding with the GDXU and GDXD inception dates. Last semantic update per Composer: 2026-08-19. Symphony ID: tlDwKY3NRXjYU61jCt0g.",
+    "tldr": {
+      "thesis": "Gold miners at 3x leverage move far enough in both directions that mechanically rotating between the long leg, the short leg and unlevered gold can compound faster than the sector itself. The whole case rests on the switches being timed well enough to outrun the decay that eats both leveraged legs while it is being wrong.",
+      "works_well_in": [
+        "A sustained gold-miner trend in either direction. GDXU trend continuation is the single largest state, running 29.8% of days in a reconstruction of the logic over real prices.",
+        "Sharp oversold flushes, where the RSI(10) gate below 30 buys the dip without waiting for any momentum confirmation.",
+        "Periods when gold holds firm while miners chop. GLD absorbs the indecision, which is the one change this version makes to plaindamnscared's original: BIL became GLD, so the defensive state stays long gold instead of stepping aside into cash."
+      ],
+      "struggles_in": [
+        "Whipsaw with no trend, which is the genuine worst case rather than a down market. Through 2026 to 21 August, GDXU fell 23.5% and GDXD fell 81.9%: both leveraged legs lost at the same time, and only GLD was up, at 6.3%.",
+        "Down markets that are choppy rather than smooth. Across the 2022 hiking cycle GDXU lost 73.8% while GDXD, the inverse leg meant to profit from exactly that, gained only 1.4%.",
+        "Post-event repricing, where the state flips after the move rather than before it. GDXU lost 41.7% in the 41 trading days after the November 2024 election.",
+        "Any environment where the cost of switching matters. The logic changes asset roughly every 4.2 trading days, and GDXU and GDXD are not deeply liquid."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**Gold miners trend, and trends persist long enough to be caught mechanically.** Every branch of this logic is a momentum or mean-reversion bet on a sector that has spent long stretches doing neither.",
+        "**Gold is a genuine refuge rather than a lower-beta version of the same trade.** Swapping BIL for GLD turned the defensive state into a directional long-gold position. It paid in 2026, when GLD rose 6.3% while both miner legs fell, and it is still a bet rather than a step aside.",
+        "**The 2024 to 2026 gold re-rating is representative of the future.** This is the largest assumption on the page. The backtest is 1,363 trading days and contains one enormous sector bull market: GDXU rose 695.2% during 2025 alone. It contains no full commodity bear cycle, because GDXU did not exist before December 2020.",
+        "**Equity and bond momentum say something useful about gold miners.** Two of the four routing decisions are made by QQQ and TLT, not by anything gold-related."
+      ],
+      "structural": [
+        "**RSI(10) at 79 and 30 marks something real.** Worth weighing against how rarely it matters: in a reconstruction of the logic over real prices, the two RSI gates fired on 10.6% of days. The momentum branches made the other 89.4% of the decisions, so the strategy is named and described by a signal that runs about one day in ten.",
+        "**A 70-day and a 75-day lookback are meaningfully different.** The sustained-trend branch turns on GDXU's 70-day return against its 75-day return, windows that differ by five trading days out of seventy. That comparison is load-bearing and there is nothing in the logic explaining why those two lengths rather than any other pair.",
+        "**Daily rebalancing survives real spreads.** At roughly 60 portfolio changes a year in 3x leveraged notes, the gap between the modelled 0.05% slippage and what a real fill costs compounds faster here than on almost anything else in this library.",
+        "**Path matters more than direction, because 3x notes reset daily.** Holding the correct directional view through a volatile week can still lose money. That is the mechanism behind both legs falling together in 2026.",
+        "**GDXU and GDXD are exchange-traded notes, not funds.** They are senior unsecured debt of the issuing bank, with no basket of assets behind them, and the issuer can call or delist them. That risk sits underneath every state this strategy can occupy except GLD."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Sustained gold-miner bull",
+        "expected": "Strong",
+        "why": "The trend-continuation branch holds GDXU and 3x compounds with the move. This is the state the headline return was earned in.",
+        "example": "2025 full year: GDXU +695.2%, GDXD -97.2%, GLD +61.5%."
+      },
+      {
+        "regime": "Smooth miner downtrend",
+        "expected": "Mixed to strong",
+        "why": "GDXD pays, but only while the decline is orderly. A clean downtrend is the one case where the short leg earns its decay.",
+        "example": "Apr to Sep 2021: GDXU -64.2% while GDXD gained 104.9%."
+      },
+      {
+        "regime": "Hiking cycle and dollar surge",
+        "expected": "Poor",
+        "why": "Miners fall, but choppily, so the inverse leg decays almost as fast as it gains. Being directionally right is not enough.",
+        "example": "Jan to Oct 2022: GDXU -73.8%, and GDXD gained only 1.4% across the same span."
+      },
+      {
+        "regime": "Whipsaw with no trend",
+        "expected": "Poor. The worst case.",
+        "why": "Both leveraged legs decay at once and every switch pays a spread. There is no state the logic can rotate into that helps, except gold.",
+        "example": "Jan to 21 Aug 2026: GDXU -23.5% and GDXD -81.9% together, GLD +6.3%."
+      },
+      {
+        "regime": "Rangebound chop, gold firm",
+        "expected": "Mixed",
+        "why": "The GLD state absorbs the indecision. This is the regime the BIL-to-GLD swap was made for, and the one where it most clearly beats holding cash.",
+        "example": "Jun to Oct 2023: GDXU -45.0% while GLD finished flat at +0.2%."
+      },
+      {
+        "regime": "Post-event repricing",
+        "expected": "Poor",
+        "why": "A gap repricing happens faster than a 10-day RSI or a 70-day return can register it, so the state flips after the damage.",
+        "example": "Nov to Dec 2024, after the US election: GDXU -41.7% in 41 trading days."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each figure is the move in that ticker between the first and last trading day of the window, computed from the daily closes in `data/prices.json`. The regimes themselves were identified by reconstructing this strategy's state machine over those same prices, which is a reading of the logic rather than a backtest: it carries no fees and no slippage. It reproduces the pipeline's own turnover figure independently, changing asset every 4.2 trading days against the 60.7 annual rebalances Composer reports, which is the reason it is trusted this far and no further."
   }
 ];

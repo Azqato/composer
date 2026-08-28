@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.28.0
+**Version:** 1.29.0
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -1356,6 +1356,20 @@ All fields in `data/strategies.json`. Both `strategies.json` and `strategies.js`
 | `signals` | object[] | Recommended | Signals used. Each: `{ "name": string, "tag": string, "description": string }`. `tag` must match a glossary slug. |
 | `risk_profile` | string | Recommended | Risk summary for the strategy detail page. |
 | `author_note` | string | Optional | Curator note (plain text, no HTML). Displayed on the detail page when present. |
+| `tldr` | object | Optional (**V1.20 item 13**) | `{ "thesis": string, "works_well_in": string[], "struggles_in": string[] }`. Rendered as the TL;DR card above everything else. **Both arrays are required when the field is present**: the opposed columns are the reason the format exists |
+| `assumptions` | object | Optional (**V1.20 item 14**) | `{ "market": string[], "structural": string[] }`. Market and macro beliefs against technical and structural ones. Either array may be empty; the column is then omitted |
+| `regimes` | object[] | Optional (**V1.20 item 15**) | Each: `{ "regime": string, "expected": string, "why": string, "example": string }`. `expected` is authored prose, not a code: the page colours it green, yellow or pink by reading its first word (`Strong`/`Good`, `Poor`/`Bad`/`Weak`, anything else) |
+| `regime_note` | string | Optional | Footnote under the regime table. Use it to say where the example figures came from |
+
+**These four fields accept inline `**bold**` and `` `code` ``**, converted by `mdInline()` in
+`js/app.js`. That helper is two regexes and does not escape its input, exactly like every other
+curated field on the page: the trust boundary is `data/strategies.json` itself, which only a
+maintainer writes.
+
+**Numbers written into these fields must be historical facts about fixed date windows, never live
+metrics.** A restated metric goes stale on the next refresh with nothing to catch it, which has
+already happened to `risk_profile` and `ai_summary` on several strategies. Anything that changes is
+rendered from the data instead.
 
 **Metric calculation notes:**
 - `calmar_ratio` = `annualized_rate_of_return` / abs(`max_drawdown`)
@@ -2322,7 +2336,7 @@ numbering schemes; they answer different questions.
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
-| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1, 4, 5, 7 and 17 shipped; 12 open | v1.28.0 (partial) |
+| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1, 4, 5, 7 and 17 shipped; 13, 14, 15 piloted on 1 of 31 strategies; 9 open | v1.29.0 (partial) |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -2928,8 +2942,21 @@ instant and works offline.
 ### V1.20: Strategy Page Rebuild
 
 **Status:** In progress. Specified and approved 2026-08-28. **Items 1, 4, 5 and 7 shipped in
-v1.28.0** and item 17 in v1.27.8, which is steps 1 and 2 of the sequencing below complete. The
-remaining 12 items are not started, and step 3 (items 2, 3, 8 and 12) is next.
+v1.28.0** and item 17 in v1.27.8, which is steps 1 and 2 of the sequencing below complete.
+
+**Items 13, 14 and 15 were then piloted on a single strategy (v1.29.0), out of sequence, at the
+owner's request.** `gold-miner-original` carries all three; the other 30 carry none, and every
+section is guarded so they render unchanged. This is the roadmap's own instruction applied at its
+narrowest: write one strategy fully and look at it before committing to 31.
+
+**What going out of order actually costs.** The sequencing put items 10 and 11 before Tier 3 because
+they are schema changes and rewriting fresh prose is waste. That risk is **smaller than it looks for
+these three**, because 13, 14 and 15 introduce their own new fields (`tldr`, `assumptions`,
+`regimes`) rather than editing `risk_profile` or `signals`, so item 10 cannot invalidate them by
+changing a shape they do not use. **The real exposure is overlap, not rework:** item 10 splits
+`risk_profile` into named categories including Whipsaw and Signal, and the pilot's Struggles-in
+column and regime table now say some of the same things in better form. When item 10 is done, the
+question will be what `risk_profile` is still for, not how to migrate it.
 
 **Origin.** The owner shared a third-party Composer strategy analysis page and asked what could be
 taken from it. The analysis that followed is summarised here rather than in a chat log, because the
@@ -3056,15 +3083,37 @@ files already in the repo.
 
 **Tier 3: new written content, and this is where the real cost is. Every item multiplies by 31.**
 
-- [ ] **13. TL;DR card** with a Core Thesis callout and opposed **Works well in** / **Struggles in**
-  columns. The opposed columns are the point: the format does not let an author describe a strategy
-  without naming what breaks it.
-- [ ] **14. Underlying Assumptions**, split into market and macro beliefs against technical and
-  structural assumptions. This is the section that surfaces the choices a backtest cannot justify,
-  such as whether three RSI thresholds 1 to 2 points apart are meaningfully distinct.
-- [ ] **15. Market Regime Analysis table**: regime, expected performance, why, example period. **The
-  example-period column is what makes it falsifiable** rather than a set of adjectives, and it
-  should not be dropped for space.
+- [~] **13. TL;DR card. Piloted on `gold-miner-original` (v1.29.0), 1 of 31.** Core Thesis callout
+  with a green rule, above opposed **Works well in** / **Struggles in** columns.
+
+  **The format did what it was chosen to do.** Writing the Struggles-in column for this strategy
+  forced the finding that its worst case is not a down market but a directionless one: through 2026
+  to 21 August, GDXU fell 23.5% **and** GDXD fell 81.9%, so both leveraged legs lost at once and
+  only GLD was up. Nothing on the existing page said that, and the prose sections had not been
+  written in a shape that would have surfaced it.
+- [~] **14. Underlying Assumptions. Piloted on `gold-miner-original` (v1.29.0), 1 of 31.** Two
+  columns: market and macro beliefs against technical and structural ones. Four and five items
+  respectively for the pilot.
+
+  **The split is the content.** A belief about the world fails differently from a belief about the
+  instrument, and separating them is what stops the section becoming a list of caveats. It produced
+  the sharpest single line on the page: the strategy is named and described by its RSI gates, and a
+  reconstruction of the logic over real prices shows **those gates fired on 10.6% of days**, with
+  the momentum branches making the other 89.4% of the decisions.
+- [~] **15. Market Regime Analysis table. Piloted on `gold-miner-original` (v1.29.0), 1 of 31.**
+  Six regimes across regime, expected, why and example period. The example column was not dropped
+  for space: the table scrolls inside its own `overflow-x` wrapper instead, per the rule the v1.12.0
+  mobile audit set.
+
+  **Every example is a real price move over a fixed window**, computed from `data/prices.json`, so
+  none of them goes stale on a refresh. The regimes themselves were identified by reconstructing the
+  strategy's state machine over those same closes. **That reconstruction was checked before it was
+  trusted:** it changes asset every 4.2 trading days against the 60.7 annual rebalances the pipeline
+  independently reports. It is a reading of the logic, not a backtest, it carries no fees or
+  slippage, and the page says so in a footnote under the table.
+
+  **This is the item that decides whether Tier 3 scales.** It took real research per strategy, and
+  the whole point of item 16 is to compute this table rather than write it.
 
 **Tier 4: needs data the pipeline sees but does not keep.**
 
@@ -3136,7 +3185,9 @@ costs writing times 31, so anything that changes the schema should land before t
 6. **Item 13, then 14, then 15**, in that order and ideally on a few strategies first. **Write three
    strategies fully before writing thirty-one**, because the value of the Works well in / Struggles
    in format cannot be judged from a template, only from whether it produces something honest on a
-   strategy whose weaknesses are already known.
+   strategy whose weaknesses are already known. **Started early, at the owner's request: one
+   strategy shipped in v1.29.0 as a pilot** ahead of steps 3, 4 and 5. See the status note at the
+   top of this section for what going out of order does and does not cost.
 7. **Item 16 last, and only if item 15 proves worth scaling.** It is the only item requiring a
    pipeline change and a storage decision, and its main justification is computing item 15 rather
    than writing it. If the regime tables turn out to be better written by hand for a curated set,

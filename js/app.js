@@ -58,6 +58,19 @@ async function loadGlossary() {
   return res.json();
 }
 
+// ---- Inline markdown for authored strategy content ----
+// The smallest thing that works: **bold** and `code`, nothing else. Curated
+// content in data/strategies.json is already inserted as HTML by every other
+// section on the page, so this does not escape its input; it is a convenience
+// for the author, not a sanitiser, and the trust boundary is unchanged. Kept
+// deliberately tiny rather than reaching for a markdown library, which would be
+// the project's first runtime dependency for two rules.
+function mdInline(s) {
+  return String(s == null ? '' : s)
+    .replace(/[*][*]([^*]+)[*][*]/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>');
+}
+
 // ---- Format utilities ----
 function formatPct(n) {
   const pct = (n * 100).toFixed(1);

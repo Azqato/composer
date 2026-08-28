@@ -278,6 +278,84 @@
           </div>`;
       }
 
+      // Item 13. The two opposed columns are the whole point of the format: it does
+      // not let an author describe a strategy without naming what breaks it. Rendered
+      // only when the content exists, which is 1 of 31 strategies today.
+      const tl = s.tldr;
+      const tldrHtml = tl && tl.thesis
+        ? `<section class="mb-10">
+             <div class="tldr">
+               <div class="tldr-thesis">
+                 <span class="tldr-thesis-label">Core thesis</span>
+                 <p>${mdInline(tl.thesis)}</p>
+               </div>
+               <div class="tldr-cols">
+                 <div class="tldr-col good">
+                   <span class="tldr-col-label">Works well in</span>
+                   <ul class="tldr-list">${(tl.works_well_in || []).map(x => `<li>${mdInline(x)}</li>`).join('')}</ul>
+                 </div>
+                 <div class="tldr-col bad">
+                   <span class="tldr-col-label">Struggles in</span>
+                   <ul class="tldr-list">${(tl.struggles_in || []).map(x => `<li>${mdInline(x)}</li>`).join('')}</ul>
+                 </div>
+               </div>
+             </div>
+           </section>`
+        : '';
+
+      // Item 14. Two columns because the split is the content: a belief about the
+      // world fails differently from a belief about the instrument, and separating
+      // them is what stops the section becoming a list of caveats.
+      const asm = s.assumptions;
+      function assumpCol(label, items) {
+        return `<div class="assump-col">
+                  <span class="assump-col-label">${label}</span>
+                  <ul class="assump-list">${(items || []).map(x => `<li>${mdInline(x)}</li>`).join('')}</ul>
+                </div>`;
+      }
+      const assumpHtml = asm && ((asm.market || []).length || (asm.structural || []).length)
+        ? `<section class="mb-10">
+             <h2 style="color:var(--color-primary);margin-bottom:16px">Underlying Assumptions</h2>
+             <div class="assump-cols">
+               ${(asm.market || []).length ? assumpCol('Market and macro beliefs', asm.market) : ''}
+               ${(asm.structural || []).length ? assumpCol('Technical and structural', asm.structural) : ''}
+             </div>
+           </section>`
+        : '';
+
+      // Item 15. The example column is what makes the table falsifiable rather than a
+      // set of adjectives, so it is never dropped for space: the table scrolls inside
+      // its own wrapper instead. The verdict colour is read off the first word of the
+      // authored string, so the author writes a judgement and not a code.
+      function regimeClass(v) {
+        const w = String(v || '').trim().toLowerCase();
+        if (w.startsWith('strong') || w.startsWith('good')) return 'good';
+        if (w.startsWith('poor') || w.startsWith('bad') || w.startsWith('weak')) return 'bad';
+        return 'mixed';
+      }
+      const regimes = s.regimes || [];
+      const regimeHtml = regimes.length
+        ? `<section class="mb-10">
+             <h2 style="color:var(--color-primary);margin-bottom:16px">Market Regime Analysis</h2>
+             <div class="regime-wrap">
+               <table class="regime-table">
+                 <thead><tr>
+                   <th>Regime</th><th>Expected</th><th>Why</th><th>Example period</th>
+                 </tr></thead>
+                 <tbody>
+                   ${regimes.map(r => `<tr>
+                     <td class="regime-name">${mdInline(r.regime)}</td>
+                     <td class="regime-exp ${regimeClass(r.expected)}">${mdInline(r.expected)}</td>
+                     <td class="regime-why">${mdInline(r.why)}</td>
+                     <td class="regime-eg">${mdInline(r.example)}</td>
+                   </tr>`).join('')}
+                 </tbody>
+               </table>
+             </div>
+             ${s.regime_note ? `<p class="regime-note">${mdInline(s.regime_note)}</p>` : ''}
+           </section>`
+        : '';
+
       const k1Html = holdNotice('k1', extras.k1_holdings);
       const etnHtml = holdNotice('etn', extras.etn_holdings);
       const holdingsHtml = (k1Html || etnHtml)
@@ -356,11 +434,14 @@
               <a href="${s.symphony_url}" target="_blank" rel="noopener noreferrer"
                 class="btn btn-green btn-lg">Open in Composer ↗</a>
             </div>
+            ${tldrHtml}
             ${holdingsHtml}
             ${aiSummary}
             ${howItWorks}
             ${signals}
             ${riskProfile}
+            ${assumpHtml}
+            ${regimeHtml}
             ${beyondHtml}
             <div class="detail-mobile-metrics">
               <h2 style="color:var(--color-primary);font-size:1.125rem;margin-bottom:16px">Performance Metrics</h2>

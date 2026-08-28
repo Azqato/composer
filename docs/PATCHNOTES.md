@@ -5,6 +5,85 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.29.0] - 2026-08-28
+
+Roadmap V1.20 items 13, 14 and 15, **piloted on one strategy**. Requested out of sequence by the
+owner, to look at the format before committing to writing it 31 times.
+
+### One strategy, fully written: The Gold Miner (Original)
+
+`gold-miner-original` now carries a TL;DR card, an Underlying Assumptions section and a Market Regime
+Analysis table. **The other 30 strategies carry none of it** and render exactly as they did: every
+section is guarded on the content existing, verified against `four-horsemen` as a control.
+
+This is the roadmap's own instruction at its narrowest. Write one strategy fully and look at it
+before deciding whether the format is worth 31 of them.
+
+### The format earned its place, and here is the evidence
+
+**Item 13's opposed columns worked as designed.** The Struggles-in column does not let an author
+describe a strategy without naming what breaks it, and writing it surfaced something the existing
+page never said: this strategy's worst case is not a down market, it is a directionless one.
+**Through 2026 to 21 August, GDXU fell 23.5% and GDXD fell 81.9%** at the same time. Both leveraged
+legs lost together and only GLD was up, at 6.3%. The prose sections had never been written in a
+shape that would have found that.
+
+**Item 14's split produced the sharpest line on the page.** The strategy is named and described by
+its RSI(10) gates at 79 and 30. A reconstruction of the logic over real prices shows **those gates
+fired on 10.6% of days**; the momentum branches made the other 89.4% of the decisions. The strategy
+is known for a signal that runs about one day in ten.
+
+Other assumptions now stated plainly: that the 2024 to 2026 gold re-rating is representative, on a
+backtest of 1,363 trading days containing exactly one enormous bull market and no full commodity
+bear cycle; that a 70-day and a 75-day lookback are meaningfully different, which is load-bearing
+and unexplained; and that GDXU and GDXD are ETNs, so unsecured bank debt sits underneath every state
+except GLD.
+
+### The regime table is grounded, and the grounding was checked
+
+Six regimes, each with a real example period. **Every figure is a price move over a fixed window**,
+computed from `data/prices.json`, so none of it goes stale on a refresh.
+
+The regimes were identified by reconstructing the strategy's state machine over those same closes.
+**That reconstruction was verified before it was trusted:** it changes asset every 4.2 trading days
+against the 60.7 annual rebalances the Composer pipeline independently reports. It is a reading of
+the logic and not a backtest, carries no fees or slippage, and a footnote under the table says
+exactly that. The example column reports what the holdings did, never what the strategy returned.
+
+The findings the table records, all checkable: 2025 alone gave GDXU +695.2% while GDXD fell 97.2%;
+across the 2022 hiking cycle GDXU lost 73.8% while GDXD, the leg meant to profit from precisely
+that, gained only 1.4%; and GDXU lost 41.7% in the 41 trading days after the November 2024 election.
+
+### Schema and rendering
+
+Four optional fields on `data/strategies.json`: `tldr`, `assumptions`, `regimes` and `regime_note`.
+They accept inline `**bold**` and `` `code` `` through `mdInline()`, two regexes in `js/app.js`
+rather than the project's first runtime dependency.
+
+**A rule worth stating, because it has already been broken elsewhere in this file:** numbers written
+into these fields must be historical facts about fixed date windows, never restated live metrics. A
+restated metric goes stale on the next refresh with nothing to catch it, which is why several
+`risk_profile` and `ai_summary` strings currently quote figures their own metrics tables disagree
+with. Anything that changes is rendered from the data.
+
+The regime table keeps its example column at every width by scrolling inside its own `overflow-x`
+wrapper. Verified at 390px: the wrapper scrolls internally and the document's width is unchanged
+from the pre-existing 453px baseline recorded as roadmap item 18.
+
+### Sequencing
+
+This ran ahead of steps 3, 4 and 5. **The rework risk is smaller than the ordering implied**, because
+these three items introduce their own new fields rather than editing `risk_profile` or `signals`, so
+item 10's schema change cannot invalidate them. **The real exposure is overlap:** item 10 splits
+`risk_profile` into named categories including Whipsaw and Signal, and this pilot now says some of
+the same things in better form. When item 10 is done the question will be what `risk_profile` is
+still for.
+
+**Files changed:** `data/strategies.json`, `data/strategies.js`, `strategies.html`, `js/app.js`,
+`css/main.css`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.28.0] - 2026-08-28
 
 Roadmap V1.20 items 1, 4, 5 and 7. Steps 1 and 2 of the seven-step sequencing, complete.

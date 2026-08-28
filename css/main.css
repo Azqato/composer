@@ -943,6 +943,187 @@ p { color: var(--color-secondary); }
   line-height: 1.7;
 }
 
+/* ---- TL;DR card (V1.20 item 13) ---- */
+.tldr {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+}
+
+.tldr-thesis {
+  border-left: 3px solid var(--color-green);
+  padding-left: 14px;
+  margin-bottom: 18px;
+}
+
+.tldr-thesis-label {
+  display: block;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-green);
+  margin-bottom: 6px;
+}
+
+.tldr-thesis p {
+  font-size: 0.9375rem;
+  color: var(--color-primary);
+  line-height: 1.7;
+}
+
+/* The two columns are the component. A single-column version would let an author
+   describe a strategy without naming what breaks it, which is the one thing this
+   format exists to prevent. */
+.tldr-cols {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+@media (min-width: 720px) {
+  .tldr-cols { grid-template-columns: 1fr 1fr; gap: 28px; }
+}
+
+.tldr-col-label {
+  display: block;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.tldr-col.good .tldr-col-label { color: var(--color-green); }
+.tldr-col.bad .tldr-col-label { color: var(--color-pink); }
+
+.tldr-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tldr-list li {
+  font-size: 0.8125rem;
+  color: var(--color-secondary);
+  line-height: 1.65;
+  padding-left: 16px;
+  position: relative;
+}
+
+.tldr-list li::before {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.tldr-col.good .tldr-list li::before { content: '+'; color: var(--color-green); }
+.tldr-col.bad .tldr-list li::before { content: '-'; color: var(--color-pink); }
+
+/* ---- Underlying assumptions (V1.20 item 14) ---- */
+.assump-cols {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+@media (min-width: 860px) {
+  .assump-cols { grid-template-columns: 1fr 1fr; gap: 24px; }
+}
+
+.assump-col {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+}
+
+.assump-col-label {
+  display: block;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-disabled);
+  margin-bottom: 12px;
+}
+
+.assump-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.assump-list li {
+  font-size: 0.8125rem;
+  color: var(--color-secondary);
+  line-height: 1.65;
+  padding-left: 18px;
+  position: relative;
+}
+
+.assump-list li::before {
+  content: '\2022';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--color-disabled);
+}
+
+.assump-list li strong { color: var(--color-primary); }
+
+/* ---- Market regime table (V1.20 item 15) ---- */
+/* Its own overflow-x wrapper, per the rule the v1.12.0 mobile audit set: a wide
+   table scrolls inside its container and never widens the page. */
+.regime-wrap { overflow-x: auto; }
+
+.regime-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.regime-table th,
+.regime-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+  line-height: 1.6;
+}
+
+.regime-table th {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-disabled);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.regime-table td.regime-name { color: var(--color-primary); font-weight: 600; }
+.regime-table td.regime-why { color: var(--color-secondary); }
+.regime-table td.regime-eg { color: var(--color-secondary); font-family: var(--font-mono); font-size: 0.75rem; }
+
+/* Three buckets, read off the first word of the authored verdict. Green, yellow
+   and pink rather than a numeric score, because the roadmap's instruction for the
+   whole tier is that these stay judgements and do not become ratings. */
+.regime-table td.regime-exp { white-space: nowrap; font-weight: 600; }
+.regime-exp.good { color: var(--color-green); }
+.regime-exp.mixed { color: var(--color-yellow); }
+.regime-exp.bad { color: var(--color-pink); }
+
+.regime-note {
+  font-size: 0.75rem;
+  color: var(--color-disabled);
+  line-height: 1.7;
+  margin-top: 14px;
+}
+
+.regime-note strong { color: var(--color-secondary); }
+.regime-note code { font-size: 0.6875rem; }
+
 /* ---- Holdings tax notice (V1.20 item 7) ---- */
 /* Two states on one component, and the colour is the only difference that matters.
    Yellow matches the "Yes" verdict on /k1, so a visitor who has seen that page reads

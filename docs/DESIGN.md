@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.14
+**Version:** 1.15
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -784,11 +784,77 @@ as the text colour, which is why it inverts to `--color-bg` for legibility.
 
 ---
 
+### TL;DR Card (strategy detail pages, V1.20 item 13)
+
+The first thing under the Open in Composer button. A Core Thesis callout above two opposed columns.
+
+```css
+.tldr { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 20px 22px; }
+.tldr-thesis { border-left: 3px solid var(--color-green); padding-left: 14px; margin-bottom: 18px; }
+.tldr-cols { display: grid; grid-template-columns: 1fr; gap: 18px; }
+@media (min-width: 720px) { .tldr-cols { grid-template-columns: 1fr 1fr; gap: 28px; } }
+.tldr-col.good .tldr-col-label { color: var(--color-green); }
+.tldr-col.bad .tldr-col-label { color: var(--color-pink); }
+.tldr-col.good .tldr-list li::before { content: '+'; color: var(--color-green); }
+.tldr-col.bad .tldr-list li::before { content: '-'; color: var(--color-pink); }
+```
+
+**The two columns are the component, not a layout choice.** A single-column version would let an
+author describe a strategy without naming what breaks it, which is the one thing this format exists
+to prevent. They stack below 720px and stay labelled, so the opposition survives on a phone.
+
+**Green and pink are the site's existing return colours** (`colorClass()` in `js/app.js` paints
+gains green and losses pink), so the columns read as good and bad without a legend. The `+` and `-`
+markers carry the same meaning for anyone who cannot separate the two hues.
+
+---
+
+### Underlying Assumptions (strategy detail pages, V1.20 item 14)
+
+```css
+.assump-cols { display: grid; grid-template-columns: 1fr; gap: 18px; }
+@media (min-width: 860px) { .assump-cols { grid-template-columns: 1fr 1fr; gap: 24px; } }
+.assump-col { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px 18px; }
+```
+
+**860px rather than the 720px used by `.tldr-cols`**, because these items are long paragraphs and
+two of them side by side need more room before the columns stop helping. The two breakpoints are
+deliberately different; matching them would make one of the two sections worse.
+
+Both columns are neutral grey. Unlike the TL;DR, neither side is the good one.
+
+---
+
+### Market Regime Table (strategy detail pages, V1.20 item 15)
+
+```css
+.regime-wrap { overflow-x: auto; }
+.regime-table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 0.8125rem; }
+.regime-table td.regime-exp { white-space: nowrap; font-weight: 600; }
+.regime-exp.good { color: var(--color-green); }
+.regime-exp.mixed { color: var(--color-yellow); }
+.regime-exp.bad { color: var(--color-pink); }
+```
+
+**`min-width: 560px` inside an `overflow-x: auto` wrapper is the point.** The example-period column
+is what makes this table falsifiable rather than a set of adjectives, so it is never dropped at
+narrow widths: the table scrolls inside its own container instead, per the rule the v1.12.0 mobile
+audit set after `.db-tabs` widened whole pages. Verified at 390px: the wrapper scrolls internally
+and the document's own width is unchanged.
+
+**Three colours, read off the first word of authored prose.** The author writes "Strong", "Mixed to
+strong" or "Poor. The worst case." and `regimeClass()` buckets it. Deliberately not a numeric score:
+the roadmap's instruction for this whole tier is that these stay judgements. A colour that only ever
+means one of three things is the most the design does with it.
+
+---
+
 ### Holdings Tax Notice (strategy detail pages, V1.20 item 7)
 
-Two states on one component, sitting between the Open in Composer button and the AI Summary. It is
-the first thing under the call to action because it is a fact about holding the thing, and it belongs
-before the description of why someone might want to.
+Two states on one component, sitting directly under the TL;DR card and above the AI Summary. It
+comes before the authored prose because it is a mechanical fact about holding the thing, and it
+belongs ahead of any description of why someone might want to. **Only the TL;DR outranks it**, on
+the grounds that its Struggles-in column is not a pitch either.
 
 ```css
 .hold-notice { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px 16px; font-size: 0.875rem; line-height: 1.7; color: var(--color-secondary); margin-bottom: 10px; }
@@ -995,9 +1061,10 @@ site's interface is worse than one that admits the boundary.
 
 `rsi.html`, `database.html`, `index.html`, `about.html`, `strategies.html`, `glossary.html` and
 `404.html` carry **no** inline style at all; everything they render is in `css/main.css` and
-documented above. `strategies.html` stayed in that list through V1.20: `.hold-notice` and `.rc-*`
-went into `css/main.css` beside the components they sit among, rather than into a `<style>` block on
-the page, because the strategy detail view is a core page and not a self-contained tool.
+documented above. `strategies.html` stayed in that list through V1.20: `.hold-notice`, `.rc-*`,
+`.tldr-*`, `.assump-*` and `.regime-*` all went into `css/main.css` beside the components they sit
+among, rather than into a `<style>` block on the page, because the strategy detail view is a core
+page and not a self-contained tool.
 
 **The `.j-*` JSON highlighter is duplicated** between `converter.html` and `etf-cloner.html`. Both
 copies define the same five classes. Nothing has gone wrong with that yet, but it is exactly the kind
