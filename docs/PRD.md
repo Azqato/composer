@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.30.5
+**Version:** 1.30.6
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -5456,6 +5456,20 @@ Numbered for reference. Open unless marked otherwise.
     again, so it is enforced rather than remembered; and Section 23's tables name the archive step as
     part of the hand-addition workflow. The gate checks only that direction: `storage.csv` holding
     symphonies the database does not is the design, not a defect.
+
+26. **OPEN. `LICENSE` should be a markdown file.** Owner request, 2026-08-28. It is currently a
+    plain-text file with hand-wrapped headings in caps, the traditional licence format, which renders
+    as an undifferentiated block. Every other document in this project is markdown and gets headings,
+    emphasis and structure.
+
+    **Small and low risk.** GitHub recognises `LICENSE`, `LICENSE.md` and `LICENSE.txt` equally for
+    its licence detection and renders the markdown one, so nothing about discoverability changes.
+
+    **Do it as a `git mv` rather than a delete plus create**, so the file's history survives. **One
+    link needs updating**, the `[LICENSE](LICENSE)` reference in `README.md`. The `.assetsignore` and
+    `deploy.yml` exclusion lists do not mention the file and do not need to. Confirm afterwards that
+    GitHub still shows the licence chip on the repository page, since that is the only externally
+    visible thing the rename could plausibly affect.
 
 ---
 
