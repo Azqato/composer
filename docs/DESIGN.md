@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.15
+**Version:** 1.16
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -851,10 +851,16 @@ means one of three things is the most the design does with it.
 
 ### Holdings Tax Notice (strategy detail pages, V1.20 item 7)
 
-Two states on one component, sitting directly under the TL;DR card and above the AI Summary. It
-comes before the authored prose because it is a mechanical fact about holding the thing, and it
-belongs ahead of any description of why someone might want to. **Only the TL;DR outranks it**, on
-the grounds that its Struggles-in column is not a pitch either.
+Two states on one component, sitting **directly under Risk Profile** and above Underlying
+Assumptions.
+
+**It shipped above the AI Summary in v1.28.0 and was moved down in v1.29.1, by owner decision.** The
+original argument was that a mechanical fact about holding the thing should come before any
+description of why someone might want it. The placement that won reads better: the notice is a
+specific risk, and it belongs in the run of risk sections rather than interrupting the summary of
+what the strategy is. A reader who has just been told the strategy's risk profile is in the right
+frame to be told which of its holdings sends a K-1, and one who has not reached that point yet is
+being handed a tax detail before they know what they are looking at.
 
 ```css
 .hold-notice { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px 16px; font-size: 0.875rem; line-height: 1.7; color: var(--color-secondary); margin-bottom: 10px; }

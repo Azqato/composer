@@ -5,6 +5,27 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.29.1] - 2026-08-28
+
+### The K-1 and ETN notice moved below Risk Profile
+
+Owner decision. It shipped in v1.28.0 directly under the Open in Composer button, then under the
+TL;DR card in v1.29.0. It now sits **after Risk Profile and before Underlying Assumptions**.
+
+The original argument for putting it high was that a mechanical fact about holding something should
+come before any description of why someone might want it. The new placement reads better for a
+simple reason: **the notice is a specific risk, so it belongs in the run of risk sections** rather
+than interrupting the summary of what the strategy is. A reader who has just been given the risk
+profile is in the right frame to be told which holding sends a K-1. A reader who has not got there
+yet is being handed a tax detail before they know what they are looking at.
+
+Order on a strategy page is now TL;DR, AI Summary, How It Works, Signals and Logic, Risk Profile,
+the K-1 and ETN notice, Underlying Assumptions, Market Regime Analysis, Beyond the Backtest.
+
+**Files changed:** `strategies.html`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.29.0] - 2026-08-28
 
 Roadmap V1.20 items 13, 14 and 15, **piloted on one strategy**. Requested out of sequence by the
