@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.29.3
+**Version:** 1.29.4
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -2336,7 +2336,7 @@ numbering schemes; they answer different questions.
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
-| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1, 4, 5, 7 and 17 shipped; 13, 14, 15 piloted on 1 of 31 strategies; 9 open | v1.29.0 (partial) |
+| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1, 4, 5, 7, 17 shipped; 13, 14, 15 piloted on 1 of 31 and **blocked on the item 19 structure sign-off**; 9 open | v1.29.3 (partial) |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -2944,10 +2944,16 @@ instant and works offline.
 **Status:** In progress. Specified and approved 2026-08-28. **Items 1, 4, 5 and 7 shipped in
 v1.28.0** and item 17 in v1.27.8, which is steps 1 and 2 of the sequencing below complete.
 
-**Items 13, 14 and 15 were then piloted on a single strategy (v1.29.0), out of sequence, at the
-owner's request.** `gold-miner-original` carries all three; the other 30 carry none, and every
+**Items 13, 14 and 15 were then piloted on a single strategy (v1.29.0 to v1.29.3), out of sequence,
+at the owner's request.** `gold-miner-original` carries all three; the other 30 carry none, and every
 section is guarded so they render unchanged. This is the roadmap's own instruction applied at its
 narrowest: write one strategy fully and look at it before committing to 31.
+
+> **BLOCKED: the pilot is a rough draft and the structure is not approved.** The owner's verdict on
+> reviewing it was that it needs more organisational refinement, and **item 19 is now a hard gate:
+> no strategy beyond `gold-miner-original` gets this content until the structure is explicitly
+> signed off.** Two section moves already came out of the first review (v1.29.1, v1.29.3), which is
+> the gate earning its place before it has even been formally run.
 
 **What going out of order actually costs.** The sequencing put items 10 and 11 before Tier 3 because
 they are schema changes and rewriting fresh prose is waste. That risk is **smaller than it looks for
@@ -2990,10 +2996,11 @@ different claims and only one of them is checkable against the source.
 | 16 | Store per-strategy daily returns | **Ours.** A pipeline change, and the only way item 15 scales past a curated 31 |
 | 17 | Distribution metrics mislabeled | **Ours.** A live correctness bug found while auditing the data for the items above, not a feature from either source |
 | 18 | Mobile horizontal overflow | **Ours.** Pre-existing, found while measuring the v1.28.0 work |
+| 19 | Structure sign-off gate | **Owner.** Added 2026-08-28 after reviewing the pilot. Not a section and not a bug: a hold point |
 
-**Eight of the eighteen came from the screenshot** (2, 3, 6, 10, 11, 13, 14, 15). **The other ten
-came out of auditing this site's own data** (1, 4, 5, 7, 8, 9, 12, 16, 17, 18), and two of those,
-items 17 and 18, are bugs rather than features. **The single most differentiating item on the list,
+**Eight of the nineteen came from the screenshot** (2, 3, 6, 10, 11, 13, 14, 15). **Ten came out of
+auditing this site's own data** (1, 4, 5, 7, 8, 9, 12, 16, 17, 18), and two of those, items 17 and
+18, are bugs rather than features. **Item 19 is the owner's**, added after seeing the pilot. **The single most differentiating item on the list,
 item 7, is one the source page could not have suggested**, because it depends on a K-1 database this
 project built.
 
@@ -3115,7 +3122,40 @@ files already in the repo.
 
 **Tier 3: new written content, and this is where the real cost is. Every item multiplies by 31.**
 
-- [~] **13. TL;DR card. Piloted on `gold-miner-original` (v1.29.0), 1 of 31.** Core Thesis callout
+- [ ] **19. GATE: the owner reviews and explicitly approves the structure before it is written for
+  any strategy beyond the pilot.** Added 2026-08-28, immediately after reviewing v1.29.0 to v1.29.3.
+  **Nothing in items 13, 14 or 15 may be written for a second strategy until this is signed off.**
+
+  **This is a hold point, not a task, and it is the highest-leverage item in the phase.** The pilot
+  exists to be judged, and the owner's verdict on it was "good as a rough draft, it needs more
+  refinement organizationally". Writing 30 more strategies against a structure that is still being
+  refined would multiply every organisational decision by 30 before any of them are settled, and
+  Tier 3 is the one tier where that mistake cannot be undone cheaply: item 10 already showed that a
+  schema change is survivable, but 30 pieces of authored prose written to the wrong shape are not.
+
+  **Evidence the gate is already doing work.** Two structural corrections came out of the first
+  review alone, both from the owner and neither anticipated: the K-1 and ETN notice moved below Risk
+  Profile (v1.29.1), and Market Regime Analysis moved above it (v1.29.3). Those are section-ordering
+  decisions, exactly the class of thing that is cheap to change once and expensive to change thirty
+  times.
+
+  **What sign-off should cover**, so that approving it means something specific:
+
+  1. **Section order and which sections exist at all.** Two changes already; assume more.
+  2. **Whether `risk_profile` survives.** The regime table and the Struggles-in column now overlap
+     it, which is item 10's open question. Deciding this before writing avoids authoring content for
+     a section that is about to be absorbed.
+  3. **The shape of each section's content**: how many items in Works well in against Struggles in,
+     how long an assumption runs, how many regimes is the right number. The pilot used 3 and 4, 4
+     and 5, and 6, chosen for one strategy rather than as a standard.
+  4. **How much research a regime table is allowed to require.** The pilot's took a reconstruction
+     of the strategy's state machine validated against the pipeline's turnover figure. That is
+     defensible once and it is the whole argument for item 16.
+
+  **Sign-off is recorded here with a date when it happens**, so a later reader can tell an approved
+  structure from one that was never reviewed
+
+- [~] **13. TL;DR card. Piloted on `gold-miner-original` (v1.29.0), 1 of 31. Blocked on item 19.** Core Thesis callout
   with a green rule, above opposed **Works well in** / **Struggles in** columns.
 
   **The format did what it was chosen to do.** Writing the Struggles-in column for this strategy
@@ -3123,8 +3163,8 @@ files already in the repo.
   to 21 August, GDXU fell 23.5% **and** GDXD fell 81.9%, so both leveraged legs lost at once and
   only GLD was up. Nothing on the existing page said that, and the prose sections had not been
   written in a shape that would have surfaced it.
-- [~] **14. Underlying Assumptions. Piloted on `gold-miner-original` (v1.29.0), 1 of 31.** Two
-  columns: market and macro beliefs against technical and structural ones. Four and five items
+- [~] **14. Underlying Assumptions. Piloted on `gold-miner-original` (v1.29.0), 1 of 31. Blocked on
+  item 19.** Two columns: market and macro beliefs against technical and structural ones. Four and five items
   respectively for the pilot.
 
   **The split is the content.** A belief about the world fails differently from a belief about the
@@ -3132,8 +3172,8 @@ files already in the repo.
   the sharpest single line on the page: the strategy is named and described by its RSI gates, and a
   reconstruction of the logic over real prices shows **those gates fired on 10.6% of days**, with
   the momentum branches making the other 89.4% of the decisions.
-- [~] **15. Market Regime Analysis table. Piloted on `gold-miner-original` (v1.29.0), 1 of 31.**
-  Six regimes across regime, expected, why and example period. The example column was not dropped
+- [~] **15. Market Regime Analysis table. Piloted on `gold-miner-original` (v1.29.0), 1 of 31.
+  Blocked on item 19.** Six regimes across regime, expected, why and example period. The example column was not dropped
   for space: the table scrolls inside its own `overflow-x` wrapper instead, per the rule the v1.12.0
   mobile audit set.
 
@@ -3214,13 +3254,18 @@ costs writing times 31, so anything that changes the schema should land before t
    inception caveat is easier to word once the holdings are already displayed beside it.
 5. **Items 10 and 11 before any of Tier 3.** Both are schema changes. Doing them after the new prose
    is written would mean rewriting it, and item 10 already requires reworking 31 existing strings.
-6. **Item 13, then 14, then 15**, in that order and ideally on a few strategies first. **Write three
+6. **Item 19, the gate. A hold point, not a task.** The owner reviews the pilot's structure and
+   explicitly approves it. **Nothing in items 13 to 15 is written for a second strategy until this
+   is signed off.** It sits here rather than earlier because a structure can only be judged from a
+   finished example, and it sits here rather than later because the next step multiplies every
+   unresolved organisational question by thirty.
+7. **Item 13, then 14, then 15**, in that order and ideally on a few strategies first. **Write three
    strategies fully before writing thirty-one**, because the value of the Works well in / Struggles
    in format cannot be judged from a template, only from whether it produces something honest on a
    strategy whose weaknesses are already known. **Started early, at the owner's request: one
    strategy shipped in v1.29.0 as a pilot** ahead of steps 3, 4 and 5. See the status note at the
    top of this section for what going out of order does and does not cost.
-7. **Item 16 last, and only if item 15 proves worth scaling.** It is the only item requiring a
+8. **Item 16 last, and only if item 15 proves worth scaling.** It is the only item requiring a
    pipeline change and a storage decision, and its main justification is computing item 15 rather
    than writing it. If the regime tables turn out to be better written by hand for a curated set,
    this item does not need to happen at all.

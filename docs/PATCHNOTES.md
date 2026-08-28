@@ -5,6 +5,40 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.29.4] - 2026-08-28
+
+### Item 19: a structure sign-off gate before Tier 3 expands
+
+Documentation only, no site change. Added at the owner's request after reviewing the pilot.
+
+**Nothing in items 13, 14 or 15 gets written for a second strategy until the structure is explicitly
+approved.** The owner's verdict on the pilot was that it is good as a rough draft and needs more
+organisational refinement, so the roadmap now carries a hard hold point rather than an intention.
+
+**It sits between step 5 and the Tier 3 writing**, which is the only place it works. Earlier and
+there is nothing finished to judge; later and every unresolved organisational question has already
+been multiplied by thirty. Tier 3 is the one tier where that is not cheap to undo: item 10 showed a
+schema change is survivable, but thirty pieces of authored prose written to the wrong shape are not.
+
+**The gate has already earned its place before being formally run.** Two structural corrections came
+out of the first informal review, both from the owner and neither anticipated: the K-1 and ETN notice
+moved below Risk Profile (v1.29.1) and Market Regime Analysis moved above it (v1.29.3). Section
+ordering is exactly the class of decision that is cheap to change once and expensive to change
+thirty times.
+
+Sign-off is scoped to four things, so approving it means something specific: section order and which
+sections exist at all; **whether `risk_profile` survives**, given the regime table and the
+Struggles-in column now overlap it; the shape and length of each section's content, where the
+pilot's counts were chosen for one strategy rather than as a standard; and how much research a
+regime table is allowed to require, which is the whole argument for item 16.
+
+The sequencing renumbered to eight steps. Item 19 is recorded as the owner's, distinct from the
+eight items taken from the screenshot and the ten found by auditing this site's own data.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.29.3] - 2026-08-28
 
 ### Market Regime Analysis moved above Risk Profile
