@@ -5,6 +5,65 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.30.1] - 2026-08-28
+
+### V1.21 added to the roadmap: Overfit Check
+
+Documentation only, no site change. Requested by the owner: a tool where you paste a symphony and it
+determines whether it is overfit, from signal overfitness, return concentration in the best days,
+and whatever else the research supports.
+
+Specified as a new milestone with the research already done, because the research changes the
+design rather than confirming it.
+
+**The finding that shapes the whole tool: an absolute threshold is useless here.** Across the 6,324
+database rows carrying the field, **80.6% of all symphonies get more than 100% of their total return
+from their best 5% of days**, median 143.0%. The V1.20 item 4 panel found 25 of 31 for the featured
+strategies and the full database agrees almost exactly. A tool flagging "above 100%" would flag four
+symphonies in five and say nothing. **Every return-based measure has to be a percentile against the
+database, not a threshold**, and that comparison is the tool's whole competitive position: nothing
+else has 6,669 measured symphonies to paste against.
+
+**Three tiers, by how widely each can actually run.**
+
+*Tier A, structural, works on anything pasted.* This is the signal-overfitness half, and it is
+largely built already: `converter.html` accepts a URL, ID or raw JSON, handles the Composer fetch
+and CORS fallback, and walks the tree; `nodes.html` already counts nodes by type. The tool is a
+third consumer of that parse, not a rebuild. Free parameters against sample length, threshold
+specificity (a gate at 79 is a fitted number wearing a convention's clothes), near-duplicate
+thresholds, window-length diversity, branches against distinct assets, depth.
+
+*Tier B, return-based percentiles, works for the 6,669 rows already measured.* Every field is in
+`database.json` and already joined by `scripts/build_strategy_extras.py`. Notably `oos_date` is
+present on **6,470 of 6,472 usable rows**, and **23.2% of the database is backtested on under five
+years, 3.4% on under two.**
+
+*Tier C, the parameter-plateau test, is the strongest measure and is blocked.* Asking whether a rule
+still works one step either side of its fitted threshold needs a re-backtest, which needs prices.
+**`data/prices.json` holds 72 tickers; 3,680 distinct tickers are held across the database.** Only
+**1,112 symphonies, 16.7%, hold exclusively covered tickers**, and that counts only current
+holdings, so true coverage is worse. UPRO alone is held by 2,271 symphonies and is not covered.
+Sequenced last, behind V1.20 item 16 and the V4.0 architecture decision, and cross-referenced to
+Signal Miner item A and `composer_json_fuzz_tester`, which already does exactly this offline.
+
+**A confound recorded so it is not rediscovered as a feature.** Concurrent holdings look like they
+improve everything: median return from the best 5% of days falls from 162.7% at one holding to 94.8%
+at 32 or more, while median Sharpe rises 1.33 to 2.26. But the diversified cohort has roughly **half
+the backtest length** (3,728 days down to 1,832), and median Sharpe by window is not monotonic
+either: 1.36 under two years, 1.60 at two to five, 1.95 at five to ten, back to 1.36 at ten or more.
+**A tool rewarding a symphony for holding more things at once would be scoring the sample period.**
+Related: `active_asset_nodes` is a map of currently active nodes to weights, so its length is
+today's diversification and not tree size. **The database has no structural complexity field at
+all**, which is exactly why the tool needs the paste rather than a lookup.
+
+**Constraints carried in:** no server, no accounts, nothing pasted is stored or logged; **no score
+out of 100**, because a composite invites the optimisation the tool exists to detect and its weights
+would be unfalsifiable; every result names what it could not see.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.30.0] - 2026-08-28
 
 Roadmap V1.20 step 3: items **2, 3, 8 and 12** in one pass, on all 31 strategy pages. The visual
