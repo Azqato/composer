@@ -5,6 +5,90 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.30.0] - 2026-08-28
+
+Roadmap V1.20 step 3: items **2, 3, 8 and 12** in one pass, on all 31 strategy pages. The visual
+reorganisation of the strategy detail view, done together so the page is not restructured twice.
+
+### Item 8: a provenance chip, and there are two of them
+
+Above the tag row, because a visitor should know the age of a number before reading it rather than
+after.
+
+**There are genuinely two ages on this page and the chips say so**, instead of averaging them into
+one reassuring date. The headline strip and the sidebar table come from `data/strategies.json` and
+carry its `last_updated`. The Deeper Metrics grid, the outlier panel, the out-of-sample panel and
+the K-1 and ETN notices come from the v1.28.0 build-time join and carry `data/database.json`'s
+`refresh_date`. **Those two differ on all 31 strategies today**, by one to seven days.
+
+When the dates agree the page renders a single "Data refreshed" chip, and when the join has not
+loaded it renders only the one age it can honestly state. The dot turns yellow past 14 days, which
+is long enough to mean the nightly refresh has stopped rather than slipped over a weekend.
+
+### Item 2: four metrics above the fold
+
+Annualized return, max drawdown, Sharpe and backtest period, directly under the description and
+above the Open in Composer button. Two columns on a phone, four from 720px.
+
+**The problem was structural.** The metrics table is sidebar-only on desktop and rendered below
+every prose section on mobile, so the first thing a phone visitor saw was three paragraphs and no
+numbers. The strip reads from `strategies.json`, which every strategy has, so unlike the rest of
+V1.20 it is not guarded on the join: it renders identically whether or not `strategy_extras.js`
+loaded. Verified by serving the site with both extras files deleted.
+
+### Item 3: seven metrics that existed and were shown nowhere
+
+A Deeper Metrics grid: Sortino, win rate, tail ratio, skewness, kurtosis, Herfindahl index and
+annualized turnover. Every tile carries a one-line plain-language gloss beneath the value, which is
+what makes the grid publishable rather than a wall of jargon with links attached.
+
+**Total costs was in the spec and is deliberately not shown.** It is cumulative dollars on an
+unstated notional. Across the 31 the figures run from **$19,866 to $13.2 billion**, and dividing by
+`cumulative_return` gives a ratio spanning **7.3 to 3,493**, so there is no denominator anywhere on
+this site that would make one strategy's costs comparable to another's. It stays carried in the join
+for the day a notional is recorded, and the note under the grid says why it is absent rather than
+letting it vanish quietly.
+
+**The Herfindahl index does not describe the current position, and the note says that too.** Checked
+against `last_market_days_holdings`: `super-semiconductors` stores **0.641** while its only current
+holding is SMH, which would be 1.00. It arrives with the backtest statistics alongside Sortino and
+turnover, so it describes the backtest. Labelling it as today's concentration would have been wrong
+on at least 4 of the 31.
+
+### Item 12: glossary links on metric labels
+
+One map, `METRIC_GLOSSARY` in `js/app.js`, covering 13 labels and applied by `metricLabel()` to the
+hero strip, the Deeper Metrics grid and the existing sidebar metrics table in a single place. **23
+linked labels render on a strategy page.**
+
+**An unmapped label stays plain text on purpose.** A link that lands on "No concept with slug" is
+worse than no link, so Cumulative Return, the four Daily Distribution rows and the three Trailing
+Returns rows are unlinked until the glossary defines them. The fix for a missing term is to write
+the term, which is the order v1.27.8 already established when the seven metric terms were written
+before anything linked to them.
+
+The links inherit their colour and carry a dotted rule rather than the site's green link styling.
+Inside a metrics table a column of green underlined text reads as navigation and pulls the eye off
+the values, which are the content.
+
+### Verification
+
+Run locally, not against the live site. Both loading paths and both failure paths:
+
+- **Local server and `file://`**, so the `fetch` fallback and the `.js` twin are both exercised.
+- **`gold-miner-original`**, which carries every V1.20 section, and **`four-horsemen`** as a control,
+  which correctly shows no TL;DR, no Assumptions and no regime table but does show the new grid.
+- **Both extras files deleted**, where the page correctly drops Deeper Metrics, Beyond the Backtest
+  and the holdings notices, keeps the hero strip, and falls back to a single provenance chip.
+- **Mobile width at 390px**, measured before and after with `git stash`: `scrollWidth` equals
+  `clientWidth` at 477 in both, so nothing here widened the document. The regime table still
+  overflows its own `overflow-x` wrapper by design and nothing else does.
+
+**Files changed:** `strategies.html`, `js/app.js`, `css/main.css`, `docs/PRD.md`, `docs/DESIGN.md`,
+`docs/PATCHNOTES.md`
+
+---
+
 ## [1.29.4] - 2026-08-28
 
 ### Item 19: a structure sign-off gate before Tier 3 expands

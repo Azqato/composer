@@ -715,6 +715,158 @@ p { color: var(--color-secondary); }
   font-weight: 500;
 }
 
+/* ---- Provenance chips (V1.20 item 8) ---- */
+.prov-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.prov-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font-size: 0.75rem;
+  color: var(--color-secondary);
+}
+
+.prov-chip strong { color: var(--color-primary); font-weight: 600; }
+
+.prov-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-green);
+  flex-shrink: 0;
+}
+
+.prov-chip.stale .prov-dot { background: var(--color-yellow); }
+
+/* ---- Hero metric strip (V1.20 item 2) ---- */
+.hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 720px) {
+  .hero-metrics { grid-template-columns: repeat(4, 1fr); }
+}
+
+.hero-metric {
+  background: var(--color-surface);
+  padding: 14px 16px;
+  min-width: 0;
+}
+
+.hero-metric-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-disabled);
+  margin-bottom: 6px;
+}
+
+.hero-metric-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.1875rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.hero-metric-sub {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--color-disabled);
+  margin-top: 5px;
+  line-height: 1.4;
+}
+
+/* ---- Secondary metric grid (V1.20 item 3) ---- */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .metric-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 1180px) {
+  .metric-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.metric-tile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 13px 15px;
+  min-width: 0;
+}
+
+.metric-tile-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-disabled);
+  margin-bottom: 6px;
+}
+
+.metric-tile-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.metric-tile-sub {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--color-secondary);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.metric-grid-note {
+  font-size: 0.75rem;
+  color: var(--color-disabled);
+  line-height: 1.6;
+  margin-top: 12px;
+}
+
+/* ---- Glossary links on metric labels (V1.20 item 12) ---- */
+/* Inherits its colour so a linked label looks like the unlinked ones beside it.
+   The dotted rule is the only affordance, which is the point: these sit inside
+   metric tables where a row of green links would read as navigation. */
+.metric-term {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+}
+
+.metric-term:hover,
+.metric-term:focus-visible {
+  color: var(--color-green);
+  border-bottom-color: var(--color-green);
+}
+
 /* ---- Grid layouts ---- */
 .grid-3 {
   display: grid;

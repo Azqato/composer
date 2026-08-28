@@ -386,7 +386,7 @@ function renderConceptCard(concept, strategyCount) {
 // ---- Metrics Table rendering ----
 function renderMetricsTable(s) {
   function row(label, value, cls) {
-    return `<div class="metrics-row"><dt>${label}</dt><dd class="${cls || ''}">${value}</dd></div>`;
+    return `<div class="metrics-row"><dt>${metricLabel(label)}</dt><dd class="${cls || ''}">${value}</dd></div>`;
   }
 
   const groups = [
@@ -451,6 +451,34 @@ function renderMetricsTable(s) {
       <dl class="metrics-table">${g.rows.join('')}</dl>
     </div>
   `).join('');
+}
+
+// ---- Glossary links on metric labels (V1.20 item 12) ----
+// Only labels the glossary actually defines appear here. An unmapped label stays
+// plain text on purpose: a link that lands on "No concept with slug" is worse than
+// no link, and the fix for a missing term is to write the term. That is why the
+// seven distribution and cost terms were written first, in v1.27.8, before any of
+// this linking existed.
+const METRIC_GLOSSARY = {
+  'Annualized Return': 'annualized-return',
+  'Max Drawdown': 'max-drawdown',
+  'Std Deviation': 'standard-deviation',
+  'Sharpe Ratio': 'sharpe-ratio',
+  'Calmar Ratio': 'calmar-ratio',
+  'Sortino Ratio': 'sortino-ratio',
+  'Win Rate': 'win-rate',
+  'Tail Ratio': 'tail-ratio',
+  'Skewness': 'skewness',
+  'Kurtosis': 'kurtosis',
+  'Herfindahl Index': 'herfindahl-index',
+  'Annualized Turnover': 'annualized-turnover',
+  'Backtest Period': 'backtesting',
+};
+
+function metricLabel(label) {
+  const slug = METRIC_GLOSSARY[label];
+  if (!slug) return label;
+  return `<a class="metric-term" href="${u('/glossary.html?slug=' + slug)}">${label}</a>`;
 }
 
 // ---- Compact strategy list item ----

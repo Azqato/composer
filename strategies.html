@@ -240,6 +240,16 @@
 
       const pct1 = n => `${(n * 100).toFixed(1)}%`;
 
+      // UTC on both sides, or a browser west of Greenwich reads one day short.
+      function daysSince(iso) {
+        if (!iso) return null;
+        const [y, m, d] = iso.split('-').map(Number);
+        const now = new Date();
+        return Math.max(0, Math.round(
+          (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+            - Date.UTC(y, m - 1, d)) / 86400000));
+      }
+
       // Item 7. The keys of last_market_days_holdings are the ticker universe the
       // logic can reach, not the current position, so this says "can hold". Saying
       // "holds" would be wrong for 12 of the 14 affected strategies today. Verdicts
@@ -356,6 +366,100 @@
            </section>`
         : '';
 
+      // Item 8. A visitor should know the age of a number before reading it, not
+      // after. There are genuinely two ages on this page and the chips say so rather
+      // than averaging them into one reassuring date: the headline and sidebar
+      // metrics come from data/strategies.json and carry its `last_updated`, while
+      // the deeper grid, the outlier panel and the holdings notices come from the
+      // build-time join and carry `database.json`'s `refresh_date`. Today those
+      // differ on all 31 strategies. The dot turns yellow past 14 days, which is long
+      // enough that the nightly refresh has stopped rather than merely slipped.
+      function provChip(label, iso) {
+        const d = daysSince(iso);
+        if (d === null) return '';
+        const ago = d === 0 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`;
+        return `<span class="prov-chip${d > 14 ? ' stale' : ''}">
+                  <span class="prov-dot" aria-hidden="true"></span>
+                  ${label} <strong>${formatDate(iso)}</strong>, ${ago}
+                </span>`;
+      }
+      const refreshed = extras.refresh_date;
+      const provChips = (!refreshed || s.last_updated === refreshed)
+        ? provChip('Data refreshed', s.last_updated)
+        : provChip('Headline metrics', s.last_updated) + provChip('Database fields', refreshed);
+      const provHtml = provChips.trim() ? `<div class="prov-row">${provChips}</div>` : '';
+
+      // Item 2. Four tiles above the fold. The metrics table is sidebar-only on
+      // desktop and sits below every prose section on mobile, so until now the first
+      // thing a phone visitor saw was three paragraphs and no numbers.
+      function heroTile(label, value, cls, note) {
+        return `<div class="hero-metric">
+                  <span class="hero-metric-label">${metricLabel(label)}</span>
+                  <span class="hero-metric-value ${cls || 'text-primary'}">${value}</span>
+                  <span class="hero-metric-sub">${note}</span>
+                </div>`;
+      }
+      const heroHtml = `
+        <div class="hero-metrics">
+          ${heroTile('Annualized Return', formatPct(s.annualized_rate_of_return),
+                     colorClass(s.annualized_rate_of_return), 'compounded, whole backtest')}
+          ${heroTile('Max Drawdown', formatPct(s.max_drawdown),
+                     colorClass(s.max_drawdown), 'worst peak to trough')}
+          ${heroTile('Sharpe Ratio', formatRatio(s.sharpe_ratio),
+                     colorClass(s.sharpe_ratio), 'return per unit of volatility')}
+          ${heroTile('Backtest Period', `~${Math.round(s.backtest_days / 252)} yrs`,
+                     'text-primary', `${s.backtest_days.toLocaleString('en-US')} trading days`)}
+        </div>`;
+
+      // Item 3. Seven values that exist in database.json and were shown nowhere. Each
+      // label links to the glossary, which is why item 12 is not optional: a page that
+      // says "Kurtosis 150.84" and offers no way to look the word up has added jargon
+      // rather than understanding. `total_costs` is carried by the join but
+      // deliberately not shown; see the note under the grid.
+      function tile(label, value, note) {
+        return `<div class="metric-tile">
+                  <span class="metric-tile-label">${metricLabel(label)}</span>
+                  <span class="metric-tile-value">${value}</span>
+                  <span class="metric-tile-sub">${note}</span>
+                </div>`;
+      }
+      const num = k => (typeof extras[k] === 'number' ? extras[k] : null);
+      const deeperTiles = [
+        num('sortino_ratio') !== null &&
+          tile('Sortino Ratio', formatRatio(num('sortino_ratio')),
+               'Sharpe, but only downside moves count as risk'),
+        num('win_rate') !== null &&
+          tile('Win Rate', pct1(num('win_rate')),
+               'share of days that closed positive, which alone says nothing about size'),
+        num('tail_ratio') !== null &&
+          tile('Tail Ratio', formatRatio(num('tail_ratio')),
+               'best 5% of days measured against the worst 5%'),
+        num('skewness') !== null &&
+          tile('Skewness', formatRatio(num('skewness')),
+               'positive means the rare large moves lean upward'),
+        num('kurtosis') !== null &&
+          tile('Kurtosis', formatRatio(num('kurtosis')),
+               'how much comes from extreme days; 3 is a normal distribution'),
+        num('herfindahl_index') !== null &&
+          tile('Herfindahl Index', formatRatio(num('herfindahl_index')),
+               'concentration, where 1.00 is one holding at a time'),
+        num('annualized_turnover') !== null &&
+          tile('Annualized Turnover', formatRatio(num('annualized_turnover')),
+               'times a year the whole position is replaced'),
+      ].filter(Boolean);
+      const deeperHtml = deeperTiles.length
+        ? `<section class="mb-10">
+             <h2 style="color:var(--color-primary);margin-bottom:16px">Deeper Metrics</h2>
+             <div class="metric-grid">${deeperTiles.join('')}</div>
+             <p class="metric-grid-note">These are reported with the backtest statistics, so they
+             describe the backtest rather than the current position. The Herfindahl figure in
+             particular disagrees with today's holdings on several strategies and is not derived
+             from them. Total trading costs are stored too but are not shown: they are cumulative
+             dollars on an unstated notional, and no other field on this site supplies a
+             denominator that would make them comparable between one strategy and another.</p>
+           </section>`
+        : '';
+
       const k1Html = holdNotice('k1', extras.k1_holdings);
       const etnHtml = holdNotice('etn', extras.etn_holdings);
       const holdingsHtml = (k1Html || etnHtml)
@@ -387,15 +491,7 @@
       // out-of-sample time. Worded as a measurement: unedited logic is real evidence,
       // and it is also what an abandoned strategy looks like. Both are said.
       const oos = extras.oos_date;
-      let oosDays = null;
-      if (oos) {
-        const [oy, om, od] = oos.split('-').map(Number);
-        // UTC on both sides, or a browser west of Greenwich reads one day short.
-        const now = new Date();
-        oosDays = Math.max(0, Math.round(
-          (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-            - Date.UTC(oy, om - 1, od)) / 86400000));
-      }
+      const oosDays = daysSince(oos);
       const oosCard = `
         <div class="rc-card">
           <span class="rc-label">Out of sample</span>
@@ -426,9 +522,11 @@
         <div class="grid-2">
           <div class="detail-main">
             <div class="mb-8">
+              ${provHtml}
               ${tags ? `<div class="card-tags" style="margin-bottom:12px">${tags}</div>` : ''}
               <h1 style="color:var(--color-primary);font-size:clamp(1.5rem,3vw,2rem);margin-bottom:12px">${s.name}</h1>
-              <p style="color:var(--color-secondary);font-size:1rem;line-height:1.7">${s.description}</p>
+              <p style="color:var(--color-secondary);font-size:1rem;line-height:1.7;margin-bottom:24px">${s.description}</p>
+              ${heroHtml}
             </div>
             <div class="mb-10">
               <a href="${s.symphony_url}" target="_blank" rel="noopener noreferrer"
@@ -442,6 +540,7 @@
             ${riskProfile}
             ${holdingsHtml}
             ${assumpHtml}
+            ${deeperHtml}
             ${beyondHtml}
             <div class="detail-mobile-metrics">
               <h2 style="color:var(--color-primary);font-size:1.125rem;margin-bottom:16px">Performance Metrics</h2>

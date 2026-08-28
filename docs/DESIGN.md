@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.17
+**Version:** 1.18
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -784,6 +784,90 @@ as the text colour, which is why it inverts to `--color-bg` for legibility.
 
 ---
 
+### Provenance Chips (strategy detail pages, V1.20 item 8)
+
+Pill chips above the tag row, so the age of the numbers is read before the numbers are.
+
+```css
+.prov-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.prov-chip { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-surface); font-size: 0.75rem; color: var(--color-secondary); }
+.prov-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-green); flex-shrink: 0; }
+.prov-chip.stale .prov-dot { background: var(--color-yellow); }
+```
+
+**Two chips, not one, because there are two ages.** The headline strip and the sidebar table carry
+`strategies.json`'s `last_updated`; everything fed by the build-time join carries `database.json`'s
+`refresh_date`. Collapsing them into a single date would be tidier and would be a claim the data
+does not support: the two differ on all 31 strategies today. The page falls back to one chip only
+when they genuinely agree, or when the join did not load and only one is knowable.
+
+**The dot is the only colour, and it has exactly two states.** Green under 14 days, yellow past it.
+A pill that changed size, weight or border by age would compete with the tag row directly beneath
+it, which is real navigation.
+
+---
+
+### Hero Metric Strip (strategy detail pages, V1.20 item 2)
+
+```css
+.hero-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--color-border); border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; }
+@media (min-width: 720px) { .hero-metrics { grid-template-columns: repeat(4, 1fr); } }
+.hero-metric { background: var(--color-surface); padding: 14px 16px; min-width: 0; }
+```
+
+**The 1px gap over a border-coloured background is the divider.** Four separately bordered cards
+would double every internal rule and read as four things; one bordered block with hairline seams
+reads as one strip, which is what it is.
+
+**Two columns before four, and never one.** A single column would push the fourth metric a full
+screen down on a phone, which is the exact failure this item exists to fix: the metrics table was
+already reachable on mobile, just below three paragraphs of prose.
+
+The value inherits `colorClass()`, so the same green and pink used everywhere else for gains and
+losses apply here without a second convention. Backtest Period is neutral because it is not a
+result.
+
+---
+
+### Deeper Metrics Grid (strategy detail pages, V1.20 item 3)
+
+```css
+.metric-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 640px) { .metric-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1180px) { .metric-grid { grid-template-columns: repeat(4, 1fr); } }
+.metric-tile { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 13px 15px; min-width: 0; }
+.metric-tile-sub { font-size: 0.6875rem; color: var(--color-secondary); margin-top: 6px; line-height: 1.5; }
+```
+
+**Separate bordered tiles here, unlike the hero strip's seamed block.** Seven items do not divide
+into a strip, they wrap, and a wrapped seam grid produces ragged half-rules at the end of each row.
+
+**`.metric-tile-sub` is not optional decoration, it is the reason the grid is publishable.** These
+are the seven values a visitor is least likely to know. The gloss line means the tile is legible
+without leaving the page, and the glossary link means the full definition is one click away. A grid
+of bare numbers labelled Kurtosis and Herfindahl Index would be jargon with a link attached.
+
+**1180px for the fourth column, not 1024px.** The detail view is a two-column layout and the main
+column is already narrowed by the sticky sidebar at 1024px, so four tiles there are too cramped to
+hold a gloss line.
+
+---
+
+### Metric Term Links (V1.20 item 12)
+
+```css
+.metric-term { color: inherit; text-decoration: none; border-bottom: 1px dotted currentColor; }
+.metric-term:hover, .metric-term:focus-visible { color: var(--color-green); border-bottom-color: var(--color-green); }
+```
+
+**Inherited colour with a dotted rule, not the site's link colour.** These labels sit inside metric
+tables and tiles where a row of green underlined text would read as navigation and pull the eye off
+the values, which are the content. The dotted rule is enough affordance to say "there is more here"
+and little enough to stay subordinate. Hover and keyboard focus both promote to green, so the
+interactive state is the same one used everywhere else.
+
+---
+
 ### TL;DR Card (strategy detail pages, V1.20 item 13)
 
 The first thing under the Open in Composer button. A Core Thesis callout above two opposed columns.
@@ -1073,9 +1157,10 @@ site's interface is worse than one that admits the boundary.
 `rsi.html`, `database.html`, `index.html`, `about.html`, `strategies.html`, `glossary.html` and
 `404.html` carry **no** inline style at all; everything they render is in `css/main.css` and
 documented above. `strategies.html` stayed in that list through V1.20: `.hold-notice`, `.rc-*`,
-`.tldr-*`, `.assump-*` and `.regime-*` all went into `css/main.css` beside the components they sit
-among, rather than into a `<style>` block on the page, because the strategy detail view is a core
-page and not a self-contained tool.
+`.tldr-*`, `.assump-*`, `.regime-*`, `.prov-*`, `.hero-metric*`, `.metric-grid`, `.metric-tile*` and
+`.metric-term` all went into `css/main.css` beside the components they sit among, rather than into a
+`<style>` block on the page, because the strategy detail view is a core page and not a
+self-contained tool.
 
 **The `.j-*` JSON highlighter is duplicated** between `converter.html` and `etf-cloner.html`. Both
 copies define the same five classes. Nothing has gone wrong with that yet, but it is exactly the kind

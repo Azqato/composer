@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.29.4
+**Version:** 1.30.0
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -2336,7 +2336,7 @@ numbering schemes; they answer different questions.
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
-| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1, 4, 5, 7, 17 shipped; 13, 14, 15 piloted on 1 of 31 and **blocked on the item 19 structure sign-off**; 9 open | v1.29.3 (partial) |
+| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1, 2, 3, 4, 5, 7, 8, 12, 17 shipped; 13, 14, 15 piloted on 1 of 31 and **blocked on the item 19 structure sign-off**; 5 open | v1.30.0 (partial) |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -2942,7 +2942,8 @@ instant and works offline.
 ### V1.20: Strategy Page Rebuild
 
 **Status:** In progress. Specified and approved 2026-08-28. **Items 1, 4, 5 and 7 shipped in
-v1.28.0** and item 17 in v1.27.8, which is steps 1 and 2 of the sequencing below complete.
+v1.28.0**, item 17 in v1.27.8, and **items 2, 3, 8 and 12 in v1.30.0**, which is steps 1, 2 and 3 of
+the sequencing below complete. **Step 4 (items 6 then 9) is next.**
 
 **Items 13, 14 and 15 were then piloted on a single strategy (v1.29.0 to v1.29.3), out of sequence,
 at the owner's request.** `gold-miner-original` carries all three; the other 30 carry none, and every
@@ -3059,11 +3060,33 @@ files already in the repo.
   pages say a strategy **can hold** a ticker, not that it does. Of the 14 strategies holding a K-1
   issuer or an ETN, only 2 hold one as of the last market day, so "holds" would have been wrong 12
   times out of 14.
-- [ ] **2. Hero metric strip above the fold.** CAGR, max drawdown, Sharpe, backtest period, as four
-  tiles. Today the metrics table is sidebar-only on desktop and pushed below all the prose on
-  mobile, so the first thing a visitor sees on a phone is three paragraphs.
-- [ ] **3. Secondary metric grid.** Sortino, win rate, tail ratio, skewness, kurtosis, turnover,
-  costs. Uses the glossary links from item 12, which is why that item is not optional.
+- [x] **2. Hero metric strip above the fold (v1.30.0).** Annualized return, max drawdown, Sharpe
+  and backtest period, as four tiles directly under the description and above the Open in Composer
+  button. Two columns on a phone, four from 720px.
+
+  **The complaint it fixes was structural, not decorative.** The metrics table is sidebar-only on
+  desktop and rendered below every prose section on mobile, so the first thing a phone visitor saw
+  was three paragraphs and no numbers. The tiles read from `strategies.json`, which every strategy
+  has, so this section is not guarded: it is the one part of V1.20 that renders identically whether
+  or not the build-time join loaded.
+- [x] **3. Secondary metric grid (v1.30.0).** Seven tiles under a Deeper Metrics heading: Sortino,
+  win rate, tail ratio, skewness, kurtosis, Herfindahl index and annualized turnover. Every label
+  links to the glossary per item 12, and every tile carries a one-line plain-language gloss so the
+  grid is legible without following a link. Two columns on a phone, three from 640px, four from
+  1180px.
+
+  **Total costs was specified here and is deliberately not shown.** It is cumulative dollars on an
+  unstated notional: the figures run from $19,866 to $13.2 billion across the 31, and dividing by
+  `cumulative_return` gives a ratio spanning 7.3 to 3,493, so no field on this site supplies a
+  denominator that would make one strategy's costs comparable to another's. It stays carried in the
+  join, ready if a notional is ever recorded. The grid says this in a note rather than omitting it
+  silently.
+
+  **The Herfindahl index does not describe today's position, and the note says so.** Checked against
+  `last_market_days_holdings`: `super-semiconductors` stores 0.641 while its current holding is SMH
+  alone, which is 1.00. It arrives with the backtest statistics, alongside Sortino and turnover, so
+  it describes the backtest. Labelling it as current concentration would have been wrong on at least
+  4 of the 31.
 - [x] **4. Outlier-dependence disclosure (v1.28.0).** Stated as plain arithmetic and left that way:
   no score, no badge, no rating. **25 of the 31 featured strategies are above 100%**, which means
   the other 95% of their days lost money on net, and the panel says exactly that when it applies.
@@ -3094,8 +3117,19 @@ files already in the repo.
   these without being taught: yellow for K-1, blue for ETN. The 27 held tickers absent from the K-1
   database are all individual stocks, deliberately purged at v1.27.5; the build reports them in its
   run summary so a genuinely missing **fund** would be noticed.
-- [ ] **8. Provenance chip at the top of the page.** `last_updated` and `refresh_date` exist and are
-  shown nowhere. A visitor should know the age of a number before reading it, not after.
+- [x] **8. Provenance chip at the top of the page (v1.30.0).** Above the tags, so the age of the
+  numbers is read before the numbers are.
+
+  **There are genuinely two ages on this page, and the chips say so rather than averaging them into
+  one reassuring date.** The headline strip and the sidebar table come from `strategies.json` and
+  carry its `last_updated`; the Deeper Metrics grid, the outlier panel, the out-of-sample panel and
+  the holdings notices come from the build-time join and carry `database.json`'s `refresh_date`.
+  Those two differ on all 31 strategies today, by one to seven days. When they agree the page falls
+  back to a single "Data refreshed" chip, and when the join has not loaded at all only the one chip
+  it can honestly state is rendered.
+
+  **The dot turns yellow past 14 days.** That is long enough to mean the nightly refresh has stopped
+  running rather than merely slipped over a weekend.
 - [ ] **9. Backtest-window explainer.** State why a window is the length it is, naming the limiting
   holding: "14.8 years, limited by UVXY (inception October 2011)". Inception can be derived as a
   lower bound from `prices.json` by taking each ticker's first non-null close, which detects any
@@ -3115,10 +3149,20 @@ files already in the repo.
   `description`. Deduplicate repeated signals with a `x2` badge, as the screenshot does. The 31
   strategies carry 2 to 6 signals each, so this is a schema addition plus a pass over roughly 130
   signal objects.
-- [ ] **12. Link metric labels to the glossary.** **The seven missing terms were written first and
-  shipped in v1.27.8** (Sortino Ratio, Win Rate, Skewness, Kurtosis, Tail Ratio, Herfindahl Index,
-  Annualized Turnover), taking the glossary from 20 terms to 27, because surfacing a metric a
-  visitor cannot look up adds jargon rather than understanding. What remains is the linking itself.
+- [x] **12. Link metric labels to the glossary (v1.30.0).** **The seven missing terms were written
+  first and shipped in v1.27.8** (Sortino Ratio, Win Rate, Skewness, Kurtosis, Tail Ratio,
+  Herfindahl Index, Annualized Turnover), taking the glossary from 20 terms to 27, because surfacing
+  a metric a visitor cannot look up adds jargon rather than understanding. The linking itself landed
+  in v1.30.0.
+
+  **One map, `METRIC_GLOSSARY` in `js/app.js`, covering 13 labels**, applied by `metricLabel()` to
+  the hero strip, the Deeper Metrics grid and the existing sidebar metrics table in one place. 23
+  linked labels render on a strategy page.
+
+  **An unmapped label stays plain text on purpose.** A link that lands on "No concept with slug" is
+  worse than no link, so Cumulative Return, the four Daily Distribution rows and the three Trailing
+  Returns rows are unlinked until the glossary defines them. The fix for a missing term is to write
+  the term, which is exactly the order v1.27.8 established.
 
 **Tier 3: new written content, and this is where the real cost is. Every item multiplies by 31.**
 
@@ -3248,8 +3292,10 @@ costs writing times 31, so anything that changes the schema should land before t
 2. ~~**Items 4, 5 and 7 next.**~~ **Done, v1.28.0.** The highest differentiation per unit of work on
    the list, and none of them needed a single word written per strategy. Outlier dependence,
    out-of-sample duration, and the K-1 cross-link are each things no competing page shows.
-3. **Items 2, 3, 8 with item 12's linking.** The visual reorganisation, done in one pass so the page
-   is not restructured twice. Item 3 without item 12 ships unexplained jargon, so they go together.
+3. **DONE (v1.30.0). Items 2, 3, 8 with item 12's linking.** The visual reorganisation, done in one
+   pass so the page is not restructured twice. Item 3 without item 12 ships unexplained jargon, so
+   they went together, and doing so is what forced the glossary-coverage question to be answered
+   rather than deferred.
 4. **Item 6, then item 9.** The Assets tab is self-contained. Item 9 goes after it because the
    inception caveat is easier to word once the holdings are already displayed beside it.
 5. **Items 10 and 11 before any of Tier 3.** Both are schema changes. Doing them after the new prose
