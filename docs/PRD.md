@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.29.1
+**Version:** 1.29.2
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -2964,6 +2964,38 @@ half of it that matters is the data audit, not the design admiration. **The scre
 of structure, not of palette:** it is a light editorial print-style page and this site is dark
 (`#0d0d0d`). What is worth copying is how it organises information, and specifically that it turns
 prose into structures that force an author to name failure modes.
+
+**Where each item came from.** The owner asked for both the screenshot's sections and any missing
+ones worth adding beyond it, so the two are mixed together in the tiers below. This table keeps them
+separable, because "we took this from a page we admired" and "we found this in our own data" are
+different claims and only one of them is checkable against the source.
+
+| # | Item | Origin |
+|---|---|---|
+| 1 | Build-time database join | **Ours.** Infrastructure, not a section. Nothing in the source implies it |
+| 2 | Hero metric strip | **Screenshot** |
+| 3 | Secondary metric grid | **Screenshot** |
+| 4 | Outlier-dependence disclosure | **Ours.** From Section 14's C3 spec, which already argued for this test on mined signals, plus three fields sitting unused in `database.json` |
+| 5 | Out-of-sample panel | **Ours.** `oos_date` is a Composer field the source page has no equivalent of |
+| 6 | Assets tab | **Screenshot** |
+| 7 | K-1 warning line, cross-linked to `/k1` | **Ours.** The one item nothing else could produce: it needs the v1.19 K-1 database, which is this site's own work |
+| 8 | Provenance chip | **Ours** |
+| 9 | Backtest-window explainer | **Ours, and an inversion of the screenshot.** The source shows real against simulated history; that distinction was measured and does not apply here, so this states why a window is short instead. See "Deliberately not copied" below |
+| 10 | Split `risk_profile` into categories | **Screenshot**, for the grouping (Leverage and Structural, Whipsaw and Signal, Hedge, Concentration) |
+| 11 | Signal Types table | **Screenshot**, including the `x2` badge for repeated signals |
+| 12 | Glossary links on metric labels | **Ours.** The glossary is this site's; the source has nothing to link to |
+| 13 | TL;DR card | **Screenshot** |
+| 14 | Underlying Assumptions | **Screenshot** |
+| 15 | Market Regime Analysis | **Screenshot**, including the example-period column |
+| 16 | Store per-strategy daily returns | **Ours.** A pipeline change, and the only way item 15 scales past a curated 31 |
+| 17 | Distribution metrics mislabeled | **Ours.** A live correctness bug found while auditing the data for the items above, not a feature from either source |
+| 18 | Mobile horizontal overflow | **Ours.** Pre-existing, found while measuring the v1.28.0 work |
+
+**Eight of the eighteen came from the screenshot** (2, 3, 6, 10, 11, 13, 14, 15). **The other ten
+came out of auditing this site's own data** (1, 4, 5, 7, 8, 9, 12, 16, 17, 18), and two of those,
+items 17 and 18, are bugs rather than features. **The single most differentiating item on the list,
+item 7, is one the source page could not have suggested**, because it depends on a K-1 database this
+project built.
 
 **The finding that shapes the whole phase: the data is already here.** All 31 featured strategies in
 `data/strategies.json` join cleanly to `data/database.json` on `symphony_id`, with zero misses. That

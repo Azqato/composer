@@ -5,6 +5,35 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.29.2] - 2026-08-28
+
+### V1.20 roadmap items now record where each one came from
+
+Documentation only, no site change.
+
+The owner's approval of this phase asked for two things at once: the sections from a screenshot they
+liked, and any missing sections worth adding beyond it. Both went into the roadmap and **nothing
+recorded which was which.** It was recoverable for two items, because 10 and 11 happen to mention
+the screenshot in their own text, and lost for the other sixteen.
+
+That distinction matters more than it looks. **"We took this from a page we admired" and "we found
+this in our own data" are different claims, and only one of them is checkable against a source.**
+Six months from now, with the screenshot long gone, an item with no provenance reads as an idea
+nobody can trace.
+
+A table in `docs/PRD.md` now tags all eighteen. **Eight came from the screenshot** (2, 3, 6, 10, 11,
+13, 14, 15). **Ten came out of auditing this site's own data** (1, 4, 5, 7, 8, 9, 12, 16, 17, 18),
+and two of those, items 17 and 18, are bugs rather than features.
+
+**The most differentiating item on the whole list is one the source could not have suggested.**
+Item 7, the K-1 warning cross-linked to `/k1`, needs the K-1 database built in v1.19. Item 9 is the
+only entry that is neither: it is an inversion of the screenshot's real-against-simulated-history
+row, which was measured and found not to apply here.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.29.1] - 2026-08-28
 
 ### The K-1 and ETN notice moved below Risk Profile
