@@ -5,6 +5,53 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.30.3] - 2026-08-28
+
+### Overfit Check renumbered to V2.4, and the session's measurements written down in full
+
+Documentation only, no site change. Two owner instructions: sequence the tool later, and make sure
+everything from the session actually reached the documentation.
+
+**Renumbered V1.21 to V2.4** and physically moved after V2.3 in Section 14, so the ordering is
+unambiguous rather than implied by a number sitting next to the phase currently in progress. The
+milestone table row moved with it.
+
+**It is explicitly not blocked on V2.3.** The community-signals form is last for its own unrelated
+reasons, and a numbering adjacency should not invent a dependency. The real prerequisites are
+recorded instead: V1.20 finished or at least past the item 19 gate, since this tool renders the same
+kind of quantitative disclosure that phase is still settling; the Tier 2 validation project, without
+which two of three tiers are unvalidated; and the V4.0 architecture decision for Tier 3 only, which
+may never come. **Nothing in the research expires**, so the delay costs only the tool not existing.
+
+**An audit found the respecification had dropped a dozen measured findings.** Rewriting the section
+around the definitional framing in v1.30.2 replaced rather than merged, and the earlier
+distributional work went with it. All of it is now restored under a new **Measurements, in full**
+appendix, so the numbers survive in the roadmap and not only in this changelog:
+
+- **Return concentration across the database.** Full percentile table, plus the fact that **80.6% of
+  symphonies exceed 100%** and 45.8% exceed 150%. This gives the metric a **second** independent
+  reason not to carry a verdict: it fires on four symphonies in five, and separately it fails the
+  prediction test. Median best single day 4.7%, best 10% of days 209.6%, kurtosis 17.0.
+- **Backtest length.** Median 3,172 days; **23.2% under five years, 3.4% under two.**
+- **Time since last logic edit.** Median **758 days**; 79.3% at least a year, 53.1% two, 28.0% three.
+- **A second control**, predicting the raw out-of-sample outcome instead of the gap. Win rate is the
+  best single field at rho +0.232, return concentration -0.126. **Everything is weak in absolute
+  terms, which is itself the result:** no stored field comes close to predicting next year, and the
+  within-decile test should not be oversold either.
+- **The diversification confound**, with its full table. Concurrent holdings appear to improve every
+  metric, but the diversified cohort has half the backtest length and Sharpe by window is not
+  monotonic. A tool rewarding diversification would be scoring the sample period.
+- **Tier 3 ticker coverage**, with the full breakdown and the most-held uncovered names: UPRO
+  (2,271 symphonies), VIXY (1,669), TECS (1,172), UGL (1,057), ERX (969).
+
+Verified by search: every figure quoted in the session now appears in the V2.4 section, and no stale
+`V1.21` reference remains anywhere in `docs/PRD.md`. The v1.30.1 and v1.30.2 entries below still say
+V1.21 and are left alone, because they record what was true when written.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.30.2] - 2026-08-28
 
 ### V1.21 respecified: overfitting measured against its definition, not against peers
