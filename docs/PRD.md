@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.30.3
+**Version:** 1.30.4
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -5193,7 +5193,7 @@ evidence, usually a patch note recording the change as deliberate.
 |---|---|---|---|---|
 | 1 | `deploy.yml`'s exclusion list keeps `docs/`, `scripts/`, `README.md` and `symphony_scores.json` off the public web | **All four return HTTP 200 on GitHub Pages**, byte-identical to the working copy. They correctly 404 on Cloudflare | **The docs describe the intent; neither host fully delivers it** | The byte-exact match proves GitHub Pages serves the raw repository rather than the workflow artifact. Leading hypothesis: the repository's Pages source is set to "Deploy from a branch" instead of "GitHub Actions". Unconfirmed, `gh` is not installed. **Owner action required** |
 | 2 | `data/symphony_scores.json` is "not served publicly" (README, `update_metrics.py`, Section 10) | **200 on both hosts**, 22.8MB. `.assetsignore` never listed it | **The code**, meaning the file genuinely is public | One-line fix: add it to `.assetsignore`. Also true of `data/database.json` (18.7MB) and `data/Full Database.xlsx` (5.8MB), neither of which any page requests |
-| 4 | README stated `## License` / `MIT` | **No `LICENSE` file exists in the repository** | **The code**, meaning the project is currently unlicensed | A bare "MIT" line with no licence text is not a grant. Removed from the rewritten README rather than asserted. **Owner decision needed:** add a real `LICENSE` file, or leave it unlicensed deliberately |
+| 4 | README stated `## License` / `MIT` | **No `LICENSE` file existed in the repository** | **The code**, meaning the project was unlicensed | **CLOSED 2026-08-28 (v1.30.4), owner decision: all rights reserved, deliberately.** A bare "MIT" line with no licence text was not a grant and was removed at the time. The owner has now confirmed the intent was never MIT, so the default was already correct and an explicit `LICENSE` was added to say so rather than leave it implied |
 | 6 | Section 12: "All 8 current tags" | **13 tags in use** across `strategies.json` | **The code** | The 8 were the MVP set. All 13 correctly resolve to a glossary slug, so the rule the section states still holds; only the count went stale. Table kept, framing corrected |
 | 7 | Section 6: "6,640 total entries, 6,221 clean, 229 duplicate, 88 excluded, 88 caution, 14 retry" | **6,669 entries; 6,474 unflagged, 69 retry, 94 caution, 32 excluded, 0 duplicate** | **The code** | The v1.11.23 figures were correct on the day. The weekly refresh has been moving them ever since, and moved them again between the audit's measurement and this document being committed. Original kept as the historical record, current figures added beside it, and Section 6 now says plainly that flag counts are readings with dates rather than properties |
 | 8 | Section 13: "All 24 Composer Atlas strategies" | The table beneath it has **31 rows**, matching `strategies.json` | **The code, and the table** | Only the heading's count was wrong. Removed rather than re-fixed to a number that will go stale again |
@@ -5252,9 +5252,40 @@ Numbered for reference. Open unless marked otherwise.
    **Residual, not a risk:** page `lastmod` values come from git commit dates, so a regeneration run
    before its own commit reports the previous date for any file changed in that commit.
 
-4. **The project has no `LICENSE` file** while the README asserted MIT. As it stands, the code is
-   published without a licence grant, which by default means all rights reserved, the opposite of
-   what the README implied. **Owner decision needed.**
+4. **CLOSED 2026-08-28 (v1.30.4), owner decision. The project had no `LICENSE` file.** The README's
+   MIT assertion had already been removed when it was rewritten, so by the time this was raised the
+   repository asserted no licence at all and the legal default, all rights reserved, was in force.
+
+   **The owner confirmed on 2026-08-28 that all rights reserved is the intent, and that MIT was
+   never wanted.** So the state was already correct and nothing needed fixing legally. What was
+   wrong was that it was **implicit**: a reader seeing no `LICENSE` cannot tell a deliberate
+   reservation from an oversight, and a good number of them assume a repository with no licence is
+   free to use. `LICENSE` now states it explicitly, and the README carries a short Licence section
+   pointing at it.
+
+   **The licence grants nothing, and that is the point.** The owner's stated goal on 2026-08-28 was
+   not to stop people copying the site but to **reserve the ability to enforce against someone they
+   object to**. Those two goals pull in opposite directions if the licence hands out permissions: a
+   permission granted to everyone cannot easily be withdrawn from one person. **A first draft of
+   `LICENSE` granted quoting and excerpting rights and was rewritten to grant nothing**, so that
+   every use is tolerated rather than licensed and remains actionable.
+
+   **The clause that does the actual work is NO WAIVER.** Choosing not to act against one use is
+   expressly not a licence, not a precedent, and not a waiver against that person or anyone else,
+   and delay in enforcing does not waive. Without it, a long record of tolerating copying is the
+   first thing an infringer would point at.
+
+   **Two things it deliberately does not claim.** It does not purport to override **GitHub's Terms
+   of Service**, which give other GitHub users rights to view and fork any public repository; the
+   file records that those operate independently and are not enlarged by it, rather than pretending
+   to withhold them. And it does not claim the **Composer-derived or market data** in `data/`, which
+   is not the copyright holder's to license.
+
+   **Residual, and it is a property of the medium rather than a defect.** The site is a static
+   front end, so its HTML, CSS and JS are served to every visitor's browser in readable form by
+   necessity. Copyright still applies to them; the licence changes the permission, not the
+   visibility. Anyone wanting the code cannot be technically prevented from reading it, which was
+   already true and is unrelated to this decision.
 
 5. **CLOSED 2026-08-24 (v1.25.1). `database_summary.json` was four rows behind `database.json`.**
    Four symphonies were in the data and invisible on the site. Resolved by re-running

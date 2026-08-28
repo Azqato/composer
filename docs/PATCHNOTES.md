@@ -5,6 +5,54 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.30.4] - 2026-08-28
+
+### Licence made explicit: all rights reserved, by decision rather than by default
+
+**Owner decision, 2026-08-28: the code is all rights reserved and MIT was never wanted.** Closes
+open risk #4, which had sat as "owner decision needed".
+
+**Nothing was legally wrong before this.** The README's MIT assertion had already been removed when
+the README was rewritten, so the repository asserted no licence and the legal default, all rights
+reserved, was already in force. This release changes the state from correct-but-implicit to
+correct-and-stated. A reader seeing no `LICENSE` cannot tell a deliberate reservation from an
+oversight, and many assume an unlicensed repository is free to use.
+
+**A correction to how this was reported.** It was raised in a roadmap summary as "README asserts
+MIT, repo has no LICENSE", which was wrong: that reading came from risk #4's past-tense wording
+rather than from the README, and the MIT claim had been gone for some time. Verified against
+`README.md`, `about.html`, the rendered footer and the whole repository: no MIT claim existed
+anywhere.
+
+**The licence grants nothing, and that is deliberate.** The owner's goal is not to stop people
+copying the site: it is to **reserve the ability to enforce against someone they object to**. Those
+two goals conflict if the licence hands out permissions, because a permission granted to everyone
+cannot easily be withdrawn from one person. **A first draft granted quoting and excerpting rights
+and was rewritten to grant nothing**, so every use is tolerated rather than licensed, and stays
+actionable.
+
+**The clause doing the real work is NO WAIVER.** Choosing not to act against one use is expressly
+not a licence, not a precedent, and not a waiver against that person or anyone else, and delay in
+enforcing does not waive. Without it, a long history of tolerating copying is the first thing an
+infringer would point at. Permission is available on request instead, and is scoped to the purpose
+and person it names.
+
+**Two things it deliberately does not claim.**
+
+- **It does not purport to override GitHub's Terms of Service**, which give other GitHub users
+  rights to view and fork any public repository. The file records that those operate independently
+  and are not enlarged by it, rather than pretending to withhold them.
+- **It does not claim the data.** `data/` holds material derived from the Composer.trade API and
+  from public market data, which is not the copyright holder's to license, and the file says so.
+
+**Residual, and it is a property of the medium.** The site is a static front end, so its HTML, CSS
+and JS are served to every visitor in readable form by necessity. The licence changes the
+permission, not the visibility. That was already true and is unrelated to this decision.
+
+**Files changed:** `LICENSE` (new), `README.md`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.30.3] - 2026-08-28
 
 ### Overfit Check renumbered to V2.4, and the session's measurements written down in full
