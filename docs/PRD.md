@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.30.1
+**Version:** 1.30.2
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -2337,7 +2337,7 @@ numbering schemes; they answer different questions.
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
 | V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1, 2, 3, 4, 5, 7, 8, 12, 17 shipped; 13, 14, 15 piloted on 1 of 31 and **blocked on the item 19 structure sign-off**; 5 open | v1.30.0 (partial) |
-| V1.21 | Overfit Check: paste a symphony, get a structural and return-concentration read scored against the 6,669-row database | Requested and specified 2026-08-28, not started | Not started |
+| V1.21 | Overfit Check: paste a symphony, test it against the definition of overfitting using the 5,095 symphonies whose logic has gone a year unedited | Requested 2026-08-28, specified, then respecified the same day after the owner rejected the peer-ranking framing. Not started | Not started |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -3325,202 +3325,227 @@ designed in a way that implies the full database will eventually get the same tr
 ### V1.21: Overfit Check
 
 **Status:** Requested by the owner 2026-08-28. Specified here, **not started**. The research below is
-done and is what the spec is built on; no code exists.
+done and no code exists. **This spec was rewritten the same day** after the owner rejected its first
+framing; see "What changed and why" at the end, because the rejected version is instructive.
 
-**The ask, in the owner's words:** a tool where you paste a symphony and it determines whether it is
-overfit, based on signal overfitness, return concentration in the best days, and whatever else the
-research says belongs.
+**The ask:** paste a symphony, find out whether it is overfit. Signal overfitness, return
+concentration in the best days, and whatever else the research supports.
 
-**What it would be:** a new page, `overfit.html`, in the same family as `/converter`, `/nodes` and
-`/signal-miner`. Paste a symphony URL, ID, or raw JSON, get back a structured read on how much of
-the backtest is likely to be curve fitting. It is not a score out of 100 and not a pass or fail,
-for reasons the research below makes unavoidable.
+**What it would be:** a new page, `overfit.html`, in the family of `/converter`, `/nodes` and
+`/signal-miner`. Not a score, not a pass or fail, for reasons the measurements below force.
 
 ---
 
-#### The finding that has to shape the whole tool
+#### Start from the definition, because it is measurable here
 
-**An absolute threshold on outlier dependence is useless here.** Measured across the 6,324 database
-rows that carry the field:
+**Overfitting is not unusualness. It is fitting noise, and the test is whether performance survives
+out of sample.** That is a definition with a procedure attached, and this project can run the
+procedure: `oos_date` records the last time a symphony's logic was edited, and it is populated on
+**6,470 of 6,472 usable database rows**. Days after that edit were not available to be fitted to.
 
-| Percentile | Return from the best 5% of days |
+**5,095 symphonies have gone at least a year without a logic edit.** Comparing each one's
+backtested annual return against what it actually delivered over the following year:
+
+| | Result |
 |---|---|
-| 5th | 76.8% |
-| 25th | 108.3% |
-| 50th | **143.0%** |
-| 75th | 201.5% |
-| 95th | 418.8% |
+| Median backtested annual return | **49.4%** |
+| Median actual out-of-sample year | **17.6%** |
+| Delivered at least their backtest | **22.2%** |
+| Delivered at least half of it | 39.1% |
+| Merely positive | 77.9% |
+| Degraded at all | 77.8% |
 
-**80.6% of all symphonies in the database get more than 100% of their total return from their best
-5% of days.** The V1.20 item 4 panel already says this for the 31 featured strategies, where the
-figure is 25 of 31, and the full database agrees almost exactly. A tool that flagged "above 100%" as
-a problem would flag four symphonies in five and tell a user nothing.
+**The typical Composer symphony delivers about a third of its backtested annual return once its
+author stops editing it.** That single table is arguably a better answer to "is this overfit" than
+any per-symphony score, and it is a fact about the population that this site is uniquely positioned
+to state, because it has the 6,669 rows and the edit dates.
 
-**So every return-based measure in this tool must be a percentile against the database, not a
-threshold.** "Your symphony's best 5% of days produced 340% of its return, which is worse than 91%
-of the 6,324 symphonies we have measured" is a real statement. "340%, which is above 100%, so this
-is overfit" is not. **This is the tool's entire competitive position**: no other Composer tool has
-6,669 measured symphonies to compare a paste against, and without that comparison the numbers are
-just numbers.
-
----
-
-#### What can be computed, in three tiers of decreasing availability
-
-**Tier A. Structural analysis of the pasted tree. Works for every symphony, needs no price data.**
-
-This is the "signal overfitness" half of the ask and it is the only half that works on a symphony
-the database has never seen. It is also largely **already built and not yet used for this**:
-
-- `converter.html` already accepts a URL, an ID, or raw JSON, already fetches from the Composer API
-  with a documented CORS fallback, and already walks the tree collecting tickers and indicator
-  functions (`collect()`, the `FN` and `CMP` maps).
-- `nodes.html` already counts nodes in a pasted symphony and breaks them down by node type.
-
-**Neither needs rebuilding. The overfit tool is a third consumer of the same parse.** Candidate
-structural measures, in rough order of how much they are worth:
-
-1. **Free parameters against sample length.** Every `if` node contributes at least a comparator, a
-   threshold and a window length. A symphony with 40 tuned numbers fitted over 1,400 trading days is
-   a different object from one with 4 fitted over 4,000. This is the single most defensible
-   structural measure because it needs no judgement, only counting.
-2. **Threshold specificity.** A gate at RSI 70 or 30 is a convention. A gate at RSI 79, 31 and 27 in
-   the same tree is a fitted number wearing a convention's clothes. `gold-miner-original` is the
-   worked example already in the site's own content: V1.20 item 14 records that its RSI gates at 79
-   and 30 fire on **10.6% of days** while the momentum branches make the other 89.4% of decisions.
-   Scoring distance from round numbers is cheap and surprisingly diagnostic.
-3. **Near-duplicate thresholds.** Three RSI gates within two points of each other are three
-   expressions of one idea, tuned separately. V1.20's original notes flagged this exact pattern.
-4. **Window-length diversity.** A tree using 70-day and 75-day lookbacks in different branches is
-   asserting those are meaningfully different series. They are not, and the assumption is almost
-   never stated. This is already written into the pilot's Underlying Assumptions section.
-5. **Branch count against distinct assets.** Twelve conditions routing into three tickers is mostly
-   machinery for deciding between three things.
-6. **Depth.** Deeply nested trees narrow each leaf to fewer historical days, which is the mechanism
-   of overfitting made visible in structure.
-
-**Do not compute a "complexity is bad" verdict from this.** See the confound below.
-
-**Tier B. Return-based measures, scored as percentiles. Works for any symphony already in the
-database, which is 6,669 rows.**
-
-Every field needed is already in `database.json` and already joined at build time by
-`scripts/build_strategy_extras.py` for the featured 31:
-
-- `top_five_percent_day_contribution` and `top_one_day_contribution`, the return-concentration
-  measures the owner named. Median 143.0%, and the single best day alone is a median 4.7%.
-- `backtest_days`. **23.2% of the database is backtested on under five years and 3.4% on under
-  two.** A short window is the loudest overfit tell available and it costs nothing to read.
-- `oos_date`, present on **essentially the entire database, 6,470 of 6,472 usable rows**. Days since
-  the last logic edit is genuine out-of-sample time, with the caveat V1.20 item 5 already
-  established: unedited logic is also what an abandoned strategy looks like, and the tool must say
-  both.
-- `kurtosis` (median 17.0, 95th percentile 206.5), `tail_ratio`, `win_rate`, `annualized_turnover`,
-  `herfindahl_index`.
-
-**Tier C. The parameter-plateau test. The strongest measure available and it is blocked today.**
-
-The real question is not "how many parameters" but "does this rule still work one step either side
-of the number it was fitted to". A gate that scores well at RSI 23 and badly at 22 and 24 is a knife
-edge; one that holds from 20 to 28 is an effect. **This requires re-running the symphony with
-perturbed thresholds, which requires price history for every ticker it can reach.**
-
-**Coverage measured against `data/prices.json`, which holds 72 tickers over 4,184 days:**
-
-| | Symphonies | Share |
-|---|---|---|
-| Every currently held ticker covered | 1,112 | **16.7%** |
-| Some covered | 5,179 | 77.8% |
-| None covered | 370 | 5.6% |
-
-**3,680 distinct tickers are held across the database and `prices.json` has 72 of them.** UPRO alone
-is held by 2,271 symphonies and is not among them. And that measures only *currently held* tickers;
-the reachable universe per symphony is larger, so true coverage is worse than 16.7%.
-
-**This is not a reason to abandon Tier C, it is a reason to sequence it last and scope it
-honestly.** Three existing pieces of work converge on exactly this problem and should be read
-together before anything is built:
-
-- **Signal Miner item A, parameter plateau scoring** (Section 14, under design). Same idea, applied
-  to mined signals rather than pasted ones, and it notes the neighbourhood is nearly free there
-  because the lattice is already exhaustively evaluated. That is not true here.
-- **V1.20 item 16, store per-strategy daily returns.** The pipeline change that would make
-  return-based work possible without a browser backtest.
-- **`composer_json_fuzz_tester`** (V4.0, Signal Discovery and Robustness Tooling). It already does
-  this: walks the tree, extracts every condition, re-runs the backtest over a plus or minus 30%
-  sweep, and reports a fragility score per condition. The V4.0 notes already name it as the first
-  and lowest-risk of the five repos to fork, as an offline batch job producing static artifacts. **A
-  paste-anything live version is the server-compute departure that section explicitly rules out
-  without its own proposal.**
+**One limitation, stated up front because it changes what the number means.** This is
+out-of-sample with respect to *editing*, not a clean data holdout: the backtest window still
+overlaps the year being measured. It captures the author who kept tweaking until the curve looked
+right, which is the dominant way a Composer symphony gets overfit. It does not capture a symphony
+overfitted in a single pass and never touched again.
 
 ---
 
-#### The confound that must be stated, not buried
+#### The measurement that determines whether the tool can work at all
 
-Diversification, measured as the count of concurrently active asset nodes, looks like it improves
-everything:
+If overfitting is degradation, then a flag is only useful if it **predicts** degradation. So every
+candidate flag was tested against the out-of-sample outcome for those 5,095 symphonies.
 
-| Concurrent holdings | n | Median return from best 5% of days | Median Sharpe | Median win rate | Median backtest days |
-|---|---|---|---|---|---|
-| 1 | 2,481 | 162.7% | 1.33 | 53.7% | 3,728 |
-| 2 to 3 | 1,160 | 159.4% | 1.35 | 54.6% | 3,457 |
-| 4 to 7 | 1,014 | 140.3% | 1.50 | 55.1% | 2,942 |
-| 8 to 15 | 690 | 123.6% | 1.77 | 55.9% | 2,159 |
-| 16 to 31 | 435 | 104.5% | 2.06 | 56.7% | 1,832 |
-| 32 or more | 543 | 94.8% | 2.26 | 57.4% | 1,832 |
+**The naive test is a trap and has to be controlled for.** Correlating a flag with (out-of-sample
+minus in-sample) is partly tautological, because that gap is mechanically anti-correlated with the
+in-sample figure. Run raw, in-sample annualized return "predicts" degradation at r = -0.904, which
+is regression to the mean wearing a lab coat. **The controlled test holds in-sample return roughly
+constant by scoring within its deciles**, and reports the mean rank correlation across the ten:
 
-**Read the last column before believing the rest of the table.** The more diversified symphonies
-have roughly **half the backtest length** of the concentrated ones, and median Sharpe by backtest
-length is not monotonic either: under 2 years 1.36, two to five years 1.60, five to ten years 1.95,
-ten years or more back down to 1.36. Sharpe rising with diversification is partly diversification
-working and partly a shorter, more recent, more favourable window. **A tool that rewarded a
-symphony for holding more things at once would be scoring the sample period.**
+| Candidate flag | Mean within-decile rho | Consistent? | Verdict |
+|---|---|---|---|
+| **Annualized turnover** | **-0.316** | negative in **10 of 10** | **The strongest signal in the database** |
+| Backtest length | +0.188 | positive in 9 of 10 | Real, weaker |
+| Win rate | +0.185 | positive in 9 of 10 | Real, weaker |
+| Sharpe ratio | +0.080 | sign flips | Too weak to use |
+| **Return from the best 5% of days** | **-0.065** | **sign flips, 4 of 10 positive** | **Does not predict** |
 
-This is also why Tier A must not emit a "complexity is bad" verdict. Concurrent holdings are not
-logic complexity, and the two must not be conflated: `active_asset_nodes` in `database.json` is a
-map of currently active nodes to weights, so its length is today's diversification, not the size of
-the tree. **The database has no structural complexity field at all.** That is precisely why the tool
-needs the paste rather than a lookup.
+**The metric the request named, and the one V1.20 item 4 already ships, does not predict
+out-of-sample failure.** Its within-decile correlation is near zero and its sign is unstable. This
+does not make item 4 wrong: outlier dependence is a true and useful statement about what a backtest
+rests on. **It makes it the wrong basis for an overfit verdict**, and the tool must not imply
+otherwise.
+
+**Turnover is the finding.** Nobody reaches for turnover when asked about overfitting, and it beat
+everything else that was tested:
+
+| Turnover quintile | n | Median backtest ARR | Median out-of-sample year | Median gap |
+|---|---|---|---|---|
+| 1 (0 to 14) | 1,008 | 17.1% | **18.5%** | **+1.5 pts** |
+| 2 (14 to 29) | 1,008 | 37.6% | 20.7% | -16.3 pts |
+| 3 (29 to 45) | 1,008 | 56.0% | 18.8% | -35.9 pts |
+| 4 (45 to 69) | 1,008 | 80.7% | 17.7% | -58.5 pts |
+| 5 (69 to 172) | 1,010 | 153.9% | **3.8%** | **-142.4 pts** |
+
+**The lowest-turnover quintile is the only cohort that kept its backtest.** The highest promised
+153.9% a year and delivered 3.8%.
+
+**And the honest caveat that has to travel with it:** high turnover degrades returns through
+**trading costs and slippage**, which is a mechanical drag, not curve fitting. Both stories predict
+this table and the data here cannot separate them. The tool must present turnover as "this is what
+predicts a backtest not surviving" and not as proof of overfitting. Distinguishing the two needs
+per-trade cost modelling that does not exist yet.
+
+**Also note what did not replicate.** Short backtests are supposed to be the classic tell, and in
+the raw data the under-two-year cohort had the *smallest* median gap (-3.0 points) because it also
+promised the least (26.0% ARR). Backtest length only becomes a real predictor after controlling for
+in-sample return. Any version of this tool that flags "short backtest" without that control will be
+wrong in a way that looks authoritative.
 
 ---
 
-#### Design constraints, inherited and non-negotiable
+#### Can AI tell that a signal is probably random?
 
-- **No server, no accounts, no stored submissions.** A pasted symphony is analysed in the browser and
-  never leaves it, except for the existing Composer API fetch the converter already performs when
-  given a URL or ID. Nothing pasted is logged, stored, or added to the database. See Tenets 4 and 7.
-- **No score out of 100.** The V1.20 item 4 instruction applies with more force here: state the
-  arithmetic and the percentile, and let it be persuasive on its own. A composite score invites
-  exactly the optimisation this tool exists to detect, and the weights would be unfalsifiable.
-- **Every claim must name what it cannot see.** A Tier A result on a symphony absent from the
-  database is a structural read with no return evidence behind it, and must say so rather than
-  implying a verdict.
-- **`/overfit` goes in the nav and the footer and gets an Explore card** per Section 10's three
-  registration points, which would take the Explore grid to eight cards and change the "Seven
-  ways..." subhead.
+The owner's second question, and it deserves a direct answer rather than an enthusiastic one.
 
-#### Sequencing, if it is picked up
+**Not from the rule itself. That is a limitation of the input, not of the model.** Whether
+`RSI(10) of SMH < 23` is a real effect or noise is not a property of that sentence. It is a property
+of the relationship between the rule and the price history, and it is simply not present in the text
+being read. A more capable model does not fix this, because the information is absent, and a model
+asked anyway will produce a confident answer with nothing behind it. **That failure mode is worse
+than no feature**, since it is exactly the false authority this tool exists to puncture.
 
-1. **Tier B first, as a lookup.** Paste a URL or ID, match it against `database.json`, render the
-   return-based percentiles. Reuses the converter's ID extraction and needs no new data. This is
-   also the fastest way to find out whether percentile framing reads clearly to a visitor.
-2. **Tier A second**, as a third consumer of the existing parse. Structural measures, no verdict.
-3. **Then decide whether the two halves combine into one report or stay side by side.** They answer
-   different questions and the honest presentation may be two panels rather than one conclusion.
-4. **Tier C only after V1.20 item 16 and the V4.0 architecture question are settled.** It cannot be
-   built as a live paste-anything feature on the current architecture, and pretending otherwise
-   would produce a tool that works for one symphony in six and fails silently for the rest.
+**What AI can genuinely contribute is a prior about mechanism, clearly labelled as a prior.** There
+is a real difference between a rule that names a known market effect (momentum, mean reversion, a
+volatility regime gate, a flight to quality) and an arbitrary conjunction of unrelated instruments
+and lookbacks. A model is decent at telling those apart, and "this rule has no stated mechanism"
+is a legitimate observation. **It must never be blended into the statistical measures**, because a
+plausible story is not evidence, and the most dangerous overfitted rules are the ones that sound
+sensible.
+
+**The rigorous answer to "is this signal likely random" is a multiple-testing correction, and this
+project is unusually well placed to compute one.** The question is not whether one rule looks good,
+it is how good the best of N tried rules would look under the null of no skill. Search a large
+enough space and a spectacular backtest is guaranteed. **The Signal Miner already brute-forces about
+4.8 million signals over a fixed universe**, so it can produce the *empirical* null distribution of
+best-achievable performance by pure search on this exact data. That is far better than the usual
+analytic approximation (Deflated Sharpe Ratio and friends) because it needs no distributional
+assumption. **Section 14's Signal Miner item A, parameter plateau scoring, is the same insight from
+the other direction** and the two should be designed together rather than twice.
+
+**An architectural constraint that limits the feature as asked.** This site is static with no
+server and no accounts, so there is no live model call available for a pasted symphony. An AI
+plausibility read would have to be **authored offline and committed**, the way `ai_summary` already
+is for the featured 31. **It cannot run on an arbitrary paste** without the server-compute departure
+that Section 14's V4.0 notes already rule out pending their own proposal. A live AI verdict on
+arbitrary input is not on the table on the current architecture.
+
+---
+
+#### What the tool should actually do, in three tiers
+
+**Tier 1. The population result, and where this symphony sits in it. Needs a database match.**
+
+Show the degradation table above, then this symphony's own in-sample-against-out-of-sample
+comparison since its `oos_date`, then its turnover quintile. This is the definitional test, it uses
+only fields already in `database.json` and already joined by
+`scripts/build_strategy_extras.py`, and it is the strongest thing the site can honestly say.
+
+**Tier 2. Structural read of the pasted tree. Works on anything, no database match needed.**
+
+This is the "signal overfitness" half and it is **largely built already**: `converter.html` accepts
+a URL, ID or raw JSON, handles the Composer fetch with its CORS fallback, and walks the tree;
+`nodes.html` already counts nodes by type. The overfit page is a third consumer of that parse.
+Worth computing: free parameters against sample length; threshold specificity, since a gate at 79
+is a fitted number wearing a convention's clothes; near-duplicate thresholds; unexplained window
+differences such as a 70-day and a 75-day lookback in adjacent branches; branch count against
+distinct assets; depth.
+
+**These are unvalidated.** Unlike Tier 1, none of them has been tested against out-of-sample
+outcomes, because the database has no structural complexity field to test with. `active_asset_nodes`
+is a map of currently active nodes to weights, so its length is today's diversification, not tree
+size. **Tier 2 should be presented as observations about construction, never as a verdict**, until
+somebody parses trees at scale and checks whether any of it predicts anything. **That check is
+itself a worthwhile project** and would be the first real evidence that structural overfit
+detection works at all.
+
+**Tier 3. Parameter perturbation. The strongest per-symphony test, and blocked.**
+
+Asking whether a rule survives one step either side of its fitted threshold requires re-running it,
+which requires prices. **`data/prices.json` holds 72 tickers; 3,680 distinct tickers are held across
+the database.** Only **1,112 symphonies, 16.7%, hold exclusively covered tickers**, and that counts
+current holdings only, so the true figure is worse. UPRO alone is held by 2,271 symphonies and is
+not covered. `composer_json_fuzz_tester` (Section 14, V4.0) already implements exactly this sweep
+offline and is already named there as the first repo worth forking. Sequence this last, behind
+V1.20 item 16 and the V4.0 architecture decision.
+
+---
+
+#### Design constraints
+
+- **No server, no accounts, nothing pasted is stored or logged.** Analysis happens in the browser,
+  apart from the Composer API fetch the converter already performs. Tenets 4 and 7.
+- **No score out of 100.** A composite invites the optimisation this tool exists to detect, and its
+  weights would be unfalsifiable. State the arithmetic.
+- **Separate what is validated from what is not.** Tier 1 is tested against 5,095 real outcomes.
+  Tier 2 is not tested against anything. Presenting them with equal confidence would be the tool
+  committing the error it reports.
+- **Every result names what it could not see.**
+- **`/overfit` needs the nav, the footer and an Explore card** per Section 10's three registration
+  points, taking the grid to eight cards and changing the "Seven ways..." subhead.
+
+#### Sequencing
+
+1. **Tier 1 first**, as a lookup by URL or ID against `database.json`. Reuses the converter's ID
+   extraction, needs no new data, and delivers the only validated finding on the list.
+2. **Tier 2 second**, as a third consumer of the existing parse, explicitly labelled as unvalidated
+   observations.
+3. **Validate Tier 2 before promoting it.** Parse trees at scale, test the structural measures
+   against out-of-sample outcomes the way turnover was tested here, and keep only what survives.
+4. **Tier 3 last**, and only after the V4.0 architecture question is settled.
 
 #### Open questions
 
-- **Does it accept a symphony not in the database at all?** Tier A says yes and Tier B says no. The
-  answer is probably yes with a visible statement of what is missing, but that needs deciding before
-  the page is laid out, because it decides whether the empty state is an error or a normal result.
-- **Is `top_ten_percent_day_contribution` worth showing next to the 5% figure?** It is already
-  carried by the join and unused. Median 209.6%.
-- **What does the tool say about itself?** A page that rates overfitting on measures chosen by the
-  same author who chose which measures to keep is subject to the criticism it makes. Saying so is
-  cheap and is consistent with how the rest of this site handles its own limits.
+- **Does it accept a symphony absent from the database?** Tier 2 says yes, Tier 1 says no. Probably
+  yes with a visible statement of what is missing, but it decides whether the empty state is an
+  error or a normal result, so it should be settled before layout.
+- **Should the page lead with the population table rather than the pasted symphony?** The 22.2%
+  figure may be the most useful thing on it regardless of what anyone pastes.
+- **Can turnover be separated from trading costs?** Until it is, the tool reports an association and
+  should say so.
+- **What does the page say about itself?** It rates overfitting using measures chosen by the same
+  author who chose which to keep, which is a version of the problem it reports. Saying so is cheap.
+
+#### What changed and why
+
+The first version of this spec, written earlier the same day, built the tool on **percentile
+ranking against the database**: your symphony's return concentration is worse than 91% of the 6,324
+measured. **The owner rejected the framing**, on the grounds that the tool is meant to determine
+whether a symphony is overfit by definition, not to rank it against its peers.
+
+**That was correct, and testing it afterwards showed the rejected design was worse than merely
+philosophically off.** Percentile ranking on return concentration would have been ranking on a
+measure that **does not predict out-of-sample failure** (within-decile rho -0.065, sign unstable).
+The tool would have been precise, well presented, and measuring the wrong thing. The definitional
+framing survives because it can be checked, and checking it is what exposed both the turnover
+finding and the weakness of the metric the tool was originally going to be built on.
 
 ### V2.0: Full Database Goes Public
 

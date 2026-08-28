@@ -5,6 +5,78 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.30.2] - 2026-08-28
+
+### V1.21 respecified: overfitting measured against its definition, not against peers
+
+Documentation only, no site change. **Supersedes the framing shipped in v1.30.1 a few hours
+earlier**, at the owner's direction.
+
+**The correction.** v1.30.1 built the tool on percentile ranking: your symphony's return
+concentration is worse than 91% of the 6,324 measured. The owner rejected that, on the grounds that
+the tool is meant to determine whether a symphony is overfit **by definition**, not to rank it
+against its peers. That is right, and testing it afterwards showed the rejected design was worse
+than philosophically off.
+
+**Overfitting is fitting noise, and the test is survival out of sample.** `oos_date` records the
+last logic edit and covers 6,470 of 6,472 usable rows, so the procedure is runnable here. **5,095
+symphonies have gone at least a year without an edit:**
+
+- Median backtested annual return **49.4%**, median actual out-of-sample year **17.6%**
+- **Only 22.2% delivered at least their backtest.** 39.1% delivered half. 77.9% were merely positive
+- **The typical symphony delivers about a third of its backtested annual return once its author
+  stops editing it**
+
+Stated with its limitation: this is out of sample with respect to *editing*, not a clean data
+holdout. It catches the author who tweaked until the curve looked right, which is the dominant way a
+Composer symphony gets overfit, and misses one overfitted in a single pass and never touched.
+
+**A flag is only useful if it predicts degradation, so every candidate was tested.** The naive
+version is a trap: correlating a flag with (out-of-sample minus in-sample) is partly tautological,
+and run raw, in-sample return "predicts" degradation at r = -0.904, which is regression to the mean
+wearing a lab coat. Controlling by scoring within in-sample-return deciles:
+
+| Flag | Mean within-decile rho | Consistent | Verdict |
+|---|---|---|---|
+| **Annualized turnover** | **-0.316** | 10 of 10 | strongest in the database |
+| Backtest length | +0.188 | 9 of 10 | real, weaker |
+| Win rate | +0.185 | 9 of 10 | real, weaker |
+| Sharpe ratio | +0.080 | sign flips | too weak |
+| **Return from the best 5% of days** | **-0.065** | **sign flips** | **does not predict** |
+
+**The metric the request named, and the one V1.20 item 4 ships, does not predict out-of-sample
+failure.** That does not make item 4 wrong, since outlier dependence is a true statement about what
+a backtest rests on. It makes it the wrong basis for an overfit verdict. **The rejected percentile
+design would have ranked symphonies precisely, on a measure that predicts nothing.**
+
+**Turnover is the finding, and nobody reaches for it when asked about overfitting.** The lowest
+quintile is the only cohort that kept its backtest (17.1% promised, 18.5% delivered); the highest
+promised 153.9% a year and delivered 3.8%. **Caveat carried alongside it:** high turnover also
+degrades returns through costs and slippage, which is mechanical drag rather than curve fitting, and
+this data cannot separate the two.
+
+**What did not replicate:** short backtests, the classic tell, had the *smallest* median gap in raw
+data because they also promised least. Length only predicts after controlling for in-sample return.
+
+**On whether AI can spot a random signal**, the owner's second question, answered directly. Not from
+the rule text: whether `RSI(10) of SMH < 23` is real or noise is a property of the rule-data
+relationship, not of the sentence, and the information is absent from the input. A model asked
+anyway returns confident nothing, which is the false authority this tool exists to puncture. What AI
+can add is a **prior about mechanism**, labelled as a prior and never blended into the statistics.
+The rigorous answer is a multiple-testing correction, and **the Signal Miner's 4.8M-signal sweep can
+supply an empirical null** rather than an analytic approximation, which ties this to Signal Miner
+item A. Note also that a static site has no live model call, so any AI read would be offline-authored
+like `ai_summary`, not available for an arbitrary paste.
+
+The three tiers were rebuilt around this: Tier 1 the definitional test (validated against 5,095 real
+outcomes), Tier 2 the structural read of the pasted tree (**explicitly unvalidated**, and validating
+it is called out as its own project), Tier 3 parameter perturbation (blocked at 16.7% ticker
+coverage).
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.30.1] - 2026-08-28
 
 ### V1.21 added to the roadmap: Overfit Check
