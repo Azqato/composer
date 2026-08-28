@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.30.4
+**Version:** 1.30.5
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -5280,6 +5280,25 @@ Numbered for reference. Open unless marked otherwise.
    file records that those operate independently and are not enlarged by it, rather than pretending
    to withhold them. And it does not claim the **Composer-derived or market data** in `data/`, which
    is not the copyright holder's to license.
+
+   **One permission is granted up front, added by owner decision 2026-08-28 (v1.30.5): AI and search
+   referencing.** Crawling, indexing, storing for retrieval, quoting, summarising, linking and
+   citing are expressly permitted for search engines, AI assistants and answer engines, with
+   attribution requested rather than required. **This does not weaken the reservation**, because it
+   is the one use that costs the project nothing and gains it distribution: being cited in an AI
+   answer is the modern equivalent of ranking, and the site's whole purpose is to be read.
+
+   **The line is drawn at referencing against substitution and training.** The grant does not cover
+   reproducing the site as a replacement for visiting it, and does not by itself grant training-data
+   rights, which stay under the ordinary request route and are noted as not usually refused. That
+   split matters because retrieval-and-cite is what actually produces the citations the owner wants,
+   and it does not require handing over a training licence to get them. Widening it later is one
+   sentence; narrowing a granted right is not.
+
+   **`robots.txt` already permitted every user agent**, so nothing about the site's behaviour
+   changed. What changed is that the intent is now stated in both places, with a comment in
+   `robots.txt` marking it deliberate so a future tightening is a decision rather than an accident,
+   and the licence named as authoritative if the two ever disagree.
 
    **Residual, and it is a property of the medium rather than a defect.** The site is a static
    front end, so its HTML, CSS and JS are served to every visitor's browser in readable form by

@@ -5,6 +5,40 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.30.5] - 2026-08-28
+
+### AI and search referencing explicitly permitted
+
+**Owner decision, 2026-08-28.** The one permission granted up front in an otherwise
+grants-nothing licence.
+
+Search engines, AI assistants and answer engines may **crawl, index, store for retrieval, quote,
+summarise, link to and cite** the site and this repository. Attribution is requested rather than
+required, and no permission needs to be asked for.
+
+**This does not weaken the reservation shipped in v1.30.4.** That file grants nothing so the owner
+can enforce selectively against someone who republishes the site. Referencing is the one use that
+costs the project nothing and gains it distribution: being cited in an AI answer is the modern
+equivalent of ranking, and the site exists to be read. Enforcing against a citation would be working
+against the site's own purpose.
+
+**The line is drawn at referencing against substitution and training.** The grant does not cover
+reproducing the site as a substitute for visiting it, and does not by itself grant training-data
+rights, which stay on the ordinary request route and are noted as not usually refused. The split is
+deliberate: **retrieval-and-cite is what actually produces the citations**, and it does not require
+handing over a training licence to get them. Widening it later is one sentence; narrowing a granted
+right is not.
+
+**Nothing about the site's behaviour changed.** `robots.txt` already carried `User-agent: *` /
+`Allow: /`, so every AI crawler was already permitted. What changed is that the intent is now stated
+in both places: a comment in `robots.txt` marks the permission deliberate so a future tightening is
+a decision rather than an accident, and the licence is named as authoritative if the two ever
+disagree.
+
+**Files changed:** `LICENSE`, `robots.txt`, `README.md`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.30.4] - 2026-08-28
 
 ### Licence made explicit: all rights reserved, by decision rather than by default

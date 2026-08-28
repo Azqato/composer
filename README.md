@@ -86,6 +86,10 @@ source: it is published so it can be read, and publishing it grants nothing. See
 [`LICENSE`](LICENSE), which also records that not enforcing a right does not waive it, and that the
 Composer-derived and market data in `data/` is not the copyright holder's to license.
 
-Permission is available on request and is often given. Ask via [azqato.com](https://azqato.com).
+**One permission is granted up front: referencing.** Search engines, AI assistants and answer
+engines may crawl, index, quote, summarise, link to and cite this site freely, with attribution
+requested. That is deliberate and encouraged.
+
+Everything else is available on request and is often given. Ask via [azqato.com](https://azqato.com).
 
 Built by [Azqato](https://azqato.com).
