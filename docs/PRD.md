@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.27.9
+**Version:** 1.28.0
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -342,7 +342,9 @@ ComposerAtlas/
 │   ├── sync_storage_to_database.py # Adds storage.csv URLs missing from database.json as new unrefreshed rows (v1.11.1)
 │   ├── refresh_rsi.py          # Fetches Yahoo Finance daily bars, computes Wilder's RSI(10) (V2.1)
 │   ├── refresh_prices.py       # Fetches full Yahoo Finance daily-close history for the Signal Miner universe (v1.15.0)
-│   └── refresh_k1.py           # Builds data/k1.json: reads each fund's Structure field, derives its tax form (v1.27.0)
+│   ├── refresh_k1.py           # Builds data/k1.json: reads each fund's Structure field, derives its tax form (v1.27.0)
+│   ├── build_strategy_extras.py # Joins the featured strategies to database.json and k1.json at build time (v1.28.0)
+│   └── check_strategy_extras.py # Deploy gate: the committed join matches a fresh one, both twins (v1.28.0)
 ├── index.html                  # Home page: marketing/landing (hero, stats, explore cards, how-it-works) (V2.2, 2026-07-15)
 ├── strategies.html             # Strategy listing + detail (?slug=X), single file
 ├── glossary.html               # Glossary listing + concept detail (?slug=X), single file
@@ -1411,7 +1413,8 @@ No two entries may carry the same `symphony_id`, and every entry must have one.
 > key.** The id is.
 
 **Enforced, not merely stated.** `scripts/check_database_keys.py` runs as a deploy gate alongside
-`check_html_js.py` and `check_composer_ladder.py`, and asserts four things:
+`check_html_js.py`, `check_composer_ladder.py` and `check_strategy_extras.py`, and asserts four
+things:
 
 1. every entry has a non-empty `symphony_id`
 2. `symphony_id` values are unique across the file
@@ -2319,7 +2322,7 @@ numbering schemes; they answer different questions.
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
-| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | Specified and approved 2026-08-28; item 17 shipped | v1.27.8 (partial) |
+| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1, 4, 5, 7 and 17 shipped; 12 open | v1.28.0 (partial) |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -2924,8 +2927,9 @@ instant and works offline.
 
 ### V1.20: Strategy Page Rebuild
 
-**Status:** Specified 2026-08-28, approved by the owner the same day. Item 17 is already shipped
-(v1.27.8); everything else is not started.
+**Status:** In progress. Specified and approved 2026-08-28. **Items 1, 4, 5 and 7 shipped in
+v1.28.0** and item 17 in v1.27.8, which is steps 1 and 2 of the sequencing below complete. The
+remaining 12 items are not started, and step 3 (items 2, 3, 8 and 12) is next.
 
 **Origin.** The owner shared a third-party Composer strategy analysis page and asked what could be
 taken from it. The analysis that followed is summarised here rather than in a chat log, because the
@@ -2969,30 +2973,61 @@ files already in the repo.
 
 **Tier 1: free. The data exists, the work is joining and rendering it.**
 
-- [ ] **1. Join the featured strategies to `database.json` at build time.** Prerequisite for items 2
-  to 9. Do it in the build rather than the browser: shipping `database.js` to a strategy page to read
-  one row would undo the v1.16 page-weight work. The join key is `symphony_id` and it currently
-  matches 31 of 31, but **the build must fail loudly on a miss** rather than silently rendering a
-  page with an empty metrics block.
+- [x] **1. Join the featured strategies to `database.json` at build time (v1.28.0).**
+  `scripts/build_strategy_extras.py` writes `data/strategy_extras.json` and its `.js` twin, keyed by
+  slug, at **31 KB against the 5 MB `database.json` a browser join would have cost**. It carries 13
+  database fields plus the resolved holdings, so items 2, 3, 6 and 8 need no further build work.
+
+  **It fails loudly on a miss, and that was tested rather than assumed.** A join miss raises
+  `SystemExit` naming every affected slug. Verified by faking two bad `symphony_id` values and
+  confirming the raise. `scripts/check_strategy_extras.py` is a fourth deploy gate: it rebuilds the
+  join in memory and demands byte equality with both committed files, which catches a stale join, a
+  twin that drifted, and a featured strategy with no database row. Verified in both directions.
+
+  **Deliberately not wired into `update-metrics.yml`.** A join miss should fail the person who
+  caused it, at their desk, rather than break the nightly metrics job and its sitemap commit for
+  everyone. The deploy gate is what makes a forgotten run impossible to ship.
+
+  **One correction the join forced.** The keys of `last_market_days_holdings` are the ticker
+  universe the logic can reach; the values are the current position, and most are `0.0`. So the
+  pages say a strategy **can hold** a ticker, not that it does. Of the 14 strategies holding a K-1
+  issuer or an ETN, only 2 hold one as of the last market day, so "holds" would have been wrong 12
+  times out of 14.
 - [ ] **2. Hero metric strip above the fold.** CAGR, max drawdown, Sharpe, backtest period, as four
   tiles. Today the metrics table is sidebar-only on desktop and pushed below all the prose on
   mobile, so the first thing a visitor sees on a phone is three paragraphs.
 - [ ] **3. Secondary metric grid.** Sortino, win rate, tail ratio, skewness, kurtosis, turnover,
   costs. Uses the glossary links from item 12, which is why that item is not optional.
-- [ ] **4. Outlier-dependence disclosure.** State it as plain arithmetic, following C3's own
-  instruction: "the best 5% of days produced 137% of this strategy's total return". Do not convert
-  it to a score or a badge. The number is more persuasive than any rating derived from it.
-- [ ] **5. Out-of-sample panel.** Days since the last logic edit, with the date. **Word it as a
-  measurement, not a guarantee:** unedited logic is genuinely out of sample, but a strategy can also
-  sit unedited because nobody is maintaining it.
+- [x] **4. Outlier-dependence disclosure (v1.28.0).** Stated as plain arithmetic and left that way:
+  no score, no badge, no rating. **25 of the 31 featured strategies are above 100%**, which means
+  the other 95% of their days lost money on net, and the panel says exactly that when it applies.
+  The range runs from **79.4%** (`simons-kmlm-switcher`) to **260.2%** (`nancy-pelosi-chips`). Below
+  100% the copy switches to naming what the remaining 95% of days contributed, rather than implying
+  a problem that is not there. The single best day's contribution is given beside it.
+- [x] **5. Out-of-sample panel (v1.28.0).** Days since the last logic edit, with the date, computed
+  in the browser so it does not go stale a day after the build. Both halves are said: the days after
+  an edit are genuinely out of sample because they were not available to be fitted to, **and** logic
+  also sits untouched when nobody is maintaining it, so a long stretch says nothing about whether the
+  strategy still suits the market it trades now.
+
+  **`gold-miner-original` has no `oos_date`**, so the panel renders "Not recorded" and tells the
+  reader to treat the whole backtest as in-sample until it is. Hiding the panel for that one
+  strategy would have quietly turned a missing measurement into no question at all. Dates are
+  compared in UTC on both sides, or a browser west of Greenwich reads one day short.
 - [ ] **6. Assets tab.** Reuse the existing `.db-tabs` / `.db-tab` / `.db-tab-panel` components from
   `database.html` rather than building a second tab system. `last_market_days_holdings` gives both
   halves for free: its **keys** are the ticker universe the logic can reach, its **values** are the
   current position, so the tab can show what a strategy may hold and what it holds today.
-- [ ] **7. K-1 warning line, cross-linked to `/k1`.** Affects 12 of 31. Link each ticker to
-  `k1.html?t=TICKER`, which the v1.27.1 URL work already supports. **Read the K-1 verdict from
-  `data/k1.json` at build time rather than restating it**, so a correction to the K-1 database
-  propagates instead of going stale in two places.
+- [x] **7. K-1 warning line, cross-linked to `/k1` (v1.28.0).** Affects **12 of 31** for K-1 and,
+  now that v1.27.9 made ETNs visible, **2 more for ETNs**, so 14 strategies carry a notice. Every
+  verdict is resolved from `data/k1.json` at build time and never restated, so a correction to the
+  K-1 database propagates rather than going stale in a second place. Each ticker links to
+  `k1.html?t=TICKER`.
+
+  Two notices on one component, colour-matched to `/k1` so a visitor who has seen that page reads
+  these without being taught: yellow for K-1, blue for ETN. The 27 held tickers absent from the K-1
+  database are all individual stocks, deliberately purged at v1.27.5; the build reports them in its
+  run summary so a genuinely missing **fund** would be noticed.
 - [ ] **8. Provenance chip at the top of the page.** `last_updated` and `refresh_date` exist and are
   shown nowhere. A visitor should know the age of a number before reading it, not after.
 - [ ] **9. Backtest-window explainer.** State why a window is the length it is, naming the limiting
@@ -3054,6 +3089,16 @@ files already in the repo.
   table. **This was a live correctness bug, not a cosmetic one:** it told visitors the worst month
   was -15% when that figure is a single day.
 
+- [ ] **18. Strategy detail pages scroll horizontally on a phone. Pre-existing, found during the
+  v1.28.0 work and measured as unchanged by it.** At a 390px viewport the document's `scrollWidth`
+  is **453px against a `clientWidth` of 375px**, identical before and after that release, so the new
+  sections neither cause nor worsen it. Localised: `.grid-2` computes to **327px wide while its
+  single `1fr` track resolves to 429px**, and `.detail-main` fills the track. `.detail-main` already
+  carries `min-width: 0`, which is the usual fix and is not working here, so the cause is further
+  down. Same class of bug as the two `.db-tabs` and `.page` overflows fixed at v1.12.0. **Not
+  bundled into v1.28.0 on purpose:** it is unrelated to the four items that release delivered, and
+  a layout fix on every strategy page deserves its own change and its own before-and-after.
+
 ---
 
 **Deliberately not copied from the source page**, recorded so the reasoning is not rediscovered:
@@ -3073,12 +3118,15 @@ files already in the repo.
 **Recommended sequencing.** The ordering is driven by one fact: Tier 1 costs no writing, Tier 3
 costs writing times 31, so anything that changes the schema should land before the writing starts.
 
-1. **Item 1 first, alone.** Everything in Tier 1 depends on the join, and it is the only item that
-   can fail in a way that silently empties a page. Land it with the build-time miss check and
-   nothing else.
-2. **Items 4, 5 and 7 next.** The highest differentiation per unit of work on the list, and none of
-   them need a single word written per strategy. Outlier dependence, out-of-sample duration, and the
-   K-1 cross-link are each things no competing page shows.
+1. ~~**Item 1 first, alone.**~~ **Done, v1.28.0.** Everything in Tier 1 depends on the join, and it
+   is the only item that can fail in a way that silently empties a page. Landed with the build-time
+   miss check and a deploy gate. **In practice it did not land alone:** the join is only observable
+   through something that renders it, so shipping it with nothing attached would have meant shipping
+   an untested file. Steps 1 and 2 went out together, and the sequencing point still held, because
+   the join was written and its failure modes tested before any section consumed it.
+2. ~~**Items 4, 5 and 7 next.**~~ **Done, v1.28.0.** The highest differentiation per unit of work on
+   the list, and none of them needed a single word written per strategy. Outlier dependence,
+   out-of-sample duration, and the K-1 cross-link are each things no competing page shows.
 3. **Items 2, 3, 8 with item 12's linking.** The visual reorganisation, done in one pass so the page
    is not restructured twice. Item 3 without item 12 ships unexplained jargon, so they go together.
 4. **Item 6, then item 9.** The Assets tab is self-contained. Item 9 goes after it because the
@@ -4305,7 +4353,7 @@ from files rather than reported by a service.
 
 | When | What |
 |---|---|
-| Every deploy | `check_live.py`, plus the three deploy gates (`check_html_js.py`, `check_composer_ladder.py`, `check_database_keys.py`) |
+| Every deploy | `check_live.py`, plus the four deploy gates (`check_html_js.py`, `check_composer_ladder.py`, `check_database_keys.py`, `check_strategy_extras.py`) |
 | Every release touching counts | Re-count strategies, glossary entries and database rows; update this document and the patch note in the same commit |
 | Weekly, after the database refresh | Flag distribution and refresh coverage |
 | Monthly | Cloudflare Web Analytics review: paths, referrers, outbound clicks, Core Web Vitals |
@@ -4538,7 +4586,8 @@ next, including an AI assistant with no memory of the previous session.
 | The Signal Miner's price history or ticker universe | `scripts/refresh_prices.py`, which writes `data/prices.json` and `.js` |
 | The RSI page's data | `scripts/refresh_rsi.py` |
 | Whether a ticker issues a K-1, or adding tickers to the lookup | `data/k1_seed.txt`, then `scripts/refresh_k1.py`, then commit `data/k1.json` **and** `data/k1.js` together |
-| Deploy behaviour or the deploy gates | `.github/workflows/deploy.yml`, `scripts/check_html_js.py`, `scripts/check_composer_ladder.py`, `scripts/check_database_keys.py` |
+| Deploy behaviour or the deploy gates | `.github/workflows/deploy.yml`, `scripts/check_html_js.py`, `scripts/check_composer_ladder.py`, `scripts/check_database_keys.py`, `scripts/check_strategy_extras.py` |
+| **`data/database.json`, `data/k1.json`, or the featured set in `data/strategies.json`** | `scripts/build_strategy_extras.py`, then commit `data/strategy_extras.json` **and** `data/strategy_extras.js`. The strategy pages read that join, not the source files, so a refresh that skips this step leaves the page showing yesterday's numbers with no visible sign. `scripts/check_strategy_extras.py` fails the deploy if it is skipped |
 | Which pages search engines are told about | `scripts/build_sitemap.py`, then re-run it. Never hand-edit `sitemap.xml`. Re-run automatically by `update-metrics.yml` since v1.26.1, so a forgotten run self-corrects within a day |
 | What Cloudflare serves publicly | `.assetsignore` (not `deploy.yml`, which governs GitHub Pages only) |
 | Product decisions, architecture, schemas, roadmap, policy | `docs/PRD.md`, this file |
@@ -4577,6 +4626,7 @@ the `fetch()` fallback over http. A change that breaks one commonly leaves the o
 | `k1.html`, or any tool page's behaviour | Run it locally and drive it. `file://` for the `.js` twin path, `python -m http.server 8731 --bind 127.0.0.1` for anything needing a real origin. A headless browser can click the page's own buttons and read back the result, which is how the URL syncing at v1.27.1 was verified across all six of its cases |
 | Whether a deploy actually landed | `python scripts/check_live.py`. **Useful, but not a gate and not a blocker.** It reports on the hosts, so a failure here after a correct local run means a deployment did not happen, not that the change is wrong. Report it and move on rather than troubleshooting the host |
 | Any JSON data file | `python -c "import json; json.load(open('data/FILE.json', encoding='utf-8'))"`, and confirm the `.js` twin was written in the same run |
+| The strategy pages' joined data | `python scripts/check_strategy_extras.py`. Rebuilds the join in memory and demands byte equality with both committed files, so it catches a stale join, a `.json`/`.js` twin that drifted, and a featured strategy with no database row. **The twin check is there because `data/database.js` shipped one entry behind `data/database.json` at v1.27.9 and `check_database_keys.py` passed anyway**, since it checks keys rather than whether the twins match |
 | `data/database.json`, by any route | `python scripts/check_database_keys.py`. Asserts `symphony_id` is present and unique, agrees with the URL, that `database_summary.json` holds the same ids in the same order, and that every symphony's URL is archived in `storage.csv`. Every one of those failures is invisible without it, and three of the five have already shipped |
 | Anything at all, after deploying | `python scripts/check_live.py`. Fetches each live clean URL, compares byte-for-byte against the committed file, and reports failures. Currently 8 URLs, 0 failing |
 | Page appearance or behaviour end to end | Drive it in **headless Edge**. See below |

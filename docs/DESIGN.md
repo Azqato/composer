@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.13
+**Version:** 1.14
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -784,6 +784,63 @@ as the text colour, which is why it inverts to `--color-bg` for legibility.
 
 ---
 
+### Holdings Tax Notice (strategy detail pages, V1.20 item 7)
+
+Two states on one component, sitting between the Open in Composer button and the AI Summary. It is
+the first thing under the call to action because it is a fact about holding the thing, and it belongs
+before the description of why someone might want to.
+
+```css
+.hold-notice { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px 16px; font-size: 0.875rem; line-height: 1.7; color: var(--color-secondary); margin-bottom: 10px; }
+.hold-notice.k1 { border-color: rgba(245, 197, 24, 0.4); background: rgba(245, 197, 24, 0.05); }
+.hold-notice.etn { border-color: rgba(77, 159, 255, 0.4); background: rgba(77, 159, 255, 0.05); }
+.hold-notice-title { display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 6px; color: var(--color-primary); }
+.hold-notice.k1 .hold-notice-title { color: var(--color-yellow); }
+.hold-notice.etn .hold-notice-title { color: var(--color-blue); }
+.hold-tickers { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.hold-ticker { font-family: var(--font-mono); font-size: 0.8125rem; padding: 2px 8px; border-radius: var(--radius-sm); border: 1px solid var(--color-border-hover); color: var(--color-primary); text-decoration: none; }
+```
+
+**The two colours are quotations, not decisions.** Yellow is the `Yes` verdict on `/k1` and blue is
+`.k1-etn` there. A visitor who has seen that page reads these without being taught, and a visitor who
+has not is being taught the palette they will meet when they follow the ticker link.
+
+**It is deliberately not `.risk-box`.** `risk_profile` is authored prose about how a strategy
+behaves. This is a mechanical fact about a position, resolved at build time from `data/k1.json`. The
+two should not look alike, or the mechanical fact reads as one more paragraph of opinion.
+
+`.hold-ticker` is a link to `k1.html?t=TICKER`, so every ticker in the notice is a route into the
+full entry rather than a name the reader has to go and look up.
+
+---
+
+### Reality Check Cards (strategy detail pages, V1.20 items 4 and 5)
+
+The Beyond the Backtest section, after the risk profile. Two cards side by side above 720px and
+stacked below it.
+
+```css
+.rc-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 720px) { .rc-grid { grid-template-columns: 1fr 1fr; } }
+.rc-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px; }
+.rc-label { display: block; font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-disabled); margin-bottom: 8px; }
+.rc-value { font-family: var(--font-mono); font-size: 1.75rem; line-height: 1.1; font-weight: 600; color: var(--color-primary); display: block; }
+.rc-value.warn { color: var(--color-yellow); }
+.rc-sub { display: block; font-size: 0.75rem; font-family: var(--font-mono); color: var(--color-disabled); margin-top: 6px; }
+.rc-body { font-size: 0.8125rem; color: var(--color-secondary); line-height: 1.7; margin-top: 12px; }
+```
+
+**`.rc-value` is 1.75rem because the number is the argument.** The paragraph below it is the
+footnote, not the other way round. This is the same reasoning as the oversized verdict on `/k1`,
+one size down because there are two of these on a page rather than one.
+
+**`.rc-value.warn` is the only conditional colour**, applied when outlier dependence exceeds 100%,
+which is true for 25 of the 31 featured strategies. Yellow rather than pink: it is a fact the reader
+should weigh, not a failure. The roadmap item is explicit that this must not become a score or a
+badge, and a colour that only ever means "over 100%" is the most the design does with it.
+
+---
+
 ### Tag Filter Bar (strategies.html, V1.17)
 
 The filter panel above the strategy index. Reuses the `.tag` pills from the cards below it rather
@@ -938,7 +995,9 @@ site's interface is worse than one that admits the boundary.
 
 `rsi.html`, `database.html`, `index.html`, `about.html`, `strategies.html`, `glossary.html` and
 `404.html` carry **no** inline style at all; everything they render is in `css/main.css` and
-documented above.
+documented above. `strategies.html` stayed in that list through V1.20: `.hold-notice` and `.rc-*`
+went into `css/main.css` beside the components they sit among, rather than into a `<style>` block on
+the page, because the strategy detail view is a core page and not a self-contained tool.
 
 **The `.j-*` JSON highlighter is duplicated** between `converter.html` and `etf-cloner.html`. Both
 copies define the same five classes. Nothing has gone wrong with that yet, but it is exactly the kind

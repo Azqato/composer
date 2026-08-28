@@ -5,6 +5,94 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.28.0] - 2026-08-28
+
+Roadmap V1.20 items 1, 4, 5 and 7. Steps 1 and 2 of the seven-step sequencing, complete.
+
+### The strategy pages now read a build-time join, not the raw database
+
+`scripts/build_strategy_extras.py` joins the 31 featured strategies to `data/database.json` and
+`data/k1.json` and writes `data/strategy_extras.json` plus its `.js` twin, keyed by slug.
+**31 KB, against the 5 MB `database.json` a browser-side join would have shipped to every visitor.**
+It carries 13 database fields and the resolved holdings, so roadmap items 2, 3, 6 and 8 need no
+further build work.
+
+**It fails loudly on a miss, and that was tested rather than asserted.** A featured strategy with no
+database row raises and names every affected slug, verified by faking two bad `symphony_id` values.
+`scripts/check_strategy_extras.py` is now a **fourth deploy gate**: it rebuilds the join in memory
+and demands byte equality with both committed files, so it catches a stale join, a `.json`/`.js`
+twin that drifted, and a missing database row. Verified failing and passing in both directions.
+
+That twin check exists because of something found the day before: **`data/database.js` shipped one
+entry behind `data/database.json` at v1.27.9 and `check_database_keys.py` passed anyway**, since it
+checks keys rather than whether the twins match. Nothing enforced commit-both-or-neither for that
+pair. Now something does, at least for this one.
+
+**Deliberately not wired into `update-metrics.yml`.** A join miss should fail the person who caused
+it, at their desk, rather than break the nightly metrics job and its sitemap commit for everyone.
+
+### Outlier dependence, which was computed all along and never shown
+
+**25 of the 31 featured strategies got more than 100% of their total return from their best 5% of
+days.** Above 100% means the other 95% of days lost money on net, and the page says exactly that:
+remove those days and the strategy is a net loser. The range runs from **79.4%**
+(`simons-kmlm-switcher`) to **260.2%** (`nancy-pelosi-chips`).
+
+Stated as arithmetic and left as arithmetic. No score, no badge, no rating, per the roadmap's own
+instruction: the raw number is more persuasive than anything derived from it. Below 100% the copy
+switches to naming what the remaining 95% of days contributed, rather than implying a problem that
+is not there.
+
+### Out-of-sample duration, from the date of the last logic edit
+
+`oos_date` records when the logic last changed, so days since is genuine out-of-sample time.
+`holy-grail` has been unedited for **1,500 days**; the 2026 zoop editions sit at **165 to 214**.
+
+**Worded as a measurement, not a verdict.** Days after an edit are genuinely out of sample because
+they were not available to be fitted to, and logic also sits untouched when nobody is maintaining
+it. Both are said. `gold-miner-original` has no `oos_date`, so its panel reads "Not recorded" and
+tells the reader to treat the whole backtest as in-sample until it is: hiding the panel would have
+turned a missing measurement into no question at all. The day count is computed in the browser, in
+UTC on both sides, so it neither goes stale a day after the build nor reads short west of Greenwich.
+
+### Which strategies can hand you a Schedule K-1
+
+**12 of 31 can hold a fund that issues one**, and since v1.27.9 made ETNs visible, **2 more can hold
+an ETN**, so 14 strategies carry a notice. Every ticker links to its full entry at
+`k1.html?t=TICKER`. Verdicts are resolved from `data/k1.json` at build time and never restated, so a
+correction to the K-1 database propagates instead of going stale in a second place.
+
+**The join forced a correction to the wording.** The keys of `last_market_days_holdings` are the
+ticker universe the logic can reach; the values are the current position, and most are `0.0`. Only
+**2 of those 14 strategies** hold the fund in question as of the last market day. So the pages say
+"can hold", and name what is in the position separately. "Holds" would have been wrong 12 times
+out of 14.
+
+### Also found, not fixed
+
+**Strategy detail pages scroll horizontally at a phone width, and have for some time.** At 390px the
+document's `scrollWidth` is 453px against a `clientWidth` of 375px. **Measured identical before and
+after this release**, so the new sections neither cause nor worsen it. Localised as far as `.grid-2`
+computing to 327px wide while its single `1fr` track resolves to 429px, with `.detail-main` filling
+the track despite already carrying `min-width: 0`. Recorded as roadmap item 18 rather than bundled
+in here: it is unrelated to these four items, and a layout fix touching every strategy page deserves
+its own change and its own before-and-after.
+
+### Verification
+
+Five strategies driven end to end in headless Edge, chosen to cover every branch: a K-1 holder with
+one position held today, an ETN holder with no `oos_date`, the highest and the lowest outlier
+dependence, and a strategy with neither notice. Section order, ticker links, both plural forms and
+the degraded path (extras file absent and `fetch` failing, which must still render the original
+page) all confirmed.
+
+**Files changed:** `scripts/build_strategy_extras.py`, `scripts/check_strategy_extras.py`,
+`data/strategy_extras.json`, `data/strategy_extras.js`, `strategies.html`, `js/app.js`,
+`css/main.css`, `.github/workflows/deploy.yml`, `docs/PRD.md`, `docs/DESIGN.md`,
+`docs/PATCHNOTES.md`
+
+---
+
 ## [1.27.9] - 2026-08-28
 
 ### `/k1` now says when a ticker is an ETN, not a fund

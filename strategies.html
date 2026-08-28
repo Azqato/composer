@@ -23,6 +23,7 @@
   <footer id="footer-root"></footer>
 
   <script src="data/strategies.js"></script>
+  <script src="data/strategy_extras.js"></script>
   <script src="data/glossary.js"></script>
   <script src="js/app.js"></script>
   <script>
@@ -163,7 +164,9 @@
       }
 
       // ---- Detail view ----
-      const [strategies, glossary] = await Promise.all([loadStrategies(), loadGlossary()]);
+      const [strategies, glossary, allExtras] = await Promise.all([
+        loadStrategies(), loadGlossary(), loadStrategyExtras(),
+      ]);
       const s = strategies.find(x => x.slug === slug);
 
       if (!s) {
@@ -230,6 +233,114 @@
           </section>`
         : '';
 
+      // ---- V1.20 items 4, 5 and 7: everything below reads the build-time join.
+      // `extras` is {} when data/strategy_extras.js failed to load, and every
+      // section is guarded, so the page degrades to exactly what it was before.
+      const extras = allExtras[s.slug] || {};
+
+      const pct1 = n => `${(n * 100).toFixed(1)}%`;
+
+      // Item 7. The keys of last_market_days_holdings are the ticker universe the
+      // logic can reach, not the current position, so this says "can hold". Saying
+      // "holds" would be wrong for 12 of the 14 affected strategies today. Verdicts
+      // are resolved at build time from data/k1.json, so a correction to the K-1
+      // database propagates here instead of going stale in a second place.
+      function holdNotice(kind, items) {
+        if (!items || !items.length) return '';
+        const heldNow = items.filter(h => h.held);
+        const chips = items.map(h => `
+          <a class="hold-ticker" href="${u('/k1.html')}?t=${encodeURIComponent(h.ticker)}"
+             title="${h.name ? h.name.replace(/"/g, '&quot;') : h.ticker}">${h.ticker}</a>`).join('');
+
+        const heldLine = heldNow.length
+          ? `<strong>${heldNow.map(h => h.ticker).join(', ')}</strong> ${heldNow.length === 1 ? 'is' : 'are'} in the position as of the last market day.`
+          : items.length === 1
+            ? `It is not in the position as of the last market day, but the logic can route into it on any rebalance.`
+            : `None of them are in the position as of the last market day, but the logic can route into any of them on any rebalance.`;
+
+        if (kind === 'k1') {
+          return `
+            <div class="hold-notice k1">
+              <span class="hold-notice-title">This strategy can hold ${items.length === 1 ? 'a fund that issues' : 'funds that issue'} a Schedule K-1</span>
+              <div class="hold-tickers">${chips}</div>
+              <p>A K-1 arrives later than a 1099, often after the April filing deadline. It
+              complicates a return, and it can hand you taxable income in a year you sold
+              nothing. ${heldLine} Each ticker links to its full entry in the K-1 database.</p>
+            </div>`;
+        }
+        return `
+          <div class="hold-notice etn">
+            <span class="hold-notice-title">This strategy can hold ${items.length === 1 ? 'an exchange-traded note' : 'exchange-traded notes'}, not just funds</span>
+            <div class="hold-tickers">${chips}</div>
+            <p>An ETN is senior unsecured debt of the issuing bank rather than a basket of
+            assets, so a holder carries that bank's credit risk with nothing held on their
+            behalf, and the issuer can call or delist it. ${heldLine}</p>
+          </div>`;
+      }
+
+      const k1Html = holdNotice('k1', extras.k1_holdings);
+      const etnHtml = holdNotice('etn', extras.etn_holdings);
+      const holdingsHtml = (k1Html || etnHtml)
+        ? `<section class="mb-10">${k1Html}${etnHtml}</section>`
+        : '';
+
+      // Item 4. Stated as arithmetic and left as arithmetic. The instruction in the
+      // roadmap is explicit that this must not become a score or a badge, because the
+      // raw number is more persuasive than any rating derived from it.
+      const top5 = extras.top_five_percent_day_contribution;
+      const top1 = extras.top_one_day_contribution;
+      const outlierCard = typeof top5 === 'number'
+        ? `<div class="rc-card">
+             <span class="rc-label">Outlier dependence</span>
+             <span class="rc-value ${top5 > 1 ? 'warn' : ''}">${pct1(top5)}</span>
+             <span class="rc-sub">of total return, from the best 5% of days</span>
+             <p class="rc-body">The best 5% of trading days in this backtest produced
+             <strong>${pct1(top5)}</strong> of its total return.
+             ${top5 > 1
+               ? `Above 100% means the other 95% of days lost money on net: <strong>remove those days and this strategy is a net loser</strong>.`
+               : `The remaining 95% of days contributed the other ${pct1(1 - top5)} on net.`}
+             ${typeof top1 === 'number' ? `The single best day alone produced ${pct1(top1)}.` : ''}
+             A backtest that depends on a handful of days is a bet on catching days like
+             them again, which is a different claim from the headline return.</p>
+           </div>`
+        : '';
+
+      // Item 5. oos_date records the last logic edit, so days-since is genuine
+      // out-of-sample time. Worded as a measurement: unedited logic is real evidence,
+      // and it is also what an abandoned strategy looks like. Both are said.
+      const oos = extras.oos_date;
+      let oosDays = null;
+      if (oos) {
+        const [oy, om, od] = oos.split('-').map(Number);
+        // UTC on both sides, or a browser west of Greenwich reads one day short.
+        const now = new Date();
+        oosDays = Math.max(0, Math.round(
+          (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+            - Date.UTC(oy, om - 1, od)) / 86400000));
+      }
+      const oosCard = `
+        <div class="rc-card">
+          <span class="rc-label">Out of sample</span>
+          <span class="rc-value">${oos ? oosDays.toLocaleString('en-US') + ' days' : 'Not recorded'}</span>
+          <span class="rc-sub">${oos ? `since the last logic edit, ${oos}` : 'no logic-edit date for this symphony'}</span>
+          <p class="rc-body">${oos
+            ? `The logic has not been edited since <strong>${oos}</strong>, so every day of
+               behaviour after that date is genuinely out of sample: it was not available to
+               be fitted to. <strong>That is a measurement, not a verdict.</strong> Logic also
+               sits untouched when nobody is maintaining it, and a long unedited stretch says
+               nothing about whether the strategy still suits the market it is trading now.`
+            : `The date of the last logic edit is not recorded for this symphony, so the
+               out-of-sample period cannot be stated. Treat the whole backtest as in-sample
+               until it is.`}</p>
+        </div>`;
+
+      const beyondHtml = outlierCard
+        ? `<section class="mb-10">
+             <h2 style="color:var(--color-primary);margin-bottom:16px">Beyond the Backtest</h2>
+             <div class="rc-grid">${outlierCard}${oosCard}</div>
+           </section>`
+        : '';
+
       const others = strategies.filter(x => x.slug !== s.slug).slice(0, 10);
       const metricsHtml = renderMetricsTable(s);
 
@@ -245,10 +356,12 @@
               <a href="${s.symphony_url}" target="_blank" rel="noopener noreferrer"
                 class="btn btn-green btn-lg">Open in Composer ↗</a>
             </div>
+            ${holdingsHtml}
             ${aiSummary}
             ${howItWorks}
             ${signals}
             ${riskProfile}
+            ${beyondHtml}
             <div class="detail-mobile-metrics">
               <h2 style="color:var(--color-primary);font-size:1.125rem;margin-bottom:16px">Performance Metrics</h2>
               ${metricsHtml}

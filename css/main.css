@@ -943,6 +943,122 @@ p { color: var(--color-secondary); }
   line-height: 1.7;
 }
 
+/* ---- Holdings tax notice (V1.20 item 7) ---- */
+/* Two states on one component, and the colour is the only difference that matters.
+   Yellow matches the "Yes" verdict on /k1, so a visitor who has seen that page reads
+   this without being taught. Blue matches .k1-etn there for the same reason. This is
+   not .risk-box: risk_profile is authored prose about how a strategy behaves, this is
+   a mechanical fact about a position held today, and the two should not look alike. */
+.hold-notice {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--color-secondary);
+  margin-bottom: 10px;
+}
+
+.hold-notice:last-child { margin-bottom: 0; }
+
+.hold-notice.k1 {
+  border-color: rgba(245, 197, 24, 0.4);
+  background: rgba(245, 197, 24, 0.05);
+}
+
+.hold-notice.etn {
+  border-color: rgba(77, 159, 255, 0.4);
+  background: rgba(77, 159, 255, 0.05);
+}
+
+.hold-notice-title {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--color-primary);
+}
+
+.hold-notice.k1 .hold-notice-title { color: var(--color-yellow); }
+.hold-notice.etn .hold-notice-title { color: var(--color-blue); }
+
+.hold-tickers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.hold-ticker {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-hover);
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.hold-ticker:hover,
+.hold-ticker:focus { border-color: var(--color-disabled); text-decoration: underline; }
+
+/* ---- Beyond the backtest: outlier dependence and out-of-sample (V1.20 items 4 and 5) ---- */
+.rc-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 720px) {
+  .rc-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.rc-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.rc-label {
+  display: block;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-disabled);
+  margin-bottom: 8px;
+}
+
+/* Deliberately large. The number is the argument, and the paragraph under it is
+   the footnote, not the other way round. */
+.rc-value {
+  font-family: var(--font-mono);
+  font-size: 1.75rem;
+  line-height: 1.1;
+  font-weight: 600;
+  color: var(--color-primary);
+  display: block;
+}
+
+.rc-value.warn { color: var(--color-yellow); }
+
+.rc-sub {
+  display: block;
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--color-disabled);
+  margin-top: 6px;
+}
+
+.rc-body {
+  font-size: 0.8125rem;
+  color: var(--color-secondary);
+  line-height: 1.7;
+  margin-top: 12px;
+}
+
+.rc-body strong { color: var(--color-primary); }
+
 /* ---- AI Summary box ---- */
 .ai-summary {
   background: linear-gradient(180deg, rgba(167, 139, 250, 0.06), rgba(167, 139, 250, 0.02));

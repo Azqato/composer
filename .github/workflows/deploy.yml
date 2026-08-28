@@ -42,6 +42,15 @@ jobs:
       - name: Check the database primary key and summary sync
         run: python3 scripts/check_database_keys.py
 
+      # The strategy pages read a build-time join of strategies.json against
+      # database.json and k1.json. A stale or half-committed join renders a page
+      # that is HTTP 200 and correctly laid out with its new sections silently
+      # empty, which is the same failure shape as v1.22.2. This rebuilds the join
+      # in memory and demands byte equality with both committed files, so it also
+      # catches the .json/.js twin drift that check_database_keys.py does not.
+      - name: Check the strategy extras join
+        run: python3 scripts/check_strategy_extras.py
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 

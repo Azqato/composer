@@ -35,6 +35,22 @@ async function loadStrategies() {
   return res.json();
 }
 
+// The featured strategies joined to data/database.json and data/k1.json at build
+// time by scripts/build_strategy_extras.py. Keyed by slug. Returns {} rather than
+// throwing when the file is absent, so a strategy page still renders its original
+// content if this one file fails to load: the sections that need it are each
+// guarded, and a missing outlier panel is far better than a blank page.
+async function loadStrategyExtras() {
+  if (window.STRATEGY_EXTRAS_DATA) return window.STRATEGY_EXTRAS_DATA;
+  try {
+    const res = await fetch(`${BASE}/data/strategy_extras.json`);
+    if (!res.ok) return {};
+    return await res.json();
+  } catch (e) {
+    return {};
+  }
+}
+
 async function loadGlossary() {
   if (window.GLOSSARY_DATA) return window.GLOSSARY_DATA;
   const res = await fetch(`${BASE}/data/glossary.json`);
