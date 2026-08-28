@@ -5,6 +5,25 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.29.3] - 2026-08-28
+
+### Market Regime Analysis moved above Risk Profile
+
+Owner decision, on the `gold-miner-original` pilot. It shipped below Risk Profile in v1.29.0 and now
+sits immediately before it.
+
+**The order it lands in is the better argument.** The regime table names the conditions a strategy
+meets and how it behaves in each, which is the evidence. Risk Profile is the conclusion drawn from
+that evidence. Putting the table first means a reader arriving at the risk summary has already seen
+what it is a summary of, rather than being given a verdict and the supporting detail afterwards.
+
+Order on a strategy page is now TL;DR, AI Summary, How It Works, Signals and Logic, Market Regime
+Analysis, Risk Profile, the K-1 and ETN notice, Underlying Assumptions, Beyond the Backtest.
+
+**Files changed:** `strategies.html`, `docs/PRD.md`, `docs/DESIGN.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.29.2] - 2026-08-28
 
 ### V1.20 roadmap items now record where each one came from

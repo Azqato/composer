@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.16
+**Version:** 1.17
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -835,6 +835,11 @@ Both columns are neutral grey. Unlike the TL;DR, neither side is the good one.
 .regime-exp.mixed { color: var(--color-yellow); }
 .regime-exp.bad { color: var(--color-pink); }
 ```
+
+**Placed immediately before Risk Profile** (owner decision, v1.29.3). It shipped after Risk
+Profile in v1.29.0 and reads better ahead of it: the table names the conditions a strategy meets and
+how it behaves in each, which is the evidence, and Risk Profile is the conclusion drawn from that
+evidence. A reader arriving at the risk summary has already seen what it is a summary of.
 
 **`min-width: 560px` inside an `overflow-x: auto` wrapper is the point.** The example-period column
 is what makes this table falsifiable rather than a set of adjectives, so it is never dropped at
