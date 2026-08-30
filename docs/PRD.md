@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.32.1
+**Version:** 1.32.2
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -2559,7 +2559,36 @@ reason, and each remains a legitimate future item.
 - [x] `SCREENER_VIEWS`: three switchable column sets, Overview (ARR/1Y/Max DD/Sharpe/Calmar/Backtest), Risk-Adjusted (Sharpe/Calmar/Sortino/Win Rate/Max DD/Std Dev), Distribution (Median/Skewness/Kurtosis/Tail Ratio/three Concentration columns), each reusing the same `.db-table` rendering pattern with a different `columns` array
 - [x] View-switch tabs render as `.db-tab` buttons nested inside the Screener panel (visually distinct row from the top-level All Strategies/Leaderboard/Screener/Metrics tabs)
 - [x] Own sort state and pagination, independent of All Strategies' (switching views resets sort, since different views expose different sortable columns)
-- [ ] CSV export of the filtered result set (still just a "reasonable future equivalent" per the Finviz reference, not built)
+- [x] **CSV export of the filtered result set (done v1.32.2).** Two buttons in the Screener
+  toolbar, by owner ruling when asked to pick one: **Export view .csv** writes the active column
+  view plus `symphony_id` and the Composer URL, and **Export all fields .csv** writes every scalar
+  field the database holds. Both export the **whole filtered set, not the visible page**, which is
+  the entire point: the page shows 20 rows and a typical filtered set is thousands.
+
+  **Values are written raw (`0.4264`), never display-formatted (`42.64%`).** A percent sign turns
+  the cell into text the moment it opens in a spreadsheet, and the export exists to be calculated
+  on. Formatting is a display concern and does not cross the boundary.
+
+  **Three details that are not obvious and were each verified rather than assumed.**
+
+  1. **The UTF-8 BOM is load-bearing.** Without it Excel reads the file as the system codepage and
+     mangles every non-ASCII symphony name, and plenty carry accents and emoji.
+  2. **Unranked rows export blank, not zero.** Rank, tier and score live in `rankBySymphonyId`, not
+     on the entry, and 7 rows of 6,547 are in the Screener pool but absent from the ranking. Zero is
+     a score; blank is an absence, and writing `0` would put seven fake bottom-ranked rows into
+     every export.
+  3. **The all-fields column list is the union across every row, and excludes any key seen holding
+     an object anywhere.** The first implementation decided scalar-ness from the first row carrying
+     the key, and `last_market_days_holdings` is `null` on some rows and a map on others, so a
+     first-row `null` admitted it and every populated row exported the literal string
+     `[object Object]`. **This is the same class of bug `export_summary.py` shipped at v1.25.1**,
+     which derived its column list from entry zero. Caught by the headless test, not by review.
+
+  **Verified in headless Edge** against the real 6,547-row working pool: both modes export 6,547
+  data rows; 12 columns for the Overview view and 31 for all-fields; **zero ragged rows in either
+  mode**, including the 616 symphonies whose names contain a comma; every cell in the six numeric
+  Overview columns parses as a plain number across roughly 39,000 cells; and a comma-bearing name
+  round-trips through a real quote-aware parser back to exactly 12 fields.
 
 ### V1.13: Leaderboard Tab
 

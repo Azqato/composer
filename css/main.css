@@ -2059,6 +2059,17 @@ footer {
   outline-offset: 1px;
 }
 
+/* ---- Screener CSV export buttons (database.html, V1.12) ----
+   Sits at the right of .db-toolbar opposite the heading and count pill. Wraps
+   rather than overflows, because the toolbar is the narrowest thing on the
+   page at phone width and two buttons plus a count do not fit on one line. ---- */
+.db-export {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 /* ---- Tier badges (Leaderboard, database.html, V1.13) ---- */
 .tier-badge {
   display: inline-flex;

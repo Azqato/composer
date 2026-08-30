@@ -5,6 +5,50 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.32.2] - 2026-08-30
+
+### Added
+- **Screener CSV export** (closes the V1.12 roadmap item, open since the Screener shipped). Two
+  buttons in the Screener toolbar, by owner ruling when asked to pick one form:
+  - **Export view .csv** writes the active column view (Overview, Risk-Adjusted, Distribution, and
+    the rest) plus `symphony_id` and the Composer URL, so any row can be traced back.
+  - **Export all fields .csv** writes every scalar field the database holds, 31 columns.
+  - Both export the **whole filtered set, not the visible page**. The page shows 20 rows; a typical
+    filtered set is thousands. Exporting the page would have missed the point of a screener.
+  - Values are **raw** (`0.4264`), never display-formatted (`42.64%`). A percent sign turns the cell
+    into text the moment it opens in a spreadsheet.
+  - Filenames encode the view, the row count and the date, so two exports do not overwrite each
+    other in a downloads folder.
+  - `screenerCsv()` builds the text and returns it; `csvDownload()` puts it on disk. Split
+    deliberately, so the build half is testable from the console without fighting the browser's
+    download plumbing, which is how this was verified.
+
+### Fixed
+- **Caught during verification, before shipping: the all-fields export wrote the literal string
+  `[object Object]` for `last_market_days_holdings`.** The column list decided scalar-ness from the
+  first row carrying a key, and that field is `null` on some rows and a map on others, so a
+  first-row `null` admitted it and every populated row then exported the placeholder. **This is the
+  same class of bug `export_summary.py` shipped at v1.25.1**, which derived its column list from
+  entry zero. Now a two-pass scan: collect the key order, and separately exclude any key seen
+  holding an object anywhere.
+
+### Notes
+- **Verified in headless Edge** (never Chrome) against the real 6,547-row working pool, by splicing
+  a driver into a throwaway copy of `database.html`:
+  - Both modes export **6,547 data rows**, confirming the whole filtered set rather than the page.
+  - 12 columns for the Overview view, 31 for all-fields.
+  - **Zero ragged rows in either mode**, including the **616 symphonies whose names contain a
+    comma**. This is the check that would have caught a naive `join(',')`.
+  - Every cell in the six numeric Overview columns parses as a plain number, roughly 39,000 cells,
+    zero exceptions.
+  - A comma-bearing name round-trips through a real quote-aware parser back to exactly 12 fields.
+  - **7 unranked rows export blank rather than zero**, matching how the table renders them. Zero is
+    a score; blank is an absence.
+- Two apparent failures in the first test run were **test artifacts, not defects**, and are recorded
+  so the next reader does not re-chase them: the percent signs the test flagged are inside symphony
+  *names* (616 of them carry strings like `258.9%/42.2%DD`), not in any formatted number, and the
+  `&amp;` in the sampled name is `--dump-dom` escaping the driver's own `textContent`.
+
 ## [1.32.1] - 2026-08-30
 
 ### Changed

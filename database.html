@@ -766,6 +766,109 @@
       },
     };
 
+    // ---- CSV export (Screener) ----------------------------------------
+    // Split deliberately in two: screenerCsv() builds the text and returns it,
+    // csvDownload() puts it on disk. The build half is then testable from the
+    // console without fighting the browser's download plumbing, which is how
+    // this was verified.
+
+    // RFC-4180. Quote any field holding a comma, a quote or a newline, and
+    // double the quotes inside it. Symphony names are user-authored and do
+    // contain commas.
+    function csvCell(v) {
+      if (v === null || v === undefined) return '';
+      const s = String(v);
+      return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }
+
+    // Rank, tier and score live in rankBySymphonyId, not on the entry, and an
+    // un-refreshed row is in the Screener pool but absent from the ranking.
+    // Mirrors the three-way handling in the cell renderer above so the export
+    // cannot disagree with what is on screen: unranked rows export as blanks,
+    // not as zeros, because zero is a score and blank is an absence.
+    function rankTriple(e) {
+      const r = rankBySymphonyId.get(e.symphony_id);
+      return r ? [r.rank, r.tier, r.score] : ['', '', ''];
+    }
+
+    // The union of keys across every exported row, not the keys of the first.
+    // export_summary.py shipped exactly that bug (v1.25.1): it read its column
+    // list off entry zero and would have silently dropped any field added to
+    // later entries. Object-valued fields (last_market_days_holdings,
+    // active_asset_nodes) are excluded: they are maps, not cells.
+    function allScalarFields(entries) {
+      const seen = new Set();
+      const order = [];
+      const objectish = new Set();
+      entries.forEach(e => Object.keys(e).forEach(k => {
+        const v = e[k];
+        // Two passes in one: collect the key order, and separately remember
+        // any key seen holding an object ANYWHERE. Deciding scalar-ness from
+        // the first row that carries the key is not enough, because
+        // last_market_days_holdings is null on some rows and a map on others,
+        // so a first-row null would admit it and every populated row would
+        // then export the string "[object Object]". Verified: that is exactly
+        // what the first version of this function did.
+        if (v !== null && typeof v === 'object') { objectish.add(k); return; }
+        if (seen.has(k)) return;
+        seen.add(k);
+        order.push(k);
+      }));
+      return order.filter(k => !objectish.has(k));
+    }
+
+    // kind: 'view' for the active column view, 'all' for every scalar field.
+    // Values are written raw (0.4264), never display-formatted (42.64%),
+    // because the export exists to be calculated on and a percent sign turns
+    // every cell into text the moment it opens in a spreadsheet.
+    function screenerCsv(kind) {
+      let header, rows;
+      if (kind === 'all') {
+        const fields = allScalarFields(screenerFiltered);
+        header = ['Rank', 'Tier', 'Score'].concat(fields);
+        rows = screenerFiltered.map(e =>
+          rankTriple(e).concat(fields.map(k => e[k])));
+      } else {
+        const cols = SCREENER_VIEWS[screenerView].columns;
+        header = cols.map(c => c.label).concat(['Symphony ID', 'URL']);
+        rows = screenerFiltered.map(e => {
+          const t = rankTriple(e);
+          const cells = cols.map(c => {
+            if (c.key === '_rank') return t[0];
+            if (c.key === '_tier') return t[1];
+            if (c.key === '_score') return t[2];
+            if (c.key === 'name') return e.name || e.symphony_id;
+            return e[c.key];
+          });
+          return cells.concat([e.symphony_id, e.symphony_url || '']);
+        });
+      }
+      const text = [header].concat(rows)
+        .map(r => r.map(csvCell).join(',')).join('\r\n');
+      const stamp = new Date().toISOString().slice(0, 10);
+      const label = kind === 'all' ? 'all-fields' : screenerView;
+      return {
+        filename: 'composer-atlas-screener-' + label + '-'
+          + screenerFiltered.length + 'rows-' + stamp + '.csv',
+        text: text,
+      };
+    }
+
+    function csvDownload(kind) {
+      const out = screenerCsv(kind);
+      // The BOM is not decoration. Without it Excel reads the file as the
+      // system codepage and mangles every non-ASCII symphony name, and plenty
+      // of them carry accents and emoji.
+      const blob = new Blob(['\ufeff' + out.text], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = out.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(a.href), 0);
+    }
+
     let screenerFiltered = [];
     let screenerPage = 1;
     let screenerSortField = null;
@@ -860,6 +963,10 @@
             <h2>Screener</h2>
             <span class="db-count-pill">${screenerFiltered.length.toLocaleString()} results</span>
           </div>
+          <div class="db-export">
+            <button class="btn btn-outline btn-sm" id="screener-export-view"${screenerFiltered.length ? '' : ' disabled'}>Export view .csv</button>
+            <button class="btn btn-outline btn-sm" id="screener-export-all"${screenerFiltered.length ? '' : ' disabled'}>Export all fields .csv</button>
+          </div>
         </div>
         ${bucketGridHtml()}
         <div class="db-tabs" role="tablist" aria-label="Screener column views" style="margin-bottom:16px">
@@ -879,6 +986,9 @@
           <button class="btn btn-outline btn-sm" id="screener-last" aria-label="Last page" ${screenerPage === totalPages ? 'disabled' : ''}>&raquo;</button>
         </div>
       `;
+
+      document.getElementById('screener-export-view').addEventListener('click', () => csvDownload('view'));
+      document.getElementById('screener-export-all').addEventListener('click', () => csvDownload('all'));
 
       document.getElementById('screener-first').addEventListener('click', () => { screenerPage = 1; renderScreenerPage(); window.scrollTo({ top: 0 }); });
       document.getElementById('screener-prev').addEventListener('click', () => { screenerPage--; renderScreenerPage(); window.scrollTo({ top: 0 }); });

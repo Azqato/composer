@@ -1042,6 +1042,9 @@ The header row above each database table: heading, live result-count pill, name 
 Filter button.
 
 ```css
+.db-export {                 /* Screener CSV buttons, v1.32.2 */
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+}
 .db-toolbar { display: flex; gap: 8px 16px; }
 .db-toolbar h2 { display: inline; color: var(--color-primary); font-size: 1.125rem; }
 .db-count-pill {
