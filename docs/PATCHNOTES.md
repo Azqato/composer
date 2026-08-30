@@ -5,6 +5,35 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.30.7] - 2026-08-30
+
+### Added
+- **PRD Section 14: "External Data and Library Resources"**, a reference-only subsection recording
+  two sources found during research, neither adopted and neither a roadmap item.
+  - **HF Data Library** (`hfdatalibrary.com`) as a candidate future source for `data/prices.json`:
+    1-minute OHLCV back to 2002 across a stated 1,391-ticker universe, Parquet/CSV, REST plus MCP
+    access, free key at 100 downloads/minute, ~13 GB for the full universe. Cross-referenced to the
+    two places the current 72-ticker ceiling is already a documented blocker (V2.4 Overfit Check
+    Tier 3 at 16.7% coverage, and V1.20 item 9's "at least" inception wording). Six counterweights
+    recorded alongside it so it is not revisited as a solved problem: 1,391 still does not reach the
+    3,680 tickers the library holds, 1-minute granularity is three orders of magnitude finer than
+    anything here uses, ~13 GB has no home on a static site, it adds an API-key dependency price
+    data does not currently have, adjusted closes are not among the stated columns, and the
+    redistribution terms have not been read.
+  - **`ranaroussi/quantstats`** as the Python upstream of `quantstats-js`, already listed as
+    candidate fork 4 in V4.0. Recorded as the reference implementation to check formulas against
+    rather than a candidate in its own right, since only the JS port could run in the browser, and
+    noted as sharing the port's blocking gap: both need a daily equity-curve series that
+    `database.json` does not store (V1.20 item 16).
+
+### Changed
+- **Permission requests route to GitHub issues.** `LICENSE` and `README.md` now direct permission
+  requests to `https://github.com/Azqato/composer/issues` rather than azqato.com, so requests and
+  their answers are public by default. (Shipped in v1.30.6, recorded here.)
+- **Roadmap open item 26 added:** convert `LICENSE` to a markdown file. GitHub recognises `LICENSE`,
+  `LICENSE.md` and `LICENSE.txt` equally, so this is a `git mv` plus the one README link.
+  (Shipped in v1.30.6, recorded here.)
+
 ## [1.30.5] - 2026-08-28
 
 ### AI and search referencing explicitly permitted

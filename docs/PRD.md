@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.30.6
+**Version:** 1.30.7
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -4158,6 +4158,78 @@ Five external repos were reviewed as candidate forks: `composer_json_fuzz_tester
 - [ ] Evaluate `quantstats-js` separately from the Signal Miner track, it's an analytics/reporting upgrade, not a discovery tool. Would require deciding whether to (a) store daily equity-curve series per strategy (schema change) to feed it properly, or (b) adapt just its metric-formula layer against Atlas's existing summary metrics without the full tearsheet/daily-series machinery
 - [ ] Evaluate `local-maestro` as a separate "portfolio builder" feature (multi-strategy correlation/CARP analysis) rather than folding it into per-strategy tooling, it answers a different question (how strategies interact) than the other four (is this one strategy robust/improvable). Would share the daily-equity-curve schema gap with `quantstats-js`; worth solving that gap once for both if both are ever pursued
 - [ ] Any strategy-JSON mutation (insertion of discovered signals) must be reviewed carefully, these tools write modified strategy JSON meant for re-import into Composer; Atlas has never mutated strategy definitions, only displayed them
+
+### External Data and Library Resources
+
+**Status:** reference only. Neither item below is adopted, neither is a roadmap item, and neither
+should be integrated without its own proposal. Recorded (v1.30.7) so the options are not lost.
+
+**HF Data Library** (`https://hfdatalibrary.com/pages/ai-prompts`, part of the ElkassabgiData
+ecosystem). A hosted historical price dataset, offered as a candidate future source for
+`data/prices.json`. What the site states, recorded verbatim so a later reader can tell what was
+promised from what was verified:
+
+- **1-minute OHLCV data, 2002 to present**, described as the "entire historical record (~24 years)"
+- A **1,391-ticker universe** (examples given: AAPL, NVDA, MSFT, SPY), with prepared bundles
+  including "Magnificent 7" and S&P 500
+- Columns: `datetime` (Eastern Time, tz-naive), `open`, `high`, `low`, `close`, `volume`, `source`
+- Derived timeframes offered: 5-minute, 15-minute, 30-minute, hourly, daily, weekly, monthly
+- Formats: Parquet and CSV
+- Access: a REST API over curl, plus an MCP server with native Claude, Cursor, ChatGPT and
+  Antigravity CLI integration. Non-1-minute timeframes come back through a signed-URL flow
+- Free tier: API key described as "Free, instant, 100 downloads/minute". No paid pricing is stated
+- Sizes: a single ticker is "roughly 30-80 MB" as compressed parquet, the Mag-7 bundle "~400 MB",
+  the full universe "~13 GB"
+
+The linked page is itself a set of ready-made prompts for driving those download workflows, not the
+dataset documentation; the figures above come off that page.
+
+**Why this is worth keeping on file.** `data/prices.json` covers **72 tickers** over 4,184 daily
+closes from 2010-01-04, while `data/database.json` holds **3,680 distinct tickers** across the
+library. That 72-ticker ceiling is already documented as a hard blocker in two places: **V2.4
+Overfit Check Tier 3**, where only 1,112 symphonies (16.7%) hold exclusively covered tickers, and
+**V1.20 item 9**, where the backtest-inception wording has to say "at least" precisely because
+`prices.json` cannot see far enough back to assert a date. A 1,391-ticker source reaching to 2002
+would move both of those, and 2002 predates the whole leveraged-ETF era that the 2010 start was
+chosen to cover (see the v1.20.1 note on `START_DATE`).
+
+**Counterweights, recorded honestly so this is not revisited as a solved problem:**
+
+- **1,391 is not 3,680.** It is a large improvement on 72 but it does not close Tier 3; it moves the
+  coverage number without removing the coverage caveat. The first thing to measure, before any other
+  work, is the intersection of that 1,391-ticker list against the actual held-ticker distribution in
+  `database.json`, weighted by how many symphonies hold each one. UPRO alone is held by 2,271
+  symphonies, so the answer is decided by a short head of tickers, not by the size of the universe.
+- **Granularity is wrong by three orders of magnitude.** Every downstream use in this project is
+  daily adjusted closes. 1-minute bars would be downsampled on ingest and the rest discarded.
+- **~13 GB has no home here.** The site is static with no server and no build step; `database.json`
+  is already 18.7 MB and flagged as a page-weight risk. Any use of this source is strictly offline,
+  inside `scripts/refresh_prices.py`, producing the same small committed artifact. Nothing about it
+  changes what ships to a browser.
+- **It introduces an API-key dependency that price data does not currently have.** `refresh_prices.py`
+  runs unauthenticated against Yahoo Finance today. A key means a secret in the weekly Action, a
+  new upstream that can revoke access, and a free tier with no stated paid pricing behind it.
+- **Adjusted closes are not listed.** The stated columns are raw OHLCV. `prices.json` is built on
+  adjusted closes, so splits and distributions would have to be handled somewhere, which is exactly
+  the work Yahoo currently does for free.
+- **Redistribution terms are unread.** This site publishes derived figures computed from price data.
+  Whether that is permitted has not been checked and must be, before any adoption.
+
+**`ranaroussi/quantstats`** (`https://github.com/ranaroussi/quantstats`). The original Python
+library that candidate fork 4 above, `quantstats-js`, is a port of. Same metric surface (Sharpe,
+Sortino, Calmar, CAGR, VaR/CVaR, Kelly, Ulcer Index, drawdown-period detail) and the same tearsheet
+concept, in pandas/numpy/matplotlib rather than zero-dependency JavaScript.
+
+For this project the upstream is the **reference implementation, not the candidate**. The JS port is
+the one that could in principle run in the browser and fit the no-build-step architecture; the
+Python original could only run offline in a batch job. Its value here is as the authority to check
+formulas against, since the port's own claim to correctness is that it validates against this
+library.
+
+It shares the port's blocking gap exactly: it needs a **daily equity-curve or returns series** as
+input, and `database.json` stores pre-computed summary metrics per strategy, not daily series. That
+gap is tracked as **V1.20 item 16** and is the real prerequisite for either one. Until it is closed,
+neither library can be fed real data, and which language the library is written in does not matter.
 
 ### Icebox
 
