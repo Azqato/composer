@@ -5,6 +5,42 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.31.1] - 2026-08-30
+
+### Fixed
+- **The two automated refresh workflows manufactured the exact staleness the fourth deploy gate
+  exists to catch, and thereby blocked the deploy.** `refresh-full-database.yml` rewrites
+  `database.json` weekly and `update-metrics.yml` rewrites `strategies.json` nightly. Both are inputs
+  to the build-time join in `data/strategy_extras.json`, and neither workflow rebuilt it, so every
+  run committed fresh source data against a stale derived artifact. `deploy.yml` runs
+  `check_strategy_extras.py` as a gate, so the result was a **failing GitHub Pages deploy**, not
+  merely a failing local check.
+  - Observed for real: the weekly refresh landed as `e2dc066` on 2026-08-30 and left `main` failing
+    the gate. It was caught by hand during unrelated documentation work, not by anything designed to
+    catch it, and it would have recurred every Sunday and every night.
+  - Both workflows now run `scripts/build_strategy_extras.py` and commit
+    `data/strategy_extras.json` and `data/strategy_extras.js` alongside their existing outputs.
+  - Each workflow keeps its own failure philosophy rather than being flattened to one rule.
+    `update-metrics.yml` runs the rebuild **before** its commit step with no `if: always()`, so a
+    genuine join miss (a featured strategy with no database row, which is a human configuration
+    error) stops the job and ships nothing, and the next daily run retries because
+    `update_metrics.py` is idempotent and staleness-driven. `refresh-full-database.yml` runs it with
+    `if: always()`, matching its surrounding steps, so a join miss turns the job red without
+    discarding the hours of checkpointed refresh progress that workflow is built to protect.
+  - `data/strategy_extras.json`/`.js` regenerated against the refreshed database (31 of 31 featured
+    strategies joined, 0 misses) in `bc1eff6`.
+
+### Changed
+- **Revised the v1.28.0 decision to keep the join rebuild out of `update-metrics.yml`**, with the
+  reasoning recorded rather than overwritten. The original call distinguished nothing between a join
+  *miss* and a *stale* join. A miss is a human error and belongs at that human's desk, which is what
+  the decision protected. A stale join has no person at any desk: it is produced by unattended jobs
+  legitimately changing values the join depends on. The original reasoning was sound for the failure
+  it imagined and blind to the one that occurred.
+- **Documented `k1.json` as the remaining hole, deliberately.** It is the third join input and no
+  workflow touches it, because `refresh_k1.py` is hand-run. That path still depends on remembering,
+  exactly like the manual `database.json` routes in risk 5. The deploy gate is the backstop for both.
+
 ## [1.31.0] - 2026-08-30
 
 ### Added

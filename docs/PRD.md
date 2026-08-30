@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.31.0
+**Version:** 1.31.1
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -813,7 +813,7 @@ git push origin main
 
 ### Updating Metrics (Script)
 
-`.github/workflows/update-metrics.yml` runs `scripts/update_metrics.py` automatically every day and commits any changes. The script skips any strategy whose `last_updated` is under `STALE_AFTER_DAYS` (7) old, so most daily runs are a no-op except for retrying anything that failed on a previous run. No manual action is required for routine refreshes.
+`.github/workflows/update-metrics.yml` runs `scripts/update_metrics.py` automatically every day and commits any changes, then rebuilds `data/strategy_extras.json`/`.js` (v1.31.1, see Section 14 V1.20 item 1) because the script rewrites `strategies.json`, which that join reads. The script skips any strategy whose `last_updated` is under `STALE_AFTER_DAYS` (7) old, so most daily runs are a no-op except for retrying anything that failed on a previous run. No manual action is required for routine refreshes.
 
 To force an immediate refresh (e.g. after a symphony logic change), run manually:
 
@@ -839,7 +839,7 @@ git push origin main
 
 ### Updating the Full Database (Script, Automated)
 
-`.github/workflows/refresh-full-database.yml` (added v1.12.0) runs `scripts/refresh_full_database.py` automatically every **Sunday at 01:07 UTC** and commits any changes, plus regenerates and commits `data/database_summary.json`/`.js` (via `scripts/export_summary.py`) so the live site's actual data source stays in sync. No manual action required for routine refreshes.
+`.github/workflows/refresh-full-database.yml` (added v1.12.0) runs `scripts/refresh_full_database.py` automatically every **Sunday at 01:07 UTC** and commits any changes, plus regenerates and commits `data/database_summary.json`/`.js` (via `scripts/export_summary.py`) so the live site's actual data source stays in sync, plus rebuilds and commits `data/strategy_extras.json`/`.js` (via `scripts/build_strategy_extras.py`, added v1.31.1) because the refresh rewrites `database.json`, which that join reads. No manual action required for routine refreshes.
 
 **This is a meaningfully heavier job than `update-metrics.yml`'s daily run.** `STALE_AFTER_DAYS` (7) matches this workflow's weekly cadence exactly, so essentially the entire ~6,600-row full database is "due" on every run, not just a handful of stragglers, at the proven-safe 2-second-per-call throttle (Section 13, Rate Limits), that's roughly 4.5–5 hours, close to GitHub's 6-hour job ceiling. The workflow's refresh step has its own 340-minute timeout with `continue-on-error: true`, and the summary-regeneration/commit steps run with `if: always()`, so if a run gets cut short, whatever `refresh_full_database.py` already checkpointed to disk (every 10 rows, per its own docstring) still gets committed rather than lost, the next Sunday's run picks up whatever's still stale via the normal staleness check. GitHub Actions minutes are unmetered for public repositories on GitHub-hosted runners, so the long weekly runtime has no cost implication.
 
@@ -3052,9 +3052,35 @@ files already in the repo.
   join in memory and demands byte equality with both committed files, which catches a stale join, a
   twin that drifted, and a featured strategy with no database row. Verified in both directions.
 
-  **Deliberately not wired into `update-metrics.yml`.** A join miss should fail the person who
-  caused it, at their desk, rather than break the nightly metrics job and its sitemap commit for
-  everyone. The deploy gate is what makes a forgotten run impossible to ship.
+  **Wired into both refresh workflows as of v1.31.1, revising the v1.28.0 decision.** The original
+  call was to keep the rebuild out of `update-metrics.yml`, on the reasoning that a join miss should
+  fail the person who caused it, at their desk, rather than break the nightly metrics job and its
+  sitemap commit for everyone. That reasoning was sound for the failure it imagined and blind to the
+  one that actually happened.
+
+  A join **miss** is a human configuration error: a featured strategy with no database row. A **stale
+  join** is something else entirely, and it has no person at any desk. `refresh-full-database.yml`
+  rewrites `database.json` every Sunday and `update-metrics.yml` rewrites `strategies.json` every
+  night, both unattended, both legitimately changing values the join depends on. Neither rebuilt it.
+  So the automated jobs manufactured the exact staleness the fourth deploy gate exists to catch, and
+  the gate then blocked the deploy for everyone anyway, which is the outcome the original decision
+  was trying to avoid, arrived at by the one route it did not consider.
+
+  This happened for real on **2026-08-30**: the weekly refresh landed as `e2dc066` and left
+  `check_strategy_extras.py` failing on `main`, which fails `deploy.yml` before it builds. It was
+  caught by hand during unrelated documentation work, not by anything designed to catch it.
+
+  Both workflows now run `build_strategy_extras.py` and commit its two outputs. The original intent
+  is preserved rather than discarded, and each workflow keeps its own failure philosophy:
+  `update-metrics.yml` runs the rebuild **before** its commit step with no `if: always()`, so a
+  genuine join miss stops the job and ships nothing (loud, and the next daily run retries);
+  `refresh-full-database.yml` runs it with `if: always()`, matching the surrounding steps, so a join
+  miss turns the job red without discarding hours of checkpointed refresh progress.
+
+  **`k1.json` is the remaining hole, and it is deliberate.** It is the third join input and no
+  workflow touches it, because `refresh_k1.py` is hand-run. That path still depends on remembering,
+  exactly like the manual `database.json` routes described in risk 5. The deploy gate is the backstop
+  for both.
 
   **One correction the join forced.** The keys of `last_market_days_holdings` are the ticker
   universe the logic can reach; the values are the current position, and most are `0.0`. So the
@@ -5383,7 +5409,7 @@ next, including an AI assistant with no memory of the previous session.
 | The RSI page's data | `scripts/refresh_rsi.py` |
 | Whether a ticker issues a K-1, or adding tickers to the lookup | `data/k1_seed.txt`, then `scripts/refresh_k1.py`, then commit `data/k1.json` **and** `data/k1.js` together |
 | Deploy behaviour or the deploy gates | `.github/workflows/deploy.yml`, `scripts/check_html_js.py`, `scripts/check_composer_ladder.py`, `scripts/check_database_keys.py`, `scripts/check_strategy_extras.py` |
-| **`data/database.json`, `data/k1.json`, or the featured set in `data/strategies.json`** | `scripts/build_strategy_extras.py`, then commit `data/strategy_extras.json` **and** `data/strategy_extras.js`. The strategy pages read that join, not the source files, so a refresh that skips this step leaves the page showing yesterday's numbers with no visible sign. `scripts/check_strategy_extras.py` fails the deploy if it is skipped |
+| **`data/database.json`, `data/k1.json`, or the featured set in `data/strategies.json`** | `scripts/build_strategy_extras.py`, then commit `data/strategy_extras.json` **and** `data/strategy_extras.js`. The strategy pages read that join, not the source files, so a refresh that skips this step leaves the page showing yesterday's numbers with no visible sign. `scripts/check_strategy_extras.py` fails the deploy if it is skipped. **Automated since v1.31.1** for the two workflow-driven inputs (`refresh-full-database.yml` for `database.json`, `update-metrics.yml` for `strategies.json`); the `k1.json` path and manual `database.json` edits are still hand-run |
 | Which pages search engines are told about | `scripts/build_sitemap.py`, then re-run it. Never hand-edit `sitemap.xml`. Re-run automatically by `update-metrics.yml` since v1.26.1, so a forgotten run self-corrects within a day |
 | What Cloudflare serves publicly | `.assetsignore` (not `deploy.yml`, which governs GitHub Pages only) |
 | Product decisions, architecture, schemas, roadmap, policy | `docs/PRD.md`, this file |

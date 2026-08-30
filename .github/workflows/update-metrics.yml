@@ -42,6 +42,19 @@ jobs:
       # is what happened between v1.25.1 and v1.26.1. Runs unconditionally: it
       # is cheap, and a no-op run produces no diff, so the commit step below
       # simply finds nothing to commit.
+      # update_metrics.py rewrites strategies.json, which is one of three inputs
+      # to the build-time join the strategy pages read (the others are
+      # database.json and k1.json). Without this the daily job commits new
+      # metrics against a stale strategy_extras and check_strategy_extras.py
+      # fails the deploy. Deliberately NOT given if: always() and deliberately
+      # placed before the commit step: a join miss is a human configuration
+      # error (a featured strategy with no database row), and stopping the job
+      # here means nothing is committed and nothing is shipped, which is the
+      # loud failure the original v1.28.0 decision wanted. update_metrics.py is
+      # idempotent and staleness-driven, so the next day's run simply retries.
+      - name: Rebuild strategy_extras.json/.js
+        run: python scripts/build_strategy_extras.py
+
       - name: Regenerate sitemap.xml
         run: python scripts/build_sitemap.py
 
@@ -49,7 +62,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/strategies.json data/strategies.js data/symphony_scores.json sitemap.xml
+          git add data/strategies.json data/strategies.js data/symphony_scores.json data/strategy_extras.json data/strategy_extras.js sitemap.xml
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
