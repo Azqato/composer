@@ -5,6 +5,41 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.32.0] - 2026-08-30
+
+### Added
+- **Roadmap V4.2: Feature Triage Against Comparable Tools.** Owner request: add the features of two
+  third-party products to the roadmap, renamed, excluding anything that breaks the site's rules.
+  Reviewed from screenshots of **Crescendo Suite**'s 16-tool launcher and **ICDB**'s free, free-
+  sign-in and paid feature tiers. Neither product was run.
+  - **27 features triaged** into Ship, Have, Trim and Reject, each renamed to describe the thing
+    rather than echo a competitor's branding, with effort and blockers recorded.
+  - **Six rejected outright on the no-accounts rule**: live account performance, Composer API
+    integration, account allocation preview, cross-device sync, community search analytics, and an
+    API-key settings pane. Three more **trimmed** rather than rejected, keeping the accountless half:
+    preferences without device sync, a saved shelf without public sharing, and watchlists stored only
+    in `localStorage`.
+  - **AI-powered search trimmed to its precomputed form.** A query-time model call means a server, a
+    secret and a per-query cost, breaking three rules at once. Offline generation of a keyword and
+    synonym index, shipped static and searched in the browser, keeps most of the value and breaks
+    none, and `add_ai_summary.py` already establishes the offline-generation pattern.
+  - **Highest-value new items identified:** Version Compare (appears independently in both products,
+    needs no stored data, and `converter.html` already has the renderer), Light Mode (the site has
+    zero `prefers-color-scheme` and zero `data-theme` rules today, so it is dark-only), Correlation
+    Grid, Path Spread and Substitute Finder.
+  - **Recorded that three independent products have converged on overfit detection** (Crescendo's
+    IOTA, ICDB's paid OverGuard, and Atlas's own V2.4), and that Atlas is ahead rather than behind,
+    because V2.4 rests on a measurement over 5,095 symphonies untouched for at least 365 days. That
+    measurement already **ruled out one of the factors a competitor advertises**: top-5%-day
+    contribution scored -0.065 and was unstable, positive in only 4 of 10 in-sample-return deciles,
+    while annualised turnover scored -0.316 consistently across all ten. The recommendation is to
+    ship V2.4 with its measurements published, since the differentiator is not the feature but being
+    able to show which factors were tested and which failed.
+  - **Recorded that V1.20 item 16 (store per-strategy daily returns) now blocks eight roadmap
+    entries** across V2.2, V4.0, V4.1 and V4.2, making it the highest-leverage item on the roadmap,
+    and the one that is neither hard nor speculative since the refresh pipeline already receives the
+    data.
+
 ## [1.31.2] - 2026-08-30
 
 ### Changed

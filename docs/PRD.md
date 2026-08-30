@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.31.2
+**Version:** 1.32.0
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -4418,6 +4418,115 @@ almost nothing and is the most honest thing in the whole report.
       and it would immediately improve the inception wording problem in V1.20 item 9
 - [ ] Only then evaluate leveraged-ETF reconstruction, as an offline batch artifact, never as
       on-demand server compute
+
+### V4.2: Feature Triage Against Comparable Tools
+
+**Status:** triage complete, nothing built. Owner request, 2026-08-30: "add all of these apps to the
+roadmap, be sure to name them something different, but they are all features I would eventually like
+to see on the site (unless they involve breaking our site's rules such as requiring api key or user
+data)."
+
+Two third-party products were supplied as screenshots: **Crescendo Suite** (the desktop application
+already described in V4.1, whose tool launcher lists 16 tools across five groups) and **ICDB**, a web
+product with a free tier, a free-sign-in tier, and a paid "ICDB Pro" subscription. Everything below
+is read off those screenshots. Neither product was run, no code was seen, and nothing here is
+verified against either one's documentation.
+
+Every item is renamed. The names below are Atlas's, chosen to describe the thing rather than to echo
+a competitor's branding, and none of them are taken from either product.
+
+#### The rules applied
+
+Four project rules decided most of the verdicts, and they are not negotiable by a feature request:
+
+1. **No user accounts, ever, and no collecting, storing, or processing of user data** (Section 4
+   Non-Goals, Tenet 7, and the Icebox entry that removed accounts permanently rather than deferring
+   them).
+2. **Zero server infrastructure** ([Tenet 4](#4-zero-cost-to-operate)). The site is static and
+   browser-only. Anything needing per-request compute, a secret, or a live third-party call at query
+   time is out unless it can be precomputed offline into a committed artifact.
+3. **No monetisation beyond Buy Me a Coffee.** Nothing here becomes a paid tier.
+4. **Saved state, where it is wanted at all, is client-side only.** The Icebox is explicit: saved
+   strategies "should be solved with client-side-only storage or not at all." `localStorage` with a
+   `try`/`catch` and a graceful default already has precedent in Signal Miner's family selection.
+
+#### Triage
+
+Verdicts: **Ship** means it fits the rules and is genuinely new. **Have** means Atlas already does
+it. **Trim** means the idea survives only with a part removed. **Reject** means it cannot exist here.
+
+| Their name | Atlas name | Verdict | Effort | Note |
+|---|---|---|---|---|
+| Custom Themes | **Light Mode** | Ship | half day | `css/main.css` has zero `prefers-color-scheme` and zero `data-theme`: the site is dark-only today. Pure CSS custom properties plus a toggle, no data, no server |
+| Symphony Diff / Symphony Diff Checker | **Version Compare** | Ship | 1-2 days | Appears independently in **both** products, which is the strongest single signal in either screenshot. Two pasted symphonies, or two versions of one, rendered side by side. Needs no stored data at all: `converter.html` already parses a symphony into a logic tree, so this is that renderer run twice with a diff between the trees |
+| Ticker Returns | **Ticker History** | Ship | 1-2 days | Per-ticker returns over selectable windows. `data/prices.json` already holds 4,184 daily closes; bounded to its 72 tickers, which must be said on the page rather than implied |
+| Data (price cache inspector) | **Data Provenance** | Ship | half day | A page stating what each data file covers, when it was refreshed, and what it cannot answer. Atlas surfaces `refreshed_at` in two places today and nowhere explains the 72-ticker or 2010 boundaries. The live-intraday half of their version is rejected: new dependency, no static form |
+| AI-Powered Search | **Plain-English Search** | Trim | 2-3 days | The live-LLM form is rejected outright: a query-time model call means a server, a secret, and a per-query cost, breaking rules 1, 2 and 3 at once. **The precomputed form survives and is most of the value**: strategy descriptions and tags are already generated offline (`add_ai_summary.py`), so the same offline pass can emit a keyword and synonym index shipped as a static file and searched in the browser |
+| Custom Preferences | **Remembered View** | Trim | 1 day | Remembering filters, column choices and sort order is fine in `localStorage`. **"Syncs across all devices" is rejected**: cross-device sync is an account by another name. The page must not imply otherwise |
+| Library / Organize with Folders | **Local Shelf** | Trim | 2-3 days | Saving and grouping symphonies is permitted **only** as `localStorage`, per rule 4. **Their "share public folders" is rejected**: sharing requires a server and an identity. A shelf that silently vanishes when someone clears site data has to say so on the page |
+| Watchlists | **Indicator Board** | Trim | 2-3 days | `rsi.html` already ships live 10-day RSI for 20 tickers, refreshed 3x daily by workflow. Extending it to more indicators is in scope. A **user-defined** watchlist is `localStorage` only, never stored server-side |
+| Monte Carlo | **Path Spread** | Ship | 1 week | Bootstrap-resample a strategy's daily returns to show the realised equity curve as one draw from a distribution rather than a fact. Directly serves the site's stated posture about backtests. **Blocked on daily returns (V1.20 item 16)** |
+| Correlation Matrix | **Correlation Grid** | Ship | 1 week | Atlas shows every strategy in isolation and answers nothing about how two of them interact. This is the same gap `local-maestro` fills in V4.0. **Blocked on item 16** |
+| Wash Sale Helper | **Substitute Finder** | Ship | 1 week | Genuinely accountless: paste symphonies, exclude tickers held in a window, rank the remainder by correlation. Sits naturally beside the existing K-1 Lookup, which is already tax-adjacent. **Blocked on item 16**, and it needs a plain "not tax advice" line, not a buried one |
+| Portfolio Optimizer | **Blend Weights** | Ship | 2 weeks | Optimise weights across several symphonies. Same territory as `local-maestro` in V4.0. **Blocked on item 16.** Weight optimisation is itself an overfitting machine, so it cannot ship without the V2.4 caveat attached to its output |
+| Robustness Lab | **Fragility Report** | Ship | 2 weeks | How much of each condition's edge survives moving the number it was fitted on. This is `composer_json_fuzz_tester`, already V4.0's recommended first fork, and its independent appearance here raises confidence in that choice |
+| Signal Check | **Threshold Significance** | Ship | 2 weeks | Sweep a threshold and test the result against a benchmark rather than against zero. Overlaps, and should be merged with, **V2.2 item A (parameter plateau scoring)**, which is the same instinct: judge the neighbourhood, not the peak |
+| Signal Lab (multi-indicator) | folds into **Signal Miner** | Ship | 2 weeks | Their tool combines multiple indicators. Atlas's `signal-lab.html` is only a redirect stub to Signal Miner. Note the collision: multi-condition combining is **V2.2's "DEFERRED INDEFINITELY: OR combining"** item, deferred by owner decision. This is a reason to revisit that call, not a reason to override it |
+| IOTA / OverGuard | already **V2.4 Overfit Check** | Have | shipped as a plan | See the note below; this is the most important finding in the triage |
+| Signal Ladders | **Ladder Builder** | Have (partly) | 1 week to extend | Atlas already builds a Calmar-ordered nested de-risking ladder and has a deploy gate protecting its export shape (`check_composer_ladder.py`). Their bulk-sweep and tier-competition layer is the extension |
+| Logic Visualizer | **Symphony Converter** | Have | shipped | `converter.html` already renders a symphony as a readable IF/ELSE tree |
+| Advanced Filtering | **Filter Panel / Screener** | Have | shipped | V1.11 and V1.12 |
+| Comprehensive Database | **Full Database** | Have | shipped | 6,669 rows. One difference worth noting: ICDB also ingests from a Discord community, which Atlas does not and which would be a sourcing decision, not a feature |
+| Run Backtest | already **V4.1** | Have | planned | The synthetic backtester |
+| Portfolio (live account) | none | **Reject** | n/a | Live account performance, deposit-adjusted returns, transactions and cash flows. Requires a linked brokerage account and stores a named person's financial history. Breaks rule 1 outright |
+| Composer API Integration | none | **Reject** | n/a | Asks the visitor to connect their Composer account. That is a credential plus personal financial data. Breaks rule 1 |
+| Ticker Preview (account allocations) | none | **Reject** | n/a | Reads the visitor's current account positions. Breaks rule 1. The adjacent accountless question, "what would this symphony hold tomorrow", is a different feature and is not rejected |
+| Sync Across Devices | none | **Reject** | n/a | An account with extra steps |
+| Search History & Analytics | none | **Reject** | n/a | Local search history is technically permissible and nearly worthless. The actual product is "trending patterns across the community", which requires collecting and aggregating what every visitor searched for. Breaks rule 1 in the most direct way anything here does |
+| Settings (API keys, paths) | none | **Reject** | n/a | Atlas holds no visitor secrets and has no paths to configure. The theme half is Light Mode above |
+
+#### The finding that matters most in this triage
+
+**Three independent products have now converged on the same feature, and Atlas has already measured
+it.** Crescendo Suite ships "IOTA", an in-sample versus out-of-sample degradation score. ICDB sells
+"OverGuard", described as regime consistency, tail risk, drawdown patterns, performance decay, and
+out-of-sample versus in-sample. Atlas designed **V2.4 Overfit Check** independently. Three teams
+arriving at the same tool is good evidence the problem is real and the market wants it answered.
+
+**Atlas is not behind here. It is ahead, and it has receipts.** V2.4 is not a sketch: it is built on
+a measurement over **5,095 symphonies untouched for at least 365 days**, and that measurement already
+ruled out one of the factors the competing products advertise.
+
+- Median backtest annualised return **49.4%** against a median actual out-of-sample year of
+  **17.6%**. Only **22.2%** delivered at least their backtest, **39.1%** at least half, **77.9%** were
+  merely positive, and **77.8%** degraded.
+- Scored **within in-sample-return deciles**, to control for regression to the mean, annualised
+  turnover is the strongest flag at a mean rank correlation of **-0.316**, consistent across all ten
+  deciles. Backtest length (+0.188) and win rate (+0.185) follow at nine of ten.
+- **"Tail anomalies" did not survive.** The contribution of the top 5% of days scored **-0.065 and
+  was unstable, positive in 4 of 10 deciles.** OverGuard advertises tail-risk profiling as one of its
+  five factors. On this corpus, that factor predicts essentially nothing once in-sample return is
+  controlled for, and the whole reason Atlas knows that is that it ran the controlled test rather
+  than assuming the intuitive factor works.
+
+So the competitive read is not "build what they built." It is that Atlas should ship V2.4 **with its
+measurements published**, because the differentiator is not the feature, it is being able to show
+which factors were tested, which failed, and on how large a sample.
+
+#### Two structural observations
+
+**Four of the highest-value ideas here sit behind a paywall, and one behind a login.** ICDB puts
+Search History, Folders, OverGuard and Wash Sale Helper in a paid tier, and Preferences, Themes,
+Sync and API Integration behind a free sign-in. Of those eight, this triage rejects five on the
+account rule and adopts three in trimmed, accountless, free form. That is the rule working as
+designed rather than a limitation to route around: **Atlas's answer to "sign in to unlock" is that
+there is nothing to unlock**, and any of these that ship here ship free (rule 3).
+
+**Item 16 is now blocking eight separate roadmap entries.** Path Spread, Correlation Grid, Substitute
+Finder and Blend Weights all need a daily returns series, joining `quantstats-js` and `local-maestro`
+in V4.0, the synthetic backtester in V4.1, and the performance chart in V2.2. It has gone from a
+schema nicety to the single highest-leverage item on the roadmap, and it is the one thing here that
+is neither hard nor speculative: the refresh pipeline already receives the data.
 
 ### External Data and Library Resources
 
