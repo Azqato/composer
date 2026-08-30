@@ -2095,6 +2095,20 @@ footer {
 .db-table td.rsi-overbought         { color: #e04545; }
 .db-table td.rsi-extreme-overbought { color: #ff0000; font-weight: 700; }
 
+/* ---- JSON syntax highlighter (converter.html, etf-cloner.html) ----
+   Promoted out of both pages' inline stylesheets at v1.31.2. It was the one
+   rule set the site had in two places, byte-identical and never drifted, and
+   the standing note said to promote it if a third page ever needed it. The
+   owner called it in earlier: two byte-identical copies is already the
+   condition that note was guarding against, and the cost of being wrong about
+   a third page is a handful of unused bytes. Applied by the `highlight()`
+   helper on both pages, which wraps JSON tokens in these classes. ---- */
+.j-key { color: var(--color-blue); }
+.j-str { color: var(--color-green); }
+.j-num { color: var(--color-yellow); }
+.j-bool { color: var(--color-pink); }
+.j-null { color: var(--color-disabled); }
+
 /* ---- Modal (score breakdown + methodology, database.html, V1.13) ---- */
 .modal-overlay {
   position: fixed;

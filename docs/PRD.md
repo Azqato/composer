@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.31.1
+**Version:** 1.31.2
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -5675,15 +5675,42 @@ Numbered for reference. Open unless marked otherwise.
    DESIGN.md Section 8. Roughly 250 lines of CSS covering a third of the site's interface has no
    component documentation. **Open work**, not a defect.
 
-10. **The `.j-*` JSON highlighter is duplicated** between `converter.html` and `etf-cloner.html`.
-    Not yet drifted. Promote to `css/main.css` if a third page ever needs it.
+10. **CLOSED 2026-08-30 (v1.31.2), owner instruction. The `.j-*` JSON highlighter was duplicated**
+    between `converter.html` and `etf-cloner.html`. The standing position was to leave it until a
+    third page needed it, on the grounds that it had not drifted. The owner called it in earlier:
+    two byte-identical copies is already the condition that position was guarding against, and the
+    cost of being wrong about a third page is a handful of unused bytes in `css/main.css`. Promoted
+    there, removed from both inline stylesheets, and both pages verified to still highlight.
 
-11. **Python conventions are drifting with recency.** The five newest scripts lack the shebang that
-    the other thirteen carry, and mostly use `os.path` where the rest use `pathlib`. Nothing is
-    broken. **Open question:** ratify the new form or restore the old one, but pick one.
+11. **CLOSED 2026-08-30 (v1.31.2). Python conventions were drifting with recency.** Resolved in
+    favour of the older form, because it was the majority and the better one: `pathlib` states
+    intent that `os.path.dirname(os.path.dirname(os.path.abspath(__file__)))` only implies.
 
-12. **Type hints exist in only 4 of 20 Python scripts.** Currently documented honestly as a minority
-    form. **Open question:** adopt them properly or remove them, rather than leaving a coin flip.
+    The count in the original wording was slightly off, which the fix surfaced. It is 24 scripts,
+    not 20 or 18. Five carried no shebang (`check_composer_ladder.py`, `check_html_js.py`,
+    `check_live.py`, `measure_throughput.py`, `run_harness.py`) and those same five used `os.path`,
+    plus a sixth holdout the note missed: `add_ai_summary.py` had the shebang but not `pathlib`.
+    All six are converted and all 24 now carry `#!/usr/bin/env python3`.
+
+    **Two deliberate exceptions, so the next reader does not "fix" them.** `measure_throughput.py`
+    keeps `import os` for `os.sep` and `os.remove`, which are not path construction and have no
+    clearer `pathlib` form in context. And `check_html_js.py` wraps its `root.glob('*.html')` in
+    `str()`, because its reporter concatenates the path into a message and a bare `WindowsPath`
+    raises `TypeError` there. That was caught by running the gate, not by reading it.
+
+12. **OPEN, and deliberately not decided by the agent. Type hints exist in only 3 of 24 Python
+    scripts** (`refresh_prices.py`, `refresh_rsi.py`, `update_metrics.py`; the original count of
+    4 of 20 was measured before three scripts were added). **Open question:** adopt them properly or
+    remove them, rather than leaving a coin flip.
+
+    Left open at v1.31.2 while items 10 and 11 were closed beside it, because the two questions are
+    not the same shape. Item 11 had a right answer available without the owner: an 18-to-6 majority
+    and a mechanical conversion with no judgement in it. This one has no majority to follow and both
+    directions cost real work in opposite directions. Retrofitting 21 scripts is hours; deleting the
+    annotations in three is minutes but throws away work someone chose to do. The project ships no
+    type checker and pins itself to the Python standard library, so hints here buy documentation
+    rather than enforcement. **Recommendation, for a one-word owner ruling: remove them**, matching
+    the 21-script majority and the absence of any tool that reads them. Not acted on.
 
 13. **The curated "zoop's X (2026 Edition)" replacement plan is decided but unexecuted.** Eleven
     replacements and one removal, all with confirmed new symphony IDs already refreshed in the
@@ -5789,10 +5816,14 @@ Numbered for reference. Open unless marked otherwise.
     part of the hand-addition workflow. The gate checks only that direction: `storage.csv` holding
     symphonies the database does not is the design, not a defect.
 
-26. **OPEN. `LICENSE` should be a markdown file.** Owner request, 2026-08-28. It is currently a
-    plain-text file with hand-wrapped headings in caps, the traditional licence format, which renders
-    as an undifferentiated block. Every other document in this project is markdown and gets headings,
-    emphasis and structure.
+26. **CLOSED 2026-08-30 (v1.31.2). `LICENSE` is now `LICENSE.md`.** Moved with `git mv` so the
+    history follows the file, and converted to real markdown: `##` headings per section, bold on the
+    copyright line and on the two load-bearing sentences, an autolink on the GitHub issues URL, and
+    an in-document link from the "one permission is granted" line to the section that grants it.
+    **The wording is unchanged.** Only formatting moved, deliberately, since the file is a legal
+    instrument and a reflow is not the place to reword one. The single inbound link in `README.md`
+    was updated. GitHub recognises `LICENSE`, `LICENSE.md` and `LICENSE.txt` equally, so the repo
+    sidebar is unaffected.
 
     **Small and low risk.** GitHub recognises `LICENSE`, `LICENSE.md` and `LICENSE.txt` equally for
     its licence detection and renders the markdown one, so nothing about discoverability changes.

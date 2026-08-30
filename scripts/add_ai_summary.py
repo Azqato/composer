@@ -18,11 +18,11 @@ Usage:
 """
 
 import json
-import os
+from pathlib import Path
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-JSON_PATH = os.path.join(ROOT, "data", "strategies.json")
-JS_PATH = os.path.join(ROOT, "data", "strategies.js")
+ROOT = Path(__file__).resolve().parent.parent
+JSON_PATH = ROOT / "data" / "strategies.json"
+JS_PATH = ROOT / "data" / "strategies.js"
 
 JS_HEADER = (
     "// Strategies data - loaded as a script tag so the site works with file:// protocol.\n"

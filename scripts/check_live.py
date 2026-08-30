@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Lint what Cloudflare actually serves, rather than what git says was pushed.
 
@@ -17,12 +18,12 @@ For each page it:
 Exits non-zero on any mismatch, so it can gate a release.
 """
 import io
-import os
 import re
 import sys
 import urllib.request
+from pathlib import Path
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = Path(__file__).resolve().parent.parent
 BASE = 'https://composeratlas.com'
 
 # page slug -> (local file, [markers that MUST be present], [markers that MUST NOT be])
@@ -95,7 +96,7 @@ def fetch(url):
 def check(slug):
     local_name, must, must_not = PAGES[slug]
     url = BASE + ('/' if slug == 'index' else '/' + slug)
-    local_path = os.path.join(REPO, local_name)
+    local_path = REPO / local_name
 
     try:
         live_bytes = fetch(url)

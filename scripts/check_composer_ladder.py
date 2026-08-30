@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Structural check for the Signal Miner's combined-symphony export.
 
 Background: v1.22.0 through v1.22.4 shipped a combined export Composer would
@@ -31,12 +32,12 @@ Usage:
 """
 import itertools
 import json
-import os
 import re
 import sys
+from pathlib import Path
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SOURCE = os.path.join(ROOT, 'signal-miner.html')
+ROOT = Path(__file__).resolve().parent.parent
+SOURCE = ROOT / 'signal-miner.html'
 
 # Substrings the exporter must still contain for this port to describe it.
 # Whitespace-insensitive; each is a regex.

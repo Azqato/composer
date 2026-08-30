@@ -5,6 +5,43 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.31.2] - 2026-08-30
+
+### Changed
+- **`LICENSE` is now `LICENSE.md`** (closes open item 26). Moved with `git mv` so history follows the
+  file, and converted to real markdown: `##` headings per section, bold on the copyright line and the
+  two load-bearing sentences, an autolink on the GitHub issues URL, and an in-document link from the
+  "one permission is granted" line to the section that grants it. **The wording is unchanged.** Only
+  formatting moved, deliberately: the file is a legal instrument and a reflow is not the place to
+  reword one. The single inbound link in `README.md` was updated. GitHub recognises `LICENSE`,
+  `LICENSE.md` and `LICENSE.txt` equally, so the repo sidebar is unaffected.
+- **Python path and shebang conventions unified** (closes open item 11), resolved in favour of the
+  older form because it was both the majority and the better one: `pathlib` states intent that
+  `os.path.dirname(os.path.dirname(os.path.abspath(__file__)))` only implies.
+  - The original note's count was off, which the fix surfaced: it is **24 scripts, not 20**. Five
+    carried no shebang and those same five used `os.path`, plus a sixth holdout the note missed,
+    `add_ai_summary.py`, which had the shebang but not `pathlib`. All six converted; all 24 now carry
+    `#!/usr/bin/env python3`.
+  - Two deliberate exceptions are documented so they are not "fixed" later.
+    `measure_throughput.py` keeps `import os` for `os.sep` and `os.remove`, which are not path
+    construction. `check_html_js.py` wraps `root.glob('*.html')` in `str()`, because its reporter
+    concatenates the path into a message and a bare `WindowsPath` raises `TypeError` there. **That
+    one was caught by running the gate, not by reading the diff**, which is the argument for running
+    all four gates after a change this mechanical.
+- **The `.j-*` JSON highlighter moved to `css/main.css`** (closes open item 10), removed from the
+  inline stylesheets of both `converter.html` and `etf-cloner.html`. The standing position was to
+  leave it until a third page needed it, on the grounds that it had not drifted. Reversed on owner
+  instruction, and the reasoning holds up: two byte-identical copies is already the condition that
+  position was guarding against, and the cost of being wrong about a third page is a handful of
+  unused bytes.
+
+### Notes
+- **Open item 12 (type hints) was deliberately left open** rather than closed alongside 10 and 11.
+  Item 11 had a right answer available without the owner: an 18-to-6 majority and a mechanical
+  conversion with no judgement in it. Item 12 has no majority to follow, and the two directions cost
+  real work in opposite directions. Recorded with a recommendation (remove them, matching the
+  21-script majority and the absence of any tool that reads them) for a one-word ruling.
+
 ## [1.31.1] - 2026-08-30
 
 ### Fixed

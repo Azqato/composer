@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Run one of the Signal Miner headless-Edge harnesses.
 
@@ -22,8 +23,9 @@ scripts/harness/README.md for what each harness actually checks.
 """
 import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'harness'))
+sys.path.insert(0, str(Path(__file__).resolve().parent / 'harness'))
 import _edge  # noqa: E402
 
 HARNESSES = {
@@ -53,9 +55,9 @@ SETTINGS_PROFILE = 'settings-%d' % os.getpid()
 def run_settings(timeout=900):
     import shutil
     import tempfile
-    prof = os.path.join(tempfile.gettempdir(), 'composer-harness-' + SETTINGS_PROFILE)
+    prof = Path(tempfile.gettempdir()) / ('composer-harness-' + SETTINGS_PROFILE)
     shutil.rmtree(prof, ignore_errors=True)      # phase 1 must start from nothing
-    if os.path.exists(prof):
+    if prof.exists():
         # Say so rather than letting phase 1 assert against inherited storage.
         return 'could not clear the profile at ' + prof + ' (is an msedge.exe still holding it?)'
     try:

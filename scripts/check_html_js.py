@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Syntax sanity check for the inline <script> blocks in the site's HTML.
 
 Why this exists: v1.22.2 took the Signal Miner down in production. An
@@ -27,10 +28,9 @@ Usage:
 
 Exit code is non-zero if any file fails, so it can gate a deploy.
 """
-import glob
-import os
 import re
 import sys
+from pathlib import Path
 
 BS = chr(92)   # backslash, kept out of literals so a mangled heredoc cannot eat it
 SQ = chr(39)   # '
@@ -271,8 +271,8 @@ def main(argv):
 
     paths = [a for a in argv if not a.startswith('-')]
     if not paths:
-        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        paths = sorted(glob.glob(os.path.join(root, '*.html')))
+        root = Path(__file__).resolve().parent.parent
+        paths = sorted(str(q) for q in root.glob('*.html'))
 
     print('checking ' + str(len(paths)) + ' file(s)')
     ok = True

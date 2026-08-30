@@ -83,7 +83,7 @@ Full documentation lives in [`/docs`](docs/):
 
 **All rights reserved. No licence is granted.** This repository is source-available, not open
 source: it is published so it can be read, and publishing it grants nothing. See
-[`LICENSE`](LICENSE), which also records that not enforcing a right does not waive it, and that the
+[`LICENSE.md`](LICENSE.md), which also records that not enforcing a right does not waive it, and that the
 Composer-derived and market data in `data/` is not the copyright holder's to license.
 
 **One permission is granted up front: referencing.** Search engines, AI assistants and answer

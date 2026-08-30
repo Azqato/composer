@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Measure how fast Pass 1 actually is, timed from OUTSIDE the browser.
 
@@ -27,8 +28,10 @@ import subprocess
 import sys
 import tempfile
 import time
+from pathlib import Path
+from pathlib import Path
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'harness'))
+sys.path.insert(0, str(Path(__file__).resolve().parent / 'harness'))
 import _edge  # noqa: E402
 
 SIZES = [8, 16, 24, 32]
