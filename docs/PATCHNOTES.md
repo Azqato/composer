@@ -5,6 +5,27 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.32.1] - 2026-08-30
+
+### Changed
+- **Type hints removed from all Python scripts** (closes open item 12), by owner ruling. Fifteen
+  `def` signatures across `update_metrics.py`, `refresh_prices.py` and `refresh_rsi.py` lost their
+  parameter and return annotations. There were no `typing` imports and no variable annotations in
+  function bodies, so nothing else moved. The codebase is now 0 of 24, stated rather than described.
+  - **This reversed a standing instruction**, which is why it is recorded rather than quietly done.
+    The Python conventions table in PRD Section 21 said of these same annotations: "Do not 'restore
+    consistency' by stripping them; do not mass-add them either." That sentence described the
+    situation accurately and resolved nothing. It turned a coin flip into a convention and left every
+    future script's author with the same choice and no guidance. The row now states the position.
+  - **One incidental effect.** `refresh_prices.py` used `tuple[list, dict]`, built-in generic syntax
+    requiring Python 3.9+. Removing it widens the version floor slightly. Nothing depended on that
+    floor and the workflows pin `python-version: '3.x'`, so this changes nothing today, but it is the
+    only behavioural difference in an otherwise cosmetic change.
+  - **Verification is weaker than usual and worth naming.** All 24 scripts pass `py_compile` and the
+    four deploy gates pass, but these three scripts all make live network calls and were not
+    executed. Annotation removal cannot change runtime behaviour in Python, which is the argument
+    that this is safe; it is not the same as having run them.
+
 ## [1.32.0] - 2026-08-30
 
 ### Added

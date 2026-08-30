@@ -66,13 +66,13 @@ DIRECT_FIELDS = [
 USER_AGENT = "Mozilla/5.0 (compatible; composer-metrics-updater/1.0)"
 
 
-def get(url: str) -> dict:
+def get(url):
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=30) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
 
-def post(url: str, body: dict) -> dict:
+def post(url, body):
     req = urllib.request.Request(
         url,
         data=json.dumps(body).encode("utf-8"),
@@ -85,7 +85,7 @@ def post(url: str, body: dict) -> dict:
 
 # ---- Backtest metrics ----
 
-def update_strategies() -> list:
+def update_strategies():
     strategies = json.loads(STRATEGIES_JSON.read_text(encoding="utf-8"))
     today = date.today().isoformat()
     stale_cutoff = date.today() - timedelta(days=STALE_AFTER_DAYS)
@@ -144,7 +144,7 @@ def update_strategies() -> list:
     return strategies
 
 
-def write_strategies_json(strategies: list) -> None:
+def write_strategies_json(strategies):
     STRATEGIES_JSON.write_text(
         json.dumps(strategies, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
@@ -152,7 +152,7 @@ def write_strategies_json(strategies: list) -> None:
     print(f"\nWrote {STRATEGIES_JSON.name}")
 
 
-def write_strategies_js(strategies: list) -> None:
+def write_strategies_js(strategies):
     comment = (
         "// Strategies data - loaded as a script tag so the site works with file:// protocol.\n"
         "// To update metrics: run scripts/update_metrics.py\n"
@@ -164,7 +164,7 @@ def write_strategies_js(strategies: list) -> None:
 
 # ---- Symphony logic trees ----
 
-def update_scores(strategies: list) -> dict:
+def update_scores(strategies):
     # Start from the existing file so a failed fetch keeps the last-known
     # score instead of being dropped from the output.
     scores = json.loads(SCORES_JSON.read_text(encoding="utf-8")) if SCORES_JSON.exists() else {}
@@ -196,7 +196,7 @@ def update_scores(strategies: list) -> dict:
     return scores
 
 
-def write_scores_json(scores: dict) -> None:
+def write_scores_json(scores):
     SCORES_JSON.write_text(
         json.dumps(scores, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",

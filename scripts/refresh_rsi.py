@@ -53,7 +53,7 @@ TICKERS = [
 ]
 
 
-def fetch_daily_closes(symbol: str) -> tuple[list, list]:
+def fetch_daily_closes(symbol):
     """Returns (dates, adjusted_closes) for the last LOOKBACK_DAYS trading days."""
     url = (
         f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
@@ -78,7 +78,7 @@ def fetch_daily_closes(symbol: str) -> tuple[list, list]:
     return dates[-LOOKBACK_DAYS:], closes[-LOOKBACK_DAYS:]
 
 
-def wilders_rsi(closes: list, period: int = RSI_PERIOD) -> float:
+def wilders_rsi(closes, period=RSI_PERIOD):
     changes = [closes[i] - closes[i - 1] for i in range(1, len(closes))]
 
     gains = [max(c, 0.0) for c in changes]
@@ -100,7 +100,7 @@ def wilders_rsi(closes: list, period: int = RSI_PERIOD) -> float:
     return 100 - (100 / (1 + rs))
 
 
-def refresh() -> list:
+def refresh():
     rows = []
     failed = []
 
@@ -132,7 +132,7 @@ def refresh() -> list:
     return rows
 
 
-def write_output(rows: list) -> None:
+def write_output(rows):
     payload = {
         "refreshed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "tickers": rows,

@@ -140,13 +140,13 @@ TICKERS = [
 ]
 
 
-def _start_epoch() -> int:
+def _start_epoch():
     """START_DATE as a UTC epoch second, for the chart API's period1 bound."""
     d = datetime.strptime(START_DATE, "%Y-%m-%d").replace(tzinfo=timezone.utc)
     return int(d.timestamp())
 
 
-def fetch_daily_closes(symbol: str) -> dict:
+def fetch_daily_closes(symbol):
     """Returns {date_iso: adjusted_close} from START_DATE onward.
 
     Uses explicit period1/period2 bounds rather than a `range` shorthand. A
@@ -181,7 +181,7 @@ def fetch_daily_closes(symbol: str) -> dict:
     return out
 
 
-def refresh() -> tuple[list, dict]:
+def refresh():
     """Returns (master_dates, {symbol: {name, closes_aligned_to_master}})."""
     fetched = {}
     failed = []
@@ -218,7 +218,7 @@ def refresh() -> tuple[list, dict]:
     return master, tickers_out
 
 
-def write_output(master: list, tickers_out: dict) -> None:
+def write_output(master, tickers_out):
     payload = {
         "refreshed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "start": START_DATE,

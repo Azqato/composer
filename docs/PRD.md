@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.32.0
+**Version:** 1.32.1
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -5325,7 +5325,7 @@ last rule was made explicit in v1.5.5 after two scripts were found loose in the 
 | Shebang `#!/usr/bin/env python3` | 15 of 20 scripts | **Missing on five:** `check_html_js.py`, `check_composer_ladder.py`, `check_live.py`, `measure_throughput.py`, `run_harness.py`. All five are invoked as `python3 script.py`, never executed directly, so nothing is broken. The drift correlated with recency until v1.25.1, when `build_sitemap.py` and `check_database_keys.py` were written back to the majority form deliberately |
 | Module docstring stating what the script does and why | Effectively universal, and unusually thorough: several carry multi-paragraph rationale including what was tried and rejected | None |
 | `pathlib` for file paths | 14 of 20 | The six without it are the older gate and measurement scripts, which mostly use `os.path`. `build_sitemap.py` and `check_database_keys.py` (v1.25.x) use `pathlib`, following the majority rather than their nearest neighbours |
-| Type hints | **4 of 20** (`update_metrics.py`, `refresh_prices.py`, `refresh_rsi.py`, and partially elsewhere) | This is a minority form, so the honest statement is that **the codebase does not use type hints**, and the four that do are the exception. Do not "restore consistency" by stripping them; do not mass-add them either |
+| Type hints | **0 of 24** (removed v1.32.1) | **The codebase does not use type hints.** This row previously read "4 of 20" and instructed the reader not to restore consistency in either direction, which described the situation accurately and resolved nothing: it made a coin flip into a convention. Resolved by owner ruling 2026-08-30 in favour of removal, matching the 21-script majority and the fact that the project runs no type checker. New scripts should not add them |
 | `argparse` | **0 of 20.** Flags are parsed by hand from `sys.argv` | Uniform. Not worth changing for the number of flags in play |
 | Data writes | Always write the `.json` and its `.js` twin in the same run | Non-negotiable. See below |
 
@@ -5807,19 +5807,34 @@ Numbered for reference. Open unless marked otherwise.
     `str()`, because its reporter concatenates the path into a message and a bare `WindowsPath`
     raises `TypeError` there. That was caught by running the gate, not by reading it.
 
-12. **OPEN, and deliberately not decided by the agent. Type hints exist in only 3 of 24 Python
+12. **CLOSED 2026-08-30 (v1.32.1), owner ruling. Type hints existed in only 3 of 24 Python
     scripts** (`refresh_prices.py`, `refresh_rsi.py`, `update_metrics.py`; the original count of
     4 of 20 was measured before three scripts were added). **Open question:** adopt them properly or
     remove them, rather than leaving a coin flip.
 
-    Left open at v1.31.2 while items 10 and 11 were closed beside it, because the two questions are
+    Left open at v1.31.2 while items 10 and 11 were closed beside it, because the two questions were
     not the same shape. Item 11 had a right answer available without the owner: an 18-to-6 majority
-    and a mechanical conversion with no judgement in it. This one has no majority to follow and both
+    and a mechanical conversion with no judgement in it. This one had no majority to follow and both
     directions cost real work in opposite directions. Retrofitting 21 scripts is hours; deleting the
     annotations in three is minutes but throws away work someone chose to do. The project ships no
-    type checker and pins itself to the Python standard library, so hints here buy documentation
-    rather than enforcement. **Recommendation, for a one-word owner ruling: remove them**, matching
-    the 21-script majority and the absence of any tool that reads them. Not acted on.
+    type checker and pins itself to the Python standard library, so hints here bought documentation
+    rather than enforcement.
+
+    **Resolved in favour of removal.** Fifteen `def` signatures across `update_metrics.py`,
+    `refresh_prices.py` and `refresh_rsi.py` lost their parameter and return annotations. There were
+    no `typing` imports and no variable annotations in function bodies, so nothing else moved.
+
+    **This reversed a standing instruction, which is why it is recorded rather than just done.** The
+    Python conventions table in Section 21 said, of these same annotations, "Do not 'restore
+    consistency' by stripping them; do not mass-add them either." That sentence described the
+    situation accurately and resolved nothing: it turned a coin flip into a convention and left the
+    next script's author with the same choice and no guidance. The row now states the position.
+
+    **One incidental effect worth knowing.** `refresh_prices.py` used `tuple[list, dict]`, which is
+    built-in generic syntax requiring Python 3.9 or newer. Removing it widens the version floor
+    slightly. Nothing in the project depended on that floor, and the workflows pin `python-version:
+    '3.x'`, so this changes nothing today. It is noted because it is the only behavioural difference
+    in an otherwise cosmetic change.
 
 13. **The curated "zoop's X (2026 Edition)" replacement plan is decided but unexecuted.** Eleven
     replacements and one removal, all with confirmed new symphony IDs already refreshed in the
