@@ -5,6 +5,46 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.31.0] - 2026-08-30
+
+### Added
+- **Roadmap V4.1: Synthetic Backtester (Extreme Future State).** Owner request: a tool that accepts a
+  pasted Composer symphony and backtests it locally against historical data, substituting calculated
+  series for tickers that did not exist yet. Documented against four screenshots of **Crescendo
+  Suite v4438c863**, a third-party desktop application supplied as the reference. Nothing was run and
+  nothing is verified against that application.
+  - **Decoded the Backtest Limiters table**, which is unlabelled in the reference UI. `Available From`
+    is each ticker's synthetic inception and the run starts at the latest of them (confirmed: the
+    report period begins 2006-02-21, exactly the top row's date). `Extension` is the trading days the
+    backtest would gain by removing that one ticker, verified by arithmetic against the gap to the
+    next row at 252 trading days per year, with five of ten gaps landing exactly and the rest within
+    about one percent. It is a marginal-cost-of-inclusion readout, and it is cheap to build because
+    it derives entirely from per-ticker start dates.
+  - **Recorded two consequences of that table.** Limiters include signal-only tickers, not just held
+    ones (the capture lists 2 holdings and 15 limiters), so a ticker read in a condition and never
+    bought still truncates the backtest. And the `Synthetic | Real Data` divider sits near 2022 while
+    limiters reach to 1926, consistent with the boundary being set by the newest input, meaning one
+    2020-vintage ETF can convert roughly fifteen years of a backtest into modelled data.
+  - **Recorded the finding that matters most:** in the captured report every severe drawdown falls in
+    the synthetic era (top four all pre-2016, nothing comparable after the divider), so the headline
+    max drawdown, longest-drawdown, Calmar and worst-year figures are properties of modelled history
+    presented identically to measured history. Set as a hard requirement on anything Atlas builds
+    here: mark synthetic-derived figures at the point of display, not only on a chart divider.
+  - **Scoped what is tractable.** Leveraged and inverse daily-reset funds are reconstructible from an
+    unleveraged parent plus a financing rate, which covers much of what the library actually holds
+    (UPRO alone is held by 2,271 symphonies). Everything else is not: proxying sector and style funds
+    needs licensed academic data, and the 3,680-ticker tail is unreachable by any proxy scheme.
+  - **Noted two ideas worth pursuing independently and far more cheaply than this item:** symphony
+    version-hash pinning, which would let `oos_date` be detected exactly rather than inferred, and
+    benchmark comparison on strategy pages, which Atlas does not show at all today.
+  - Cross-referenced to the shared daily-equity-curve schema gap (V1.20 item 16) now blocking three
+    separate items, to V2.4 Overfit Check (whose verdict must not be computed from synthetic data),
+    to V1.20 item 9's inception wording, and to the V4.0 architectural blockers.
+  - Also recorded an inference, marked as unconfirmed: the 1926-07-15 floor matches the Ken French
+    data library start and 1962 the conventional CRSP daily start, suggesting sector and style ETFs
+    are proxied by Fama-French portfolios. The 1938 cluster is unexplained. Establishing the true
+    source is listed as the first task, because it decides whether the approach is redistributable.
+
 ## [1.30.7] - 2026-08-30
 
 ### Added

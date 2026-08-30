@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.30.7
+**Version:** 1.31.0
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -4158,6 +4158,240 @@ Five external repos were reviewed as candidate forks: `composer_json_fuzz_tester
 - [ ] Evaluate `quantstats-js` separately from the Signal Miner track, it's an analytics/reporting upgrade, not a discovery tool. Would require deciding whether to (a) store daily equity-curve series per strategy (schema change) to feed it properly, or (b) adapt just its metric-formula layer against Atlas's existing summary metrics without the full tearsheet/daily-series machinery
 - [ ] Evaluate `local-maestro` as a separate "portfolio builder" feature (multi-strategy correlation/CARP analysis) rather than folding it into per-strategy tooling, it answers a different question (how strategies interact) than the other four (is this one strategy robust/improvable). Would share the daily-equity-curve schema gap with `quantstats-js`; worth solving that gap once for both if both are ever pursued
 - [ ] Any strategy-JSON mutation (insertion of discovered signals) must be reviewed carefully, these tools write modified strategy JSON meant for re-import into Composer; Atlas has never mutated strategy definitions, only displayed them
+
+### V4.1: Synthetic Backtester (Extreme Future State)
+
+**Status:** ideation. Owner request, 2026-08-30. No implementation work should begin. This sits at
+the same distance as V4.0 and shares most of its blockers, plus one of its own that is larger than
+anything in V4.0.
+
+**The ask, in the owner's words:** "create synthetic backtester, a tool that allows users to paste in
+composer symphonies and run a local backtest according to historical data, substituting popular
+tickers for calculated methods."
+
+The reference the request was made against is **Crescendo Suite** (`v4438c863`, released 2026-08-28),
+a desktop application, supplied as four screenshots of a run over "zoop's 2026 Wash Sale Master
+Symphony". Everything below is read off those screenshots. Nothing was run, and nothing here has
+been verified against the application itself or its documentation.
+
+#### What the reference application exposes
+
+**Input surface (Run Backtest tab).** A symphony is added as a row in a *Strategy Input* table with
+four columns: `Name`, `Source`, `Symphony ID`, `Version`. The captured row reads
+`283m9WIEVV8nP6po2gtF` for the ID and `0o6wSrLXb5uTUe9drOYA` for the version, with `Source` showing
+`Checking Latest...`, so the tool resolves a symphony by ID against a live upstream and pins a
+**version hash** alongside it. Symphonies can be added by Paste, File, or Browse. Bare tickers can
+be added to the same run through a separate `Add Ticker` row, so a strategy and a buy-and-hold
+comparison sit in one report. A `Benchmark` is set independently at the top (`QQQ` in the capture).
+
+**Run controls.** `Borrow Rate %` (default `10`) and `Leverage` (default `1`) are explicit numeric
+inputs, alongside checkboxes for `Leverage Sweep`, `Unified Report`, `Scrub Report`, and
+`Analyze Trade Timing`. Date range is a four-way radio: `Standard`, **`Synthetic`** (selected),
+`Default Pathing`, and `Custom` (showing `1987-01-01` to `2026-08-12`), plus an
+`Exclude dates/ranges` checkbox with its own picker.
+
+Two of these are worth naming separately. **`Synthetic` is a date-range mode, not a data source
+toggle**, which is the whole idea in one word: choosing it does not change what is being tested, it
+changes how far back the test is allowed to reach. And **`Exclude dates/ranges` is a robustness
+control in disguise**: drop 2020, re-run, and see whether the edge survives its best year. That is
+the same question V2.4 Overfit Check asks, asked from the other direction.
+
+**Report surface.** A single self-contained HTML report, headed "Generated with Crescendo v4438c863
+(released 2026-08-28) on Aug 30, 2026 for the period from Feb 21, 2006 to Aug 28, 2026". It carries
+cumulative returns vs benchmark on a log axis with a difference series, end-of-year returns as
+grouped bars, an underwater plot, a **top-drawdowns chart with live `% Threshold` and
+`Days Threshold` inputs** and a `Defaults` button, a rolling-CAGR chart against a full-period
+reference line, and a monthly-returns heatmap with `Log Scale` and `Relative to Benchmark` toggles.
+The right rail holds Returns, Drawdown, Risk-Adjusted, Volatility, Return Distribution, Trade
+Activity, End of Year Returns, Worst Drawdowns (Strategy), Worst Drawdowns (Benchmark), Holdings
+Breakdown, Contributions Breakdown, and Backtest Limiters, most behind a `Show More` expander.
+
+Metrics shown for the captured run, strategy against `QQQ`: annual return 42.64% vs 15.91%, max
+drawdown -38.01% vs -53.4%, longest drawdown 406 days, RoMaD and Calmar both 1.12 vs 0.298, alpha
+0.34, beta 0.542, correlation 0.425, R-squared 0.18, information ratio 0.813, Treynor 0.786, risk
+free rate 1.69%, Sharpe 1.34 vs 0.705, Sortino 2.2 vs 1, volatility 28.08% vs 21.98%, daily VaR
+2.76% vs 2.22%, best year 350.2% vs 53.27%, worst year -20.5% vs -38.22%, time in market 100% vs
+100%, win days 55.34% vs 55.67%.
+
+Two structural readings of that block. **Holdings Breakdown lists only `SSO` and `SDS`** (avg 69.46%
+and 30.54%, both ranging 20% to 100%, held 4,581 days at 88.7% and 3,566 days at 69.1%), which is a
+2x long and a 2x inverse on the same index, held concurrently at varying weights. Time in market of
+100% with beta 0.542 and R-squared 0.18 is the signature of a direction-switching overlay rather
+than a market exposure. And **the report separates gross contribution from net**: SSO shows 69.56%
+of gains and 67.96% of losses for a 76.68% total, SDS 30.44% and 32.04% for 23.32%. Atlas shows no
+per-holding attribution of any kind today.
+
+#### The Backtest Limiters table, decoded
+
+This is the most valuable single artifact in the capture, and its meaning is not labelled anywhere
+in the UI. It has three columns, `Ticker`, `Available From`, and `Extension`, and reads:
+
+| # | Ticker | Available From | Extension |
+|---|--------|----------------|-----------|
+| 1 | LABU | 2006-02-21 | 31 days |
+| 2 | UVXY | 2006-01-05 | 875 days |
+| 3 | SOXL | 2002-07-17 | 519 days |
+| 4 | SMH | 2000-06-19 | 3,140 days |
+| 5 | KMLM | 1988-01-15 | 6,535 days |
+| 6 | IEF | 1962-01-16 | 5,822 days |
+| 7 | TQQQ | 1938-10-18 | 180 days |
+| 8 | PSQ | 1938-01-31 | 10 days |
+| 9 | QQQ | 1938-01-17 | 2,873 days |
+| 10 | VTV | 1926-07-16 | 1 day |
+| 11-15 | XLY, XLK, FAS, TECL, XLP | 1926-07-15 | 10,077 days |
+
+The rows are sorted by `Available From` descending, which is most-limiting first, and the report
+period begins **2006-02-21**, exactly row 1's date. So `Available From` is each ticker's synthetic
+inception and the run starts at the latest of them.
+
+`Extension` is not labelled, but the arithmetic identifies it: **it is the number of trading days the
+backtest would gain if that one ticker were removed**, which is the gap to the next row down. At 252
+trading days per year, row 1 to row 2 is 47 calendar days and 31 is 32; row 2 to row 3 is 3.472
+years and 875 is 875.0; row 7 to row 8 is 0.712 years and 180 is 179.4; row 8 to row 9 is 14
+calendar days and 10 is 10; row 9 to row 10 is 11.50 years and 2,873 is 2,898; row 10 to row 11 is
+one day and the value is 1. Five of the ten gaps land exactly and the rest within about one percent.
+
+That makes the column a **marginal-cost-of-inclusion readout**: it tells the author precisely which
+single ticker is costing how much history, ranked. It is a genuinely good idea and it is cheap,
+because it is derived entirely from a list of per-ticker start dates.
+
+Two further things follow from the same table, and both matter more than the mechanic itself.
+
+**Limiters include signal-only tickers, not just held ones.** Holdings Breakdown lists two tickers.
+Backtest Limiters lists at least fifteen. The other thirteen appear because the symphony *reads*
+them in conditions. A ticker used only in an `if RSI(LABU) > x` gate, never bought, still truncates
+the whole backtest. Atlas's own strategy pages already separate signals from holdings, so this
+distinction maps onto data the project has.
+
+**One recent ticker can make most of the record synthetic.** All three charts carry a vertical
+divider labelled `Synthetic | Real Data`, and it sits near 2022, not at any per-ticker inception.
+Of the tickers listed, KMLM is the newest in reality (launched late 2020), which is consistent with
+the divider marking the point where the *last* input stops being modelled. If that reading is right,
+adding a single 2020-vintage ETF to a symphony converts roughly fifteen years of its backtest into
+modelled data, and nothing in the metric block distinguishes the two halves.
+
+#### How far the extension actually reaches
+
+Set the synthetic inceptions against the real ones. Real launch dates below are **from memory and
+must be verified before being relied on**, but the order of magnitude is not in doubt:
+
+| Ticker | Synthetic from | Real launch (approx) | Modelled years |
+|--------|----------------|----------------------|----------------|
+| TQQQ | 1938-10-18 | 2010-02 | ~71 |
+| PSQ | 1938-01-31 | 2006-06 | ~68 |
+| QQQ | 1938-01-17 | 1999-03 | ~61 |
+| VTV | 1926-07-16 | 2004-01 | ~77 |
+| FAS / TECL | 1926-07-15 | 2008-11 / 2008-12 | ~82 |
+| XLK / XLY / XLP | 1926-07-15 | 1998-12 | ~72 |
+| IEF | 1962-01-16 | 2002-07 | ~40 |
+| KMLM | 1988-01-15 | 2020-12 | ~33 |
+| SOXL | 2002-07-17 | 2010-03 | ~8 |
+| LABU | 2006-02-21 | 2015-05 | ~9 |
+
+**Inference about the underlying data, clearly marked as inference.** The 1926-07-15 floor shared by
+five sector and style funds is the start of the Ken French data library, and 1962 is the
+conventional start of the CRSP daily files. That combination suggests sector and style ETFs are
+being proxied by Fama-French industry and value portfolios, and bond funds by a separate series
+beginning in 1962. The 1938 cluster for the Nasdaq-family tickers does not correspond to either and
+is unexplained. **None of this is confirmed**, and if this idea is ever pursued the first task is to
+establish what the source actually is, because the answer decides whether the approach is
+redistributable at all.
+
+#### The finding that matters most
+
+**In the captured report, every severe drawdown falls in the synthetic era.** Worst Drawdowns
+(Strategy) reads -38.01% (2007-07-18 to 2008-10-21, 318 days), -34.88% (2011-07-06 to 2013-02-19,
+406 days), -25.08% (2008-10), -25.07% (2015-02 to 2016-05, 311 days), then -18.52%, -17.19%,
+-16.7%. The top four are all pre-2016. The real-data era after the 2022 divider contributes nothing
+comparable.
+
+So the headline `Max Drawdown -38.01%`, the `Longest DD Days 406`, the Calmar of 1.12, and the
+`Worst Year -20.5%` are all **properties of modelled history, not observed history**. The risk half
+of the report is almost entirely synthetic while the return half (best year 350.2% in 2020, +152.29%
+in 2022 against QQQ's -33.67%) straddles both. A synthetic backtester does not just extend a
+backtest; it manufactures most of the evidence a user will use to judge risk, and it presents that
+evidence in the same table, same font, same confidence as the measured part.
+
+This is not a reason to reject the idea. It is the requirement the idea has to meet: **anything Atlas
+builds here must mark synthetic-derived figures at the point of display, not only on a chart
+divider.** A max drawdown computed mostly from proxy data is a different kind of number from one
+computed from trades that happened, and the site's existing posture (Section 20, "it cannot claim
+the north star") says to admit that rather than paper over it.
+
+#### What Atlas could plausibly do, and what it cannot
+
+**The tractable part is leveraged and inverse ETFs, and only those.** A 2x or 3x daily-reset fund is
+reconstructible from its unleveraged parent by well-established arithmetic: multiply the parent's
+daily return by the factor, subtract the expense ratio pro rata, and subtract financing on the
+borrowed portion at a short rate plus a spread. That needs the parent series and one interest-rate
+series, both of which are obtainable, and it covers a large share of what Composer symphonies
+actually hold. `UPRO` alone is held by 2,271 symphonies in `database.json`, and the leveraged family
+(`TQQQ`, `UPRO`, `SPXL`, `SOXL`, `TECL`, `FAS`, `TNA`, `TMF`, and their inverses) dominates the
+library's ticker distribution. The reference app's `Borrow Rate %` input is exactly this financing
+assumption made visible, and its default of 10% is high enough that it clearly matters to the
+result.
+
+**The intractable part is everything else.** Proxying `XLK` back to 1926 requires licensed academic
+data, a mapping from each ETF to a proxy portfolio, and a defence of that mapping. Proxying an
+arbitrary single stock is not possible at all. Atlas holds **3,680 distinct tickers**; no proxy
+scheme covers that tail.
+
+**The architectural blockers are the V4.0 blockers, unchanged.** Atlas is static and browser-only
+with zero server infrastructure ([Tenet 4](#4-zero-cost-to-operate)). `data/prices.json` holds 72
+tickers over 4,184 daily closes from 2010 and is already 2.6 MB, and `database.json` at 18.7 MB is a
+standing page-weight risk. Daily closes for a few hundred tickers back to 1926 is far outside what a
+static site can ship to a browser. Client-side backtesting itself is not the obstacle, Signal Miner
+already does it; the obstacle is the data volume the synthetic idea exists to create.
+
+**The realistic shape, if it is ever pursued**, is therefore narrower than the reference app by a
+wide margin: a bounded universe of the most-held tickers, synthetic reconstruction limited to
+leveraged and inverse funds derived from parents the project already carries, an explicit and
+adjustable financing rate, a hard visual and textual separation of modelled from measured, and a
+per-ticker limiter readout copied more or less directly from the table above, since that part costs
+almost nothing and is the most honest thing in the whole report.
+
+#### Dependencies and open questions
+
+- **Blocked on the same schema gap as V4.0.** Producing any of these charts needs a daily
+  equity-curve or returns series per strategy, which `database.json` does not store. That is V1.20
+  item 16, and it gates this, `quantstats-js`, and `local-maestro` alike. Solve it once.
+- **Blocked on price coverage.** See the HF Data Library entry below. Even 1,391 tickers does not
+  reach 3,680, and none of the candidate sources supplies synthetic pre-inception history; that
+  would have to be constructed here.
+- **Overlaps V2.4 Overfit Check in both directions.** Extending history backwards is an
+  out-of-sample test, which is what V2.4 is built on. But synthetic history is *modelled* out of
+  sample, so passing it is weaker evidence than surviving a real forward year, and V2.4's
+  measurements are built on real forward years. If both are built, V2.4's verdict must not be
+  computed from synthetic data, and this needs stating in whichever ships second.
+- **Version pinning is separately useful.** The reference app tracks a symphony version hash. Atlas
+  currently infers `oos_date` as the last logic edit. If Composer exposes a version identifier,
+  edits could be detected exactly rather than inferred, which would sharpen every out-of-sample
+  measurement the project makes. That is worth investigating **independently of this item** and is
+  much cheaper than it.
+- **Benchmark comparison is also separately useful.** The reference app benchmarks everything
+  against a settable ticker. Atlas strategy pages show no benchmark at all. Also cheaper than this
+  item, and not dependent on it.
+- **Redistribution is unresolved.** Publishing derived figures computed from licensed academic or
+  vendor price data may not be permitted. This must be answered before any data is ingested, not
+  after.
+- **Attribution and prior art.** Crescendo Suite is a third party's work. Nothing in it should be
+  copied; it is documented here as a description of a problem space and a set of good ideas, in the
+  same spirit as the five candidate forks in V4.0.
+
+#### If revisited, in rough order
+
+- [ ] Confirm whether the divider reading is right, that a single recent ticker makes the whole prior
+      record synthetic. It is the finding with the largest consequence and it rests on one inference.
+- [ ] Measure the library's ticker distribution against the leveraged and inverse families, to size
+      how much of the corpus a parent-derived reconstruction would actually cover
+- [ ] Resolve the daily-equity-curve schema gap (V1.20 item 16) first, since three separate roadmap
+      items are waiting behind it
+- [ ] Decide the redistribution question before ingesting anything
+- [ ] Build the limiter readout on its own, using only existing per-ticker first-close dates from
+      `prices.json`. It needs no synthetic data, it is the most honest part of the reference report,
+      and it would immediately improve the inception wording problem in V1.20 item 9
+- [ ] Only then evaluate leveraged-ETF reconstruction, as an offline batch artifact, never as
+      on-demand server compute
 
 ### External Data and Library Resources
 
