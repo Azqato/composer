@@ -5,6 +5,39 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.32.3] - 2026-08-30
+
+### Fixed
+- **The database modal now traps focus** (closes open risk 8, the largest known gap against the
+  WCAG 2.1 AA target). Focus moves to the close button on open, Tab and Shift+Tab wrap within the
+  panel, focus that ends up outside is recaptured, and focus returns to the triggering element on
+  close. `aria-labelledby="modal-title"` added so the dialog is announced with its own heading.
+- **`#nav-root`, `.page` and `#footer-root` are set `inert` while the modal is open.** A focus trap
+  alone stops Tab but does not stop a screen reader user browsing past the modal into the 6,547
+  rows behind it. `inert` removes the background from the accessibility tree as well as the tab
+  order.
+
+### Changed
+- **Corrected a stale claim in the risk register and in DESIGN.md.** Both said the modal "sets no
+  `role="dialog"` / `aria-modal="true"`". It always set both, at `database.html` line 101. The real
+  defect was that those attributes were **unbacked**: `aria-modal="true"` promises assistive
+  technology that the rest of the page is unreachable, and it was fully reachable. That is worse
+  than omitting the attribute, because the markup asserted something false rather than saying
+  nothing. Recorded rather than quietly reworded.
+
+### Notes
+- **Caught by verification, before shipping: the focusable-element query collected 47 elements, 44
+  of them symphony links in the table behind the modal.** `'#modal-overlay ' + 'button, [href],
+  ...'` scopes only the first clause of a selector list and leaves every other clause global. The
+  forward wrap then tried to focus a nav link that `inert` had just made unfocusable and silently
+  did nothing. Each clause is now scoped individually; the query collects 3.
+- Verified in headless Edge (never Chrome) after the fix: focus lands on the close button and
+  inside the overlay, both wrap directions work with the default prevented, escaped focus is
+  recaptured, all three background regions go inert and clear again on close, focus is restored to
+  the triggering element, and the Tab handler is a no-op while the modal is closed.
+- `database.html` is the only page on the site with a modal, so this is a single-page fix with no
+  shared component to update.
+
 ## [1.32.2] - 2026-08-30
 
 ### Added

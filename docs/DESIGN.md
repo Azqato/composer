@@ -1136,10 +1136,37 @@ single `#modal-overlay` in the page, driven by `openModal()` / `closeModal()`.
 nav rather than letting it float over the panel. Closable by the X, by clicking the overlay, and by
 Escape.
 
-**Accessibility gap, recorded not fixed:** the panel does not trap focus and does not set
-`role="dialog"` / `aria-modal="true"`. Tabbing out of an open modal reaches the page behind it. This
-is the largest known gap against the Section 9 target and is listed in PRD.md Section 25 as an open
-risk.
+**Accessibility, closed v1.32.3.** The panel traps focus, and the background is made `inert`
+while it is open.
+
+**Half of the gap this paragraph used to describe never existed.** It said the panel "does not set
+`role="dialog"` / `aria-modal="true"`". It always did. What was missing was everything that makes
+those attributes true, which is the worse failure of the two: `aria-modal="true"` is a promise to
+assistive technology that the rest of the page is unreachable, and the page behind was fully
+reachable, so the markup was asserting something false rather than merely omitting something.
+
+The contract now:
+
+- `aria-labelledby="modal-title"` on the panel, so the dialog is announced with its own heading.
+- On open, the previously focused element is remembered and focus moves to the **close button**,
+  not the panel. It is the one control every modal here has, and landing on it tells a screen
+  reader user how to get out before anything else is read to them.
+- Tab and Shift+Tab wrap within the panel. Focus that is somehow outside the panel is pulled back
+  to the first control rather than left loose.
+- `#nav-root`, `.page` and `#footer-root` are set `inert` while the modal is open. **A focus trap
+  alone is not enough**: it stops Tab, but a screen reader user can still browse past the modal
+  into the table behind it. `inert` removes the background from the accessibility tree as well as
+  the tab order.
+- On close, focus returns to whatever opened the modal. Without that, the next Tab restarts at the
+  top of the document, which on this page means walking the whole nav again to get back to the row
+  you were reading.
+
+**One implementation trap, since it cost a round of testing.** The focusable-element selector must
+be scoped **per selector**, not once for the whole list. `'#modal-overlay ' + 'button, [href], ...'`
+scopes only `button` and leaves every other clause global. The first version did exactly that and
+collected **47 elements, 44 of them symphony links in the table behind the modal**; the forward
+wrap then tried to focus a nav link that `inert` had just made unfocusable, and silently did
+nothing. Scoped correctly it collects 3.
 
 ---
 

@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.32.2
+**Version:** 1.32.3
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -5805,9 +5805,29 @@ Numbered for reference. Open unless marked otherwise.
    `countSpecs()` at v1.23.0, which fixed the immediate problem, but the pattern has needed a
    matching edit three separate times (v1.18.4, v1.20.0, v1.21.1). Watch for it recurring.
 
-8. **The database modal does not trap focus** and sets no `role="dialog"` / `aria-modal="true"`.
-   Tabbing out of an open modal reaches the page behind it. This is the largest known gap against
-   the WCAG 2.1 AA target in DESIGN.md Section 9.
+8. **CLOSED 2026-08-30 (v1.32.3). The database modal did not trap focus.** Fixed: focus moves to
+   the close button on open, Tab and Shift+Tab wrap within the panel, escaped focus is recaptured,
+   the background is set `inert`, and focus returns to the trigger on close. `aria-labelledby` now
+   points at the modal heading. See DESIGN.md for the full contract.
+
+   **Half of this item was wrong as written, and the wrong half mattered.** It said the modal "sets
+   no `role="dialog"` / `aria-modal="true"`". It always set both. The real defect was that those
+   attributes were unbacked: `aria-modal="true"` promises assistive technology that the rest of the
+   page is unreachable, and it was fully reachable. That is worse than omitting the attribute,
+   because the markup asserted something false rather than saying nothing.
+
+   **A focus trap alone would not have closed this.** It stops Tab, but a screen reader user can
+   still browse past a trapped modal into the 6,547 rows behind it. `inert` on `#nav-root`,
+   `.page` and `#footer-root` is what removes the background from the accessibility tree.
+
+   **Verified in headless Edge, not by inspection**, and the verification earned its keep: the first
+   implementation's focusable-element query collected **47 elements, 44 of them symphony links
+   behind the modal**, because `'#modal-overlay ' + 'button, [href], ...'` scopes only the first
+   clause of a selector list and leaves the rest global. Scoped per clause it collects 3. Confirmed
+   after the fix: focus lands on the close button, both wrap directions work with the default
+   prevented, escaped focus is recaptured, all three background regions go inert and clear again,
+   focus is restored to the triggering element, and the handler is a no-op while the modal is
+   closed.
 
 9. **The three tool pages' inline stylesheets are undocumented** beyond the scoping note now in
    DESIGN.md Section 8. Roughly 250 lines of CSS covering a third of the site's interface has no

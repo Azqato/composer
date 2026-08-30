@@ -98,7 +98,7 @@
   <footer id="footer-root"></footer>
 
   <div id="modal-overlay" class="modal-overlay" hidden>
-    <div class="modal-panel" role="dialog" aria-modal="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="modal-header">
         <h2 id="modal-title"></h2>
         <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
@@ -1225,19 +1225,93 @@
     }
 
     // ---- Shared modal (score breakdown + Methodology) ----
+    // The panel already carried role="dialog" and aria-modal="true" before
+    // v1.32.3. What was missing was everything that makes those attributes
+    // true: Tab walked straight out into the page behind, focus never entered
+    // the modal on open, and it was never returned to the trigger on close.
+    // aria-modal="true" is a promise that the rest of the page is unreachable,
+    // so shipping it without the behaviour was worse than not setting it: it
+    // told assistive technology something false.
+
+    // Each selector is scoped individually. Writing '#modal-overlay ' + the
+    // whole comma-separated list scopes only the FIRST one and leaves the rest
+    // global, which is exactly the bug the first version of this shipped: the
+    // trap collected 47 elements, 44 of them symphony links in the table
+    // behind the modal, and the forward wrap then tried to focus a nav link
+    // that inert had just made unfocusable.
+    const FOCUSABLE = ['button', '[href]', 'input', 'select', 'textarea',
+                       '[tabindex]:not([tabindex="-1"])']
+      .map(sel => '#modal-overlay ' + sel).join(',');
+    let modalReturnFocus = null;
+
+    // Rect-based rather than offsetParent-based. offsetParent is null for
+    // position:fixed elements, and .modal-overlay is fixed, so an
+    // offsetParent check would have reported every control in the panel as
+    // invisible and produced an empty trap.
+    function modalFocusable() {
+      return Array.from(document.querySelectorAll(FOCUSABLE))
+        .filter(el => {
+          const r = el.getBoundingClientRect();
+          return (r.width > 0 || r.height > 0) && !el.disabled;
+        });
+    }
+
+    // inert does what a focus trap alone cannot: it removes the background
+    // from the accessibility tree as well as the tab order. A trap stops Tab,
+    // but a screen reader user can still browse past the modal into the 6,547
+    // rows behind it, which is the actual failure this item describes.
+    function setBackgroundInert(on) {
+      [document.getElementById('nav-root'),
+       document.querySelector('.page'),
+       document.getElementById('footer-root')].forEach(el => {
+        if (el) el.inert = on;
+      });
+    }
+
     function openModal(title, bodyHtml) {
+      modalReturnFocus = document.activeElement;
       document.getElementById('modal-title').textContent = title;
       document.getElementById('modal-body').innerHTML = bodyHtml;
       document.getElementById('modal-overlay').hidden = false;
+      setBackgroundInert(true);
+      // Focus the close button rather than the panel. It is the one control
+      // every modal here has, and landing on it tells a screen reader user
+      // how to get out before it reads them anything else.
+      const close = document.getElementById('modal-close');
+      (close || modalFocusable()[0] || document.getElementById('modal-overlay')).focus();
     }
-    function closeModal() { document.getElementById('modal-overlay').hidden = true; }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').hidden = true;
+      setBackgroundInert(false);
+      // Return focus where it came from. Without this the next Tab restarts
+      // from the top of the document, which on this page means walking the
+      // whole nav again to get back to the row you were reading.
+      if (modalReturnFocus && document.contains(modalReturnFocus)) {
+        modalReturnFocus.focus();
+      }
+      modalReturnFocus = null;
+    }
 
     document.getElementById('modal-close').addEventListener('click', closeModal);
     document.getElementById('modal-overlay').addEventListener('click', (e) => {
       if (e.target.id === 'modal-overlay') closeModal();
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !document.getElementById('modal-overlay').hidden) closeModal();
+      const overlay = document.getElementById('modal-overlay');
+      if (overlay.hidden) return;
+      if (e.key === 'Escape') { closeModal(); return; }
+      if (e.key !== 'Tab') return;
+      const f = modalFocusable();
+      if (!f.length) { e.preventDefault(); return; }
+      const first = f[0], last = f[f.length - 1];
+      // Wrap at both ends. Also catches the case where focus is somehow
+      // outside the panel entirely, by pulling it back to the first control.
+      if (!document.getElementById('modal-overlay').contains(document.activeElement)) {
+        e.preventDefault(); first.focus(); return;
+      }
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
 
     function fmtScoreValue(v) {
