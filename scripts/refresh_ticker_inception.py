@@ -52,6 +52,13 @@ OUT_JSON = BASE_DIR / "data" / "ticker_inception.json"
 OUT_JS = BASE_DIR / "data" / "ticker_inception.js"
 
 API_CALL_DELAY_SECONDS = 2
+
+# Write the file every this many tickers. The featured run is ~4 minutes and
+# would not need this, but --all is ~2 hours over 3,680 tickers, and a run that
+# only wrote at the end would lose two hours of work to one dropped connection.
+# Runs are additive, so a checkpointed file is a resumable one: rerunning skips
+# every ticker already carrying a date.
+CHECKPOINT_EVERY = 50
 USER_AGENT = "Mozilla/5.0 (compatible; composer-atlas-inception/1.0)"
 
 # The cash sleeve is a position, not a security with an inception date.
@@ -181,6 +188,10 @@ def main():
             failed.append(ticker)
         else:
             print("  %-8s %s" % (ticker, date))
+
+        if (i + 1) % CHECKPOINT_EVERY == 0:
+            write_output(existing)
+            print("  ... checkpoint at %d of %d" % (i + 1, len(todo)))
 
     write_output(existing)
     if failed:
