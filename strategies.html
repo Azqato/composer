@@ -421,7 +421,7 @@
         const ago = d === 0 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`;
         return `<span class="prov-chip${d > 14 ? ' stale' : ''}">
                   <span class="prov-dot" aria-hidden="true"></span>
-                  ${label} <strong>${formatDate(iso)}</strong>, ${ago}
+                  ${label} <strong>${formatDate(iso)}</strong> ${ago}
                 </span>`;
       }
       const refreshed = extras.refresh_date;

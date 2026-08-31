@@ -5,6 +5,14 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.37.1] - 2026-08-30
+
+### Changed
+- **Dropped the separator comma from the freshness chips** on strategy detail pages. They now read
+  "Headline metrics Aug 24, 2026 7 days ago" rather than "Aug 24, 2026, 7 days ago". The date
+  already contains a comma, so a second one two words later gave the chip two different jobs for the
+  same punctuation mark and read as a stray mark rather than a separator.
+
 ## [1.37.0] - 2026-08-30
 
 ### Fixed
