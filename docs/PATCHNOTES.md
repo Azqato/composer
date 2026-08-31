@@ -5,6 +5,60 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.35.0] - 2026-08-30
+
+### Added
+- **Categorised risk profiles on strategy pages** (V1.20 item 10, **pilot on 1 of 31, held for owner
+  sign-off**). `risk_profile` may now be an object with a required `verdict` plus optional
+  `leverage`, `backtest_limits`, `signal`, `hedge`, `concentration` and `suitability`. A reader with
+  a specific worry can find it by heading instead of reading a 734-character median blob.
+- **`scripts/check_risk_profiles.py`**, validating the shape of every strategy's `risk_profile`. A
+  mistyped category key does not crash anything: it renders that category as silently missing, which
+  is the same failure shape `check_html_js.py` exists to prevent, and no existing gate reads this
+  field. **Not wired into `deploy.yml`**; whether it becomes a fifth gate is an open question for the
+  owner rather than a side effect of a content edit.
+
+### Changed
+- **The roadmap's four categories were not used, because they were never checked against our own
+  text.** They came from a screenshot of a comparable tool. Reading all 31 strings shows they are
+  each attested but cover about a third of what is written, and miss the two largest themes: the
+  aggressiveness verdict opens **31 of 31** strings and the backtest window is discussed in **20 of
+  31**, and neither had a bucket. Six data-derived categories shipped instead.
+- **Bare statistics are dropped from risk prose; comparisons are kept.** The metrics table owns the
+  numbers.
+
+### Fixed
+- **The duplicated statistics had already gone stale, which is what settles the question.**
+  `four-horsemen`'s prose claimed "Sharpe 2.18, Calmar 3.68, and standard deviation of 50.6%" while
+  the live values were **2.15, 3.60 and 50.8%**; its max drawdown read 45.4% against an actual 45.3%,
+  and the Holy Grail figure it cited as 62.3% had become 62.6%. `update_metrics.py` refreshes metrics
+  nightly and cannot rewrite prose, so every duplicated figure drifts silently.
+- **The pilot corrects a claim the original implied.** The comparison to Holy Grail and TQQQ For The
+  Long Term did not run over a shared window: `four-horsemen` is **3,677** trading days against
+  **3,741** for both. The rewrite says the windows are "close rather than identical".
+
+### Notes
+- **Categories are ordered by measured frequency, not severity.** Ranking them by danger would be a
+  judgement this site has no grounds to make.
+- **An absent category states itself** rather than being omitted, because a missing heading cannot be
+  told apart from an unwritten one.
+- **Both shapes render side by side by design.** 1 strategy is an object and 30 are still strings,
+  and a string renders exactly as it did before this item existed.
+- **`update_metrics.py` needed no change**, verified: it mutates named fields in place and re-dumps
+  the whole object, so the reshaped field survives the nightly job.
+- **The validator was tested against five deliberate faults before being trusted** (mistyped key,
+  missing verdict, empty category, wrong value type, null field). All five caught. A checker that has
+  never failed proves nothing.
+- **Verified in headless Edge** (never Chrome): the pilot renders a verdict badge and all five
+  categories with no legacy box; `holy-grail` renders the legacy box and no categories; and a
+  synthetic strategy carrying only two of five categories renders **5 categories, 3 marked absent,
+  each with its explicit line and zero blank bodies**. That last path is not exercised by the pilot
+  data, so it was tested against an injected fixture rather than left unproven.
+- One test defect found and fixed: the first harness guarded the absent-category check on
+  `typeof riskProfileHtml === 'function'`, which is false because the renderer is not global, so the
+  check **passed by doing nothing**. Rewritten to inject a fixture between `data/strategies.js` and
+  the page's own script, so the real renderer handles it.
+
 ## [1.34.1] - 2026-08-31
 
 ### Added

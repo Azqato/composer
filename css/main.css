@@ -1085,6 +1085,61 @@ p { color: var(--color-secondary); }
 }
 
 /* ---- Risk profile box ---- */
+/* ---- Categorised risk profile (strategy detail pages, V1.20 item 10) ----
+   .risk-box below is the pre-item-10 single-string form and is still live: the
+   rewrite ships one strategy at a time behind an owner sign-off, so both shapes
+   render side by side by design.
+
+   Categories are laid out as a plain stack, not cards or a grid. A grid would
+   put absent categories in visual parity with present ones, and roughly half of
+   these are absent on any given strategy: "no hedge leg" is worth stating but
+   is not worth the same weight as a paragraph describing one. .is-absent dims
+   the row instead, so a reader scanning for a real risk skips it. ---- */
+.risk-verdict {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  margin-bottom: 12px;
+}
+.risk-cats { display: flex; flex-direction: column; gap: 2px; }
+.risk-cat {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+}
+.risk-cat-label {
+  display: block;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-disabled);
+  margin-bottom: 4px;
+}
+.risk-cat-body {
+  font-size: 0.875rem;
+  color: var(--color-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+/* Dimmed, never hidden. Omitting the row would leave a reader unable to tell
+   "this strategy has no hedge" from "nobody wrote about hedging", which are
+   different claims. */
+.risk-cat.is-absent .risk-cat-body { color: var(--color-disabled); font-style: italic; }
+
+.risk-suit {
+  font-size: 0.8125rem;
+  color: var(--color-secondary);
+  line-height: 1.7;
+  margin-top: 12px;
+}
+
 .risk-box {
   background: var(--color-surface);
   border: 1px solid var(--color-border);

@@ -975,6 +975,29 @@ full entry rather than a name the reader has to go and look up.
 
 ---
 
+### Categorised Risk Profile (strategy detail pages, V1.20 item 10)
+
+Replaces the single `.risk-box` blob with a verdict badge and a stack of named categories. **Both
+forms are live at once** while the rewrite proceeds one strategy at a time, so `.risk-box` is not
+dead code.
+
+**A plain stack, not cards or a grid.** Roughly half the categories are absent on any given strategy.
+A grid would put "No hedge leg" in visual parity with a paragraph describing a real one, which is the
+wrong weighting; `.is-absent` dims the row instead, so a reader scanning for a real risk skips past
+it.
+
+**Absent categories are dimmed, never hidden.** Omitting the row would leave a reader unable to tell
+"this strategy has no hedge" from "nobody wrote about hedging". Those are different claims and only
+one of them is information.
+
+**Categories are ordered by measured frequency across the 31 strategies, not by severity.** Ordering
+by danger would be a judgement the site has no grounds to make, and it is the same rule that stops the
+outlier panel becoming a score.
+
+**The verdict is a bordered badge rather than a coloured one.** All 31 strategies open with
+"Aggressive", "Extremely Aggressive" or "Conservative", and colouring that scale would turn a
+self-description into a rating.
+
 ### Assets Section (strategy detail pages, V1.20 item 6)
 
 Between the risk profile and the K-1 notices. What the logic can reach against what it is holding

@@ -226,12 +226,53 @@
           </section>`
         : '';
 
-      const riskProfile = s.risk_profile
-        ? `<section class="mb-10">
+      // Item 10. The categories are derived from the 31 existing strings, not from
+      // the comparable-tool screenshot the roadmap cited. That screenshot's four
+      // (leverage, signal, hedge, concentration) are each real, but they account
+      // for about a third of what is actually written: the aggressiveness verdict
+      // opens 31 of 31 strings and the backtest window is discussed in 20 of 31,
+      // and neither had a bucket. Counts per category are in docs/PRD.md item 10.
+      //
+      // ORDER IS BY MEASURED FREQUENCY, not by severity. Ranking these by how
+      // dangerous they are would be a judgement the site does not have grounds to
+      // make, and the outlier panel's rule against turning arithmetic into a score
+      // applies just as well to prose.
+      const RISK_CATEGORIES = [
+        ['leverage', 'Leverage and decay',
+         'No leveraged or decaying instruments: this strategy holds only unleveraged assets.'],
+        ['backtest_limits', 'What the backtest cannot tell you',
+         'No window caveats recorded for this strategy.'],
+        ['signal', 'Signal and whipsaw',
+         'No signal-design risk recorded for this strategy.'],
+        ['hedge', 'Hedge',
+         'No hedge leg: this strategy has no inverse or volatility position to cushion a drawdown.'],
+        ['concentration', 'Concentration',
+         'No concentration risk recorded for this strategy.'],
+      ];
+
+      // Accepts both shapes on purpose. The rewrite ships one strategy at a time
+      // behind an owner sign-off, so an object and 30 strings coexist by design
+      // rather than by accident, and a string must keep rendering exactly as it
+      // did before this item existed.
+      function riskProfileHtml(rp) {
+        if (!rp) return '';
+        const body = typeof rp === 'string'
+          ? `<div class="risk-box">${rp}</div>`
+          : `${rp.verdict ? `<div class="risk-verdict">${rp.verdict}</div>` : ''}
+             <div class="risk-cats">
+               ${RISK_CATEGORIES.map(([key, label, absent]) => `
+                 <div class="risk-cat${rp[key] ? '' : ' is-absent'}">
+                   <span class="risk-cat-label">${label}</span>
+                   <p class="risk-cat-body">${rp[key] || absent}</p>
+                 </div>`).join('')}
+             </div>
+             ${rp.suitability ? `<p class="risk-suit">${rp.suitability}</p>` : ''}`;
+        return `<section class="mb-10">
             <h2 style="color:var(--color-primary);margin-bottom:16px">Risk Profile</h2>
-            <div class="risk-box">${s.risk_profile}</div>
-          </section>`
-        : '';
+            ${body}
+          </section>`;
+      }
+      const riskProfile = riskProfileHtml(s.risk_profile);
 
       // ---- V1.20 items 4, 5 and 7: everything below reads the build-time join.
       // `extras` is {} when data/strategy_extras.js failed to load, and every

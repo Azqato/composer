@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.34.1
+**Version:** 1.35.0
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -1361,7 +1361,7 @@ All fields in `data/strategies.json`. Both `strategies.json` and `strategies.js`
 | `ai_summary` | string[] | Recommended | Claude-authored analysis. Each string becomes a `<p>` inside the AI Summary box, rendered above How It Works. See "Generating the AI Summary" in Section 11. |
 | `how_it_works` | string[] | Recommended | Paragraphs explaining strategy logic. Each string becomes a `<p>` tag. |
 | `signals` | object[] | Recommended | Signals used. Each: `{ "name": string, "tag": string, "description": string }`. `tag` must match a glossary slug. |
-| `risk_profile` | string | Recommended | Risk summary for the strategy detail page. |
+| `risk_profile` | string **or object** | Recommended | Risk summary for the strategy detail page. **Two shapes are valid (V1.20 item 10).** A string is the original single-blob form. An object carries `verdict` (required) plus optional `leverage`, `backtest_limits`, `signal`, `hedge`, `concentration` and `suitability`. **An absent category must be an absent key, not an empty string**: the page prints an explicit "no hedge leg" line for a missing key. Validated by `scripts/check_risk_profiles.py`. |
 | `author_note` | string | Optional | Curator note (plain text, no HTML). Displayed on the detail page when present. |
 | `tldr` | object | Optional (**V1.20 item 13**) | `{ "thesis": string, "works_well_in": string[], "struggles_in": string[] }`. Rendered as the TL;DR card above everything else. **Both arrays are required when the field is present**: the opposed columns are the reason the format exists |
 | `assumptions` | object | Optional (**V1.20 item 14**) | `{ "market": string[], "structural": string[] }`. Market and macro beliefs against technical and structural ones. Either array may be empty; the column is then omitted |
@@ -3310,10 +3310,65 @@ files already in the repo.
 
 **Tier 2: restructuring content that already exists.**
 
-- [ ] **10. Split `risk_profile` into named categories.** It is one string today, up to 1,130
-  characters. The screenshot's grouping (Leverage and Structural, Whipsaw and Signal, Hedge,
-  Concentration) is the right shape because it lets a reader find the failure family they care
-  about. Schema change plus a rewrite of 31 existing strings.
+- [~] **10. Split `risk_profile` into named categories. Pilot shipped v1.35.0 on 1 of 31, held
+  for owner sign-off before the remaining 30.** The renderer, schema, validator and CSS are done;
+  only the prose rewrite remains.
+
+  **The screenshot's four categories were not used, because they were never checked against our own
+  text.** Section 14 records the source of the proposed grouping as a screenshot of a comparable
+  tool, adopted as "the right shape". Reading all 31 strings shows the four are each genuinely
+  attested but cover roughly a third of what is written, and miss the two largest themes outright:
+
+  | Theme | Count | In the screenshot's four |
+  | --- | --- | --- |
+  | Opens with an aggressiveness verdict | **31 of 31** | no |
+  | Recites Sharpe / Calmar / std dev / ARR | **29 of 31** | no |
+  | Leverage, decay, roll cost | **23 of 31** | yes |
+  | Discusses the backtest window | **20 of 31** | no |
+  | Signal design, whipsaw, missing gate | 13 of 31 | yes |
+  | Hedge instrument named | 12 of 31 | yes |
+  | Concentration | 8 of 31 | yes |
+  | Suitability advice | 5 of 31 | no |
+  | Complexity / auditability | 5 of 31 | no |
+
+  **Six categories are shipped instead**, derived from those counts: `verdict`, `leverage`,
+  `backtest_limits`, `signal`, `hedge`, `concentration`, plus an optional `suitability` tail.
+  Complexity folds into `signal`, because the logic tree **is** the signal design.
+
+  **Categories are ordered by measured frequency, not by severity.** Ranking them by danger would be
+  a judgement this site has no grounds to make, and it is the same rule that keeps the outlier panel
+  from turning its arithmetic into a score.
+
+  **An absent category states itself** ("No hedge leg: this strategy has no inverse or volatility
+  position to cushion a drawdown") rather than being omitted, because a missing heading cannot be
+  told apart from an unwritten one.
+
+  **The duplicated statistics had already gone stale, which settles the question of keeping them.**
+  `four-horsemen`'s prose said "Sharpe 2.18, Calmar 3.68, and standard deviation of 50.6%" while the
+  live values were **2.15, 3.60 and 50.8%**; its max drawdown read 45.4% against an actual 45.3%, and
+  the Holy Grail figure it cited as 62.3% had become 62.6%. `update_metrics.py` refreshes the metrics
+  nightly and cannot rewrite prose, so every duplicated figure drifts. Bare statistics are therefore
+  dropped and the metrics table owns them; **comparisons are kept**, because "meaningfully lower than
+  Holy Grail at comparable annualised return" is a claim the table cannot make.
+
+  **One correction the rewrite had to make:** the original implied the comparison ran over a shared
+  window. It does not. `four-horsemen` is 3,677 trading days against 3,741 for both Holy Grail and
+  TQQQ For The Long Term, so the pilot says the windows are "close rather than identical".
+
+  **Both shapes render side by side by design** while the rewrite proceeds one strategy at a time, so
+  a string keeps rendering exactly as it did before this item existed.
+
+  **`scripts/update_metrics.py` needed no change**, verified: it mutates named fields in place on the
+  loaded dict and re-dumps the whole object, so the reshaped field survives the nightly job.
+
+  **Open question for the owner, deliberately not decided:** whether `check_risk_profiles.py` becomes
+  a fifth gate in `deploy.yml`. It catches a failure no existing gate can see, a mistyped category key
+  renders as silently missing content, but adding a deploy gate changes what can block a release and
+  that is not a call to make as a side effect of a content edit.
+- [ ] **10a. Rewrite the remaining 30 `risk_profile` strings.** Blocked on sign-off of the
+  `four-horsemen` pilot. Includes deleting the `Attribution: created by ...` sentence from
+  `super-semiconductors` and `soxx-group`: **`author_note` already carries the identical text on
+  both**, so these are pure duplication in the wrong field rather than content to relocate.
 - [ ] **11. Convert `signals` cards into a Signal Types table.** Add `type` (Threshold, Trend,
   Selection) and `indicator` (RSI(10), Price(200), etc.) columns to the existing `name`, `tag`,
   `description`. Deduplicate repeated signals with a `x2` badge, as the screenshot does. The 31
