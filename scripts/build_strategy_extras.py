@@ -5,6 +5,7 @@ and to the K-1 database, and write the result as a small file the strategy
 pages can load directly.
 
     data/strategies.json  +  data/database.json  +  data/k1.json
+      +  data/ticker_inception.json
         -> data/strategy_extras.json  +  data/strategy_extras.js
 
 Why a build step and not a browser join. `data/database.json` is 6,669 entries
@@ -40,6 +41,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 STRATEGIES = BASE_DIR / "data" / "strategies.json"
 DATABASE = BASE_DIR / "data" / "database.json"
 K1 = BASE_DIR / "data" / "k1.json"
+INCEPTION = BASE_DIR / "data" / "ticker_inception.json"
 OUT_JSON = BASE_DIR / "data" / "strategy_extras.json"
 OUT_JS = BASE_DIR / "data" / "strategy_extras.js"
 
@@ -76,6 +78,7 @@ def build():
     strategies = load(STRATEGIES)
     database = load(DATABASE)
     k1 = load(K1)["tickers"]
+    inception = load(INCEPTION)["tickers"] if INCEPTION.exists() else {}
 
     by_id = {}
     for row in database:
@@ -132,11 +135,48 @@ def build():
         for key in CARRY:
             entry[key] = row.get(key)
         entry["holdings"] = {t: holdings[t] for t in tickers}
+        entry["backtest_floor"] = backtest_floor(tickers, inception)
         entry["k1_holdings"] = k1_holdings
         entry["etn_holdings"] = etn_holdings
         extras[s["slug"]] = entry
 
     return strategies, extras, sorted(unknown)
+
+
+def backtest_floor(tickers, inception):
+    """The earliest date this strategy could possibly have been backtested from.
+
+    A strategy cannot be tested over a period in which one of its holdings did
+    not exist, so the latest inception date among its holdings is a hard floor
+    on the window. Reported as a BOUND, never as the cause of the window's
+    actual length, because measurement says those are different things:
+
+      Across the 31 featured strategies, not one backtest starts before its
+      floor, so the bound is real. But not one starts AT it either. 18 of 31
+      begin within a year of it and the limiting holding genuinely explains
+      their window; the other 13 begin well after, up to 5.6 years late for
+      `zoops-kmlm-switcher-2026`. V1.20 item 9 specified the wording "14.8
+      years, limited by UVXY" for every strategy. That sentence is true for
+      roughly half of them and asserts a false cause for the rest.
+
+    `dated` vs `total` is carried so the page can refuse to name a limiter it
+    cannot stand behind: one undated holding could be the real floor, and a
+    floor computed from a subset would be silently too early.
+    """
+    dated = sorted(((inception[t], t) for t in tickers if inception.get(t)), reverse=True)
+    out = {"dated": len(dated), "total": len(tickers)}
+    if not dated:
+        out["date"] = None
+        out["tickers"] = []
+        return out
+    floor = dated[0][0]
+    # Ties are kept rather than collapsed to one. Whole leveraged families
+    # launched on the same day (SOXL and SOXS both 2010-03-11, GDXU and GDXD
+    # both 2020-12-03), and picking one arbitrarily would name a different
+    # ticker on a rerun for no reason a reader could see.
+    out["date"] = floor
+    out["tickers"] = sorted(t for d, t in dated if d == floor)
+    return out
 
 
 def payload(extras):
@@ -165,12 +205,21 @@ def main():
         if (e.get("top_five_percent_day_contribution") or 0) > 1
     )
 
+    floored = sum(1 for e in extras.values() if e["backtest_floor"]["date"])
+    partial = sorted(k for k, e in extras.items()
+                     if e["backtest_floor"]["dated"] < e["backtest_floor"]["total"])
+
     print("Joined %d of %d featured strategies, 0 misses." % (len(extras), len(strategies)))
+    print("  with an inception floor:  %d" % floored)
     print("  holding a K-1 issuer: %d" % k1_count)
     print("  holding an ETN:       %d" % etn_count)
     print("  best 5%% of days above 100%% of total return: %d" % len(outlier))
     if no_oos:
         print("  no oos_date (the panel renders as \"not recorded\"): %s" % ", ".join(no_oos))
+    if partial:
+        print("  incomplete inception coverage, so no limiter is named on these")
+        print("    pages (%d): %s" % (len(partial), ", ".join(partial)))
+        print("    Fix: run scripts/refresh_ticker_inception.py")
     if unknown:
         print("  held but not in the K-1 database (%d): %s" % (len(unknown), ", ".join(unknown)))
         print("    Expected for individual stocks. Anything here that is a fund is a real gap:")

@@ -5,6 +5,68 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.33.0] - 2026-08-30
+
+### Added
+- **Backtest-window explainer on strategy pages** (closes V1.20 item 9). A third card in Beyond the
+  Backtest giving the window's length, the earliest date it could have started, and the holding that
+  sets that date: "14.9 yrs, earliest possible start 2011-10-04", limited by UVXY.
+- **`data/ticker_inception.json` and `.js`**, one true first-trade date per ticker, written by the
+  new `scripts/refresh_ticker_inception.py` from Yahoo's `meta.firstTradeDate` and joined at build
+  time by `build_strategy_extras.py`. **105 of 105 featured tickers dated, in 2 KB.** Inception dates
+  do not change, so it is fetched once and refreshed rarely. Runs are additive, so extending it to
+  the full database later grows the file instead of replacing it.
+
+### Changed
+- **The card does not say what the roadmap specified it should say, because measurement contradicted
+  the premise.** The spec asked for "14.8 years, limited by UVXY" on every strategy, which presumes
+  the limiting holding explains the window's length. Across all 31 featured strategies: **not one
+  backtest starts before its floor**, so the bound is real, but **not one starts at it either**. 18
+  of 31 begin within a year of the floor, where the holding genuinely explains the window. The other
+  13 begin well after, up to **5.6 years late**. The specified sentence would have asserted a false
+  cause on 13 of 31, so the copy switches on the measured headroom, and the second branch says the
+  more useful thing: the start date was chosen, and start dates are among the easiest things to fit
+  a result to.
+- **`prices.json` was the specified data source and was not used.** It starts at 2010-01-04, so
+  **48 of its 72 tickers report that date as their first close** because it is the file's own start
+  date rather than theirs. It cannot tell "listed in 2010" from "listed in 1993": SPY would have
+  been reported as starting 2010 when it launched 1993-01-29, and QQQ as 2010 when it launched
+  1999-03-10. Hedging the copy with "at least" does not repair a date that is off by 17 years.
+- **Corrected a stale figure in V1.20 item 9 itself.** It claimed `prices.json` "covers 72 of the 105
+  tickers the featured strategies hold". That conflated *72 tickers in the file* with *72 of the
+  105*. The real overlap is **44 of 105**: 28 of the file's tickers are Signal Miner universe entries
+  the featured strategies never touch.
+
+### Fixed
+- **`datetime.fromtimestamp` raises `[Errno 22] Invalid argument` on Windows for a negative epoch**,
+  and Yahoo returns a negative `firstTradeDate` for anything listed before 1970. KO is the featured
+  set's only pre-1970 ticker (-252322200, 1962-01-02) and it failed exactly this way on the first
+  run, reported as a fetch failure, which reads like a network problem rather than a date-handling
+  bug. Replaced with epoch arithmetic on `timedelta`, which has no such floor on any platform.
+  **Caught on 1 ticker of 105; across the full database it would have silently dropped every legacy
+  stock.**
+
+### Notes
+- **Adding the 61 missing tickers to `prices.json` was considered and rejected** (owner question).
+  It fixes the coverage gap but not the 2010 floor, and it charges the cost to the wrong page:
+  `prices.json` exists for Signal Miner, +61 tickers is roughly +1.9 MB on every Signal Miner load
+  for tickers its universe does not use, and this feature needs **one date per ticker (~25 bytes),
+  not 4,188 closes (~32 KB)**. `strategies.html` also loads no price data today, so it would have
+  added a multi-megabyte dependency to a page carrying a 30 KB join.
+- **Ties are kept rather than collapsed to one ticker.** Whole leveraged families launched on the
+  same day (SOXL and SOXS both 2010-03-11, GDXU and GDXD both 2020-12-03), so picking one would
+  change between rebuilds for no reason a reader could see.
+- **Incomplete coverage suppresses the card rather than guessing.** One undated holding could be the
+  true floor, so a floor computed from a subset would be silently too early. `dated` and `total` are
+  carried in the join and the card renders only when they agree. All 31 featured strategies have
+  complete coverage today; the build reports any that do not.
+- Headroom is computed in the browser, like the out-of-sample panel, so it does not go stale a day
+  after the build.
+- **Verified in headless Edge** (never Chrome) against all 31 featured strategies: 31 floors present,
+  **0 with a backtest starting before its floor**, 0 malformed, an 18/13 split between the two copy
+  branches, and three pages rendered end to end covering both branches. QQQ reads 1999-03-10 on
+  `ob-os-staple-bonds`, the date `prices.json` would have reported as 2010-01-04.
+
 ## [1.32.3] - 2026-08-30
 
 ### Fixed

@@ -975,10 +975,13 @@ full entry rather than a name the reader has to go and look up.
 
 ---
 
-### Reality Check Cards (strategy detail pages, V1.20 items 4 and 5)
+### Reality Check Cards (strategy detail pages, V1.20 items 4, 5 and 9)
 
-The Beyond the Backtest section, after the risk profile. Two cards side by side above 720px and
-stacked below it.
+The Beyond the Backtest section, after the risk profile. Two columns above 720px, stacked below it.
+**Three cards as of v1.33.0**, so on a wide screen the third wraps to a second row on its own. That
+is deliberate: a third column would drop each card under 300px and `.rc-value` at 1.75rem is sized
+for the number to be the argument, not to be squeezed. The grid is left at two columns rather than
+made to fit.
 
 ```css
 .rc-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
@@ -994,6 +997,17 @@ stacked below it.
 **`.rc-value` is 1.75rem because the number is the argument.** The paragraph below it is the
 footnote, not the other way round. This is the same reasoning as the oversized verdict on `/k1`,
 one size down because there are two of these on a page rather than one.
+
+**The backtest-window card (v1.33.0) carries no `.warn` and no colour at all.** It states a length,
+the earliest date the window could have started, and the holding that sets that date. Both of its
+copy branches describe something normal: a window the data forced, or a start date somebody chose.
+Neither is a failure, and colouring the second one would have turned a disclosure into an accusation.
+
+**Its copy switches on measured headroom, not on a rule of thumb.** Under a year of headroom it says
+the window is about as long as it could be and names the limiting holding; over a year it says the
+data allowed a longer test than was run. The split is 18 to 13 across the 31 featured strategies.
+The card is **suppressed entirely** when any holding lacks an inception date, because one undated
+holding could be the true floor and a floor computed from a subset is silently too early.
 
 **`.rc-value.warn` is the only conditional colour**, applied when outlier dependence exceeds 100%,
 which is true for 25 of the 31 featured strategies. Yellow rather than pink: it is a fact the reader

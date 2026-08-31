@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.32.3
+**Version:** 1.33.0
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -2336,7 +2336,7 @@ numbering schemes; they answer different questions.
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
-| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1, 2, 3, 4, 5, 7, 8, 12, 17 shipped; 13, 14, 15 piloted on 1 of 31 and **blocked on the item 19 structure sign-off**; 5 open | v1.30.0 (partial) |
+| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1, 2, 3, 4, 5, 7, 8, 9, 12, 17 shipped; 13, 14, 15 piloted on 1 of 31 and **blocked on the item 19 structure sign-off**; 4 open | v1.33.0 (partial) |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -3186,13 +3186,58 @@ files already in the repo.
 
   **The dot turns yellow past 14 days.** That is long enough to mean the nightly refresh has stopped
   running rather than merely slipped over a weekend.
-- [ ] **9. Backtest-window explainer.** State why a window is the length it is, naming the limiting
-  holding: "14.8 years, limited by UVXY (inception October 2011)". Inception can be derived as a
-  lower bound from `prices.json` by taking each ticker's first non-null close, which detects any
-  ticker launched after the 2010 window opens (24 of the 72 covered). **It cannot detect anything
-  older than 2010**, and `prices.json` covers 72 of the 105 tickers the featured strategies hold, so
-  the copy must say "at least" rather than asserting an exact inception, or a real source for
-  inception dates is needed first.
+- [x] **9. Backtest-window explainer (done v1.33.0).** A third card in Beyond the Backtest, giving
+  the window's length, the earliest date it could have started, and the holding that sets that date.
+
+  **`prices.json` was the specified source and it is the wrong instrument. It was not used.** The
+  original spec proposed deriving inception as a lower bound from each ticker's first non-null
+  close, and hedging the copy with "at least" to cover the gap. Two measurements killed that:
+
+  1. **Coverage was overstated in this very item.** It claimed `prices.json` "covers 72 of the 105
+     tickers the featured strategies hold". That conflated *72 tickers in the file* with *72 of the
+     105*. The real overlap is **44 of 105**, because 28 of the file's tickers are Signal Miner
+     universe entries the featured strategies never touch.
+  2. **The 2010-01-04 floor makes the derived date wrong far more often than right.** Measured:
+     **48 of the file's 72 tickers report 2010-01-04 as their first close**, which is the file's own
+     start date, not theirs. It cannot tell "listed in 2010" from "listed in 1993". SPY would have
+     been reported as starting in 2010 when it launched 1993-01-29, and QQQ as 2010 when it launched
+     1999-03-10. A readout built on it would have been confidently wrong about the exact thing it
+     exists to state, and no amount of "at least" hedging repairs a date that is off by 17 years.
+
+  **Adding the 61 missing tickers to `prices.json` was considered and rejected** (owner question,
+  2026-08-30). It fixes only the first problem and not the second, and it charges the cost to the
+  wrong page: `prices.json` exists for Signal Miner, +61 tickers is roughly +1.9 MB on every Signal
+  Miner load for tickers its universe does not use, and the feature needs **one date per ticker
+  (~25 bytes), not 4,188 closes (~32 KB)**, a roughly 1,300x overpay. `strategies.html` also loads
+  no price data at all today, so this would have added a multi-megabyte dependency to a page
+  carrying a 30 KB join, reversing the V1.16 page-weight work.
+
+  **Built instead: `data/ticker_inception.json`**, one true first-trade date per ticker from Yahoo's
+  `meta.firstTradeDate`, written by `scripts/refresh_ticker_inception.py` and joined at build time by
+  `build_strategy_extras.py`. **105 of 105 featured tickers dated, in 2 KB.** Inception dates do not
+  change, so the file is fetched once and refreshed rarely, and runs are additive so `--all` extends
+  it rather than replacing it.
+
+  **The specified sentence asserts a false cause on 13 of 31 strategies, so it was not shipped.**
+  The spec's wording, "14.8 years, limited by UVXY", presumes the limiting holding explains the
+  window's length. Measured against all 31 featured strategies:
+
+  - **Not one backtest starts before its floor.** The bound is real and both datasets agree.
+  - **Not one starts at it either.** 18 of 31 begin within a year of the floor, where the limiting
+    holding does explain the window. The other 13 begin well after, up to **5.6 years late** for
+    `zoops-kmlm-switcher-2026`.
+
+  So the card switches copy on the measured headroom. Under a year it says the window is about as
+  long as it could be and names the holding. Over a year it says the opposite and says why that
+  matters: **the start date was chosen, and start dates are among the easiest things to fit a result
+  to.** That second case is a more useful disclosure than the one originally specified, and it only
+  became visible because the exact-inception source made the comparison possible.
+
+  **Ties are kept, not collapsed.** Whole leveraged families launched on one day (SOXL and SOXS both
+  2010-03-11, GDXU and GDXD both 2020-12-03); naming one arbitrarily would change between rebuilds
+  for no visible reason. **Incomplete coverage suppresses the card** rather than guessing: one
+  undated holding could be the true floor, so `dated` and `total` are carried and the card renders
+  only when they agree.
 
 **Tier 2: restructuring content that already exists.**
 
@@ -4442,9 +4487,11 @@ almost nothing and is the most honest thing in the whole report.
 - [ ] Resolve the daily-equity-curve schema gap (V1.20 item 16) first, since three separate roadmap
       items are waiting behind it
 - [ ] Decide the redistribution question before ingesting anything
-- [ ] Build the limiter readout on its own, using only existing per-ticker first-close dates from
-      `prices.json`. It needs no synthetic data, it is the most honest part of the reference report,
-      and it would immediately improve the inception wording problem in V1.20 item 9
+- [x] Build the limiter readout on its own (**done v1.33.0**). It needed no synthetic data and it is
+      the most honest part of the reference report. **It did not use `prices.json`**: that file's
+      2010-01-04 floor makes 48 of its 72 tickers report the file's own start date as their
+      inception. `data/ticker_inception.json` was built instead, and it closed V1.20 item 9 outright
+      rather than merely improving its wording
 - [ ] Only then evaluate leveraged-ETF reconstruction, as an offline batch artifact, never as
       on-demand server compute
 
@@ -4586,8 +4633,11 @@ dataset documentation; the figures above come off that page.
 closes from 2010-01-04, while `data/database.json` holds **3,680 distinct tickers** across the
 library. That 72-ticker ceiling is already documented as a hard blocker in two places: **V2.4
 Overfit Check Tier 3**, where only 1,112 symphonies (16.7%) hold exclusively covered tickers, and
-**V1.20 item 9**, where the backtest-inception wording has to say "at least" precisely because
-`prices.json` cannot see far enough back to assert a date. A 1,391-ticker source reaching to 2002
+**V1.20 item 9**, which as originally specified had to say "at least" precisely because
+`prices.json` cannot see far enough back to assert a date. **That constraint is gone as of v1.33.0**:
+`data/ticker_inception.json` holds exact first-trade dates for all 105 featured tickers in 2 KB, so
+the readout asserts real dates. The Tier 3 coverage problem below is untouched by it, because
+inception dates are not price history. A 1,391-ticker source reaching to 2002
 would move both of those, and 2002 predates the whole leveraged-ETF era that the 2010 start was
 chosen to cover (see the v1.20.1 note on `START_DATE`).
 

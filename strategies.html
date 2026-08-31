@@ -508,10 +508,65 @@
                until it is.`}</p>
         </div>`;
 
-      const beyondHtml = outlierCard
+      // Item 9. The window's length, and whether the data forced it.
+      //
+      // A strategy cannot be backtested through a period in which one of its
+      // holdings did not trade, so the latest inception date among its holdings
+      // is a hard floor on the window. That floor is a real bound: across the 31
+      // featured strategies not one backtest starts before it.
+      //
+      // It is NOT the cause of the window's length, and this card refuses to say
+      // it is. Not one of the 31 starts AT its floor either. 18 begin within a
+      // year of it, where the limiting holding genuinely explains the window; the
+      // other 13 begin well after, up to 5.6 years late. The roadmap specified the
+      // single sentence "14.8 years, limited by UVXY" for every strategy, which
+      // would have asserted a false cause on 13 of 31, so the copy switches on the
+      // measured headroom instead.
+      //
+      // Dates come from data/ticker_inception.json (Yahoo's firstTradeDate), not
+      // from prices.json: that file starts at 2010-01-04, so 48 of its 72 tickers
+      // report the file's own start date as their inception and it cannot tell
+      // 1993 from 2010.
+      const floor = extras.backtest_floor;
+      const floorComplete = floor && floor.date && floor.dated === floor.total;
+      let windowCard = '';
+      if (floorComplete && typeof s.backtest_days === 'number') {
+        const yrs = s.backtest_days / 252;
+        // Measured in the browser like the out-of-sample panel, so the headroom
+        // does not go stale a day after the build.
+        const maxYrs = daysSince(floor.date) / 365.25;
+        const headroom = maxYrs - yrs;
+        const names = floor.tickers.join(' and ');
+        const limited = headroom <= 1;
+        windowCard = `
+          <div class="rc-card">
+            <span class="rc-label">Backtest window</span>
+            <span class="rc-value">${yrs.toFixed(1)} yrs</span>
+            <span class="rc-sub">${s.backtest_days.toLocaleString('en-US')} trading days,
+              earliest possible start ${floor.date}</span>
+            <p class="rc-body">${limited
+              ? `This window is about as long as it could be. <strong>${names}</strong>
+                 did not exist before <strong>${floor.date}</strong>, and a backtest cannot run
+                 through a period in which a holding was not trading, so no one could have
+                 tested this logic over much more than <strong>${maxYrs.toFixed(1)} years</strong>.
+                 The length is a fact about the holdings, not a choice.`
+              : `<strong>The data allowed a longer test than was run.</strong> The newest
+                 holding, <strong>${names}</strong>, has existed since
+                 <strong>${floor.date}</strong>, so up to
+                 <strong>${maxYrs.toFixed(1)} years</strong> were available, and this backtest
+                 covers ${yrs.toFixed(1)}. The missing ${headroom.toFixed(1)} years is a
+                 <strong>choice of start date</strong> rather than a limit of the data.
+                 Start dates are one of the easiest things to fit a result to, so it is worth
+                 knowing when one was picked.`}
+              A short window is not the same as a bad strategy, and a long one is not
+              evidence: it only means there was more history to be wrong about.</p>
+          </div>`;
+      }
+
+      const beyondHtml = (outlierCard || windowCard)
         ? `<section class="mb-10">
              <h2 style="color:var(--color-primary);margin-bottom:16px">Beyond the Backtest</h2>
-             <div class="rc-grid">${outlierCard}${oosCard}</div>
+             <div class="rc-grid">${outlierCard}${oosCard}${windowCard}</div>
            </section>`
         : '';
 

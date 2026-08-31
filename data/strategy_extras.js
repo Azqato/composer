@@ -5,6 +5,14 @@
 window.STRATEGY_EXTRAS_DATA = {
   "bnd-vs-sphb": {
     "annualized_turnover": 42.83190005438485,
+    "backtest_floor": {
+      "date": "2010-03-11",
+      "dated": 2,
+      "tickers": [
+        "SOXL"
+      ],
+      "total": 2
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999997608068216,
     "holdings": {
@@ -27,6 +35,15 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "dip-buying-tech": {
     "annualized_turnover": 12.307824845689327,
+    "backtest_floor": {
+      "date": "1998-12-22",
+      "dated": 3,
+      "tickers": [
+        "XLK",
+        "XLP"
+      ],
+      "total": 3
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.999999754889608,
     "holdings": {
@@ -50,6 +67,15 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "four-horsemen": {
     "annualized_turnover": 60.18299710529713,
+    "backtest_floor": {
+      "date": "2011-10-04",
+      "dated": 25,
+      "tickers": [
+        "SVXY",
+        "UVXY"
+      ],
+      "total": 25
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.40916131681790485,
     "holdings": {
@@ -126,6 +152,15 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "gold-miner-original": {
     "annualized_turnover": 60.78298295238431,
+    "backtest_floor": {
+      "date": "2020-12-03",
+      "dated": 3,
+      "tickers": [
+        "GDXD",
+        "GDXU"
+      ],
+      "total": 3
+    },
     "etn_holdings": [
       {
         "held": false,
@@ -160,6 +195,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "holy-grail": {
     "annualized_turnover": 23.41056748139869,
+    "backtest_floor": {
+      "date": "2011-10-04",
+      "dated": 6,
+      "tickers": [
+        "UVXY"
+      ],
+      "total": 6
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999996495039797,
     "holdings": {
@@ -193,6 +236,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "mean-reversion-py": {
     "annualized_turnover": 7.399892773833406,
+    "backtest_floor": {
+      "date": "2011-10-04",
+      "dated": 3,
+      "tickers": [
+        "UVXY"
+      ],
+      "total": 3
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999994215442638,
     "holdings": {
@@ -223,6 +274,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "nancy-pelosi-chips": {
     "annualized_turnover": 66.80928049198212,
+    "backtest_floor": {
+      "date": "2012-03-30",
+      "dated": 9,
+      "tickers": [
+        "ENPH"
+      ],
+      "total": 9
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9094920472621328,
     "holdings": {
@@ -259,6 +318,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "ob-os-staple-bonds": {
     "annualized_turnover": 51.27517737147155,
+    "backtest_floor": {
+      "date": "1999-03-10",
+      "dated": 3,
+      "tickers": [
+        "QQQ"
+      ],
+      "total": 3
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999382551644792,
     "holdings": {
@@ -282,6 +349,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "s90-half-low-catch": {
     "annualized_turnover": 74.2869961248203,
+    "backtest_floor": {
+      "date": "2024-04-02",
+      "dated": 27,
+      "tickers": [
+        "SBIT"
+      ],
+      "total": 27
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.796240830948497,
     "holdings": {
@@ -366,6 +441,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "simons-kmlm-switcher": {
     "annualized_turnover": 81.31526540036498,
+    "backtest_floor": {
+      "date": "2022-03-30",
+      "dated": 8,
+      "tickers": [
+        "SVIX"
+      ],
+      "total": 8
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.7602370366461423,
     "holdings": {
@@ -407,6 +490,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "sometimes-tqqq": {
     "annualized_turnover": 67.65655535628397,
+    "backtest_floor": {
+      "date": "2011-10-04",
+      "dated": 11,
+      "tickers": [
+        "UVXY"
+      ],
+      "total": 11
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9994371585963685,
     "holdings": {
@@ -445,6 +536,15 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "soxl-growth-rl": {
     "annualized_turnover": 30.780202407297015,
+    "backtest_floor": {
+      "date": "2010-03-11",
+      "dated": 8,
+      "tickers": [
+        "SOXL",
+        "SOXS"
+      ],
+      "total": 8
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9510778791326852,
     "holdings": {
@@ -473,6 +573,15 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "soxx-group": {
     "annualized_turnover": 76.60875323043578,
+    "backtest_floor": {
+      "date": "2010-03-11",
+      "dated": 4,
+      "tickers": [
+        "SOXL",
+        "SOXS"
+      ],
+      "total": 4
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.8136757929728157,
     "holdings": {
@@ -497,6 +606,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "spy-energy-chips": {
     "annualized_turnover": 18.901780511927427,
+    "backtest_floor": {
+      "date": "2012-03-30",
+      "dated": 8,
+      "tickers": [
+        "ENPH"
+      ],
+      "total": 8
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999997940284149,
     "holdings": {
@@ -538,6 +655,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "super-semiconductors": {
     "annualized_turnover": 59.766377427607146,
+    "backtest_floor": {
+      "date": "2011-10-04",
+      "dated": 31,
+      "tickers": [
+        "UVXY"
+      ],
+      "total": 31
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.6412919893172531,
     "holdings": {
@@ -608,6 +733,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "top-cap-ma-rsi": {
     "annualized_turnover": 105.1709604530977,
+    "backtest_floor": {
+      "date": "2015-05-28",
+      "dated": 11,
+      "tickers": [
+        "LABU"
+      ],
+      "total": 11
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999997439186719,
     "holdings": {
@@ -646,6 +779,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "tqqq-long-term": {
     "annualized_turnover": 21.997862372374783,
+    "backtest_floor": {
+      "date": "2011-10-04",
+      "dated": 6,
+      "tickers": [
+        "UVXY"
+      ],
+      "total": 6
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999999194293685,
     "holdings": {
@@ -679,6 +820,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "triple-accelerator": {
     "annualized_turnover": 12.579817051421514,
+    "backtest_floor": {
+      "date": "2011-10-04",
+      "dated": 3,
+      "tickers": [
+        "UVXY"
+      ],
+      "total": 3
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999998839034343,
     "holdings": {
@@ -709,6 +858,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "wooden-arkk": {
     "annualized_turnover": 133.80533321281732,
+    "backtest_floor": {
+      "date": "2022-05-02",
+      "dated": 12,
+      "tickers": [
+        "TARK"
+      ],
+      "total": 12
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.999938516161676,
     "holdings": {
@@ -741,6 +898,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "zoops-2026-frontrunner": {
     "annualized_turnover": 28.763396843653634,
+    "backtest_floor": {
+      "date": "2018-01-25",
+      "dated": 6,
+      "tickers": [
+        "VXX"
+      ],
+      "total": 6
+    },
     "etn_holdings": [
       {
         "held": false,
@@ -773,6 +938,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "zoops-excellent-adventure-2026": {
     "annualized_turnover": 45.45745327913582,
+    "backtest_floor": {
+      "date": "2010-03-11",
+      "dated": 6,
+      "tickers": [
+        "SOXL"
+      ],
+      "total": 6
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999997649136756,
     "holdings": {
@@ -799,6 +972,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "zoops-holy-grail-2026": {
     "annualized_turnover": 33.55358728047663,
+    "backtest_floor": {
+      "date": "2010-03-11",
+      "dated": 6,
+      "tickers": [
+        "SOXL"
+      ],
+      "total": 6
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.999999798604898,
     "holdings": {
@@ -825,6 +1006,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "zoops-kmlm-switcher-2026": {
     "annualized_turnover": 72.25349187826893,
+    "backtest_floor": {
+      "date": "2015-05-28",
+      "dated": 7,
+      "tickers": [
+        "LABU"
+      ],
+      "total": 7
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.7631025488007019,
     "holdings": {
@@ -852,6 +1041,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "zoops-leveraged-tqqq-symphony-2026": {
     "annualized_turnover": 35.29391879857798,
+    "backtest_floor": {
+      "date": "2010-03-11",
+      "dated": 6,
+      "tickers": [
+        "SOXL"
+      ],
+      "total": 6
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999998263145056,
     "holdings": {
@@ -878,6 +1075,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "zoops-manhattan-project-2026": {
     "annualized_turnover": 69.81501381418721,
+    "backtest_floor": {
+      "date": "2011-06-15",
+      "dated": 32,
+      "tickers": [
+        "CURE"
+      ],
+      "total": 32
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.6984256464802768,
     "holdings": {
@@ -930,6 +1135,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "zoops-safety-checks-2026": {
     "annualized_turnover": 31.70227340761636,
+    "backtest_floor": {
+      "date": "2010-03-11",
+      "dated": 4,
+      "tickers": [
+        "SOXL"
+      ],
+      "total": 4
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9870656600051844,
     "holdings": {
@@ -954,6 +1167,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "zoops-sometimes-tqqq-2026": {
     "annualized_turnover": 57.570066446977194,
+    "backtest_floor": {
+      "date": "2010-03-11",
+      "dated": 5,
+      "tickers": [
+        "SOXL"
+      ],
+      "total": 5
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999983688939471,
     "holdings": {
@@ -979,6 +1200,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "zoops-soxl-growth-2026": {
     "annualized_turnover": 41.6287987352489,
+    "backtest_floor": {
+      "date": "2010-03-11",
+      "dated": 8,
+      "tickers": [
+        "SOXL"
+      ],
+      "total": 8
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9616126443882889,
     "holdings": {
@@ -1007,6 +1236,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "zoops-tqqq-200d-ma-3x-2026": {
     "annualized_turnover": 32.718228895927986,
+    "backtest_floor": {
+      "date": "2010-03-11",
+      "dated": 5,
+      "tickers": [
+        "SOXL"
+      ],
+      "total": 5
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999997888840254,
     "holdings": {
@@ -1032,6 +1269,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "zoops-tqqq-long-term-2026": {
     "annualized_turnover": 29.794472350813116,
+    "backtest_floor": {
+      "date": "2010-03-11",
+      "dated": 6,
+      "tickers": [
+        "SOXL"
+      ],
+      "total": 6
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999997880445793,
     "holdings": {
@@ -1058,6 +1303,14 @@ window.STRATEGY_EXTRAS_DATA = {
   },
   "zoops-upro-ftlt-2026": {
     "annualized_turnover": 30.977897266571752,
+    "backtest_floor": {
+      "date": "2010-03-11",
+      "dated": 6,
+      "tickers": [
+        "SOXL"
+      ],
+      "total": 6
+    },
     "etn_holdings": [],
     "herfindahl_index": 0.9999998003332012,
     "holdings": {
