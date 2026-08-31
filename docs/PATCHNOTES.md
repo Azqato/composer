@@ -5,6 +5,13 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.33.2] - 2026-08-30
+
+### Changed
+- **Renamed the K-1 lookup's "First traded" row to "Inception"** (owner request). It matches the
+  `inception` field it renders and the word `data/ticker_inception.json` and V1.20 item 9 already
+  use, so the page and the data now say the same thing. Label only: no data, schema or logic change.
+
 ## [1.33.1] - 2026-08-30
 
 ### Added

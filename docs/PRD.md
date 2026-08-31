@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.33.1
+**Version:** 1.33.2
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -1611,7 +1611,8 @@ never-do table.
 structures change only when a fund reorganises, so it is refreshed by hand. See Section 11.
 
 **`inception` (added v1.33.1)** carries the fund's first trading day, rendered on `k1.html` as
-"First traded". **It is joined in at build time and `k1.html` does not load
+"Inception" (labelled "First traded" in v1.33.1 only, renamed in v1.33.2 to match the field name and
+the term the rest of the site already uses). **It is joined in at build time and `k1.html` does not load
 `data/ticker_inception.js`.** That file is roughly 100 KB once it covers the whole database and the
 page needs one date out of it, so loading it would charge every visitor 100 KB to render about 25
 bytes. Joined into `k1.json` it costs about 4.7 KB on a 69 KB file and adds no second request. This

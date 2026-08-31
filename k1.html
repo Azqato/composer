@@ -310,7 +310,7 @@
         // bytes. Rendered only when present: a ticker nobody has looked up and
         // a fund with no start date are different claims, and a missing key is
         // not evidence of either.
-        if (row.inception) facts += fact('First traded', row.inception);
+        if (row.inception) facts += fact('Inception', row.inception);
         if (row.tax_form) facts += fact('Tax form', row.tax_form);
         if (row.st_rate) facts += fact('Max short-term rate', row.st_rate);
         if (row.lt_rate) facts += fact('Max long-term rate', row.lt_rate);
