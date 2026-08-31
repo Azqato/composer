@@ -977,9 +977,10 @@ full entry rather than a name the reader has to go and look up.
 
 ### Categorised Risk Profile (strategy detail pages, V1.20 item 10)
 
-Replaces the single `.risk-box` blob with a verdict badge and a stack of named categories. **Both
-forms are live at once** while the rewrite proceeds one strategy at a time, so `.risk-box` is not
-dead code.
+Replaces the single `.risk-box` blob with a verdict badge and a stack of named categories. As of
+v1.36.0 **all 31 strategies carry the object shape**, so `.risk-box` no longer renders anywhere.
+The renderer branch and the CSS rule are kept anyway: `risk_profile` is hand-edited and the string
+form is still valid, so a future entry written as a string must render rather than vanish.
 
 **A plain stack, not cards or a grid.** Roughly half the categories are absent on any given strategy.
 A grid would put "No hedge leg" in visual parity with a paragraph describing a real one, which is the

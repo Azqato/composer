@@ -5,6 +5,52 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.36.0] - 2026-08-30
+
+### Changed
+- **All 31 strategies now carry categorised risk profiles** (V1.20 item 10 complete). The pilot was
+  signed off and the remaining 30 strings were rewritten: 20,657 characters of undifferentiated
+  prose became 29,525 across six named categories. A reader with a specific worry can now find it
+  by heading on every strategy page rather than on one.
+- **The `Attribution: created by ...` sentences were deleted** from `super-semiconductors` and
+  `soxx-group` rather than relocated, because `author_note` already carried the identical credit on
+  both.
+
+### Fixed
+- **Thirteen comparative claims were wrong and have been corrected.** The pilot found that the
+  duplicated statistics had gone stale; at full scale the same problem had corrupted the
+  comparisons too. Two orderings had flipped outright: `soxl-growth-rl` was described as having the
+  second-deepest max drawdown behind `nancy-pelosi-chips` and now has **the deepest**, and it was
+  described as having the highest standard deviation in the library, which is now The Gold Miner.
+  `nancy-pelosi-chips` was called "the only strategy below 1.0" on Calmar; **four** now are.
+  `top-cap-ma-rsi` claimed a Sharpe "above most leveraged ETF strategies" when **21 of 31 are
+  higher**.
+- **One claim was wrong when written, not drift.** `soxl-growth-rl` called its window "the longest
+  in the library". Two unleveraged 27-year strategies are far longer. It now reads "the longest of
+  the leveraged strategies", which is what was meant.
+- Every trading-day count quoted in prose had drifted. Those figures are dropped; the window card
+  added in v1.33.0 owns them.
+
+### Notes
+- **Absence claims were grounded in the ticker data, not in the old prose.** Omitting a category
+  makes the page assert something, so every omission was checked against the strategy's reachable
+  universe in `strategy_extras.json`. That gives **8 absent rows across 6 strategies**: `leverage`
+  omitted only on the two genuinely unleveraged strategies, `hedge` only where no inverse or
+  volatility instrument is reachable at all, `signal` only where the original recorded none and
+  inventing one would have been fabrication.
+- **The same data produced claims the original prose could not make.** `soxx-group`'s only
+  defensive position is SOXS, 3x inverse semiconductors, so its defensive state is a leveraged bet
+  on the sector it is defending against; `gold-miner-original` has the identical problem with GDXD;
+  and `simons-kmlm-switcher` holds SVIX alongside UVXY, opposite sides of the same trade.
+- **Verified by rendering all 31 pages in headless Edge** (never Chrome), not by spot check. Every
+  page: verdict badge present, 5 category rows, correct labels in order, zero blank bodies, and the
+  legacy `.risk-box` gone. **0 failures of 31.**
+- **`.risk-box` is now unexercised but deliberately kept.** `risk_profile` is hand-edited and the
+  string form remains valid, so a future entry written as a string must render rather than vanish.
+- **`check_risk_profiles.py` is still not a deploy gate.** The question is still open for the owner,
+  and it is now less hypothetical: with all 31 entries as objects, a mistyped category key renders
+  as silently missing content on a page that still returns 200 and still looks correct.
+
 ## [1.35.0] - 2026-08-30
 
 ### Added

@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.35.0
+**Version:** 1.36.0
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -3310,9 +3310,9 @@ files already in the repo.
 
 **Tier 2: restructuring content that already exists.**
 
-- [~] **10. Split `risk_profile` into named categories. Pilot shipped v1.35.0 on 1 of 31, held
-  for owner sign-off before the remaining 30.** The renderer, schema, validator and CSS are done;
-  only the prose rewrite remains.
+- [x] **10. Split `risk_profile` into named categories. Complete: all 31 strategies carry the
+  object shape as of v1.36.0.** Piloted on `four-horsemen` in v1.35.0, signed off, then the
+  remaining 30 rewritten.
 
   **The screenshot's four categories were not used, because they were never checked against our own
   text.** Section 14 records the source of the proposed grouping as a screenshot of a comparable
@@ -3365,10 +3365,54 @@ files already in the repo.
   a fifth gate in `deploy.yml`. It catches a failure no existing gate can see, a mistyped category key
   renders as silently missing content, but adding a deploy gate changes what can block a release and
   that is not a call to make as a side effect of a content edit.
-- [ ] **10a. Rewrite the remaining 30 `risk_profile` strings.** Blocked on sign-off of the
-  `four-horsemen` pilot. Includes deleting the `Attribution: created by ...` sentence from
-  `super-semiconductors` and `soxx-group`: **`author_note` already carries the identical text on
-  both**, so these are pure duplication in the wrong field rather than content to relocate.
+- [x] **10a. Rewrite the remaining 30 `risk_profile` strings. Done in v1.36.0.** 20,657
+  characters of prose became 29,525 across 6 categories, and the `Attribution: created by ...`
+  sentences were deleted from `super-semiconductors` and `soxx-group` rather than relocated,
+  because **`author_note` already carried the identical credit on both**.
+
+  **Thirteen comparative claims were wrong and were corrected during the rewrite.** This is what
+  the stale-statistics finding from the pilot looks like at full scale. Every comparison kept in
+  the new prose was re-checked against the live metrics before being written:
+
+  | Strategy | The claim | What is actually true |
+  | --- | --- | --- |
+  | `soxl-growth-rl` | "second-highest max drawdown, behind Inside Nancy Pelosi's Chips" | **The ordering flipped.** It is now the deepest in the library. |
+  | `soxl-growth-rl` | "the highest standard deviation in this library" | Second, behind The Gold Miner. |
+  | `soxl-growth-rl` | "the longest backtest in the library" | **Wrong when written**, not drift. Two unleveraged 27-year strategies are far longer. Corrected to "longest of the leveraged strategies". |
+  | `nancy-pelosi-chips` | "the highest max drawdown in this library" | Second, behind SOXL Growth (Original). |
+  | `nancy-pelosi-chips` | "Calmar of only 0.85, the only strategy below 1.0" | **Four** strategies are now below 1.0. |
+  | `mean-reversion-py` | "Calmar of 1.00 is barely above break-even" | It has since fallen below 1.0. |
+  | `s90-half-low-catch` | "second only to SOXL Growth RL on volatility" | Third, and its own max drawdown had drifted from 29.6% to 41.0%. |
+  | `top-cap-ma-rsi` | "Sharpe puts it above most leveraged ETF strategies" | **21 of 31 are higher.** |
+  | `top-cap-ma-rsi` | "max drawdown is the lowest in this sub-category" | `super-semiconductors` is lower. |
+  | `zoops-leveraged-tqqq-symphony-2026` | "among the higher-risk strategies in the library" | Mid-pack library-wide. True only within the zoop set, which is how it now reads. |
+  | `zoops-excellent-adventure-2026` | "at the upper end of the aggressive spectrum" | Mid-pack. Claim dropped. |
+  | `wooden-arkk` | "standard deviation among the highest in the library" | Roughly eighth. Claim dropped. |
+  | every strategy | trading-day counts quoted in prose | All had drifted. `wooden-arkk` alone moved from 1,028 to 1,076. |
+
+  **Absence claims were grounded in data, not in the old prose.** Omitting a category makes the page
+  assert something ("No hedge leg: this strategy has no inverse or volatility position"), so every
+  omission was checked against the strategy's reachable ticker universe in `strategy_extras.json`
+  rather than against what the original string happened to mention. That produced **8 absent rows
+  across 6 strategies**: `leverage` omitted only on the two genuinely unleveraged strategies
+  (`dip-buying-tech`, `ob-os-staple-bonds`), `hedge` omitted only where no inverse or volatility
+  instrument is reachable at all (those two plus `bnd-vs-sphb`), and `signal` omitted where the
+  original recorded no signal-design risk and inventing one would have been fabrication.
+
+  **The same data grounded the positive claims.** Naming the actual hedge leg is what makes several
+  of these categories useful: `soxx-group`'s only defensive position is SOXS, 3x inverse
+  semiconductors, so its defensive state is itself a leveraged bet on the same sector;
+  `gold-miner-original`'s is GDXD, with the same problem; and `simons-kmlm-switcher` holds SVIX
+  alongside UVXY, which are opposite sides of the same trade. None of that was in the original
+  prose.
+
+  **`.risk-box` is now unexercised.** No strategy is a string any more. The renderer branch and the
+  CSS rule are kept deliberately, because `risk_profile` is hand-edited and the string form stays
+  valid per `check_risk_profiles.py`; a future entry written as a string must render, not vanish.
+- [ ] **10b. Decide whether `check_risk_profiles.py` becomes a fifth deploy gate.** Open for the
+  owner. Now that all 31 entries are objects the failure it guards is live rather than
+  hypothetical: a mistyped category key renders as silently missing content, HTTP 200 and correctly
+  laid out.
 - [ ] **11. Convert `signals` cards into a Signal Types table.** Add `type` (Threshold, Trend,
   Selection) and `indicator` (RSI(10), Price(200), etc.) columns to the existing `name`, `tag`,
   `description`. Deduplicate repeated signals with a `x2` badge, as the screenshot does. The 31
