@@ -304,6 +304,13 @@
           facts += fact('etfdb "Distributes K1"', row.distributes_k1 ? 'Yes' : 'No');
         }
         if (row.structure) facts += fact('Structure', row.structure);
+        // Joined into k1.json at build time by refresh_k1.py, not loaded from
+        // data/ticker_inception.js. The page needs one date, and that file is
+        // ~100 KB; loading it would charge every visitor 100 KB to render ~25
+        // bytes. Rendered only when present: a ticker nobody has looked up and
+        // a fund with no start date are different claims, and a missing key is
+        // not evidence of either.
+        if (row.inception) facts += fact('First traded', row.inception);
         if (row.tax_form) facts += fact('Tax form', row.tax_form);
         if (row.st_rate) facts += fact('Max short-term rate', row.st_rate);
         if (row.lt_rate) facts += fact('Max long-term rate', row.lt_rate);

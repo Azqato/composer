@@ -1,5 +1,5 @@
 {
- "refreshed_at": "2026-08-27 11:58:36",
+ "refreshed_at": "2026-08-30 17:13:17",
  "source": "etfdb.com",
  "tickers": {
   "AGG": {
@@ -14,7 +14,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2003-09-29"
   },
   "AGQ": {
    "name": "ProShares Ultra Silver",
@@ -28,7 +29,8 @@
    "st_rate": "27.84%",
    "lt_rate": "27.84%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2008-12-04"
   },
   "AMLP": {
    "name": "Alerian MLP ETF",
@@ -42,7 +44,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2010-08-25"
   },
   "BAR": {
    "name": "GraniteShares Gold Trust",
@@ -84,7 +87,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2007-05-30"
   },
   "BITO": {
    "name": "ProShares Bitcoin ETF",
@@ -112,7 +116,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2023-06-27"
   },
   "BND": {
    "name": "Vanguard Total Bond Market ETF",
@@ -210,7 +215,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2007-04-10"
   },
   "BTAL": {
    "name": "AGF U.S. Market Neutral Anti-Beta Fund",
@@ -309,7 +315,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2011-06-15"
   },
   "DBA": {
    "name": "Invesco DB Agriculture Fund",
@@ -351,7 +358,8 @@
    "st_rate": "27.84%",
    "lt_rate": "27.84%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2006-02-06"
   },
   "DBE": {
    "name": "Invesco DB Energy Fund",
@@ -449,7 +457,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "1998-01-20"
   },
   "DIG": {
    "name": "ProShares Ultra Energy",
@@ -463,7 +472,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2007-02-01"
   },
   "DPST": {
    "name": "Direxion Daily Regional Banks Bull 3X ETF",
@@ -477,7 +487,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2015-08-20"
   },
   "DRAM": {
    "name": "Roundhill Memory ETF",
@@ -519,7 +530,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2009-07-16"
   },
   "EDC": {
    "name": "Direxion Daily MSCI Emerging Markets Bull 3X ETF",
@@ -533,7 +545,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2008-12-30"
   },
   "EDV": {
    "name": "Vanguard Extended Duration Treasury ETF",
@@ -561,7 +574,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2003-04-14"
   },
   "EFA": {
    "name": "iShares MSCI EAFE ETF",
@@ -575,7 +589,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2001-08-27"
   },
   "EPI": {
    "name": "WisdomTree India Earnings Fund",
@@ -603,7 +618,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2008-11-19"
   },
   "ETHA": {
    "name": "iShares Ethereum Trust ETF",
@@ -660,7 +676,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2008-11-19"
   },
   "FNGD": {
    "name": "MicroSectors FANG+™ Index -3X Inverse Leveraged ETN",
@@ -730,7 +747,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2020-12-03"
   },
   "GDXU": {
    "name": "MicroSectors Gold Miners 3X Leveraged ETN",
@@ -744,7 +762,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2020-12-03"
   },
   "GLD": {
    "name": "SPDR Gold Shares",
@@ -758,7 +777,8 @@
    "st_rate": "39.60%",
    "lt_rate": "28.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2004-11-18"
   },
   "GLL": {
    "name": "ProShares UltraShort Gold",
@@ -772,7 +792,8 @@
    "st_rate": "27.84%",
    "lt_rate": "27.84%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2008-12-03"
   },
   "GLTR": {
    "name": "abrdn Physical Precious Metals Basket Shares ETF",
@@ -857,7 +878,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2002-07-30"
   },
   "IEI": {
    "name": "iShares 3-7 Year Treasury Bond ETF",
@@ -913,7 +935,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2000-05-19"
   },
   "IWM": {
    "name": "iShares Russell 2000 ETF",
@@ -927,7 +950,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2000-05-26"
   },
   "IYK": {
    "name": "iShares U.S. Consumer Staples ETF",
@@ -941,7 +965,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2000-06-16"
   },
   "KMLM": {
    "name": "KFA Mount Lucas Managed Futures Index Strategy ETF",
@@ -983,7 +1008,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2013-04-10"
   },
   "KRBN": {
    "name": "KraneShares Global Carbon Strategy ETF",
@@ -1025,7 +1051,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2015-05-28"
   },
   "LQD": {
    "name": "iShares iBoxx $ Investment Grade Corporate Bond ETF",
@@ -1095,7 +1122,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2006-06-21"
   },
   "NAIL": {
    "name": "Direxion Daily Homebuilders & Supplies Bull 3X ETF",
@@ -1109,7 +1137,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2015-08-19"
   },
   "OILK": {
    "name": "ProShares K-1 Free Crude Oil ETF of Benef Interest",
@@ -1194,7 +1223,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2006-06-21"
   },
   "PUI": {
    "name": "Invesco Dorsey Wright Utilities Momentum ETF",
@@ -1208,7 +1238,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2005-10-26"
   },
   "QID": {
    "name": "ProShares UltraShort QQQ",
@@ -1236,7 +1267,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2006-06-21"
   },
   "QQQ": {
    "name": "Invesco QQQ Trust Series I",
@@ -1250,7 +1282,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "1999-03-10"
   },
   "QQQE": {
    "name": "Direxion NASDAQ-100 Equal Weighted Index ETF",
@@ -1320,7 +1353,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2021-11-09"
   },
   "SBIT": {
    "name": "ProShares UltraShort Bitcoin ETF",
@@ -1334,7 +1368,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2024-04-02"
   },
   "SCHB": {
    "name": "Schwab U.S. Broad Market ETF",
@@ -1390,7 +1425,8 @@
    "st_rate": "27.84%",
    "lt_rate": "27.84%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2008-11-25"
   },
   "SGOL": {
    "name": "abrdn Physical Gold Shares ETF",
@@ -1418,7 +1454,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2006-06-21"
   },
   "SHV": {
    "name": "iShares Trust iShares 0-1 Year Treasury Bond ETF",
@@ -1432,7 +1469,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2007-01-11"
   },
   "SHY": {
    "name": "iShares 1-3 Year Treasury Bond ETF",
@@ -1446,7 +1484,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2002-07-30"
   },
   "SIVR": {
    "name": "abrdn Physical Silver Shares ETF",
@@ -1488,7 +1527,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2000-06-05"
   },
   "SOXL": {
    "name": "Direxion Daily Semiconductor Bull 3X ETF",
@@ -1502,7 +1542,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2010-03-11"
   },
   "SOXS": {
    "name": "Direxion Daily Semiconductor Bear 3X ETF",
@@ -1516,7 +1557,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2010-03-11"
   },
   "SOXX": {
    "name": "iShares Semiconductor ETF",
@@ -1530,7 +1572,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2001-07-13"
   },
   "SOYB": {
    "name": "Teucrium Soybean Fund",
@@ -1573,7 +1616,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2011-05-05"
   },
   "SPXL": {
    "name": "Direxion Daily S&P 500 Bull 3X ETF",
@@ -1587,7 +1631,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2008-11-05"
   },
   "SPXS": {
    "name": "Direxion Daily S&P 500 Bear 3X ETF",
@@ -1601,7 +1646,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2008-11-19"
   },
   "SPXU": {
    "name": "ProShares UltraPro Short S&P500",
@@ -1615,7 +1661,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2009-06-25"
   },
   "SPY": {
    "name": "State Street SPDR S&P 500 ETF",
@@ -1629,7 +1676,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "1993-01-29"
   },
   "SPYV": {
    "name": "State Street SPDR Portfolio S&P 500 Value ETF",
@@ -1657,7 +1705,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2010-02-11"
   },
   "SRTY": {
    "name": "ProShares UltraPro Short Russell2000",
@@ -1685,7 +1734,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2007-02-01"
   },
   "SSO": {
    "name": "ProShares Ultra S&P 500",
@@ -1727,7 +1777,8 @@
    "st_rate": "27.84%",
    "lt_rate": "27.84%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2022-03-30"
   },
   "SVXY": {
    "name": "ProShares Short VIX Short-Term Futures ETF",
@@ -1741,7 +1792,8 @@
    "st_rate": "27.84%",
    "lt_rate": "27.84%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2011-10-04"
   },
   "TAGS": {
    "name": "Teucrium Agricultural Fund",
@@ -1784,7 +1836,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2022-05-02"
   },
   "TBF": {
    "name": "ProShares Short 20+ Year Treasury",
@@ -1826,7 +1879,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2008-12-30"
   },
   "TECS": {
    "name": "Direxion Daily Technology Bear 3X ETF",
@@ -1840,7 +1894,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2008-12-30"
   },
   "TLT": {
    "name": "iShares 20+ Year Treasury Bond ETF",
@@ -1854,7 +1909,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2002-07-30"
   },
   "TMF": {
    "name": "Direxion Daily 20+ Year Treasury Bull 3X ETF",
@@ -1868,7 +1924,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2009-04-16"
   },
   "TMV": {
    "name": "Direxion Daily 20+ Year Treasury Bear 3X ETF",
@@ -1882,7 +1939,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2009-04-16"
   },
   "TNA": {
    "name": "Direxion Daily Small Cap Bull 3X ETF",
@@ -1896,7 +1954,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2008-11-19"
   },
   "TQQQ": {
    "name": "ProShares UltraPro QQQ",
@@ -1910,7 +1969,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2010-02-11"
   },
   "TTT": {
    "name": "ProShares UltraPro Short 20+ Year Treasury",
@@ -1938,7 +1998,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2009-04-16"
   },
   "UBT": {
    "name": "ProShares Ultra 20+ Year Treasury",
@@ -1994,7 +2055,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2010-02-11"
   },
   "UGA": {
    "name": "United States Gasoline Fund LP",
@@ -2036,7 +2098,8 @@
    "st_rate": "27.84%",
    "lt_rate": "27.84%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2008-12-03"
   },
   "ULE": {
    "name": "ProShares Ultra Euro",
@@ -2106,7 +2169,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2009-06-25"
   },
   "UPW": {
    "name": "ProShares Ultra Utilities",
@@ -2134,7 +2198,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2010-02-11"
   },
   "USCI": {
    "name": "United States Commodity Index Fund",
@@ -2162,7 +2227,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2007-02-01"
   },
   "USDU": {
    "name": "WisdomTree Bloomberg U.S. Dollar Bullish Fund",
@@ -2232,7 +2298,8 @@
    "st_rate": "27.84%",
    "lt_rate": "27.84%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2007-03-01"
   },
   "UVIX": {
    "name": "2x Long VIX Futures ETF",
@@ -2260,7 +2327,8 @@
    "st_rate": "27.84%",
    "lt_rate": "27.84%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2011-10-04"
   },
   "VBF": {
    "name": null,
@@ -2272,7 +2340,8 @@
    "lt_rate": null,
    "agrees": null,
    "checked": "2026-08-27",
-   "not_found": true
+   "not_found": true,
+   "inception": "1982-12-21"
   },
   "VDE": {
    "name": "Vanguard Energy ETF",
@@ -2328,7 +2397,8 @@
    "st_rate": "27.84%",
    "lt_rate": "27.84%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2011-01-04"
   },
   "VIXY": {
    "name": "ProShares VIX Short-Term Futures ETF",
@@ -2342,7 +2412,8 @@
    "st_rate": "27.84%",
    "lt_rate": "27.84%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2011-01-04"
   },
   "VOX": {
    "name": "Vanguard Communication Services ETF",
@@ -2370,7 +2441,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2001-06-15"
   },
   "VTIP": {
    "name": "Vanguard Short-Term Inflation-Protected Securities ETF",
@@ -2412,7 +2484,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2018-01-25"
   },
   "VXZ": {
    "name": "iPath Series B S&P 500® VIX Mid-Term Futures ETN",
@@ -2454,7 +2527,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2006-02-06"
   },
   "XLB": {
    "name": "State Street Materials Select Sector SPDR ETF",
@@ -2482,7 +2556,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "1998-12-22"
   },
   "XLF": {
    "name": "State Street Financial Select Sector SPDR ETF",
@@ -2524,7 +2599,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "1998-12-22"
   },
   "XLP": {
    "name": "State Street Consumer Staples Select Sector SPDR ETF",
@@ -2538,7 +2614,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "1998-12-22"
   },
   "XLU": {
    "name": "State Street Utilities Select Sector SPDR ETF",
@@ -2608,7 +2685,8 @@
    "st_rate": "39.60%",
    "lt_rate": "20.00%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2009-12-03"
   },
   "ZSL": {
    "name": "ProShares UltraShort Silver",
@@ -2622,7 +2700,8 @@
    "st_rate": "27.84%",
    "lt_rate": "27.84%",
    "agrees": true,
-   "checked": "2026-08-27"
+   "checked": "2026-08-27",
+   "inception": "2008-12-03"
   }
  }
 }

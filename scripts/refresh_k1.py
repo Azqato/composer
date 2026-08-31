@@ -96,6 +96,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 JSON_PATH = BASE_DIR / "data" / "k1.json"
 JS_PATH = BASE_DIR / "data" / "k1.js"
 SEED_PATH = BASE_DIR / "data" / "k1_seed.txt"
+INCEPTION_PATH = BASE_DIR / "data" / "ticker_inception.json"
 
 SOURCE_URL = "https://etfdb.com/etf/{}/"
 # The public page the site links to for a human to verify a verdict themselves. The
@@ -354,6 +355,37 @@ def classify(parsed, today):
     return row
 
 
+def apply_inception(db):
+    """Copy first-trade dates from data/ticker_inception.json into each row.
+
+    Joined at BUILD time rather than loaded by k1.html, for the same reason
+    build_strategy_extras.py joins rather than shipping database.json to the
+    browser. The full inception file is roughly 100 KB and the page needs one
+    date out of it, so loading it would charge every visitor 100 KB to render
+    ~25 bytes. Joined in, it costs about 4.7 KB on a 69 KB file and adds no
+    second request. See docs/PRD.md V1.20 item 9 for the same argument applied
+    to prices.json.
+
+    Returns the number of rows changed. Safe to run repeatedly: it only writes
+    a field that differs, so a no-op run reports 0 and leaves the file alone.
+    """
+    if not INCEPTION_PATH.exists():
+        return 0
+    inception = json.loads(INCEPTION_PATH.read_text(encoding="utf-8"))["tickers"]
+    changed = 0
+    for ticker, row in db["tickers"].items():
+        date = inception.get(ticker)
+        # A ticker absent from the inception file, or present with a null, gets
+        # no field at all rather than an explicit null. The page renders the row
+        # only when the field is there, so absence is the honest state: "we have
+        # not looked this up" and "this fund has no start date" are different
+        # claims and neither is worth asserting from a missing key.
+        if date and row.get("inception") != date:
+            row["inception"] = date
+            changed += 1
+    return changed
+
+
 def load():
     if JSON_PATH.exists():
         return json.loads(JSON_PATH.read_text(encoding="utf-8"))
@@ -389,10 +421,30 @@ def main():
     parser.add_argument(
         "--seed", action="store_true", help="add the tickers in data/k1_seed.txt first"
     )
+    parser.add_argument(
+        "--inception-only", action="store_true",
+        help="join data/ticker_inception.json into k1.json and exit, fetching nothing",
+    )
     args = parser.parse_args()
 
     db = load()
     today = datetime.date.today().isoformat()
+
+    # Runs before the etfdb work and on its own path, so refreshing inception
+    # dates never risks kicking off a fetch of 187 tickers as a side effect.
+    if args.inception_only:
+        changed = apply_inception(db)
+        if changed:
+            save(db)
+            print("Set an inception date on %d of %d ticker(s)."
+                  % (changed, len(db["tickers"])))
+        else:
+            print("No inception dates to add; k1.json is already current.")
+        undated = sorted(t for t in db["tickers"] if not db["tickers"][t].get("inception"))
+        if undated:
+            print("Still undated (%d): %s" % (len(undated), ", ".join(undated)))
+            print("  Fix: python scripts/refresh_ticker_inception.py, then rerun this.")
+        return 0
 
     wanted = [t.strip().upper() for t in args.tickers if t.strip()]
     if args.seed:

@@ -5,6 +5,40 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.33.1] - 2026-08-30
+
+### Added
+- **The K-1 lookup now shows when a fund started trading**, as a "First traded" row in the facts
+  block on `k1.html`, between Structure and Tax form. Both are facts about what the fund is, and they
+  read together ahead of the tax facts that follow.
+- **`scripts/refresh_k1.py --inception-only`**, which joins `data/ticker_inception.json` into
+  `k1.json` and exits without fetching anything.
+
+### Changed
+- **`k1.html` does not load `data/ticker_inception.js`; the date is joined into `k1.json` at build
+  time.** That file reaches roughly 100 KB once it covers the whole database, and the page needs one
+  date out of it, so loading it would charge every visitor 100 KB to render about 25 bytes. Joined
+  in, it costs about 4.7 KB on a 69 KB file and adds no second request. Same argument and same answer
+  as v1.33.0 gave for not building the backtest-window readout on `prices.json`.
+
+### Notes
+- **`--inception-only` is a separate path rather than a step in the normal run, on purpose.** A bare
+  `refresh_k1.py` refetches anything older than 180 days, so hanging the join off that path would
+  have meant refreshing a date could start a crawl of 187 etfdb fund pages as a side effect. The flag
+  saves only when something changed and is idempotent: a second run reports 0.
+- **An undated ticker carries no `inception` key and the page omits the row**, rather than storing an
+  explicit null and rendering a blank value. "Nobody has looked this up" and "this fund has no start
+  date" are different claims, and a missing key is not evidence for either.
+- **185 of the 187 K-1 tickers are held by at least one symphony**, so the full inception sweep
+  reaches them as a side effect of covering held tickers. **DBS and DBV are held by nothing** and need
+  an explicit by-name fetch: the K-1 database is not a subset of the held-ticker universe, and this
+  join is the place that assumption would break quietly.
+- **Verified in headless Edge** (never Chrome) on three tickers: UVXY renders 6 facts including
+  "First traded 2011-10-04", AGQ renders 2008-12-04, and USO, not yet dated, renders **5 facts with
+  no blank row**.
+- Shipped with 79 of 187 dated, because the full inception refresh was still running. The join is
+  additive and idempotent, so the remaining rows fill in on a rerun rather than needing rework.
+
 ## [1.33.0] - 2026-08-30
 
 ### Added
