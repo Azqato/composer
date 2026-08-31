@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.34.0
+**Version:** 1.34.1
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -1626,6 +1626,10 @@ K-1 tickers are held by at least one symphony in the database**, so the full inc
 them as a side effect of covering held tickers. **DBS and DBV are held by nothing**, so the sweep will
 never reach them and they need an explicit by-name fetch. That is the general rule for this join: the
 inception file is built from held tickers, and the K-1 database is not a subset of it.
+
+**Closed v1.34.1: all 187 K-1 rows now carry an inception date.** The full sweep dated 185 of them
+and `python scripts/refresh_ticker_inception.py DBS DBV` dated the last two, which is what the
+by-name argument exists for.
 
 **etfdb publishes a `Distributes K1` field, and since v1.27.7 it is the primary check.** It sits in
 the Tax Analysis block of every fund page and answers this tool's question directly. It was missed
@@ -3263,6 +3267,25 @@ files already in the repo.
   `build_strategy_extras.py`. **105 of 105 featured tickers dated, in 2 KB.** Inception dates do not
   change, so the file is fetched once and refreshed rarely, and runs are additive so `--all` extends
   it rather than replacing it.
+
+  **Extended to the whole library in v1.34.1: 3,634 of 3,684 tickers dated, 95 KB**, in a single
+  unattended run of about two hours at the 2s throttle. The file now covers every ticker held
+  anywhere in `database.json`, which is the prerequisite for extending any inception-derived readout
+  past the featured 31.
+
+  **The 50 undated tickers were classified, not waved through.** They are not throttling damage and
+  not a bug:
+
+  - **Delisted through acquisition or going private**, which Yahoo serves as a hard 404: K
+    (Kellanova), WBA (Walgreens), ANSS (Ansys), HES (Hess), ZIMV and the rest of that group.
+  - **Warrants, and unfixable rather than a symbol-mapping bug.** Composer writes them `IONQ/WS`,
+    which normalises to `IONQ-WS` and 404s. **The correct Yahoo symbol `IONQ-WT` resolves and still
+    returns `firstTradeDate: null`**, so correcting the suffix would recover zero dates. Checked
+    directly before deciding not to fix it.
+
+  Every consumer already degrades correctly on a missing date, which is why 50 gaps need no special
+  handling: `k1.html` omits the row, and the backtest-window card suppresses itself when any holding
+  is undated rather than computing a floor from a subset.
 
   **The specified sentence asserts a false cause on 13 of 31 strategies, so it was not shipped.**
   The spec's wording, "14.8 years, limited by UVXY", presumes the limiting holding explains the

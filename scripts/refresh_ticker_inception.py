@@ -148,7 +148,15 @@ def main():
     args = sys.argv[1:]
     existing = load_existing()
 
-    if "--all" in args:
+    named = [a.strip().upper() for a in args if not a.startswith("-") and a.strip()]
+
+    if named:
+        # Explicit tickers, for symbols the sweeps cannot reach. Both sweeps read
+        # held tickers, and the K-1 database is NOT a subset of those: DBS and DBV
+        # are in k1.json and held by no symphony, so --all would never date them.
+        wanted = named
+        scope = "explicitly named ticker(s)"
+    elif "--all" in args:
         wanted = all_tickers()
         scope = "every ticker held anywhere in the database"
     else:

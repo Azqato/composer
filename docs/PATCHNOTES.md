@@ -5,6 +5,33 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.34.1] - 2026-08-31
+
+### Added
+- **Inception dates now cover the whole library: 3,634 of 3,684 tickers, 95 KB**, up from the 105
+  featured tickers shipped in v1.33.0. One unattended run of about two hours at the 2s throttle. This
+  is the prerequisite for extending any inception-derived readout past the featured 31.
+- **All 187 K-1 rows now carry an inception date**, up from 79 at v1.33.1. The sweep dated 185 of
+  them; DBS and DBV were dated by name.
+- **`refresh_ticker_inception.py` now accepts explicit tickers** (`refresh_ticker_inception.py DBS
+  DBV`). Both sweeps read *held* tickers, and the K-1 database is not a subset of those, so DBS and
+  DBV were unreachable by any existing flag.
+
+### Notes
+- **The 50 undated tickers were classified rather than waved through.** They are not throttling
+  damage and not a bug:
+  - **Delisted through acquisition or going private**, which Yahoo serves as a hard 404: K
+    (Kellanova), WBA (Walgreens), ANSS (Ansys), HES (Hess), ZIMV and others.
+  - **Warrants, and unfixable rather than a symbol-mapping bug.** Composer writes them `IONQ/WS`,
+    which normalises to `IONQ-WS` and 404s. The correct Yahoo symbol `IONQ-WT` **resolves and still
+    returns `firstTradeDate: null`**, so correcting the suffix would recover zero dates. Checked
+    directly before deciding not to fix it.
+- **Every consumer already degrades correctly on a missing date**, which is why 50 gaps need no
+  special handling: `k1.html` omits the row, and the backtest-window card suppresses itself when any
+  holding is undated rather than computing a floor from a subset.
+- The run finished at 02:12 UTC against an 02:18 estimate derived from a measured rate of 27.1
+  tickers/min, and checkpointed every 50 tickers throughout. It never needed resuming.
+
 ## [1.34.0] - 2026-08-30
 
 ### Added
