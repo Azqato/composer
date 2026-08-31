@@ -1282,6 +1282,62 @@ p { color: var(--color-secondary); }
    this without being taught. Blue matches .k1-etn there for the same reason. This is
    not .risk-box: risk_profile is authored prose about how a strategy behaves, this is
    a mechanical fact about a position held today, and the two should not look alike. */
+/* ---- Assets section (strategy detail pages, V1.20 item 6) ----
+   What the logic can hold against what it is holding today. The bar is the
+   point of the component: the median featured strategy can reach 6 tickers and
+   is holding 1, and a column of percentages alone does not make that land the
+   way a row of mostly-empty bars does.
+
+   Grid rather than a table. Five fields, two of which are frequently empty (a
+   ticker with no inception date, a ticker with no K-1 or ETN badge), and a
+   table would hold open two blank columns on every row to keep them aligned. ---- */
+.asset-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.asset-head-n { font-family: var(--font-mono); font-size: 1.25rem; font-weight: 600; color: var(--color-primary); }
+.asset-head-l { font-size: 0.8125rem; color: var(--color-secondary); }
+
+.asset-rows { display: flex; flex-direction: column; gap: 6px; }
+.asset-row {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr 3.25rem;
+  align-items: center;
+  gap: 10px;
+}
+/* The date and the badges drop to a second line below 640px rather than
+   squeezing the bar, which is the field that carries the meaning. */
+.asset-since, .asset-flags { grid-column: 2 / -1; }
+@media (min-width: 640px) {
+  .asset-row { grid-template-columns: 4.5rem 1fr 3.25rem 6.5rem auto; }
+  .asset-since, .asset-flags { grid-column: auto; }
+}
+
+.asset-ticker {
+  font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 600;
+  color: var(--color-primary); text-decoration: none;
+}
+.asset-ticker:hover, .asset-ticker:focus { text-decoration: underline; }
+.asset-bar {
+  height: 8px; border-radius: 4px; overflow: hidden;
+  background: var(--color-border);
+}
+.asset-bar > span { display: block; height: 100%; background: var(--color-green); }
+.asset-pct { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-secondary); text-align: right; }
+.asset-since { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--color-disabled); }
+.asset-flags { display: flex; gap: 4px; }
+.asset-badge {
+  font-size: 0.625rem; font-weight: 600; letter-spacing: 0.03em;
+  padding: 1px 5px; border-radius: var(--radius-sm); border: 1px solid;
+}
+/* Same two colours /k1 and the holdings notices already use, so a reader who
+   has seen either one does not have to be taught these. */
+.asset-badge.k1 { color: var(--color-yellow); border-color: var(--color-yellow); }
+.asset-badge.etn { color: var(--color-blue); border-color: var(--color-blue); }
+
+.asset-idle { margin-top: 16px; }
+.asset-idle-title {
+  display: block; font-size: 0.75rem; color: var(--color-disabled);
+  margin-bottom: 8px;
+}
+
 .hold-notice {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);

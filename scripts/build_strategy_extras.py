@@ -135,6 +135,12 @@ def build():
         for key in CARRY:
             entry[key] = row.get(key)
         entry["holdings"] = {t: holdings[t] for t in tickers}
+        # Per-ticker inception for the Assets section (V1.20 item 6). Only the
+        # strategy's own tickers, so this adds a few hundred entries across the
+        # 31 rather than shipping the whole inception file to the browser.
+        entry["holdings_inception"] = {
+            t: inception[t] for t in tickers if inception.get(t)
+        }
         entry["backtest_floor"] = backtest_floor(tickers, inception)
         entry["k1_holdings"] = k1_holdings
         entry["etn_holdings"] = etn_holdings

@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.33.2
+**Version:** 1.34.0
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -3183,10 +3183,32 @@ files already in the repo.
   reader to treat the whole backtest as in-sample until it is. Hiding the panel for that one
   strategy would have quietly turned a missing measurement into no question at all. Dates are
   compared in UTC on both sides, or a browser west of Greenwich reads one day short.
-- [ ] **6. Assets tab.** Reuse the existing `.db-tabs` / `.db-tab` / `.db-tab-panel` components from
-  `database.html` rather than building a second tab system. `last_market_days_holdings` gives both
-  halves for free: its **keys** are the ticker universe the logic can reach, its **values** are the
-  current position, so the tab can show what a strategy may hold and what it holds today.
+- [x] **6. Assets section (done v1.34.0). Shipped as a plain section, not a tab** (owner ruling).
+  The specified `.db-tabs` reuse was rejected on the grounds that `strategies.html` is one continuous
+  scroll today with no tab state anywhere on it: tabs would have hidden the new content behind a
+  click, added `?tab=` deep-link handling, and shortened a page that is not too long. It sits between
+  the risk profile and the K-1 notices, so what the strategy holds is read immediately before the tax
+  consequences of holding it.
+
+  **The gap between the two halves is the reason the section exists, and it is larger than expected.**
+  Across the 31 featured strategies the median universe is **6 tickers** and the median position is
+  **1**, and **not one strategy holds its full universe**. `super-semiconductors` can reach **31
+  tickers and is holding SMH alone**. Nothing else on the page showed this, and the Deeper Metrics
+  note already has to warn that the Herfindahl index describes the backtest rather than today's
+  position; this is where a reader can now see the position directly rather than inferring it from a
+  number that disagrees with it.
+
+  **Percentages only, never the stored values** (owner ruling). `last_market_days_holdings` holds
+  **aggregate dollars across Composer**, not weights: `four-horsemen` reads $229,544,631 and
+  `super-semiconductors` reads $417,186. That is not the reader's money and printing it would be a
+  wall of unexplained millions; normalised, the same numbers are the strategy's own allocation, which
+  is the question a reader is actually asking. The total is guarded, because a strategy fully in cash
+  would divide by zero and print `NaN%` on every row.
+
+  Each row carries the ticker (linked to its K-1 entry), a proportional bar, the share, the fund's
+  inception date from V1.20 item 9, and a K-1 or ETN badge in the same two colours `/k1` already
+  uses. Tickers in the universe but not held are listed separately as chips, worded so that **a
+  ticker in that list reads as one the strategy may buy, not one it has abandoned**.
 - [x] **7. K-1 warning line, cross-linked to `/k1` (v1.28.0).** Affects **12 of 31** for K-1 and,
   now that v1.27.9 made ETNs visible, **2 more for ETNs**, so 14 strategies carry a notice. Every
   verdict is resolved from `data/k1.json` at build time and never restated, so a correction to the

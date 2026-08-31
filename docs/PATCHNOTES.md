@@ -5,6 +5,49 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.34.0] - 2026-08-30
+
+### Added
+- **Assets section on strategy pages** (closes V1.20 item 6). What the logic can reach against what
+  it is holding today, from the two halves of `last_market_days_holdings`: its keys are the reachable
+  universe, its values are the last market day's position. Each row carries the ticker linked to its
+  K-1 entry, a proportional bar, the share, the fund's inception date, and a K-1 or ETN badge.
+- **`holdings_inception` in `data/strategy_extras.json`**, the inception date for each strategy's own
+  tickers. A few hundred entries across the 31 rather than shipping the whole inception file to the
+  browser. The join grows from 33 KB to 46 KB.
+
+### Changed
+- **Shipped as a plain section, not the tab the roadmap specified** (owner ruling). `strategies.html`
+  is one continuous scroll with no tab state anywhere on it, so reusing `.db-tabs` would have hidden
+  the new content behind a click, added `?tab=` deep-link handling, and shortened a page that is not
+  too long.
+- **Percentages only, never the stored values** (owner ruling). `last_market_days_holdings` holds
+  **aggregate dollars across Composer**, not weights: `four-horsemen` reads $229,544,631 and
+  `super-semiconductors` reads $417,186. That is not the reader's money. Normalised, the same numbers
+  are the strategy's own allocation, which is what a reader is asking about.
+
+### Notes
+- **The gap the section exists to show is bigger than expected.** Median universe **6 tickers**,
+  median position **1**, and **not one of the 31 holds its full universe**. `super-semiconductors`
+  can reach **31 tickers and is holding SMH alone**. The Deeper Metrics note already had to warn that
+  the Herfindahl index describes the backtest rather than today's position; this is where a reader
+  can now see the position directly instead of inferring it from a number that disagrees with it.
+- **The divide is guarded.** A strategy fully in cash would have a zero total and print `NaN%` on
+  every row. None of the 31 is in that state today, which is exactly why it needed guarding rather
+  than testing.
+- **The not-held list is worded as capability, not abandonment.** A ticker there is one the strategy
+  may buy on any rebalance, and the copy says so, because a bare "not held" list invites the opposite
+  reading.
+- **Verified in headless Edge** (never Chrome) on four strategies spanning the range: 6 of 25, 1 of
+  31, 1 of 2 and 2 of 32, each matching the source data exactly. Bars agree with their percentages
+  numerically on every row, shares sum to 100% (99.9% on `four-horsemen`, which is six values rounded
+  to one decimal), singular and plural both render, the K-1 badge appears on SVXY, inception dates
+  render on every row, the not-held chip counts match universe minus held, and the section renders
+  ahead of the K-1 notices.
+- Two failures in the first run were **test artifacts**: the browser normalises `width:100.0%` to
+  `100%`, so a string comparison flagged the two single-holding strategies. Compared numerically,
+  zero rows are malformed.
+
 ## [1.33.2] - 2026-08-30
 
 ### Changed

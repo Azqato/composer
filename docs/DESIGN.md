@@ -975,6 +975,24 @@ full entry rather than a name the reader has to go and look up.
 
 ---
 
+### Assets Section (strategy detail pages, V1.20 item 6)
+
+Between the risk profile and the K-1 notices. What the logic can reach against what it is holding
+today, from the two halves of `last_market_days_holdings`.
+
+**A grid, not a table.** Five fields per row and two of them are frequently empty (a ticker with no
+inception date, a ticker with no K-1 or ETN badge). A table would hold two blank columns open on
+every row to keep them aligned; the grid lets them collapse.
+
+**The bar is the component, not decoration.** The median featured strategy can reach 6 tickers and
+is holding 1. A column of percentages states that; a row of mostly-empty bars makes it land.
+
+**Below 640px the date and badges drop to a second line rather than the bar narrowing.** The bar is
+the field carrying the meaning, so it is the last thing allowed to lose width.
+
+**Badges reuse the `/k1` colours**, yellow for K-1 and blue for ETN, so a reader who has seen that
+page or the holdings notices is not taught a third vocabulary for the same two facts.
+
 ### Reality Check Cards (strategy detail pages, V1.20 items 4, 5 and 9)
 
 The Beyond the Backtest section, after the risk profile. Two columns above 720px, stacked below it.
