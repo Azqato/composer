@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.36.0
+**Version:** 1.37.0
 **Status:** Active
 **Last Updated:** 2026-08-28
 
@@ -3409,10 +3409,55 @@ files already in the repo.
   **`.risk-box` is now unexercised.** No strategy is a string any more. The renderer branch and the
   CSS rule are kept deliberately, because `risk_profile` is hand-edited and the string form stays
   valid per `check_risk_profiles.py`; a future entry written as a string must render, not vanish.
-- [ ] **10b. Decide whether `check_risk_profiles.py` becomes a fifth deploy gate.** Open for the
-  owner. Now that all 31 entries are objects the failure it guards is live rather than
-  hypothetical: a mistyped category key renders as silently missing content, HTTP 200 and correctly
-  laid out.
+- [x] **10c. Statistics removed from every prose field, and drift made detectable. Shipped
+  v1.37.0.** Fixing `risk_profile` in v1.36.0 fixed one field's copy of the numbers and left the
+  other copies in place. `ai_summary` renders a few hundred pixels above the risk profile on the
+  same page and recited the same statistics.
+
+  **The measurement: 131 checkable numeric claims across the prose fields, 89 of them stale, on 29
+  of 31 strategies.** Most were rounding drift of the kind the pilot found. Two strategies were
+  wrong by margins no reader could discount:
+
+  | Strategy | Field | Prose said | Actually |
+  | --- | --- | --- | --- |
+  | `s90-half-low-catch` | Calmar | 24.81 | **11.69** |
+  | `s90-half-low-catch` | annualised return | 735% | **479%** |
+  | `s90-half-low-catch` | max drawdown | 30% | **41%** |
+  | `s90-half-low-catch` | Sharpe | 3.04 | 2.59 |
+  | `zoops-manhattan-project-2026` | Calmar | 4.43 | 3.86 |
+  | `zoops-manhattan-project-2026` | max drawdown | 35% | **39%** |
+
+  `s90-half-low-catch` was advertising a Calmar more than double the real figure and a drawdown a
+  third shallower than the real one, **overstating the strategy in both directions at once, on the
+  same page that displayed the correct numbers in a table.**
+
+  **Three more comparative claims were wrong and are corrected, not merely stripped.**
+  `soxl-growth-rl`'s summary called its drawdown "the second-deepest in the entire library"; it is
+  now the deepest. `nancy-pelosi-chips` claimed "the weakest risk-adjusted profile in the library"
+  and "the deepest max drawdown here"; `dip-buying-tech` has a weaker Sharpe and Calmar, and SOXL
+  Growth (Original) has a deeper drawdown. `mean-reversion-py` described "a Calmar of exactly 1.00,
+  the breakeven line"; it has since fallen below it, which reverses the point being made.
+
+  **Durations are dropped, start dates are kept.** `backtest_days` grows every night, so "roughly
+  14 years" drifts; "the backtest begins in late 2011" is a fixed fact, and it is the half that
+  tells a reader which crises the record contains. The window card added in v1.33.0 owns the length.
+
+  **`scripts/check_stat_drift.py` is the durable half.** It parses every performance figure out of
+  every prose field, compares it to the live metric, and fails on a mismatch, with the tolerance set
+  to the prose's own rounding so a claim written to one decimal is wrong only if it rounds to
+  something else. It is the piece that was missing: this rot went unnoticed through every nightly
+  `update_metrics.py` run because nothing was looking.
+
+  **The checker had a real bug, and the fault-injection tests caught it before it shipped.** The
+  number pattern `[\d.]+` captured the sentence-ending period, `float("3.68.")` raised, and a
+  `try/except ValueError: continue` swallowed the claim in silence. **Every figure that ended a
+  sentence was invisible to it.** A checker written to find silent failures was failing silently.
+  The except clause is gone: if the pattern is ever wrong again it raises rather than under-reports.
+- [ ] **10b. Decide whether `check_risk_profiles.py` and `check_stat_drift.py` become deploy
+  gates.** Still open for the owner, and now covering both scripts. Prose is currently clean, so
+  a gate would cost nothing today and would stop the next figure from being typed in. Both catch
+  failures no existing gate can see: a mistyped category key renders as silently missing content,
+  and a stale figure renders as fact. Both pages still return 200 and still look correct.
 - [ ] **11. Convert `signals` cards into a Signal Types table.** Add `type` (Threshold, Trend,
   Selection) and `indicator` (RSI(10), Price(200), etc.) columns to the existing `name`, `tag`,
   `description`. Deduplicate repeated signals with a `x2` badge, as the screenshot does. The 31

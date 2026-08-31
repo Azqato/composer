@@ -5,6 +5,53 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.37.0] - 2026-08-30
+
+### Fixed
+- **89 stale performance figures across 29 of 31 strategies, in `ai_summary` and `how_it_works`.**
+  Fixing `risk_profile` in v1.36.0 corrected one field's copy of the numbers and left the others.
+  `ai_summary` renders on the same page, a few hundred pixels higher, and recited the same
+  statistics.
+- **`s90-half-low-catch` was the worst page on the site.** Its summary advertised a Calmar of 24.81
+  against a live **11.69**, a 735% annualised return against a live **479%**, and a 30% max drawdown
+  against a live **41%**: the strategy overstated in both directions at once, on the same page that
+  displayed the correct numbers in a table. `zoops-manhattan-project-2026` had the same problem
+  smaller, with a 35% drawdown against a live 39%.
+- **Three comparative claims are corrected rather than stripped.** `soxl-growth-rl` called its
+  drawdown "the second-deepest in the entire library" when it is now the deepest.
+  `nancy-pelosi-chips` claimed both "the weakest risk-adjusted profile in the library" and "the
+  deepest max drawdown here"; `dip-buying-tech` has a weaker Sharpe and Calmar and SOXL Growth
+  (Original) has a deeper drawdown. `mean-reversion-py` described "a Calmar of exactly 1.00, the
+  breakeven line", and it has since fallen below it, reversing the point the sentence was making.
+
+### Added
+- **`scripts/check_stat_drift.py`**, which parses every performance figure out of every prose field
+  and compares it to the live metric. This is the piece that was missing: the rot went unnoticed
+  through every nightly `update_metrics.py` run because nothing was looking. Tolerance is the
+  prose's own rounding, so a figure written to one decimal is wrong only if it rounds to something
+  else, and a design fact ("RSI below 30", "SOXL can lose 80 to 90 percent") is never mistaken for a
+  portfolio statistic.
+
+### Changed
+- **Durations dropped from prose, start dates kept.** `backtest_days` grows every night, so "roughly
+  14 years" drifts, while "the backtest begins in late 2011" is fixed and is the half that tells a
+  reader which crises the record contains. The window card from v1.33.0 owns the length.
+
+### Notes
+- **The new checker had a real bug, and the fault-injection tests caught it before it shipped.** Its
+  number pattern captured the sentence-ending period, `float("3.68.")` raised, and a
+  `try/except ValueError: continue` swallowed the claim: **every figure that ended a sentence was
+  invisible to it.** A checker written to find silent failures was failing silently. The except
+  clause is gone; a wrong pattern now raises instead of under-reporting. 12 of 12 injected faults
+  behave correctly, including the two false-positive traps: "90.0% annualized standard deviation"
+  must not be read as a 90% return, and design facts must not be read as statistics at all.
+- **Prose is now clean: 0 checkable figures remain, down from 131.**
+- **Verified by rendering all 31 pages in headless Edge** (never Chrome): risk profile intact and
+  `ai_summary` still rendering its paragraphs on every page. 0 failures of 31.
+- **Neither checker is a deploy gate yet.** That decision is still open for the owner and now covers
+  both scripts. Prose is clean today, so a gate would cost nothing now and would stop the next
+  figure from being typed in.
+
 ## [1.36.0] - 2026-08-30
 
 ### Changed

@@ -975,6 +975,25 @@ full entry rather than a name the reader has to go and look up.
 
 ---
 
+### Statistics Live in One Place (site-wide rule, v1.37.0)
+
+**A performance figure belongs in the metrics table and nowhere else.** Prose may compare
+("meaningfully lower than Holy Grail at comparable annualised return") but may not quote
+("a 3.68 Calmar").
+
+The reason is mechanical, not stylistic. `scripts/update_metrics.py` refreshes every strategy's
+metrics nightly and cannot rewrite prose, so a duplicated figure is correct only on the day it was
+typed and then degrades in silence: the page still renders, still returns 200, still reads fluently,
+and is wrong. When this rule was first enforced it found **89 stale figures across 29 of 31
+strategies**, one of them advertising a Calmar more than double the real value on the same page that
+displayed the real value in a table.
+
+**Durations follow the same rule; start dates do not.** `backtest_days` grows nightly, so any stated
+duration drifts. A start date is fixed, and it is the half a reader actually needs, because it says
+which crises the record contains.
+
+`scripts/check_stat_drift.py` enforces this.
+
 ### Categorised Risk Profile (strategy detail pages, V1.20 item 10)
 
 Replaces the single `.risk-box` blob with a verdict badge and a stack of named categories. As of
