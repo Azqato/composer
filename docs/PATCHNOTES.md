@@ -5,6 +5,21 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.38.9] - 2026-09-01
+
+### Changed
+- **Full-tree content audit, batch 8: Super Semiconductors and Simon's KMLM Switcher (Original)
+  verified against complete logic-tree reads.**
+  - **Super Semiconductors**: mechanics matched the tree exactly (SPY EMA8-vs-SMA200 gate, dual SPY
+    RSI guards, SMH MACD 12/26 branch with SHY/SMH hedge and SOXL dip-buy, top-3 chip momentum
+    filter, and the bear-mode SOXL/SSG/SOXS logic). Aligned drifted figures (ARR 103% -> 99%, Sharpe
+    1.71 -> 1.66, Calmar 2.39 -> 2.32).
+  - **Simon's KMLM Switcher**: corrected the first dip-buy branch, which reads TQQQ's oversold RSI
+    but expresses the trade through TECL, not TQQQ (the other three buy the ETF they measure). Fixed
+    the outdated "2x long VIX futures" UVXY descriptor and aligned drift (ARR 654% -> 612%, Sharpe
+    3.01 -> 2.90, Calmar 20.42 -> 19.10, backtest 1,049 -> 1,098 days).
+- Drift check clean on both, all deploy gates pass.
+
 ## [1.38.8] - 2026-09-01
 
 ### Changed
