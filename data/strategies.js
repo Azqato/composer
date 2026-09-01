@@ -2294,7 +2294,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-08-31",
     "ai_summary": [
       "Safe Sectors or Bonds is a pure defensive mean-reversion rotator, and this entry is its earliest 1999-start form, the seed that dozens of later Composer variants were forked from. The entire strategy is a single selection step: rank seven safe-haven funds by their 10-day RSI and hold the one that is most oversold, rebalanced daily. The pool mixes consumer staples (XLP) with income and municipal bond funds (BKT, VBF, NAN, MMU, PMM, EVN), so the strategy is always parked in something defensive and simply rotates toward whichever one the market has pushed down hardest. There is no leverage, no equity beta beyond staples, and no directional market call.",
-      "Its numbers are modest by design and that is the point. Over its full history back to 1999, the longest backtest in this library, it compounds at about 20.8% annualized with a 41.0% max drawdown and low 16.1% volatility, a 1.25 Sharpe and a 0.51 Calmar. The long window is its real strength: it has lived through the dot-com crash, 2008, 2020, and the 2022 rate shock rather than a single favorable stretch. The main caveat is that a basket of closed-end bond and municipal funds carries interest-rate and liquidity risk of its own, so the safe in the name means low equity beta, not the absence of drawdown."
+      "Its numbers are modest by design and that is the point. Over its full history back to 1999, one of the longest backtests in this library at about 27 years, it compounds at about 20.8% annualized with a 41.0% max drawdown and the lowest volatility in the library at 16.1%, a 1.25 Sharpe and a 0.51 Calmar. The long window is its real strength: it has lived through the dot-com crash, 2008, 2020, and the 2022 rate shock rather than a single favorable stretch. The main caveat is that a basket of closed-end bond and municipal funds carries interest-rate and liquidity risk of its own, so the safe in the name means low equity beta, not the absence of drawdown."
     ],
     "how_it_works": [
       "The strategy is a single selection rule applied every trading day. It computes the 10-day RSI of all seven candidate funds and allocates 100% to the one with the lowest reading. Because RSI falls as an asset sells off, the lowest RSI is the most recently beaten-down fund, so the rule is a systematic bet that the most oversold defensive holding is the one most likely to mean-revert upward next.",
@@ -2316,7 +2316,7 @@ window.STRATEGIES_DATA = [
     "risk_profile": {
       "verdict": "Conservative",
       "leverage": "None. The strategy holds a single unleveraged fund at a time, either consumer staples or an income/municipal bond fund. This is the source of its low 16.1% volatility, the lowest in this library.",
-      "backtest_limits": "Runs from 1999, the longest record here, spanning the dot-com crash, 2008, 2020, and the 2022 rate shock. Its modest Calmar of 0.51 reflects that steady, low-return profile rather than a period-specific fluke.",
+      "backtest_limits": "Runs from 1999, one of the longest records here at about 27 years, spanning the dot-com crash, 2008, 2020, and the 2022 rate shock. Its modest Calmar of 0.51 reflects that steady, low-return profile rather than a period-specific fluke.",
       "signal": "A single daily RSI(10) ranking with no confirmation. The portfolio can rotate frequently between similar defensive funds, and the edge rests entirely on short-horizon mean reversion within a low-beta universe.",
       "concentration": "One fund at a time out of seven. Six of the seven are interest-rate-sensitive bond or municipal funds, so despite the diversified-looking pool the dominant risk is duration and credit, not equities.",
       "suitability": "Fits a capital-preservation sleeve or a low-volatility complement to an aggressive strategy, not a primary growth engine."
@@ -2342,7 +2342,7 @@ window.STRATEGIES_DATA = [
     "trailing_three_month_return": 0.004600794945233799,
     "trailing_one_year_return": 0.3619127331151948,
     "backtest_days": 3663,
-    "description": "One of Composer's most-forked leveraged strategies. It holds TQQQ (3x Nasdaq 100) by default, but only sometimes: an RSI(10) above 79 fades the froth into UVXY, deep six-day crashes route through a black-swan pop check, and a set of bond-versus-equity regime filters (BND vs SPY RSI, IEF vs TLT, a 60-day SPY RSI trend, VIXM) decide whether to dip-buy leveraged tech and semis (TQQQ, SPXL, SOXL), short via SQQQ/SOXS, or step aside into cash (BIL).",
+    "description": "One of Composer's most-forked leveraged strategies (source name 'TQQQ or not/Pop'). A fast TQQQ RSI(10) above 79 puts the whole book in UVXY as an overbought fade; otherwise the portfolio is a 50/50 blend of two sleeves that run at once. One sleeve holds TQQQ (3x Nasdaq 100) unless a six-day crash or a bond-versus-equity regime read pushes it to cash, and the other is a 'Pop' ensemble of tiered RSI bots on QQQ, SMH and SPY that buy leveraged tech and semis (TQQQ, SPXL, SOXL) when oversold, short them (SQQQ, SOXS) or buy UVXY when overbought, and sit in cash (BIL) otherwise.",
     "tags": [
       "rsi",
       "momentum",
@@ -2354,13 +2354,13 @@ window.STRATEGIES_DATA = [
     ],
     "last_updated": "2026-08-31",
     "ai_summary": [
-      "TQQQ or Not is the seed of a large family of hold-3x-Nasdaq-but-only-when-conditions-allow strategies, and this is its original long-history build (source name 'TQQQ or not/Pop'). The default state is TQQQ, but a stack of override gates decides when to hold it and when not to. A fast RSI(10) above 79 treats the move as overbought and rotates into UVXY; a six-day cumulative crash of more than 12% triggers a pop branch that either grabs the one-day snapback in UVXY or drops into a mean-reversion sub-tree. Layered underneath are bond-versus-equity regime reads (BND vs SPY RSI, IEF vs TLT RSI, a 60-day SPY RSI trend, and a VIXM volatility gate) that route between leveraged tech and semis, inverse ETFs, and cash.",
+      "TQQQ or Not is the seed of a large family of hold-3x-Nasdaq-but-only-when-conditions-allow strategies, and this is its original long-history build (source name 'TQQQ or not/Pop'). It is not a single default-plus-overrides rule but a small ensemble. One gate sits on top: a fast TQQQ RSI(10) above 79 is read as overbought and puts the whole book in UVXY. Below that gate the portfolio splits 50/50 into two sleeves that run at the same time. The first, 'BlackSwan MeanRev BondSignal', holds TQQQ in a normal market but steps to cash or a volatility pop when a six-day TQQQ crash beyond -12%, a QQQ or TMF drawdown, or a bond-versus-equity regime read says conditions are hostile. The second, 'Pop', is a set of RSI pop-bots across QQQ, SMH and SPY that go long leveraged funds when they are oversold, short them or buy UVXY when overbought, and hold cash otherwise, with a VIXM volatility read switching between a defensive tiered version and a more aggressive one.",
       "Over a long, multi-cycle backtest that begins around 2011 it compounds at about 109% annualized with a 29.7% max drawdown, a 2.05 Sharpe and a 3.69 Calmar. That drawdown is notably shallow for a strategy whose upside comes from 3x ETFs, which is the whole appeal of being in TQQQ sometimes rather than always: the overbought fade and the crash and pop gates take it out of the way of the worst leveraged declines. The trade-off is complexity. Many interacting RSI, cumulative-return and cross-asset thresholds fit the historical record more tightly than a single rule would, so some of the backtest polish should be read as parameter tuning rather than durable edge."
     ],
     "how_it_works": [
-      "The strategy's default position is TQQQ, and everything else is an override. The first gate is an overbought fade: if TQQQ's 10-day RSI rises above 79, the strategy rotates out of leveraged tech and into UVXY, treating the spike as a setup for a pullback rather than a continuation.",
-      "If TQQQ is not overbought, a black-swan pop branch checks for a crash: when TQQQ's six-day cumulative return falls below roughly -12%, the strategy looks for a violent one-day rebound (a single-day gain above about 5.5%) to capture in UVXY, and otherwise drops into a mean-reversion sub-tree that dip-buys the most oversold leveraged sleeves (TQQQ, SPXL, SOXL) using tiered RSI checks across 10, 20 and 30-day windows on QQQ and SMH.",
-      "Sitting above the tactical gates is a regime overlay built from cross-asset RSI. Comparisons of BND versus SPY RSI, IEF versus TLT RSI, and a 60-day SPY RSI above or below 50 gauge whether bonds or equities have momentum, while a VIXM RSI check and max-drawdown reads on TMF and QQQ flag stress. In risk-off or high-stress states the strategy routes to inverse ETFs (SQQQ, SOXS) or parks in cash (BIL) instead of holding leverage, which is how it keeps its drawdown contained."
+      "The held universe is small: TQQQ, SPXL and SOXL (leveraged long tech, S&P and semis), SQQQ and SOXS (leveraged inverse), UVXY (volatility) and BIL (cash). One gate sits above everything: if TQQQ's 10-day RSI is above 79, the entire portfolio holds UVXY, treating a fast overbought reading as a pullback setup. When that gate is not triggered, the book is an equal-weight 50/50 blend of two sleeves that are evaluated independently, so on a typical day it can hold a mix such as half TQQQ and half cash. BND, SPY, IEF, TLT, QQQ, SMH, VIXM and TMF are used only as signals, never held.",
+      "The first sleeve, 'BlackSwan MeanRev BondSignal', holds TQQQ unless something is wrong. If TQQQ's six-day cumulative return is below -12% it looks for a violent one-day rebound above 5.5% to capture in UVXY, and otherwise runs a small mean-reversion check that keeps TQQQ while it is deeply oversold (RSI(10) below 32) or while TMF's 10-day drawdown is contained, dropping to cash (BIL) if not. In a normal market it holds TQQQ only when QQQ is above its 25-day average and neither QQQ nor TMF is in a drawdown; when QQQ is below that average it defers to a bond-versus-equity regime read (a 60-day SPY RSI, BND versus SPY RSI, and IEF versus TLT RSI) that keeps TQQQ only if bonds are not clearly leading, and sits in cash otherwise.",
+      "The second sleeve, 'Pop', is a set of RSI 'pop-bots'. A VIXM 10-day RSI above 70 switches it into a defensive '321 Pop' blend that runs three RSI tiers (10, 20 and 30-day) on both QQQ and SMH, going short (SQQQ or SOXS) when a tier is overbought, long leverage (TQQQ or SOXL) when it is oversold, and cash otherwise. Below that VIXM level it runs 'Pop Bot' and 'Double Popped' groups on TQQQ, SPXL, SOXL and SPY that fade overbought readings into UVXY, dip-buy oversold leverage, and confirm longs against the same 60-day SPY RSI and bond-versus-equity checks before holding TQQQ or falling back to cash. Because both sleeves and the 321 tiers are blended, the strategy frequently holds several positions at once rather than a single name."
     ],
     "signals": [
       {
@@ -2371,17 +2371,17 @@ window.STRATEGIES_DATA = [
       {
         "name": "Six-Day Crash and One-Day Pop Check",
         "tag": "mean-reversion",
-        "description": "When TQQQ's six-day cumulative return falls below about -12%, a pop branch captures a sharp one-day rebound (single-day gain above roughly 5.5%) in UVXY, or otherwise routes into an RSI-tiered dip-buy of the most oversold leveraged sleeves."
+        "description": "In the first sleeve, when TQQQ's six-day cumulative return falls below -12% a pop branch captures a sharp one-day rebound (single-day gain above 5.5%) in UVXY, otherwise a small mean-reversion check holds TQQQ while it is very oversold or TMF's drawdown is contained, and drops to cash (BIL) if not."
       },
       {
         "name": "Cross-Asset Bond vs. Equity Regime Filter",
         "tag": "momentum",
-        "description": "Relative RSI comparisons (BND vs SPY, IEF vs TLT) plus a 60-day SPY RSI trend gauge whether bonds or equities lead, steering the strategy between leveraged longs, inverse ETFs and cash."
+        "description": "Both sleeves defer to relative RSI comparisons (BND vs SPY, IEF vs TLT) plus a 60-day SPY RSI trend to judge whether bonds or equities lead, keeping each sleeve in TQQQ only when bonds are not clearly leading and sitting in cash (BIL) otherwise."
       },
       {
-        "name": "VIXM Volatility Gate",
+        "name": "VIXM Volatility Gate and Pop-Bot Tiers",
         "tag": "vix-tiers",
-        "description": "A VIXM RSI check, alongside max-drawdown reads on TMF and QQQ, flags volatility stress and pushes the strategy toward inverse ETFs or cash rather than holding leverage into a spike."
+        "description": "A VIXM 10-day RSI above 70 switches the second sleeve into a defensive tiered '321 Pop' version, running 10, 20 and 30-day RSI tiers on QQQ and SMH that short (SQQQ, SOXS) when overbought and buy leverage (TQQQ, SOXL) when oversold; separately, 10-day max-drawdown reads on QQQ and TMF push the first sleeve to cash."
       }
     ],
     "risk_profile": {
@@ -2389,7 +2389,7 @@ window.STRATEGIES_DATA = [
       "leverage": "Upside comes from 3x ETFs (TQQQ, SPXL, SOXL) and it can hold inverse 3x funds (SQQQ, SOXS). The overbought fade and crash gates limit time spent in leverage during declines, which is why the max drawdown is moderate for this asset class.",
       "backtest_limits": "A genuinely long, multi-cycle window that begins around 2011 and covers 2018, 2020 and 2022. The 29.7% max drawdown and 3.69 Calmar are strong for a leveraged strategy, but the many tuned thresholds mean out-of-sample results may be softer than the backtest.",
       "signal": "A deep, nested decision tree with dozens of RSI, cumulative-return and cross-asset thresholds. This is powerful but hard to audit, and its behavior in a novel regime is less predictable than a single-rule trend filter.",
-      "concentration": "Positions are concentrated in one sleeve at a time (leveraged tech/semis, an inverse fund, UVXY, or cash), so single-position risk is high on any given day even though the strategy rotates.",
+      "concentration": "Below the top overbought gate the book is a 50/50 blend of two sleeves, and the defensive Pop tier splits across six slots, so it often holds several positions at once rather than one name. That said, in its aggressive states both sleeves can land in leveraged tech at the same time, concentrating risk heavily.",
       "hedge": "UVXY and the inverse ETFs are the defensive states, both directional volatility or short bets rather than ballast, so the defense is itself a leveraged position."
     },
     "author_note": "Featured as the original of the widely forked TQQQ or Not family (source symphony name 'TQQQ or not/Pop'). Dozens of later Composer symphonies rebuild the same 'default to TQQQ, override on overbought, crash and regime signals' pattern. Symphony ID: g0J87gnk7SausotpUoCt."

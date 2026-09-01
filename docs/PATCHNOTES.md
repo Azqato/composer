@@ -5,6 +5,39 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.38.2] - 2026-08-31
+
+### Changed
+- **Full-tree content audit, batch 1 of the curated-library sweep: Safe Sectors or Bonds and TQQQ or
+  Not rewritten from a complete logic-tree read.** Continuing the process begun with Beta Ballers
+  (v1.38.1), each page is now reconciled against every node of the symphony's `score` tree rather than
+  its top-level structure.
+  - **TQQQ or Not (Original)**: corrected a material structural error. It is not "default TQQQ with
+    overrides"; below a single top overbought gate (TQQQ RSI(10) > 79 to UVXY) the book is a 50/50
+    blend of two sleeves that run at once, a "BlackSwan MeanRev BondSignal" sleeve and a "Pop"
+    pop-bot ensemble gated by VIXM. The "Mean Rev" branch was also mis-described (it is a small
+    TQQQ/cash check, not the QQQ/SMH tiered dip-buy, which lives in the Pop sleeve). `description`,
+    `ai_summary`, `how_it_works`, `signals` and `risk_profile` concentration updated.
+  - **Safe Sectors or Bonds (Original)**: content matched the (trivially small) tree; corrected the
+    factual overclaim "longest backtest in this library" to "one of the longest (about 27 years)",
+    since `dip-buying-tech` and `ob-os-staple-bonds` are longer. "Lowest volatility in the library"
+    verified true and kept.
+- No metric changes; drift check clean on both, all deploy gates pass.
+
+## [1.38.1] - 2026-08-31
+
+### Changed
+- **Beta Ballers (Original) rewritten from a full 874-node logic-tree read**, correcting material
+  errors: it is predominantly mean-reversion (46 of 74 filters pick the weakest performer), not the
+  "momentum machine" first described; the only top-level switch is BIL-vs-IEF RSI (its other branch
+  is tiny) with the SPY 210/360 comparison being a recurring inner gate, not a master switch; the
+  large sub-tree is driven by a TLT interest-rate regime; the held universe is 33 instruments with
+  TLT/IEF/HIBL/SPY used as signals only.
+- **New standing rule (docs/PRD.md Section 11)**: for curated strategies, read the entire logic tree
+  before drafting or revising content, and hold every sentence to a factual bar (metrics, mechanics,
+  provenance, interpretation). Defines the distinct roles of `description` (lede), `ai_summary`
+  (analyst's read) and `how_it_works` (mechanics) so the three no longer repeat each other.
+
 ## [1.38.0] - 2026-08-31
 
 ### Added
@@ -21,7 +54,7 @@ Format: `[VERSION] - YYYY-MM-DD`
     sometimes" family. 109% ARR, -30% max drawdown, 2.05 Sharpe, multi-cycle window from around 2011.
   - **Safe Sectors or Bonds (Original)** (`DtlEo2Y1DWR7hngZkxTB`), the most-copied defensive template,
     a daily lowest-RSI rotation across staples and bond/muni funds. 21% ARR, -41% max drawdown,
-    1.25 Sharpe, and at a 1999 start the longest backtest in the library.
+    1.25 Sharpe, and at a 1999 start one of the longest backtests in the library (about 27 years).
 - Curated set grows from 31 to **34**. `data/strategies.json`, `data/strategies.js`,
   `data/strategy_extras.json`/`.js`, `scripts/add_ai_summary.py`, `sitemap.xml` (34 strategy pages)
   and the homepage "Curated" stat all updated. All three IDs were already present in
