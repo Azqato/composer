@@ -1,4 +1,143 @@
 {
+  "beta-ballers-original": {
+    "annualized_turnover": 112.42710903894687,
+    "backtest_floor": {
+      "date": "2011-10-04",
+      "dated": 33,
+      "tickers": [
+        "UVXY"
+      ],
+      "total": 33
+    },
+    "etn_holdings": [],
+    "herfindahl_index": 0.9999769309299417,
+    "holdings": {
+      "AGG": 0.0,
+      "BIL": 0.0,
+      "CURE": 0.0,
+      "DBC": 0.0,
+      "EEM": 0.0,
+      "EFA": 0.0,
+      "EPI": 0.0,
+      "ERX": 0.0,
+      "EUO": 0.0,
+      "EWZ": 0.0,
+      "GLD": 0.0,
+      "MVV": 0.0,
+      "PUI": 0.0,
+      "QLD": 0.0,
+      "SHY": 0.0,
+      "SOXL": 0.0,
+      "SOXS": 0.0,
+      "SPXL": 0.0,
+      "SPXS": 0.0,
+      "SPXU": 0.0,
+      "SQQQ": 0.0,
+      "TECL": 0.0,
+      "TECS": 243076327.59498444,
+      "TMF": 0.0,
+      "TMV": 0.0,
+      "TQQQ": 0.0,
+      "UCO": 0.0,
+      "UPRO": 0.0,
+      "USD": 0.0,
+      "UUP": 0.0,
+      "UVXY": 0.0,
+      "VIXY": 0.0,
+      "YCS": 0.0
+    },
+    "holdings_inception": {
+      "AGG": "2003-09-29",
+      "BIL": "2007-05-30",
+      "CURE": "2011-06-15",
+      "DBC": "2006-02-06",
+      "EEM": "2003-04-14",
+      "EFA": "2001-08-27",
+      "EPI": "2008-02-26",
+      "ERX": "2008-11-19",
+      "EUO": "2008-11-25",
+      "EWZ": "2000-07-14",
+      "GLD": "2004-11-18",
+      "MVV": "2006-06-21",
+      "PUI": "2005-10-26",
+      "QLD": "2006-06-21",
+      "SHY": "2002-07-30",
+      "SOXL": "2010-03-11",
+      "SOXS": "2010-03-11",
+      "SPXL": "2008-11-05",
+      "SPXS": "2008-11-19",
+      "SPXU": "2009-06-25",
+      "SQQQ": "2010-02-11",
+      "TECL": "2008-12-30",
+      "TECS": "2008-12-30",
+      "TMF": "2009-04-16",
+      "TMV": "2009-04-16",
+      "TQQQ": "2010-02-11",
+      "UCO": "2008-11-25",
+      "UPRO": "2009-06-25",
+      "USD": "2007-02-01",
+      "UUP": "2007-03-01",
+      "UVXY": "2011-10-04",
+      "VIXY": "2011-01-04",
+      "YCS": "2008-11-25"
+    },
+    "k1_holdings": [
+      {
+        "held": false,
+        "name": "Invesco DB Commodity Index Tracking Fund",
+        "tax_form": "Schedule K-1",
+        "ticker": "DBC"
+      },
+      {
+        "held": false,
+        "name": "ProShares UltraShort Euro",
+        "tax_form": "Schedule K-1",
+        "ticker": "EUO"
+      },
+      {
+        "held": false,
+        "name": "ProShares Ultra Bloomberg Crude Oil",
+        "tax_form": "Schedule K-1",
+        "ticker": "UCO"
+      },
+      {
+        "held": false,
+        "name": "Invesco DB US Dollar Index Bullish Fund",
+        "tax_form": "Schedule K-1",
+        "ticker": "UUP"
+      },
+      {
+        "held": false,
+        "name": "ProShares Ultra VIX Short-Term Futures ETF",
+        "tax_form": "Schedule K-1",
+        "ticker": "UVXY"
+      },
+      {
+        "held": false,
+        "name": "ProShares VIX Short-Term Futures ETF",
+        "tax_form": "Schedule K-1",
+        "ticker": "VIXY"
+      },
+      {
+        "held": false,
+        "name": "ProShares UltraShort Yen",
+        "tax_form": "Schedule K-1",
+        "ticker": "YCS"
+      }
+    ],
+    "kurtosis": 19.72385234064587,
+    "oos_date": "2022-10-21",
+    "refresh_date": "2026-08-30",
+    "skewness": 2.381879410456449,
+    "sortino_ratio": 5.256328901083343,
+    "symphony_id": "mlgAKFuUIPZiCT0aV7ho",
+    "tail_ratio": 1.467073022046178,
+    "top_five_percent_day_contribution": 0.9187784102331827,
+    "top_one_day_contribution": 0.032228041300955204,
+    "top_ten_percent_day_contribution": 1.3849799100471918,
+    "total_costs": 6347557487.39,
+    "win_rate": 0.5556209535020601
+  },
   "bnd-vs-sphb": {
     "annualized_turnover": 42.83190005438485,
     "backtest_floor": {
@@ -534,6 +673,50 @@
     "total_costs": 40038.9,
     "win_rate": 0.5695364238410596
   },
+  "safe-sectors-or-bonds-original": {
+    "annualized_turnover": 95.44587164193486,
+    "backtest_floor": {
+      "date": "1999-05-26",
+      "dated": 7,
+      "tickers": [
+        "NAN"
+      ],
+      "total": 7
+    },
+    "etn_holdings": [],
+    "herfindahl_index": 0.9999626124785607,
+    "holdings": {
+      "BKT": 0.0,
+      "EVN": 0.0,
+      "MMU": 0.0,
+      "NAN": 159075.0,
+      "PMM": 0.0,
+      "VBF": 0.0,
+      "XLP": 0.0
+    },
+    "holdings_inception": {
+      "BKT": "1988-07-22",
+      "EVN": "1999-01-27",
+      "MMU": "1992-07-17",
+      "NAN": "1999-05-26",
+      "PMM": "1989-02-17",
+      "VBF": "1982-12-21",
+      "XLP": "1998-12-22"
+    },
+    "k1_holdings": [],
+    "kurtosis": 58.625937601042835,
+    "oos_date": "2025-11-14",
+    "refresh_date": "2026-08-30",
+    "skewness": 1.3532245953218285,
+    "sortino_ratio": 1.9120192475125424,
+    "symphony_id": "DtlEo2Y1DWR7hngZkxTB",
+    "tail_ratio": 1.1262394551818897,
+    "top_five_percent_day_contribution": 1.5801920359634565,
+    "top_one_day_contribution": 0.04088369960384924,
+    "top_ten_percent_day_contribution": 2.34272794956457,
+    "total_costs": 1134693.76,
+    "win_rate": 0.5318434122115103
+  },
   "simons-kmlm-switcher": {
     "annualized_turnover": 81.31526540036498,
     "backtest_floor": {
@@ -1015,6 +1198,57 @@
     "top_ten_percent_day_contribution": 1.90867262149236,
     "total_costs": 550294565.5,
     "win_rate": 0.5670048051254671
+  },
+  "tqqq-or-not-original": {
+    "annualized_turnover": 37.16187794114971,
+    "backtest_floor": {
+      "date": "2011-10-04",
+      "dated": 7,
+      "tickers": [
+        "UVXY"
+      ],
+      "total": 7
+    },
+    "etn_holdings": [],
+    "herfindahl_index": 0.7345105079951377,
+    "holdings": {
+      "BIL": 2512594.9802097115,
+      "SOXL": 0.0,
+      "SOXS": 0.0,
+      "SPXL": 0.0,
+      "SQQQ": 0.0,
+      "TQQQ": 3272648.928703572,
+      "UVXY": 0.0
+    },
+    "holdings_inception": {
+      "BIL": "2007-05-30",
+      "SOXL": "2010-03-11",
+      "SOXS": "2010-03-11",
+      "SPXL": "2008-11-05",
+      "SQQQ": "2010-02-11",
+      "TQQQ": "2010-02-11",
+      "UVXY": "2011-10-04"
+    },
+    "k1_holdings": [
+      {
+        "held": false,
+        "name": "ProShares Ultra VIX Short-Term Futures ETF",
+        "tax_form": "Schedule K-1",
+        "ticker": "UVXY"
+      }
+    ],
+    "kurtosis": 86.82664069984607,
+    "oos_date": "2023-01-09",
+    "refresh_date": "2026-08-30",
+    "skewness": 5.681798162501682,
+    "sortino_ratio": 4.3578142633649035,
+    "symphony_id": "g0J87gnk7SausotpUoCt",
+    "tail_ratio": 1.32644206302959,
+    "top_five_percent_day_contribution": 1.1402994303801641,
+    "top_one_day_contribution": 0.037731511641929394,
+    "top_ten_percent_day_contribution": 1.579006826347285,
+    "total_costs": 43401022.53,
+    "win_rate": 0.509011469142545
   },
   "triple-accelerator": {
     "annualized_turnover": 12.579817051421514,

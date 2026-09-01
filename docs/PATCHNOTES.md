@@ -5,6 +5,36 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.38.0] - 2026-08-31
+
+### Added
+- **Three new curated "(Original)" strategies, the seeds of the most-remixed concepts in the full
+  database.** A name-phrase clustering pass over all 6,669 `data/database.json` names (counting
+  distinct symphonies per shared phrase, after stripping author-attribution chains) surfaced the
+  largest remix families that were not yet featured. The three most-forked were added following the
+  standard "Adding a Strategy from a Composer URL" workflow (live backtest metrics, logic tree,
+  `ai_summary`, `how_it_works`, `signals`, `risk_profile`):
+  - **Beta Ballers (Original)** (`mlgAKFuUIPZiCT0aV7ho`), the original "Beta Baller + TCCC"
+    collaborative build behind roughly 200 forks. A 30-plus-instrument regime-switching ensemble.
+    721% ARR, -78% max drawdown, 2.69 Sharpe, from a December 2019 backtest start.
+  - **TQQQ or Not (Original)** (`g0J87gnk7SausotpUoCt`), the seed of the "hold TQQQ, but only
+    sometimes" family. 109% ARR, -30% max drawdown, 2.05 Sharpe, multi-cycle window from around 2011.
+  - **Safe Sectors or Bonds (Original)** (`DtlEo2Y1DWR7hngZkxTB`), the most-copied defensive template,
+    a daily lowest-RSI rotation across staples and bond/muni funds. 21% ARR, -41% max drawdown,
+    1.25 Sharpe, and at a 1999 start the longest backtest in the library.
+- Curated set grows from 31 to **34**. `data/strategies.json`, `data/strategies.js`,
+  `data/strategy_extras.json`/`.js`, `scripts/add_ai_summary.py`, `sitemap.xml` (34 strategy pages)
+  and the homepage "Curated" stat all updated. All three IDs were already present in
+  `data/database.json`, so the `strategy_extras` join is clean (34 of 34, 0 misses).
+
+### Notes
+- **The remaining seven families from the analysis are documented, not built (deferred).** The full
+  ranked table, plus honorable mentions and a separate cohort of trend-gap candidates, lives in
+  Section 14 (V2.2) of the PRD for when the set is next expanded.
+- **Prose follows the v1.37.0 convention:** the new entries state fixed backtest start dates rather
+  than year-durations, so nothing drifts as `backtest_days` grows. `check_stat_drift.py` reports no
+  drift on the three new pages (the pre-existing drift on older pages is unrelated and unchanged).
+
 ## [1.37.1] - 2026-08-30
 
 ### Changed

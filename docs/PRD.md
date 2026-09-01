@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.37.1
+**Version:** 1.38.0
 **Status:** Active
-**Last Updated:** 2026-08-28
+**Last Updated:** 2026-08-31
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -119,7 +119,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 ### MVP: Shipped (V1.0–V1.2.1)
 
 **Strategy Library**
-- Index page listing all 31 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
+- Index page listing all 34 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
 - Each strategy has a dedicated page with: name, description, tags, "Open in Composer" CTA, an AI Summary (Claude-authored analysis above How It Works), plain-English logic breakdown, signals used (cross-linked to glossary), risk profile, and full metrics table
 - Strategy card titles are clickable links
 
@@ -3683,6 +3683,29 @@ designed in a way that implies the full database will eventually get the same tr
   | `zoops-manhattan-project-2026` | **Remove, no replacement** |, |, |
 
   All 11 new symphonies are refreshed with real backtest data in `data/database.json` as of 2026-07-15. **Applying this is still a bigger lift than a normal database addition**: replacing a curated strategy means re-running the full "Adding a Strategy from a Composer URL" workflow (logic tree, AI summary, `how_it_works`/`signals`/`risk_profile` content) for each of the 11 new symphonies, then removing all 12 old slugs (11 replaced + 1 removed outright) from `data/strategies.json`: not just adding the database rows, which are already in place.
+- [~] **Curated-library expansion candidates, mined from `data/database.json` (drafted 2026-08-31; top 3 of Cohort A built in v1.38.0, remainder deferred)**: two cohorts of candidate additions surfaced by scanning the full database. Each new entry is a full "Adding a Strategy from a Composer URL" workflow, so the rest is batched future work, not a quick data drop.
+
+  **Cohort A, most-remixed "originals" (primary target).** The site's existing "(Original)" featured entries follow a rule: feature the seed of a concept that the community has remixed heavily (TQQQ FTLT, KMLM Switcher, Holy Grail, etc.). A name-phrase clustering pass over all 6,669 database names (counting distinct symphonies per shared phrase, after stripping author-attribution chains like "DereckN / Garen / BrianE" and version/date tags) found the largest **non-featured** remix families. The **top 3 were built in v1.38.0** (owner picked the specific original symphony for each of those three, which is why their built IDs differ from the auto-suggested ones). The remaining seven, plus honorable mentions, are the reference backlog. "Recommended original" was chosen as the plainest name with the longest backtest, a proxy for earliest since inception date is not a stored field:
+
+  | Remix family | ~Versions in DB | Recommended / built original | symphony_id | Status |
+  |---|---|---|---|---|
+  | Beta Baller | ~194 | Beta Ballers (Original), owner-picked V3.0.2 build | `mlgAKFuUIPZiCT0aV7ho` | **Built v1.38.0** |
+  | TQQQ or Not | ~79 | TQQQ or Not (Original), owner-picked "TQQQ or not/Pop" | `g0J87gnk7SausotpUoCt` | **Built v1.38.0** |
+  | Safe Sectors or Bonds | ~50 | Safe Sectors or Bonds (Original), "(29,32,1999)" | `DtlEo2Y1DWR7hngZkxTB` | **Built v1.38.0** |
+  | WAM (Wash / Market Assassin) | ~45 | WAM | `PT0MPMH3D1jVPQ4dDSbL` | Deferred |
+  | All Weather (Dalio template) | ~49 | All Weather (No Leverage, No Inverse) | `WEIWaUG6KezasMkBDejI` | Deferred |
+  | Black Swan Catcher | ~41 | Pure Black Swan Catcher | `v54pjoQDNWLlPolNVW2b` | Deferred |
+  | Tangency Portfolio | ~40 | Tangency Portfolio (~34y backtest) | `G6q9h6Gq10FU0T1Ie6db` | Deferred |
+  | Uncorrelated (Mix) | ~40 | Uncorrelated 1 | `LHMIBySjwWKF7JL0ADnq` | Deferred |
+  | Pop Bots | ~38 | OG v2.1 Double Pop Bots (BrianE, Oct 2011) | `g33fjz01aHQjbX0skf8p` | Deferred |
+  | Sandy's Golden Dragon | ~34 | Sandy's Golden Dragon 3.0 | `mJKMWMDYGsQnkQBm1dEN` | Deferred |
+  | Commander BND (honorable mention) | ~33 | Commander Bond Retirement | `LuL8N8qc4O1Q8D2WUdLA` | Deferred |
+  | Four Corners (honorable mention) | ~31 | Four Corners (No Leverage) | `6iBNNfeGXhfQibyGohWf` | Deferred |
+  | Cathie's One Night Stand (honorable mention) | ~28 | Cathie's One Night Stand (Hawk), long-backtest copy | `K5XxqnCKGXh8mRYKxFRX` | Deferred |
+
+  **"NOVA" (~99) was excluded**: it is an author brand prefixed across many different strategies, not one remixed concept. Version counts are name-match approximations and the "original" picks are best-effort, not confirmed-earliest; where the owner supplied a specific original for a built entry, the built `symphony_id` above is authoritative.
+
+  **Cohort B, trend-gap picks (cool, but deferred, per owner 2026-08-31).** A separate quality scan (backtest >=1,000 days, ARR >15%, max DD better than -55%, Sharpe >1.0, holdings verified) for strong symphonies in **trends the curated set does not cover**: crypto ([Interstellar Crypto BTC](https://app.composer.trade/symphony/DpGUZ9C2JlkeJSACC8G5/details) `DpGUZ9C2JlkeJSACC8G5`), global-macro/commodity (Combo 10 FrankRound `7ExFmXDSm50l7Ny4LKHP`), non-correlated ensemble (`YGuokJ1v4xLtBDony0QS`), unleveraged quality (NOVA Best No Leverage `REA8lSqNhmSPbAUxwjDb`), managed futures (TQQQ or BTAL or DBMF `NbHMZZQEaCwoWntsO1zF`), inflation hedge (Drawdown Protection Inflation v3 `FF4qXNAGS8FD1rhXexy9`), mega-cap stock momentum (IFF Power of Correlation `TwuMI72ZkbobsMWB91x3`), commodity all-weather (Steadfast Portfolio V5 `0OmkeZAS4w1uwSlxMWC2`), capital preservation (Magic Sauce `7fI331il6gG6QnoGClIO`), longest-track tactical (Primary Collection Gobi `ILmPIKhRAZNiYWaA5Km0`). **Deferred in favor of Cohort A.**
 - [x] **Add "Leaderboard Ranking" as an option for the Screener (built 2026-08-15, v1.17.0)**: the V1.17 Leaderboard score/tier now surfaces inside the Screener, both ways as decided:
   - A **"Leaderboard Tier" select** in the filter grid, alongside the existing bucket filters. Options are cumulative ("S+ only", "S or better", … "C or better") rather than exact-match, to match the threshold semantics every other bucket filter already uses ("Over 12%", "Better than -30%") so the grid reads consistently.
   - **Sortable Rank / Tier / Score columns on all three `SCREENER_VIEWS`** (Overview, Risk-Adjusted, Distribution), via a shared `RANK_COLUMNS` spread so the three view definitions can't drift.

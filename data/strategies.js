@@ -32,7 +32,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "Structurally, the Frontrunner is a cash-first dip-buyer: it parks in T-bills (BIL) by default and only deploys into 3x leveraged ETFs (SOXL, TQQQ, or UPRO) when a fast RSI(10) reading crosses tight oversold thresholds, with semiconductors checked first. A second branch uses XLY and UVXY RSI to rotate into volatility (VXX) or a short (SPXU) when markets overheat. The purpose is to spend most of its time earning risk-free interest and act only at genuine short-term extremes, making each entry deliberate rather than continuous. It is also the 50% base component shared by every other zoop symphony, so understanding it explains half of this library.",
-      "The backtest begins in early 2018, bounded by VXX, and shows a notably lower drawdown than the other leveraged zoop strategies precisely because its time in market is limited, with correspondingly efficient risk-adjusted ratios. The main caveat is that buying into oversold conditions means individual entries can keep falling before they recover, so the smooth equity curve masks sharp single-trade risk. It best suits an investor who wants systematic dip-buying exposure rather than a constant leveraged allocation."
+      "Over a roughly 8-year backtest it posts a 91% annualized return with a 22% max drawdown, a notably lower drawdown than the other leveraged zoop strategies precisely because its time-in-market is limited. Its 1.78 Sharpe and 4.23 Calmar reflect that favorable risk-adjusted trade-off. The main caveat is that buying into oversold conditions means individual entries can keep falling before they recover, so the smooth equity curve masks sharp single-trade risk. It best suits an investor who wants systematic dip-buying exposure rather than a constant leveraged allocation."
     ],
     "how_it_works": [
       "The 2026 Frontrunner is a dip-buying strategy that defaults to T-bills (BIL) and only rotates into leveraged ETFs when extreme short-term RSI signals an oversold entry opportunity. The strategy checks RSI(10), a fast 10-period RSI, against tight thresholds: semiconductors (SMH) below 23, Nasdaq 100 (QQQ) below 28, or S&P 500 (SPY) below 28 each trigger a corresponding 3x leveraged buy (SOXL, TQQQ, or UPRO respectively). Priority is top-to-bottom: semiconductor oversold signals are checked first.",
@@ -104,7 +104,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This is a full-cycle, multi-signal strategy that layers RSI, the 200-day moving average, and volatility filters on top of the shared Frontrunner dip-buy base. The moving-average gate defines the broad regime, RSI handles overbought and oversold timing, and the volatility check routes into hedges when conditions turn turbulent. The intent is to capture leveraged upside in bull trends while using multiple independent confirmations to step aside before the worst of a drawdown, the 'holy grail' being strong compounding that still survives full market cycles.",
-      "The backtest begins in 2012 and the strategy combines many signals across many regimes. The trade-off is a deep max drawdown and high volatility, marking it as an aggressive leveraged strategy, with risk-adjusted ratios that are solid but not exceptional for the risk taken. The long backtest is a real strength here: it has been tested through the 2018, 2020 and 2022 stress periods rather than a single favorable stretch. It suits investors comfortable holding through large paper losses in pursuit of high long-run growth."
+      "Across a long 14-year backtest it returns 113% annualized, the result of combining many signals over many regimes. The trade-off is a deep 45% max drawdown and high 54% volatility, marking it as an aggressive leveraged strategy, and the 1.65 Sharpe and 2.53 Calmar are solid but not exceptional for the risk taken. The long backtest is a real strength here: it has been tested through 2018, 2020, and 2022 stress periods rather than a single favorable stretch. It suits investors comfortable holding through large paper losses in pursuit of high long-run growth."
     ],
     "how_it_works": [
       "The Holy Grail is a 50/50 equal-weight combination of the 2026 Frontrunner and an extended signal block. The second component begins with the same RSI(10) oversold checks as the Frontrunner, buying SOXL, TQQQ, or UPRO on semiconductor/Nasdaq/S&P extreme dips, then runs 14 overbought detection checks before proceeding to its default logic.",
@@ -180,7 +180,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "The logic is a long-term TQQQ (3x Nasdaq 100) holding wrapped in systematic safety exits. Rather than buy-and-hold, it uses the 200-day moving average and RSI/volatility checks to step out of leveraged tech before major breakdowns, then re-enter when conditions stabilize, all on top of the shared Frontrunner dip-buy base. It is built for the investor who believes in Nasdaq 100 growth over the long run but cannot stomach the catastrophic, decay-amplified losses that come from holding a 3x ETF unhedged through a bear market.",
-      "The backtest begins in 2012, and the headline risk is a deep max drawdown with high volatility; the safety exits soften the worst leveraged-tech crashes without eliminating them. Its risk-adjusted ratios are typical for this aggressive cohort. The value proposition is less about beating the other zoop variants and more about converting an un-survivable 3x buy-and-hold into something an investor can actually hold through a cycle."
+      "Over roughly 14 years it compounds at 111% annualized, but the headline risk is a 46% max drawdown and 55% volatility; the safety exits soften the worst leveraged-tech crashes without eliminating them. Its 1.63 Sharpe and 2.40 Calmar are typical for this aggressive cohort. The value proposition is less about beating the other zoop variants and more about converting an un-survivable 3x buy-and-hold into something an investor can actually hold through a cycle."
     ],
     "how_it_works": [
       "TQQQ FOR THE LONG TERM (FTLT) is built around one central question: is SPY above or below its simple moving average? This SMA comparison is the primary trend gate for the second component (50% weight). When SPY is in an uptrend and SPXL (3x S&P 500) RSI is below 80, the strategy defaults to holding TQQQ, leveraged Nasdaq exposure during confirmed broad market uptrends. The Frontrunner component (the other 50%) runs in parallel, adding RSI(10) oversold dip-buying for semiconductors, Nasdaq, and S&P.",
@@ -257,7 +257,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This variant is the most aggressive of the 'rotation' zoops: it dynamically moves across high-momentum leveraged instruments using RSI, 200-day MA, and volatility signals, aiming to always be positioned in whatever is compounding fastest while the Frontrunner base handles dip-buying. The purpose is maximal participation in leveraged momentum, chasing the strongest trend rather than committing to a single ticker like TQQQ or UPRO.",
-      "It carries the best Sharpe of the core leveraged zoop variants, meaning its return per unit of risk is comparatively efficient despite a deep max drawdown and high volatility. The long backtest, which begins in 2012 and spans multiple cycles, lends credibility. Still, the 'always in the hottest asset' design makes it whipsaw-prone in choppy, trendless markets, and the deep drawdown places it firmly in aggressive territory."
+      "It delivers 122% annualized over roughly 14 years with the best Sharpe (1.82) of the core leveraged zoop variants, meaning its return per unit of risk is comparatively efficient despite a 46% max drawdown and 51% volatility. The long backtest spanning multiple cycles lends credibility. Still, the 'always in the hottest asset' design makes it whipsaw-prone in choppy, trendless markets, and the deep drawdown places it firmly in aggressive territory."
     ],
     "how_it_works": [
       "The Excellent Adventure shares its structural skeleton with the Holy Grail, a 50/50 split between the Frontrunner and an extended signal block with the same 14 RSI overbought checks across tech ETFs and sector rotation comparisons. Any overbought trigger routes to SH. The critical distinction is in what happens when all 14 checks pass and volatility is normal.",
@@ -333,7 +333,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "As the name suggests, this strategy holds TQQQ only when multiple independent signals (RSI, the 200-day MA regime, and volatility filters) simultaneously confirm a favorable entry; otherwise it sits in the defensive Frontrunner base or cash. It is a precision-timing approach: the logic is deliberately selective, trading time-in-market for entry quality, on the thesis that avoiding leveraged exposure during unconfirmed conditions is worth more than capturing every up day.",
-      "That selectivity pays off statistically: over a window beginning in 2012 it records the strongest risk-adjusted profile in the library alongside the highest backtested cumulative return here. Its max drawdown is meaningfully shallower than the always-in TQQQ variants. The standout characteristic is this efficiency: by being TQQQ 'sometimes' rather than always, it captures much of the upside with materially less of the pain, making it one of the more compelling profiles for risk-aware leveraged investors."
+      "That selectivity pays off statistically: it records the strongest risk-adjusted profile in the library, a 2.47 Sharpe and 5.22 Calmar, alongside a 182% annualized return and the highest backtested cumulative return here, all over a robust 14-year window. Its 35% max drawdown is meaningfully shallower than the always-in TQQQ variants. The standout characteristic is this efficiency: by being TQQQ 'sometimes' rather than always, it captures much of the upside with materially less of the pain, making it one of the more compelling profiles for risk-aware leveraged investors."
     ],
     "how_it_works": [
       "Sometimes TQQQ is among the most complex strategies in the library. It pairs the Frontrunner with a multi-layer decision tree that interrogates bond market conditions, multi-period momentum, and cumulative return thresholds before committing to TQQQ. The strategy truly only holds TQQQ 'sometimes', when a very specific constellation of cross-asset conditions align. Uniquely, when UVXY RSI exceeds 65, this strategy routes to SH rather than SPXU, making it more conservative on volatility spikes than its siblings.",
@@ -414,7 +414,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This strategy front-loads multiple pre-position 'safety checks' (RSI extremes, 200-day MA regime, and volatility conditions) that must clear before it commits to a leveraged ETF, otherwise defaulting to the conservative Frontrunner base. The design philosophy is drawdown reduction first: each check is a veto gate intended to keep the strategy out of leveraged positions during the conditions that historically precede large losses, while still compounding strongly over the long run.",
-      "Over a window beginning in 2012 its risk-adjusted ratios are mid-pack for the cohort. In practice the safety checks moderate rather than eliminate leveraged drawdowns, and the deep max drawdown shows that no set of pre-entry filters fully neutralizes 3x ETF risk in a severe selloff. It suits an investor who wants a more cautious, gated version of leveraged tech exposure but understands the residual downside remains substantial."
+      "Over roughly 14 years it returns 102% annualized with a 44% max drawdown and 51% volatility; the 1.63 Sharpe and 2.36 Calmar are mid-pack for the cohort. In practice the safety checks moderate rather than eliminate leveraged drawdowns, and the deep max drawdown shows that no set of pre-entry filters fully neutralizes 3x ETF risk in a severe selloff. It suits an investor who wants a more cautious, gated version of leveraged tech exposure but understands the residual downside remains substantial."
     ],
     "how_it_works": [
       "Safety Checks takes an ensemble voting approach to position sizing. After the Frontrunner component (50% weight), the second half is itself an equal-weight portfolio of 10 independent safety conditions evaluated in parallel. Each condition tests a different aspect of QQQ's market state: 75-day cumulative return vs. moving-average return, 3-day return vs. standard deviation, 20-period EMA vs. SMA, multi-period RSI levels (10-period, 50-period, 100-period), and Price(QQQ) vs. SMA, checked from multiple angles.",
@@ -490,7 +490,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "The Manhattan Project is the most signal-dense zoop variant, integrating many independent market indicators (RSI, moving averages, momentum, and volatility tiers) to assemble what it treats as an optimal leveraged position at each rebalance, layered over the Frontrunner base. It approaches market timing as a quasi-scientific exercise: more inputs, more conditional branches, and a composite read of regime intended to position aggressively only when the weight of evidence agrees.",
-      "The complexity translates into strong numbers over a window beginning in 2012, including a max drawdown shallower than most always-on leveraged peers. The long, multi-cycle backtest is a strength. The flip side of heavy signal-stacking is overfitting risk, since many tuned thresholds can fit the historical period more tightly than they generalize, so the excellent backtest should be read with the understanding that complex strategies carry more parameter risk out of sample."
+      "The complexity translates into strong numbers: 154% annualized over roughly 14 years with a 2.10 Sharpe and 4.43 Calmar, and a 35% max drawdown that is shallower than most always-on leveraged peers. The long, multi-cycle backtest is a strength. The flip side of heavy signal-stacking is overfitting risk, since many tuned thresholds can fit the historical period more tightly than they generalize, so the excellent backtest should be read with the understanding that complex strategies carry more parameter risk out-of-sample."
     ],
     "how_it_works": [
       "The Manhattan Project is the most sophisticated multi-asset symphony in the library. In addition to the Frontrunner (50% weight), it adds a second signal block that routes through Treasury bonds (TLT price and RSI), short-term yields (BIL RSI), and commodity volatility (DBC standard deviation) as cross-market regime classifiers before determining equity exposure. The BIL RSI signal is a key differentiator: when T-bill prices weaken (BIL RSI falls below baseline, signaling rising short-term yields), the strategy turns cautious and routes to SH or TQQQ based on SPY RSI.",
@@ -571,7 +571,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This is a regime-switching strategy that rotates between KMLM, a managed-futures, trend-following ETF that tends to do well when equities struggle, and leveraged equity ETFs, using RSI and volatility signals plus the Frontrunner base. The purpose is to be positioned for gains in two opposite environments: riding leveraged equities when markets rally, and pivoting to managed-futures trend exposure when they do not, creating a more all-weather return stream than a pure equity-leverage approach.",
-      "It posts some of the headline-grabbing numbers of this library: one of the highest Calmar ratios here against a comparatively shallow max drawdown. The critical caveat is the backtest length. Beginning in late 2020, it is far shorter than the other zoop variants, and managed-futures diversification looked especially good across the specific 2021 to 2022 period when KMLM rallied as stocks fell. Those extraordinary ratios are therefore more period-dependent and should be discounted relative to the longer-tested strategies."
+      "It posts the headline-grabbing numbers of this library: 280% annualized, a 2.63 Sharpe, and a remarkable 9.52 Calmar with only a 30% max drawdown. The critical caveat is the backtest length. At roughly 5 years (1,377 trading days) it is far shorter than the 14-year zoop variants, and managed-futures diversification looked especially good across the specific 2021 to 2022 period when KMLM rallied as stocks fell. Those extraordinary ratios are therefore more period-dependent and should be discounted relative to the longer-tested strategies."
     ],
     "how_it_works": [
       "The KMLM Switcher pairs the Frontrunner with a second component focused on individual leveraged ETF dip-buying and tech-sector relative momentum. After the full 14-layer overbought cascade (which routes to SH on any RSI >79 extreme) and the UVXY volatility check, the strategy evaluates individual oversold readings: TQQQ RSI <30 triggers a TQQQ entry, SOXL RSI <30 triggers SOXL, SPXL RSI <30 triggers SPXL. A unique signal not found in other strategies: LABU (3x Biotech) RSI below 25 triggers a biotech sector dip-buy.",
@@ -646,7 +646,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This is the S&P 500 counterpart to the TQQQ long-term strategy: it holds UPRO (3x S&P 500) for the long run with the same systematic safety-exit framework of 200-day MA regime gating, RSI/volatility checks, and the Frontrunner dip-buy base. Because the S&P 500 is broader and less concentrated than the Nasdaq 100, the strategy is designed to deliver similar leveraged trend-following behavior with a somewhat smoother ride than its QQQ-based sibling.",
-      "Its max drawdown and volatility are both lower than the TQQQ version, confirming the broader-index, lower-beta intent, while its risk-adjusted ratios land mid-pack. It is the natural pick for an investor who wants the long-term-leverage-with-safety-exits concept but prefers S&P 500 breadth over Nasdaq 100 concentration, accepting modestly lower returns for modestly lower volatility."
+      "Over roughly 14 years it returns 94% annualized with a 33% max drawdown and 47% volatility, both lower than the TQQQ version, confirming the broader-index, lower-beta intent, while the 1.64 Sharpe and 2.81 Calmar land mid-pack. It is the natural pick for an investor who wants the long-term-leverage-with-safety-exits concept but prefers S&P 500 breadth over Nasdaq 100 concentration, accepting modestly lower returns for modestly lower volatility."
     ],
     "how_it_works": [
       "UPRO FTLT ('For The Long Term') mirrors the TQQQ FTLT structure exactly, but substitutes UPRO (ProShares UltraPro S&P 500, 3x) for TQQQ in every branch. Where TQQQ FTLT defaults to Nasdaq 100 leverage, UPRO FTLT defaults to broad S&P 500 leverage. The core trend gate is Price(SPY) > SMA(): when SPY is above its simple moving average and SPXL (another 3x S&P ETF) RSI is below 80, the strategy holds UPRO. The Frontrunner component (50% weight) runs in parallel with its standard RSI(10) dip-buy logic.",
@@ -722,7 +722,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This TQQQ strategy 'orchestrates' multiple timing signals (RSI, 200-day MA, momentum, and volatility tiers) and acts only when they align, much like instruments playing in harmony, on top of the shared Frontrunner base. Conceptually it is close to the other TQQQ-long-term variants but frames its edge as signal coordination: each indicator must agree before leveraged exposure is taken, the goal being to avoid acting on any single signal in isolation.",
-      "Over a window beginning in 2012 it carries the deepest max drawdown of the core TQQQ variants. The long backtest is reassuring, but the relatively weak Calmar shows that requiring signal 'harmony' did not, historically, buy meaningfully better drawdown protection than simpler approaches, making it a solid but not standout member of the TQQQ family."
+      "Across roughly 14 years it compounds at 109% annualized, but it carries the deepest max drawdown of the core TQQQ variants at 48%, with 53% volatility and a 1.64 Sharpe and 2.28 Calmar. The long backtest is reassuring, but the relatively weak Calmar shows that requiring signal 'harmony' did not, historically, buy meaningfully better drawdown protection than simpler approaches, making it a solid but not standout member of the TQQQ family."
     ],
     "how_it_works": [
       "The Leveraged TQQQ Symphony refines the standard 'SPY above SMA equals TQQQ' approach with three overbought guards that can block entry even during confirmed uptrends. When SPY is above its SMA, the strategy checks three conditions before entering TQQQ: TQQQ RSI >79 (TQQQ is overbought), SPY RSI >80 (S&P is overbought), and, uniquely, SPY 60-period RSI >60 (medium-term momentum is extended). All three must be absent for the strategy to hold TQQQ.",
@@ -803,7 +803,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This is the simplest, most transparent strategy in the library: hold TQQQ when QQQ is above its 200-day moving average, otherwise move to cash, with the Frontrunner base handling opportunistic dip-buys. The single 200-day MA gate is one of the most studied and durable trend filters in systematic investing, and the appeal here is exactly that legibility. Anyone can understand, audit, and trust the rule, with no opaque stack of tuned thresholds.",
-      "Over a window beginning in 2012 its performance is fully competitive with far more complex variants. That is the noteworthy point: a one-rule strategy matches the multi-signal symphonies, a strong argument that most of the value comes from the trend gate itself rather than the added complexity. Its low overfitting risk and interpretability make it an excellent baseline for understanding leveraged trend-following."
+      "Over roughly 14 years it returns 109% annualized with a 39% max drawdown, 53% volatility, and a 1.65 Sharpe and 2.80 Calmar, performance fully competitive with far more complex variants. That is the noteworthy point: a one-rule strategy matches the multi-signal symphonies, a strong argument that most of the value comes from the trend gate itself rather than the added complexity. Its low overfitting risk and interpretability make it an excellent baseline for understanding leveraged trend-following."
     ],
     "how_it_works": [
       "TQQQ 200d MA 3x Leverage is the most transparent TQQQ strategy in the suite: the second component (50% weight) checks TQQQ's own price directly against its simple moving average, not SPY, not QQQ, but TQQQ itself. When TQQQ is above its SMA and RSI is below 77 (a slightly more sensitive overbought threshold than the 79-80 used elsewhere), the strategy holds TQQQ. When TQQQ is overbought or below its SMA, it moves to SH.",
@@ -880,7 +880,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This is the most aggressive zoop symphony, using SOXL (3x Semiconductors) as its core growth engine, governed by RSI, momentum, and volatility signals plus the Frontrunner base. Semiconductors are among the highest-beta corners of the market, and 3x leverage on top compounds that volatility. The strategy deliberately accepts extreme swings in exchange for the explosive upside that semiconductor leadership can deliver during a tech bull run.",
-      "The numbers make the trade-off explicit: the largest returns of the zoop set, bought with a brutal max drawdown and the highest volatility of the group, which is why it carries max-drawdown and standard-deviation tags. Its risk-adjusted ratios are respectable only because the returns are so large. This is a strategy for investors with the highest risk tolerance and a long horizon who can psychologically and financially survive losing roughly two-thirds of peak value."
+      "The numbers make the trade-off explicit: 164% annualized over roughly 14 years, but a brutal 66% max drawdown and 69% volatility, the highest-risk profile of the zoop set, which is why it carries max-drawdown and standard-deviation tags. Its 1.75 Sharpe and 2.50 Calmar are respectable only because the returns are so large. This is a strategy for investors with the highest risk tolerance and a long horizon who can psychologically and financially survive losing roughly two-thirds of peak value."
     ],
     "how_it_works": [
       "SOXL Growth is structurally unique in the library: its primary signal is MaxDD (running maximum drawdown) of SOXL rather than a price-vs-SMA comparison. When SOXL's maximum drawdown reaches or exceeds 50%, the strategy enters a 'deep drawdown mode' where it calibrates position size using TQQQ's standard deviation of daily returns as a secondary volatility gauge. Low TQQQ volatility (std-dev ≤ 3.8%) routes to a three-ETF basket of SOXL, TQQQ, and SPXL; higher volatility triggers further branching based on TQQQ RSI and cumulative return readings.",
@@ -955,7 +955,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This is a multi-asset extreme dip-buying strategy that waits for catastrophic crashes in 3x ETFs across semiconductors, biotech, China, financials, small caps, and global markets, entering only at RSI levels far below conventional oversold thresholds. The structure is essentially a basket of deep-mean-reversion triggers: it does nothing most of the time and fires only when an asset has fallen to a genuine washout, betting on the sharp snapback that often follows panic selling.",
-      "Its backtested figures are spectacular but they demand heavy skepticism. The backtest begins in early 2024 and is by far the shortest in the library, and a deep-dip-buying strategy will look extraordinary in any window that happens to contain sharp V-shaped recoveries. These returns are almost certainly not repeatable out of sample; the strategy is best viewed as an illustration of the mean-reversion concept rather than a realistic expectation, and the short, period-specific backtest is its single most important caveat."
+      "Its backtested figures are spectacular (735% annualized, a 3.04 Sharpe, and a 24.81 Calmar with only a 30% max drawdown) but they demand heavy skepticism. The backtest is just 2 years (551 trading days), by far the shortest in the library, and a deep-dip-buying strategy will look extraordinary in any window that happens to contain sharp V-shaped recoveries. These returns are almost certainly not repeatable out-of-sample; the strategy is best viewed as an illustration of the mean-reversion concept rather than a realistic expectation, and the short, period-specific backtest is its single most important caveat."
     ],
     "how_it_works": [
       "Low Catchers is a 50/50 combination of a frontrunner component and a dedicated low-catching component. The low-catchers half works as a waterfall of extreme oversold conditions across a diversified basket of 3x leveraged ETFs, defaulting to cash (BIL via the frontrunner) and only deploying capital when market conditions reach truly catastrophic thresholds. Unlike the other strategies in this library that use RSI extremes in the 22–31 range, Low Catchers pushes entry thresholds far lower, as tight as RSI 14 for some ETFs.",
@@ -1030,7 +1030,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "The original Holy Grail is a TQQQ-centric trend-follower: it stays long leveraged tech while TQQQ holds above its 200-day moving average, hedges into UVXY when the market is overbought, and rotates into dip-buying or outright short positions once TQQQ breaks below the 200-day line. The logic is a clean three-state machine of bull (long leverage), froth (volatility hedge), and bear (dip-buy or short), designed to participate fully in uptrends while having explicit, pre-defined responses to overheating and to regime breakdown.",
-      "The backtest begins in late 2011, and the max drawdown and volatility mark it as aggressive. The lengthy test window through multiple bear markets is a meaningful strength, and the explicit short and hedge branches mean it is built to profit from, not merely survive, downturns. It suits investors who want active bull-and-bear leveraged tech exposure governed by a transparent moving-average regime rule."
+      "Over a long 15-year backtest it returns 154% annualized with a 1.80 Sharpe and 3.24 Calmar, while the 47% max drawdown and 62% volatility mark it as aggressive. The lengthy test window through multiple bear markets is a meaningful strength, and the explicit short and hedge branches mean it is built to profit from, not merely survive, downturns. It suits investors who want active bull-and-bear leveraged tech exposure governed by a transparent moving-average regime rule."
     ],
     "how_it_works": [
       "The Holy Grail uses TQQQ's own 200-day moving average as the primary regime gate. When TQQQ is trading above its 200d MA, the strategy enters bull mode and allocates 80% of the portfolio to an RSI-gated TQQQ position. Within that allocation, if TQQQ's RSI(10) exceeds 79, signaling short-term overbought conditions, the position pivots to UVXY (2x long VIX futures) as a defensive hedge. Otherwise, the strategy holds TQQQ directly. A 5% rebalance corridor means positions are only adjusted when drift exceeds that threshold, reducing unnecessary churn compared to daily-rebalancing strategies.",
@@ -1099,7 +1099,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This is a TQQQ buy-and-hold core wrapped in a comprehensive risk-management overlay. SPY's 200-day moving average sets the bull/bear regime; in bull markets it runs TQQQ with dual overbought guards on TQQQ and SPXL plus RSI-triggered dip-buying into TECL and UPRO, and in bear markets it filters between SQQQ and the TLT bond hedge by RSI. The purpose is to hold leveraged Nasdaq exposure for the long term while having layered, rules-based defenses against the drawdowns that destroy unhedged 3x positions.",
-      "The backtest begins in late 2011. The headline risk is a max drawdown among the deeper ones here, a reminder that even a well-engineered overlay cannot fully tame 3x exposure. The long, multi-cycle backtest and the explicit bond-hedge bear branch are its strengths; it fits a long-horizon investor who wants leveraged tech with genuine defensive machinery rather than naked buy-and-hold."
+      "Across roughly 15 years it compounds at 165% annualized with a strong 1.86 Sharpe and 3.08 Calmar. The headline risk is a 54% max drawdown and 63% volatility, among the deeper drawdowns here, a reminder that even a well-engineered overlay cannot fully tame 3x exposure. The long, multi-cycle backtest and the explicit bond-hedge bear branch are its strengths; it fits a long-horizon investor who wants leveraged tech with genuine defensive machinery rather than naked buy-and-hold."
     ],
     "how_it_works": [
       "TQQQ For The Long Term aims to capture TQQQ's long-run compounding potential while systematically managing the deepest drawdowns. The primary trend gate is SPY's 200-day moving average, when the broad market is in an established uptrend, the strategy runs in bull mode and holds TQQQ. In bull mode it applies two sequential overbought guards: if TQQQ RSI(10) exceeds 79, exit to UVXY; if SPXL (3x S&P500) RSI(10) exceeds 80, also exit to UVXY. These dual checks, one on the QQQ proxy, one on the SPY proxy, catch overbought conditions from two angles. The strategy rebalances daily, unlike the 5% corridor approach used by its cousin Holy Grail.",
@@ -1172,7 +1172,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This is a bi-directional mean-reversion strategy built around ARKK's leveraged siblings. It reads the market regime by comparing IEI (treasuries) and SPHB (high-beta) RSI, then buys the single worst recent performer from either a long leveraged pool (when conditions are risk-off and a bounce is likely) or an inverse-ETF pool (when conditions are risk-on and a pullback is likely). The 'buy the biggest loser' mechanic is pure short-horizon mean reversion, with the IEI-versus-SPHB read deciding which direction to fade.",
-      "The strong ratios are attractive, but the backtest begins in mid-2022 and is relatively short, skewed toward the high-volatility environment in which fade-the-extreme tactics thrive; the same approach can bleed in calm, persistently trending markets where the worst performer keeps losing. Treat the impressive metrics as period-specific and the strategy as a tactical, volatility-dependent mean-reversion play."
+      "It shows 244% annualized over a 4-year backtest with a 2.25 Sharpe and 5.48 Calmar against a 45% max drawdown. The strong ratios are attractive, but the roughly 1,028-day backtest is relatively short and skewed toward the high-volatility 2021 to 2024 environment in which fade-the-extreme tactics thrive; the same approach can bleed in calm, persistently trending markets where the worst performer keeps losing. Treat the impressive metrics as period-specific and the strategy as a tactical, volatility-dependent mean-reversion play."
     ],
     "how_it_works": [
       "Wooden ARKK Machine 2.2: named after Cathie Wood's ARKK Innovation ETF, operates on a single regime signal: the relative 7-period RSI of IEI (iShares 3-7 Year Treasury Bond ETF) versus SPHB (Invesco S&P 500 High Beta ETF). When bonds show stronger short-term RSI than high-beta equities, the market is in a risk-off or stressed state. When high-beta equities show stronger RSI than bonds, the market is in risk-on mode. This single comparison routes the entire 90% allocated portfolio into one of two diametrically opposed asset pools.",
@@ -1242,7 +1242,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "A semiconductor-sector specialist by Dereck Nielsen, this strategy selects the top 3 performers from a 19-company chip universe during MACD-bullish bull markets, switches to tactical dip-buying and partial bond hedges when MACD turns bearish, and actively shorts semiconductors via SOXS or SSG in confirmed bear conditions. It combines stock-level momentum selection (own the strongest chips) with a sector-level MACD regime switch, so it concentrates in winners during uptrends and flips defensive or short when the sector rolls over.",
-      "Over a window beginning in 2012 its max drawdown is relatively contained for a single-sector strategy, helped by the bond hedges and short branches. The multi-cycle test window and the genuine bear-market shorting logic are strengths. Its main characteristic is concentration: by living entirely in semiconductors it is fully exposed to chip-cycle booms and busts, rewarding investors who specifically want active, regime-aware exposure to that sector."
+      "Over a long 14-year backtest it returns 103% annualized with a 1.71 Sharpe, 2.39 Calmar, and a 43% max drawdown, a relatively contained drawdown for a single-sector strategy, helped by the bond hedges and short branches. The multi-cycle test window and the genuine bear-market shorting logic are strengths. Its main characteristic is concentration: by living entirely in semiconductors it is fully exposed to chip-cycle booms and busts, rewarding investors who specifically want active, regime-aware exposure to that sector."
     ],
     "how_it_works": [
       "Super Semiconductors, designed by Dereck Nielsen, is built around the thesis that semiconductor leadership can be captured systematically while managing sector-specific risk. The outer gate uses an 8-day exponential moving average of SPY versus SPY's 200-day simple moving average, a more sensitive version of the classic 200d MA filter that reacts faster to trend changes. When SPY EMA(8) is above SPY SMA(200), the strategy enters bull mode with two sequential overbought guards: SPY RSI(10) above 80 triggers a rotation to UVXY, and SPY RSI(60) above 60 triggers rotation into the best-performing asset from [TMF, UUP, VIXY, XLP, SPLV] by 15-day return, a defensive basket covering bonds, dollar, volatility hedges, consumer staples, and low-volatility equities.",
@@ -1317,7 +1317,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This is a multi-component, equal-weight strategy that runs several market-cycle systems in parallel: a SPY 200-day trend engine with 5-ETF momentum selection, a shorter-term TQQQ 20-day component, and a secondary SPY regime component, all sharing dual UVXY overbought guards and a cascading bear-market protocol that includes dip-buying, deep-bear routing, and a QQQ cumulative-return detector. Equal-weighting independent sub-strategies is a diversification technique: each 'horseman' captures a different timeframe or signal, and blending them smooths the combined equity curve.",
-      "The combination of a long backtest beginning in late 2011, parallel-system diversification and layered bear protocols gives it one of the more robust risk-adjusted profiles among the original (non-zoop) strategies. The cost is complexity, since many interacting components are harder to audit and carry more parameter risk, but the multi-system design is a deliberate hedge against any single signal failing."
+      "Across roughly 14 years it returns 167% annualized with a strong 2.18 Sharpe and 3.68 Calmar against a 45% max drawdown and 51% volatility. The combination of a long backtest, parallel-system diversification, and layered bear protocols gives it one of the more robust risk-adjusted profiles among the original (non-zoop) strategies. The cost is complexity, since many interacting components are harder to audit and carry more parameter risk, but the multi-system design is a deliberate hedge against any single signal failing."
     ],
     "how_it_works": [
       "The Four Horsemen of the Apocalypse is an equal-weight portfolio of multiple parallel components, each running its own full market-cycle logic simultaneously. The dominant components use SPY's 200-day moving average as the primary regime gate. In bull mode, each shares the same overbought stack: QQQ RSI(10) above 81 OR SPY RSI(10) above 80 triggers UVXY; SPY RSI(60) above 60 triggers rotation into the best-performing defensive asset from [TMF, UUP, VIXY, XLP, VTI/SPLV, IWM, SCO] by 15-day return. When neither overbought condition is met, the bull-mode primary bet is a 21-day momentum filter selecting the top 3 of [TQQQ, SOXL, TECL, UDOW, UPRO] combined with a position in SVXY (short VIX futures, profiting from volatility premium decay in calm markets).",
@@ -1396,7 +1396,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "A semiconductor specialist by Garen/DN, this strategy uses UVXY's 30-day RSI to detect high-volatility regimes, then trades SOXL or SOXS based on the size of single-day moves in SMH, applying a tiered multi-timeframe RSI cascade it calls the '30-20-10 Double Pop' to catch mean reversion after extreme semiconductor swings. The design is explicitly volatility-gated mean reversion: it only engages when chips are moving violently, and uses nested RSI timeframes to time the snapback in either direction.",
-      "The backtest begins in 2012, but the risk is severe: a deep max drawdown, high volatility, and risk-adjusted figures in the lower half of this group. The noteworthy characteristic is that the strategy takes very large losses relative to its returns, since fading extreme single-sector moves works until a move keeps going, and 3x chip ETFs punish a wrong-way bet harshly. It is a high-conviction, high-pain semiconductor tool, not a balanced allocation."
+      "Over a long 14-year backtest it returns 111% annualized, but the risk is severe: a 69% max drawdown, 66% volatility, and the weakest risk-adjusted figures of this group (1.46 Sharpe, 1.61 Calmar). The noteworthy characteristic is that the strategy takes very large losses relative to its returns, since fading extreme single-sector moves works until a move keeps going, and 3x chip ETFs punish a wrong-way bet harshly. It is a high-conviction, high-pain semiconductor tool, not a balanced allocation."
     ],
     "how_it_works": [
       "SOXX Group: full name 'K Wave V6 (w/ SOXX Double Pops) Pure SOXX l Garen/DN', is built on a single thesis: semiconductor ETFs (SOXX/SMH/SOXL) tend to experience outsized single-day moves followed by mean-reversions, and these moves are more predictable during periods of elevated market volatility. The outer gate checks RSI(UVXY,30d) > 63. When UVXY's 30-day RSI is this elevated, the strategy enters 'high volatility' mode where daily magnitude triggers become active. The specific thresholds (-3%, -5.5%, -7% for down days; +3.5%, +4.5%, +5.5% for up days) represent different tiers of 'pop' severity, each carrying a different expected reversal profile.",
@@ -1466,7 +1466,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This is a machine-learning-optimized SOXL strategy (the 'RL' stands for Reinforcement Learning) that uses standard deviation of returns alongside RSI and drawdown thresholds to navigate between long semiconductor exposure, inverse ETFs, and diversified leveraged baskets. The hyper-precise, oddly specific numeric thresholds betray its algorithmic origin: rather than round human-chosen levels, the boundaries were fitted by an optimization process searching for the best historical configuration.",
-      "It carries the deepest drawdown in the entire library, with extreme volatility and weak risk-adjusted ratios. Two cautions dominate. First, that drawdown means the strategy lost the large majority of peak value at its worst, which few investors could hold through. Second, RL and optimized strategies are especially prone to overfitting, because thresholds tuned to maximize a past backtest often degrade out of sample. The long test window helps, but the algorithmic curve-fitting risk and catastrophic drawdown are the headline concerns."
+      "It returns 143% annualized over a long 15-year backtest but carries the second-deepest drawdown in the entire library at 82%, with extreme 85% volatility and weak 1.47 Sharpe and 1.74 Calmar ratios. Two cautions dominate. First, an 82% drawdown means the strategy lost more than four-fifths of peak value at its worst, which few investors could hold through. Second, RL and optimized strategies are especially prone to overfitting, because thresholds tuned to maximize a past backtest often degrade out-of-sample. The long test window helps, but the algorithmic curve-fitting risk and catastrophic drawdown are the headline concerns."
     ],
     "how_it_works": [
       "SOXL Growth v2.4.5 RL takes its name from its generation method: 'RL' indicates Reinforcement Learning, a machine-learning technique where an agent learns optimal decisions through trial and reward signals on historical data. The tell is in the thresholds, human-designed strategies use round numbers (RSI > 50, drawdown > 50%), while RL-optimized strategies produce values like RSI(SOXL,32d) <= 62.1995, StdDev(SOXL,105d) <= 4.9226, and RSI(SOXL,30d) >= 57.49. These precise decimals are the fingerprints of an optimizer that tested thousands of parameter combinations. The strategy integrates two categories of signals most strategies ignore: standard deviation of returns (volatility-of-volatility) and maximum drawdown thresholds on the instruments themselves.",
@@ -1534,7 +1534,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "Named after the well-publicized chip-stock trading, this is a semiconductor mean-reversion strategy that uses 5-day SOXX cumulative returns to detect weekly momentum extremes, then trades SOXL or SOXS at the reversal point, while applying individual RSI checks on NVDA and AMD to catch extreme overbought and oversold conditions in the two bellwether names. The thesis is short-horizon reversion in chips: fade weekly extremes and lean on the most influential individual stocks to confirm the turn.",
-      "This is among the weakest risk-adjusted profiles of the leveraged strategies here, and its metrics should be read as a cautionary example: over a window beginning in 2012 it produced one of the deepest max drawdowns in the library and a Calmar below 1.0, meaning the annualized return is smaller than the maximum loss endured to earn it. Fading single-sector momentum without a strong regime gate exposes it to ruinous trends where the 'extreme' keeps extending. The long backtest only underscores that the poor ratios are structural rather than a small-sample artifact; this strategy illustrates how high single-sector leverage can produce large returns and unacceptable risk simultaneously."
+      "This is the weakest risk-adjusted profile in the library, and its metrics should be read as a cautionary example: 73% annualized over roughly 14 years, but an 86% max drawdown, the deepest here, with a 1.10 Sharpe and a Calmar of just 0.85, meaning the annualized return is actually smaller than the maximum loss endured to earn it. Fading single-sector momentum without a strong regime gate exposes it to ruinous trends where the 'extreme' keeps extending. The long backtest only underscores that the poor ratios are structural, not a small-sample artifact; this strategy illustrates how high single-sector leverage can produce large returns and unacceptable risk simultaneously."
     ],
     "how_it_works": [
       "Inside Nancy Pelosi's Chips - V3 is named after U.S. House Speaker Nancy Pelosi, whose family made large and well-timed trades in semiconductor stocks including NVDA and AVGO during the period when the CHIPS and Science Act (2022) was being debated and signed into law. The strategy's name is an editorial comment on the information advantage that public officials might have in chip-sector legislative timing. The strategy itself uses purely technical signals, no news or legislative calendars, but focuses exclusively on the same semiconductor universe that made Pelosi's trades famous.",
@@ -1599,7 +1599,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This is a clean three-branch strategy gated by SPY's extreme short-term RSI. When SPY is extremely overbought it rotates into a UVXY volatility hedge; when extremely oversold it attacks with leveraged ETFs; and in the normal middle state it runs momentum selection from a curated mega-cap basket spanning value, growth, and crypto-proxy names. The structure is intuitive (hedge the froth, buy the panic, and otherwise own the strongest large caps) which keeps it far more legible than the deeply nested semiconductor strategies.",
-      "The backtest begins in 2015. The notable risk is the max drawdown: despite using only RSI and momentum, the leveraged-attack branch and high-beta mega-cap basket still produce deep losses in severe selloffs. Its appeal is simplicity and breadth, a transparent rule set over a diversified large-cap universe, for an investor who wants clear logic and accepts aggressive drawdowns."
+      "Over an 11-year backtest it returns 133% annualized with a 1.64 Sharpe, 2.31 Calmar, and a 58% max drawdown. The notable risk is that drawdown: despite using only RSI and momentum, the leveraged-attack branch and high-beta mega-cap basket still produce deep losses in severe selloffs. Its appeal is simplicity and breadth, a transparent rule set over a diversified large-cap universe, for an investor who wants clear logic and accepts aggressive drawdowns."
     ],
     "how_it_works": [
       "Top Cap by MA + RSI ETF Hedge uses SPY's 6-day RSI as a binary traffic light that routes 100% of the portfolio into one of three distinct modes. The RSI window is unusually short, most strategies in this library use 10-day RSI. A 6-day RSI is more sensitive and therefore more selective: it reaches extreme readings (above 90 or below 28) only during very sharp short-term moves, not routine trending action. The 90 and 28 thresholds are also more extreme than the 79-80 / 30-31 used by most comparable strategies, meaning the hedge and leveraged-attack modes fire infrequently. The vast majority of trading days fall into the normal regime and route to the mega-cap stock basket.",
@@ -1661,7 +1661,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This is a deliberately minimalist SPY trend-follower with a TQQQ core and a UVXY overbought hedge, originally written to cross-validate a Python backtesting implementation. SPY's moving average is the only regime gate and TQQQ's 10-day RSI is the only secondary signal, producing just four simple branches that choose between TQQQ, UVXY, and SPY. Its value is pedagogical: it is the clearest possible illustration of a moving-average regime gate plus a single RSI hedge, with nothing else to obscure the mechanism.",
-      "The bare-bones design shows in the risk: one of the deepest max drawdowns in the library, high volatility, and a Calmar that has now fallen below 1.0, meaning the annualized return no longer covers the maximum drawdown endured to earn it. With only one hedge and no bond or short branch, it has little defense in a sustained bear market, which is why the drawdown is so deep. It is best understood as a reference implementation and a baseline for what minimal logic achieves, not as an optimized strategy to deploy as-is."
+      "Over roughly 15 years it returns 82% annualized, but the bare-bones design shows in the risk: an 82% max drawdown, 65% volatility, and a Calmar of exactly 1.00, where the annualized return equals the maximum drawdown, the breakeven line for risk-adjusted appeal. With only one hedge and no bond or short branch, it has little defense in a sustained bear market, which is why the drawdown is so deep. It is best understood as a reference implementation and a baseline for what minimal logic achieves, not as an optimized strategy to deploy as-is."
     ],
     "how_it_works": [
       "Mean Reversion Comparison to Python Code was built as a validation tool, its name documents that the Composer symphony was constructed to replicate and compare against a separately coded Python backtesting implementation of the same strategy logic. This makes it structurally one of the simplest strategies in the library, as simplicity is necessary for accurate replication across two environments. The entire decision tree consists of four leaves: UVXY, TQQQ, SPY, or TQQQ (repeated in bear mode). The SPY primary gate checks whether SPY's current price is above its moving average, when true, the market is in an uptrend and the strategy is bullish; when false, the market is in a downtrend.",
@@ -1716,7 +1716,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This is a two-component strategy. A 'VIXM Black Swan Catcher' holds mid-term VIX futures when volatility has been persistently elevated, providing a crisis hedge, while a multi-sector momentum rotator selects the single best performer from a diversified pool spanning semiconductor leaders, the broad market, energy, commodities, and clean energy. The combination pairs a tail-risk hedge with a breadth-seeking momentum engine, so the strategy aims to rotate into whatever sector is leading while holding insurance for volatility spikes.",
-      "Over a window beginning in 2012 it produced a modest Sharpe, a weak Calmar and a deep max drawdown. The weak Calmar signals the core issue: the sector-momentum sleeve still suffers large drawdowns, and the VIXM hedge, which bleeds during calm markets, drags on returns more than it protects in this configuration. The diversified sector universe is genuinely broad, but the metrics suggest the hedge-plus-rotation balance is not well tuned; it is a moderate strategy whose risk outweighs its return relative to the leveraged peers here."
+      "Over roughly 14 years it returns 74% annualized with a modest 1.19 Sharpe, a 1.13 Calmar, and a deep 65% max drawdown. The weak Calmar signals the core issue: the sector-momentum sleeve still suffers large drawdowns, and the VIXM hedge, which bleeds during calm markets, drags on returns more than it protects in this configuration. The diversified sector universe is genuinely broad, but the metrics suggest the hedge-plus-rotation balance is not well tuned; it is a moderate strategy whose risk outweighs its return relative to the leveraged peers here."
     ],
     "how_it_works": [
       "SPY, Energy, Chips, Commodities (originally named with a black swan emoji '🦢' to signal its tail-risk awareness) runs two parallel components. The first is a 'Black Swan Catcher' that watches RSI(VIXM,40d) > 69. VIXM (ProShares VIX Mid-Term Futures ETF) tracks 4-7 month VIX futures rather than the 1-month futures tracked by VXX or the 2x daily version tracked by UVXY. Mid-term VIX moves more slowly and decays less aggressively from contango, making it a more sustainable fear hedge. A 40-day RSI of 69 in VIXM means volatility has been persistently elevated for over a month, this is not a daily spike signal but a sustained-fear detector.",
@@ -1776,7 +1776,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "Simon's KMLM Switcher is an aggressive three-layer RSI strategy. An 11-ticker overbought gate routes into UVXY whenever any tracked sector overheats; a sequential dip-buy cascade catches 3x ETF crashes at extreme oversold levels; and a KMLM momentum switch toggles between the two most oversold leveraged ETFs when tech leads, or defensive SQQQ/TLT when managed-futures momentum dominates. The layered design tries to do three jobs at once: hedge froth, buy capitulation, and pick the right regime between leveraged tech and managed-futures defense.",
-      "Its backtested numbers are extraordinary, including the highest Calmar and Sharpe in this library, but the central caveat is that the backtest only begins in 2022. Like the related KMLM Switcher, those ratios lean heavily on the 2021 to 2024 window, where managed-futures diversification and sharp dip-buys looked exceptional; such returns are not a reasonable forward expectation. The strategy is a sophisticated, all-weather-style design, but its short, period-specific test means the spectacular metrics should be discounted far more than those of the strategies tested since 2011."
+      "Its backtested numbers are extraordinary (654% annualized, a 3.01 Sharpe, and a 20.42 Calmar against a 32% max drawdown) but the central caveat is the 4-year (1,049-day) backtest. Like the related KMLM Switcher, those ratios lean heavily on the 2021 to 2024 window, where managed-futures diversification and sharp dip-buys looked exceptional; such returns are not a reasonable forward expectation. The strategy is a sophisticated, all-weather-style design, but its short, period-specific test means the spectacular metrics should be discounted far more than those of the 14-year-tested strategies."
     ],
     "how_it_works": [
       "The outermost layer checks RSI(10) on 11 market tickers in sequence: QQQE (equal-weight Nasdaq), VTV (value), VOX (communications), TECL (3x tech ETF), VOOG (S&P 500 growth), VOOV (S&P 500 value), XLP (consumer staples), TQQQ (3x QQQ), XLY (consumer discretionary), FAS (3x financials), and SPY. Thresholds range from 75 (XLP) to 80 (XLY, FAS, SPY), with most set at 79. If any single ticker crosses its threshold, 100% of the portfolio rotates to UVXY (2x long VIX futures). The strategy treats any overbought sector as a systemic early warning, one hot ticker is enough to go defensive. This makes Simon's KMLM Switcher unusual: most strategies rely on 1-2 overbought signals, while this strategy checks 11 in parallel, dramatically increasing the frequency of UVXY rotations.",
@@ -1849,7 +1849,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "This strategy is built on a counterintuitive premise: when bonds (BND) are outperforming high-beta equities (SPHB) on a 10-day RSI basis, the strategy buys SOXL (3x semiconductors), the riskiest holding in this library. The logic inverts conventional risk-on thinking. BND momentum exceeding SPHB momentum signals a short-term risk-off sentiment extreme, which the strategy reads as a setup for a sharp reversal in speculative assets. The position is binary: fully in SOXL or fully in SHV (cash), with UVXY RSI tiers providing a separate volatility-based crash guard that can redirect to cash or SOXL depending on implied volatility conditions.",
-      "The strategy posts one of the deepest max drawdowns in this library. The backtest begins around May 2011 when SPHB launched, so it excludes both the 2008 financial crisis and the dot-com bust, two periods that would almost certainly produce larger drawdowns. The returns are compelling but that drawdown and the extreme SOXL concentration are the defining risk characteristics. This suits only investors who can accept losing most of their portfolio value mid-cycle while trusting that a relative RSI signal between bonds and high-beta stocks is a durable edge in semiconductors."
+      "Over approximately 14.7 years, the strategy posts 100.6% annualized returns with a 70% max drawdown, one of the deepest in this library. The backtest begins around May 2011 when SPHB launched, so it excludes both the 2008 financial crisis and the dot-com bust, two periods that would almost certainly produce larger drawdowns. The 100x+ returns are compelling but the 70% drawdown and the extreme SOXL concentration are the defining risk characteristics. This suits only investors who can accept losing most of their portfolio value mid-cycle while trusting that a relative RSI signal between bonds and high-beta stocks is a durable edge in semiconductors."
     ],
     "how_it_works": [
       "The strategy's central signal compares the 10-day RSI of BND (Vanguard Total Bond Market ETF) versus SPHB (Invesco S&P 500 High Beta ETF), two proxies at opposite ends of the risk spectrum. When BND's 10-day RSI exceeds SPHB's, the strategy interprets this as a short-term risk-off signal and takes its most aggressive position: holding SOXL (3x leveraged semiconductors). The rationale is mean-reversion. Defensive assets outperforming aggressive ones on a 10-day basis often signals a temporary sentiment extreme, and the leveraged semiconductor position profits from the eventual rotation back to risk-on. The inverse also holds: when SPHB RSI exceeds BND RSI (risk-on environment), the strategy defaults to SHV (near cash), treating high-beta outperformance as a sign the rally may be overextended.",
@@ -1916,7 +1916,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "Dip Buying Tech is explicitly designed as a backtesting study and educational baseline, not a live portfolio strategy. The author built it to test whether a simple two-signal decision tree (a 200-day moving average trend gate plus a single oversold trigger) could survive the dot-com crash, which the 27.2-year backtest window starting April 1999 directly validates. The logic is three branches: hold SPY in bull markets, retreat to XLP consumer staples as the defensive base in bear markets, and dip-buy XLK technology when QQQ's 10-day RSI falls below 30. No leverage, no exotic tickers, nothing hidden.",
-      "The annualized return is modest but represents more than 27 years of live-through-it performance from 1999, including two major crashes and a rate shock, at the second-lowest max drawdown in this library. Its value is conceptual: it demonstrates that even the simplest possible regime-plus-oversold structure can outperform passive SPY over the long run without leverage. The strategy is intentionally simple enough to explain in one sentence, making it the clearest possible baseline for understanding how more complex strategies in this library build on the same two-signal foundation."
+      "The 14.0% annualized return is modest but represents 27-plus years of live-through-it performance including two major crashes and a rate shock, all with a 26.3% max drawdown. Its value is conceptual: it demonstrates that even the simplest possible regime-plus-oversold structure can outperform passive SPY over the long run without leverage. The strategy is intentionally simple enough to explain in one sentence, making it the clearest possible baseline for understanding how more complex strategies in this library build on the same two-signal foundation."
     ],
     "how_it_works": [
       "Dip Buying Tech is one of the simplest strategies in this library: a three-leaf decision tree with a single trend gate and one dip-buy signal. In bull mode, when SPY's current price is above its 200-day simple moving average, the strategy holds SPY outright with 100% allocation. No overbought guards, no leveraged ETFs, no momentum filters. The full Composer name makes the educational intent explicit: 'Dip Buying Tech Below 10d RSI of 30 using XLP as the cash position and XLK as the tech ETF to backtest through the dot com crash.' The strategy was designed as a transparent baseline to test whether adding a single tech dip-buy signal to a SPY 200d MA framework meaningfully improves returns over a 27-year window that includes two catastrophic bear markets.",
@@ -1976,7 +1976,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "Ob Os Staple my Bonds V0.0 is the original baseline of a multi-version strategy series. The name decodes as Overbought/Oversold (Ob/Os) plus Staples (XLP) plus Bonds (VBF). The core logic is continuous relative-value rotation between two defensive assets: whichever of XLP (consumer staples) and VBF (Invesco Bond Fund) currently has the lower 10-day RSI receives the full allocation. This treats RSI as a relative beaten-down signal rather than an absolute threshold, rotating toward whichever defensive asset has been sold down more recently. The single offensive override fires when QQQ's RSI(10) falls to or below 30, rotating the entire portfolio to unleveraged QQQ for a mean-reversion dip-buy.",
-      "The result is the most conservative profile in this library: the lowest max drawdown here, earned across a record running from 1999 that includes the dot-com crash, the 2008 financial crisis and the 2022 rate shock. That combination of steady compounding and low drawdown reflects what a strategy looks like when its default state is always in something defensive. The V0.0 designation means this page covers only the 1999-start original; the author notes later versions (V0.1 through V0.3) use progressively shorter backtest windows, which typically improves reported metrics. This version is best understood as a long-run reference for defensive RSI rotation behavior across full market cycles."
+      "The result is one of the most conservative profiles in this library: 17.4% annualized with a 19.6% max drawdown across 27.2 years including the dot-com crash, 2008 financial crisis, and 2022 rate shock. That combination of steady compounding and low drawdown reflects what a strategy looks like when its default state is always in something defensive. The V0.0 designation means this page covers only the 1999-start original; the author notes later versions (V0.1 through V0.3) use progressively shorter backtest windows, which typically improves reported metrics. This version is best understood as a long-run reference for defensive RSI rotation behavior across full market cycles."
     ],
     "how_it_works": [
       "Ob Os Staple my Bonds V0.0 is the original baseline of a multi-version strategy series. The name decodes as Overbought/Oversold (Ob/Os) + Staples (XLP) + Bonds (VBF). The strategy operates on a single oversold threshold: when QQQ's 10-day RSI falls to or below 30, it exits its defensive position and buys QQQ outright. A QQQ RSI(10) at or below 30 signals a sustained sharp Nasdaq decline, and the strategy enters expecting a mean-reversion bounce. Unlike most strategies in this library that use leveraged ETFs (TQQQ, TECL, SOXL) for dip-buying, V0.0 holds unleveraged QQQ, reflecting both its 1999 origin date when 3x ETFs did not yet exist and its conservative design philosophy.",
@@ -2035,7 +2035,7 @@ window.STRATEGIES_DATA = [
     "last_updated": "2026-09-01",
     "ai_summary": [
       "Sometimes TQQQ earns its name through a priority-first architecture: before any regime analysis, two unconditional safety checks run. If QQQ's 10-day RSI falls below 32, the strategy rotates immediately to TECL (3x tech sector) for an early dip-buy entry. If SPY's 10-day RSI falls below 30, it rotates to UPRO (3x S&P 500). These priority gates can fire regardless of the broader market regime. After the priority checks clear, the strategy routes through five sub-regimes: Choppy, Bull 1, Bull 2, Bear 1, and Bear 2, each deciding whether TQQQ exposure is warranted based on layered bond-versus-equity momentum signals, ultimately choosing between TQQQ, various leveraged alternatives, and defensive positions.",
-      "The strategy posts one of the highest cumulative returns in this library, with a max drawdown that is large in absolute terms but notably restrained relative to those headline numbers. The backtest starts around October 2011 when UVXY launched, excluding 2008 and the early stages of the 2010 flash crash. Its Sharpe and Calmar are exceptional by any standard. The five-regime depth and the priority-gate architecture are the distinguishing design features: the strategy is not 'always TQQQ' or 'sometimes TQQQ based on one signal' but a carefully sequenced decision tree that treats TQQQ as the preferred outcome and routes away from it only under explicit disqualifying conditions."
+      "Over approximately 14.7 years the strategy posts 326.5% annualized returns and a roughly 1.9 billion times cumulative return, among the highest backtest figures in this library, with a 45.6% max drawdown that is large in absolute terms but notably restrained relative to those headline numbers. The backtest starts around October 2011 when UVXY launched, excluding 2008 and the early stages of the 2010 flash crash. The 2.76 Sharpe and 7.17 Calmar are exceptional by any standard. The five-regime depth and the priority-gate architecture are the distinguishing design features: the strategy is not 'always TQQQ' or 'sometimes TQQQ based on one signal' but a carefully sequenced decision tree that treats TQQQ as the preferred outcome and routes away from it only under explicit disqualifying conditions."
     ],
     "how_it_works": [
       "'Sometimes TQQQ' describes the strategy's core design principle: TQQQ (3x Nasdaq 100) is the preferred holding, but only under specific conditions, hence 'sometimes.' Two priority checks run before any regime analysis. If QQQ's 10-day RSI falls below 32, the strategy immediately rotates to TECL (3x technology sector ETF), entering tech recoveries slightly above the classic 30 threshold for earlier positioning. If QQQ is not that oversold but SPY's 10-day RSI falls below 30 (a broader market capitulation signal), it rotates to UPRO (3x S&P 500). These two dip-buy gates are unconditional: they fire regardless of what the SPY 200-day moving average or any other regime signal says. Their counterparts at the upper end of the RSI range are overbought exits: if QQQ RSI(10) exceeds 81 or SPY RSI(10) exceeds 80, the strategy buys UVXY (2x long VIX) as an overbought hedge, converting extreme RSI readings into volatility-long positions.",
@@ -2265,5 +2265,204 @@ window.STRATEGIES_DATA = [
       }
     ],
     "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each figure is the move in that ticker between the first and last trading day of the window, computed from the daily closes in `data/prices.json`. The regimes themselves were identified by reconstructing this strategy's state machine over those same prices, which is a reading of the logic rather than a backtest: it carries no fees and no slippage. It reproduces the pipeline's own turnover figure independently, changing asset every 4.2 trading days against the 60.7 annual rebalances Composer reports, which is the reason it is trusted this far and no further."
+  },
+  {
+    "slug": "safe-sectors-or-bonds-original",
+    "name": "Safe Sectors or Bonds (Original)",
+    "symphony_url": "https://app.composer.trade/symphony/DtlEo2Y1DWR7hngZkxTB/details",
+    "symphony_id": "DtlEo2Y1DWR7hngZkxTB",
+    "annualized_rate_of_return": 0.20835954238568655,
+    "max_drawdown": -0.40950833292998523,
+    "cumulative_return": 170.257053,
+    "calmar_ratio": 0.508804157646556,
+    "sharpe_ratio": 1.2541166736243374,
+    "standard_deviation": 0.16128905889179168,
+    "min": -0.12194940044222924,
+    "mean": 0.0008026797540848161,
+    "median": 0.0006778468904375945,
+    "max": 0.23476380533469565,
+    "trailing_one_month_return": 0.006347372328380452,
+    "trailing_three_month_return": 0.03744582355415571,
+    "trailing_one_year_return": 0.023942974136176076,
+    "backtest_days": 6847,
+    "description": "The original, 1999-start version of the most-copied defensive template on Composer. Each day it holds whichever single fund has the lowest 10-day RSI from a basket of seven safe havens: consumer staples (XLP) plus a set of bond and municipal income funds (BKT, VBF, NAN, MMU, PMM, EVN). There is no leverage and no growth equity, just a daily rotation into the most beaten-down defensive asset on the theory that it is the one most likely to bounce.",
+    "tags": [
+      "rsi",
+      "mean-reversion",
+      "original"
+    ],
+    "last_updated": "2026-08-31",
+    "ai_summary": [
+      "Safe Sectors or Bonds is a pure defensive mean-reversion rotator, and this entry is its earliest 1999-start form, the seed that dozens of later Composer variants were forked from. The entire strategy is a single selection step: rank seven safe-haven funds by their 10-day RSI and hold the one that is most oversold, rebalanced daily. The pool mixes consumer staples (XLP) with income and municipal bond funds (BKT, VBF, NAN, MMU, PMM, EVN), so the strategy is always parked in something defensive and simply rotates toward whichever one the market has pushed down hardest. There is no leverage, no equity beta beyond staples, and no directional market call.",
+      "Its numbers are modest by design and that is the point. Over its full history back to 1999, the longest backtest in this library, it compounds at about 20.8% annualized with a 41.0% max drawdown and low 16.1% volatility, a 1.25 Sharpe and a 0.51 Calmar. The long window is its real strength: it has lived through the dot-com crash, 2008, 2020, and the 2022 rate shock rather than a single favorable stretch. The main caveat is that a basket of closed-end bond and municipal funds carries interest-rate and liquidity risk of its own, so the safe in the name means low equity beta, not the absence of drawdown."
+    ],
+    "how_it_works": [
+      "The strategy is a single selection rule applied every trading day. It computes the 10-day RSI of all seven candidate funds and allocates 100% to the one with the lowest reading. Because RSI falls as an asset sells off, the lowest RSI is the most recently beaten-down fund, so the rule is a systematic bet that the most oversold defensive holding is the one most likely to mean-revert upward next.",
+      "The candidate pool is deliberately defensive. XLP (consumer staples) is the only equity sleeve, and it is one of the lowest-volatility sectors. The other six holdings are income and municipal bond funds (BKT, VBF, NAN, MMU, PMM, EVN), which behave more like rate-sensitive credit than like the stock market. Rotating among them keeps the portfolio in low-beta assets at all times while still expressing a short-horizon reversion view about which one to own.",
+      "There is no trend gate, no leverage, and no offensive branch. The strategy never holds growth equities or 3x ETFs, which is why its return is modest and its drawdown shallow relative to almost everything else in this library. The (29,32,1999) in the source symphony name refers to its parameters and the 1999 backtest start; this page documents that original long-history configuration."
+    ],
+    "signals": [
+      {
+        "name": "Lowest RSI(10) Defensive Selection",
+        "tag": "rsi",
+        "description": "Ranks all seven candidate funds by 10-day RSI each day and holds the single lowest one. RSI is used as a relative beaten-down gauge rather than an absolute threshold, so the portfolio always rotates toward the most oversold defensive asset."
+      },
+      {
+        "name": "Staples vs. Bond/Muni Rotation",
+        "tag": "mean-reversion",
+        "description": "The candidate pool pairs consumer staples (XLP) with six income and municipal bond funds (BKT, VBF, NAN, MMU, PMM, EVN). Rotating among low-beta assets expresses a short-horizon mean-reversion view while keeping the strategy defensive at all times."
+      }
+    ],
+    "risk_profile": {
+      "verdict": "Conservative",
+      "leverage": "None. The strategy holds a single unleveraged fund at a time, either consumer staples or an income/municipal bond fund. This is the source of its low 16.1% volatility, the lowest in this library.",
+      "backtest_limits": "Runs from 1999, the longest record here, spanning the dot-com crash, 2008, 2020, and the 2022 rate shock. Its modest Calmar of 0.51 reflects that steady, low-return profile rather than a period-specific fluke.",
+      "signal": "A single daily RSI(10) ranking with no confirmation. The portfolio can rotate frequently between similar defensive funds, and the edge rests entirely on short-horizon mean reversion within a low-beta universe.",
+      "concentration": "One fund at a time out of seven. Six of the seven are interest-rate-sensitive bond or municipal funds, so despite the diversified-looking pool the dominant risk is duration and credit, not equities.",
+      "suitability": "Fits a capital-preservation sleeve or a low-volatility complement to an aggressive strategy, not a primary growth engine."
+    },
+    "author_note": "This is the original long-history version of the widely forked Safe Sectors or Bonds template (source symphony name 'Safe Sectors or Bonds (29,32,1999)'), whose 1999 start makes it the longest backtest in this library. It is featured as the original because dozens of later Composer symphonies rebuild the same lowest-RSI defensive rotation on shorter windows. Symphony ID: DtlEo2Y1DWR7hngZkxTB."
+  },
+  {
+    "slug": "tqqq-or-not-original",
+    "name": "TQQQ or Not (Original)",
+    "symphony_url": "https://app.composer.trade/symphony/g0J87gnk7SausotpUoCt/details",
+    "symphony_id": "g0J87gnk7SausotpUoCt",
+    "annualized_rate_of_return": 1.0940524548166968,
+    "max_drawdown": -0.2968577865288211,
+    "cumulative_return": 46456.642523,
+    "calmar_ratio": 3.6854430116505577,
+    "sharpe_ratio": 2.0503246318860007,
+    "standard_deviation": 0.39652943095611587,
+    "min": -0.19604640713169263,
+    "mean": 0.0032262462680835856,
+    "median": 0.000109058198644707,
+    "max": 0.5001159290636095,
+    "trailing_one_month_return": -0.015908599793851397,
+    "trailing_three_month_return": 0.004600794945233799,
+    "trailing_one_year_return": 0.3619127331151948,
+    "backtest_days": 3663,
+    "description": "One of Composer's most-forked leveraged strategies. It holds TQQQ (3x Nasdaq 100) by default, but only sometimes: an RSI(10) above 79 fades the froth into UVXY, deep six-day crashes route through a black-swan pop check, and a set of bond-versus-equity regime filters (BND vs SPY RSI, IEF vs TLT, a 60-day SPY RSI trend, VIXM) decide whether to dip-buy leveraged tech and semis (TQQQ, SPXL, SOXL), short via SQQQ/SOXS, or step aside into cash (BIL).",
+    "tags": [
+      "rsi",
+      "momentum",
+      "mean-reversion",
+      "leveraged-etfs",
+      "inverse-etfs",
+      "vix-tiers",
+      "original"
+    ],
+    "last_updated": "2026-08-31",
+    "ai_summary": [
+      "TQQQ or Not is the seed of a large family of hold-3x-Nasdaq-but-only-when-conditions-allow strategies, and this is its original long-history build (source name 'TQQQ or not/Pop'). The default state is TQQQ, but a stack of override gates decides when to hold it and when not to. A fast RSI(10) above 79 treats the move as overbought and rotates into UVXY; a six-day cumulative crash of more than 12% triggers a pop branch that either grabs the one-day snapback in UVXY or drops into a mean-reversion sub-tree. Layered underneath are bond-versus-equity regime reads (BND vs SPY RSI, IEF vs TLT RSI, a 60-day SPY RSI trend, and a VIXM volatility gate) that route between leveraged tech and semis, inverse ETFs, and cash.",
+      "Over a long, multi-cycle backtest that begins around 2011 it compounds at about 109% annualized with a 29.7% max drawdown, a 2.05 Sharpe and a 3.69 Calmar. That drawdown is notably shallow for a strategy whose upside comes from 3x ETFs, which is the whole appeal of being in TQQQ sometimes rather than always: the overbought fade and the crash and pop gates take it out of the way of the worst leveraged declines. The trade-off is complexity. Many interacting RSI, cumulative-return and cross-asset thresholds fit the historical record more tightly than a single rule would, so some of the backtest polish should be read as parameter tuning rather than durable edge."
+    ],
+    "how_it_works": [
+      "The strategy's default position is TQQQ, and everything else is an override. The first gate is an overbought fade: if TQQQ's 10-day RSI rises above 79, the strategy rotates out of leveraged tech and into UVXY, treating the spike as a setup for a pullback rather than a continuation.",
+      "If TQQQ is not overbought, a black-swan pop branch checks for a crash: when TQQQ's six-day cumulative return falls below roughly -12%, the strategy looks for a violent one-day rebound (a single-day gain above about 5.5%) to capture in UVXY, and otherwise drops into a mean-reversion sub-tree that dip-buys the most oversold leveraged sleeves (TQQQ, SPXL, SOXL) using tiered RSI checks across 10, 20 and 30-day windows on QQQ and SMH.",
+      "Sitting above the tactical gates is a regime overlay built from cross-asset RSI. Comparisons of BND versus SPY RSI, IEF versus TLT RSI, and a 60-day SPY RSI above or below 50 gauge whether bonds or equities have momentum, while a VIXM RSI check and max-drawdown reads on TMF and QQQ flag stress. In risk-off or high-stress states the strategy routes to inverse ETFs (SQQQ, SOXS) or parks in cash (BIL) instead of holding leverage, which is how it keeps its drawdown contained."
+    ],
+    "signals": [
+      {
+        "name": "TQQQ RSI(10) Overbought Fade",
+        "tag": "rsi",
+        "description": "The primary override: TQQQ RSI(10) above 79 rotates out of leveraged tech into UVXY, treating a fast overbought reading as a pullback setup rather than trend continuation."
+      },
+      {
+        "name": "Six-Day Crash and One-Day Pop Check",
+        "tag": "mean-reversion",
+        "description": "When TQQQ's six-day cumulative return falls below about -12%, a pop branch captures a sharp one-day rebound (single-day gain above roughly 5.5%) in UVXY, or otherwise routes into an RSI-tiered dip-buy of the most oversold leveraged sleeves."
+      },
+      {
+        "name": "Cross-Asset Bond vs. Equity Regime Filter",
+        "tag": "momentum",
+        "description": "Relative RSI comparisons (BND vs SPY, IEF vs TLT) plus a 60-day SPY RSI trend gauge whether bonds or equities lead, steering the strategy between leveraged longs, inverse ETFs and cash."
+      },
+      {
+        "name": "VIXM Volatility Gate",
+        "tag": "vix-tiers",
+        "description": "A VIXM RSI check, alongside max-drawdown reads on TMF and QQQ, flags volatility stress and pushes the strategy toward inverse ETFs or cash rather than holding leverage into a spike."
+      }
+    ],
+    "risk_profile": {
+      "verdict": "Aggressive",
+      "leverage": "Upside comes from 3x ETFs (TQQQ, SPXL, SOXL) and it can hold inverse 3x funds (SQQQ, SOXS). The overbought fade and crash gates limit time spent in leverage during declines, which is why the max drawdown is moderate for this asset class.",
+      "backtest_limits": "A genuinely long, multi-cycle window that begins around 2011 and covers 2018, 2020 and 2022. The 29.7% max drawdown and 3.69 Calmar are strong for a leveraged strategy, but the many tuned thresholds mean out-of-sample results may be softer than the backtest.",
+      "signal": "A deep, nested decision tree with dozens of RSI, cumulative-return and cross-asset thresholds. This is powerful but hard to audit, and its behavior in a novel regime is less predictable than a single-rule trend filter.",
+      "concentration": "Positions are concentrated in one sleeve at a time (leveraged tech/semis, an inverse fund, UVXY, or cash), so single-position risk is high on any given day even though the strategy rotates.",
+      "hedge": "UVXY and the inverse ETFs are the defensive states, both directional volatility or short bets rather than ballast, so the defense is itself a leveraged position."
+    },
+    "author_note": "Featured as the original of the widely forked TQQQ or Not family (source symphony name 'TQQQ or not/Pop'). Dozens of later Composer symphonies rebuild the same 'default to TQQQ, override on overbought, crash and regime signals' pattern. Symphony ID: g0J87gnk7SausotpUoCt."
+  },
+  {
+    "slug": "beta-ballers-original",
+    "name": "Beta Ballers (Original)",
+    "symphony_url": "https://app.composer.trade/symphony/mlgAKFuUIPZiCT0aV7ho/details",
+    "symphony_id": "mlgAKFuUIPZiCT0aV7ho",
+    "annualized_rate_of_return": 7.210136099135575,
+    "max_drawdown": -0.7829014184855573,
+    "cumulative_return": 1485472.491397,
+    "calmar_ratio": 9.209507006747856,
+    "sharpe_ratio": 2.686215897882829,
+    "standard_deviation": 0.9396954908716071,
+    "min": -0.23488168415429633,
+    "mean": 0.010016765741063968,
+    "median": 0.0034318219595957933,
+    "max": 0.5815548709117735,
+    "trailing_one_month_return": -0.051810000860430194,
+    "trailing_three_month_return": 1.0494434219958468,
+    "trailing_one_year_return": -0.42328200617982903,
+    "backtest_days": 1700,
+    "description": "The original Beta Baller + TCCC build, one of the most-forked community strategies on Composer. It is a large regime-switching ensemble across 30-plus leveraged and macro instruments: a BIL-versus-IEF RSI switch and a 210/360-day SPY moving-average gate set the risk regime, then the strategy momentum-sorts small pools of 3x equity, bond (TMF/TMV), commodity (UCO, ERX, DBC), currency and international sleeves, with TQQQ RSI and crash gates plus UVXY tiers layering in overbought fades and dip-buys.",
+    "tags": [
+      "rsi",
+      "momentum",
+      "mean-reversion",
+      "leveraged-etfs",
+      "inverse-etfs",
+      "vix-tiers",
+      "original"
+    ],
+    "last_updated": "2026-08-31",
+    "ai_summary": [
+      "Beta Ballers is one of the most heavily forked strategies in the Composer community, a collaborative Beta Baller + TCCC lineage, and this is the original build behind the roughly 200 variants that share the name. Structurally it is a large regime-switching ensemble rather than a single trade. Two master switches set the tone: a BIL-versus-IEF 7-day RSI comparison acts as a risk-on/risk-off toggle, and a long-horizon SPY trend gate (a 210-day EMA against a 360-day moving average) defines the broad regime. From there the strategy branches into many small rotations that momentum-sort pools of leveraged equity (TQQQ, UPRO, SPXL, SOXL, TECL), 3x bonds (TMF, TMV), commodities and energy (UCO, ERX, DBC), currencies (UUP, EUO, YCS) and international (EEM, EFA, EPI, EWZ), each picking the single best or worst recent performer over short 5 to 22-day windows.",
+      "The result is an extremely aggressive, high-turnover machine. Since its December 2019 backtest start it shows about 721% annualized with a 78.3% max drawdown, a 2.69 Sharpe and a 9.21 Calmar. Those are eye-catching figures, but three cautions dominate. The drawdown is severe, roughly 78% at its worst; the backtest starts in late 2019 and leans heavily on the 2020 to 2021 leveraged bull run, so the window is favorable and the trailing one-year return here is negative; and the sheer number of branches and tuned thresholds makes overfitting a real risk. This is a showcase of complex regime-switching, best understood as the seed concept behind a large family rather than a set-and-forget allocation."
+    ],
+    "how_it_works": [
+      "Two top-level switches set the regime. A 7-day RSI comparison of BIL (cash) against IEF (intermediate treasuries) acts as a risk gauge, and a long SPY trend gate compares a 210-day exponential moving average against a 360-day simple moving average to decide whether the broad market is in an uptrend. Together these route the portfolio between the offensive and defensive halves of the tree.",
+      "Inside each regime, the strategy does not hold fixed positions; it runs many small selection steps that rank a pool by recent performance and take the single best or worst name. These pools span 3x equity (TQQQ, UPRO, SPXL, SOXL, TECL and their inverses), 3x bonds (TMF, TMV), commodities and energy (UCO, ERX, DBC), currencies (UUP, EUO, YCS, USD) and international equity (EEM, EFA, EPI, EWZ), sorted over short 5 to 22-day windows of moving-average return or cumulative return. This is the beta baller idea: chase whatever high-beta sleeve is leading, or fade whatever has been crushed, depending on the regime.",
+      "Layered across the tree are tactical gates borrowed from the wider Composer toolkit: TQQQ RSI(11) above 77 or RSI(10) below 30 for overbought fades and dip-buys, a TQQQ six-day crash with a one-day pop check, SPY two-day and six-day cumulative-return triggers, standard-deviation comparisons between DBC and SPY to read the volatility regime, and UVXY RSI tiers at 74 and 84 for panic detection. GLD, AGG, SHY and BIL provide the defensive and cash states."
+    ],
+    "signals": [
+      {
+        "name": "BIL vs. IEF RSI Risk Switch",
+        "tag": "rsi",
+        "description": "A 7-day RSI comparison of BIL (cash) against IEF (treasuries) is the most-used gate in the tree, toggling the portfolio between risk-on and risk-off halves before any rotation runs."
+      },
+      {
+        "name": "210/360-Day SPY Trend Gate",
+        "tag": "ema",
+        "description": "A 210-day EMA of SPY against its 360-day moving average defines the long-horizon regime, separating uptrend behavior from defensive behavior across the strategy."
+      },
+      {
+        "name": "High-Beta Momentum Rotations",
+        "tag": "momentum",
+        "description": "Many small selection steps rank pools of leveraged equity, bonds, commodities, currencies and international ETFs by 5 to 22-day return and take the single best or worst performer, the core chase-or-fade high-beta engine."
+      },
+      {
+        "name": "TQQQ Overbought/Crash Gates and UVXY Tiers",
+        "tag": "vix-tiers",
+        "description": "Tactical overlays: TQQQ RSI(11) above 77 and RSI(10) below 30 for fades and dip-buys, a six-day crash with a one-day pop check, and UVXY RSI tiers at 74 and 84 for panic detection."
+      }
+    ],
+    "risk_profile": {
+      "verdict": "Extremely Aggressive",
+      "leverage": "The tree is built almost entirely from 3x ETFs across equities, bonds, commodities and their inverses. Even the defensive rotations often land in leveraged instruments, which is what produces both the 721% annualized figure and the roughly 78% max drawdown.",
+      "backtest_limits": "The record begins in December 2019, so it is dominated by the 2020 to 2021 leveraged bull market and does not include a full pre-2020 cycle. The trailing one-year return in this refresh is negative, a reminder that the headline annualized number is period-driven.",
+      "signal": "A very large, deeply nested tree with dozens of branches and tuned thresholds. This flexibility is its strength in-sample and its overfitting risk out-of-sample; behavior in a genuinely new regime is hard to predict.",
+      "concentration": "Despite touching 30-plus tickers, the strategy holds only one or a few sleeves at a time via its bottom-1 and top-1 selection steps, so daily concentration is high.",
+      "hedge": "Defensive states include 3x inverse ETFs, TMF, GLD, AGG, SHY and BIL, a genuine mix, but the inverse and 3x-bond options are directional leveraged bets rather than pure ballast."
+    },
+    "author_note": "The original Beta Baller + TCCC collaborative build (source symphony version V3.0.2, backtest dated 1 December 2019), featured as the original of roughly 200 forked variants that share the Beta Baller name. The source symphony credits a group of community authors (Deez, BrianE, HinnomTX, DereckN, Garen, DJKeyhole, comrade). Its marketing name advertises a much higher no-fee return; the metrics shown here are Composer's standard backtest with slippage and fees applied. Symphony ID: mlgAKFuUIPZiCT0aV7ho."
   }
 ];
