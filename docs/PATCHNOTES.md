@@ -5,6 +5,23 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.38.10] - 2026-09-01
+
+### Changed
+- **Full-tree content audit, batch 9: SOXL Growth (Original) and Sometimes TQQQ (Original) verified
+  against complete logic-tree reads.**
+  - **SOXL Growth**: resolved an internal contradiction. It holds the deepest drawdown in the library
+    (88%), not the "second-deepest at 82%" the AI summary claimed; corrected the volatility ranking
+    (third-highest, behind Beta Ballers and The Gold Miner, not "second only to The Gold Miner");
+    replaced a "top-?" placeholder in the inverse-basket signal with the actual rule (bottom 2 by
+    3-day cumulative return of TMV/SQQQ/SPXS); aligned drift (ARR 143% -> 135%, DD 82% -> 88%, Sharpe
+    1.47 -> 1.43, Calmar 1.74 -> 1.54).
+  - **Sometimes TQQQ**: the five-regime tree (priority RSI dip-buys, bull Choppy/Bull 1/Bull 2, bear
+    Bear 1/Bear 2) matched the traced logic; tightened the Bear 1 description (it keys off QQQ's
+    20-day MA and TLT-vs-SQQQ RSI, not "QQQ and TQQQ moving averages") and aligned drift (ARR 326.5%
+    -> 320.3%, Sharpe 2.76 -> 2.73, Calmar 7.17 -> 7.03, DD 45.6% -> 45.5%).
+- Drift check clean on both, all deploy gates pass.
+
 ## [1.38.9] - 2026-09-01
 
 ### Changed
