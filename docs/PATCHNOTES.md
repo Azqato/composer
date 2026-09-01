@@ -5,6 +5,23 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.38.3] - 2026-08-31
+
+### Changed
+- **Full-tree content audit, batch 2 (smallest structures first): Triple Accelerator and Dip Buying
+  Tech verified against complete logic-tree reads.** Both are small three-state trees; mechanics were
+  accurate (window values confirmed via the `lhs-fn-params`/`rhs-fn-params` schema, so RSI(10) and the
+  200-day MA are correct). Corrections applied:
+  - **Triple Accelerator**: UVXY re-described from "2x long VIX ETF" to "leveraged long VIX-futures
+    ETF" (UVXY has been 1.5x since 2018), and extended-stat figures aligned to stored values
+    (turnover ~12.6, skewness 1.14, win rate ~56%).
+  - **Dip Buying Tech**: fixed XLK's fund name from "iShares U.S. Technology ETF" to "Technology
+    Select Sector SPDR Fund".
+- Note: the outdated "2x long VIX" description of UVXY recurs in several not-yet-audited strategies
+  (holy-grail, four-horsemen, simon's-kmlm-switcher, sometimes-tqqq); each will be corrected as its
+  own audit reaches it.
+- No metric changes; drift clean on both, all deploy gates pass.
+
 ## [1.38.2] - 2026-08-31
 
 ### Changed
