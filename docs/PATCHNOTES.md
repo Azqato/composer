@@ -5,6 +5,25 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.38.11] - 2026-09-01
+
+### Changed
+- **Full-tree content audit, batch 10: s90 50/40 maxDD (Half Low Catch) and The Four Horsemen of the
+  Apocalypse verified against complete logic-tree reads.**
+  - **s90 (Half Low Catch)**: corrected a structural misdescription. The symphony is an equal-weighted
+    50/50 blend of a dormant "low catchers" deep-dip waterfall AND a fully-invested "s90 50/40 maxDD"
+    bull/bear regime strategy, not a mostly-cash dip-buyer. Removed the false "frontrunner defaults to
+    BIL", "sits in BIL most of the time", and "does nothing most of the time" framing (BIL is only a
+    ~6.7% bear-branch ballast sleeve), and described the regime half's overbought-hedge ladder and
+    leveraged baskets. Verified the low-catch waterfall thresholds against the tree (all matched) and
+    aligned large drift from the extended window (ARR 735% -> 470%, Sharpe 3.04 -> 2.58, Calmar 24.81
+    -> 11.46, DD 30% -> 41%, backtest 551 -> 605 days).
+  - **The Four Horsemen**: mechanics matched the tree exactly (parallel SPY-200d and TQQQ-20d
+    components, dual UVXY guards, top-3-of-5 21-day momentum filter, RSI(7) bottom-1 TECL/SOXL
+    dip-buy, TLT/PSQ/BSV filter, deep-bear QQQ 252-day protocol, TQQQ<31 -> TECL cascade). Only
+    metric drift needed fixing (ARR 167% -> 162%, Sharpe 2.18 -> 2.14, Calmar 3.68 -> 3.58).
+- Drift check clean on both, all deploy gates pass. One strategy (SOXX Group) remains in the sweep.
+
 ## [1.38.10] - 2026-09-01
 
 ### Changed
