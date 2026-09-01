@@ -556,6 +556,89 @@ window.STRATEGY_EXTRAS_DATA = {
     "total_costs": 280256.47,
     "win_rate": 0.5146376811594203
   },
+  "rains-unified-best-signals": {
+    "annualized_turnover": 86.63175053893241,
+    "backtest_floor": {
+      "date": "2011-10-04",
+      "dated": 20,
+      "tickers": [
+        "UVXY"
+      ],
+      "total": 20
+    },
+    "etn_holdings": [],
+    "herfindahl_index": 0.5810048407908256,
+    "holdings": {
+      "BSV": 0.0,
+      "LQD": 0.0,
+      "SOXL": 0.0,
+      "SOXS": 0.0,
+      "SPXL": 0.0,
+      "SPXU": 0.0,
+      "SQQQ": 0.0,
+      "TECL": 0.0,
+      "TECS": 0.0,
+      "TLT": 0.0,
+      "TMF": 0.0,
+      "TMV": 0.0,
+      "TQQQ": 498144.68740600254,
+      "UGE": 0.0,
+      "UVXY": 0.0,
+      "VBF": 0.0,
+      "VIXY": 0.0,
+      "XLP": 0.0,
+      "XLU": 3347078.8981979876,
+      "XLV": 0.0
+    },
+    "holdings_inception": {
+      "BSV": "2007-04-10",
+      "LQD": "2002-07-30",
+      "SOXL": "2010-03-11",
+      "SOXS": "2010-03-11",
+      "SPXL": "2008-11-05",
+      "SPXU": "2009-06-25",
+      "SQQQ": "2010-02-11",
+      "TECL": "2008-12-30",
+      "TECS": "2008-12-30",
+      "TLT": "2002-07-30",
+      "TMF": "2009-04-16",
+      "TMV": "2009-04-16",
+      "TQQQ": "2010-02-11",
+      "UGE": "2007-02-01",
+      "UVXY": "2011-10-04",
+      "VBF": "1982-12-21",
+      "VIXY": "2011-01-04",
+      "XLP": "1998-12-22",
+      "XLU": "1998-12-22",
+      "XLV": "1998-12-22"
+    },
+    "k1_holdings": [
+      {
+        "held": false,
+        "name": "ProShares Ultra VIX Short-Term Futures ETF",
+        "tax_form": "Schedule K-1",
+        "ticker": "UVXY"
+      },
+      {
+        "held": false,
+        "name": "ProShares VIX Short-Term Futures ETF",
+        "tax_form": "Schedule K-1",
+        "ticker": "VIXY"
+      }
+    ],
+    "kurtosis": 35.85345187353925,
+    "oos_date": "2025-11-08",
+    "refresh_date": "2026-08-30",
+    "skewness": 3.004871597186298,
+    "sortino_ratio": 6.748221959819297,
+    "symphony_id": "sEUgeRfSayPbBh8mJxSy",
+    "tail_ratio": 1.5762845019251894,
+    "top_five_percent_day_contribution": 0.7251608257834216,
+    "top_one_day_contribution": 0.0445145304034461,
+    "top_ten_percent_day_contribution": 1.1018512627353076,
+    "total_costs": 16024027.030000001,
+    "win_rate": 0.5706293706293706
+  },
   "s90-half-low-catch": {
     "annualized_turnover": 74.2869961248203,
     "backtest_floor": {

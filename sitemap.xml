@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://composeratlas.com/</loc>
-    <lastmod>2026-08-27</lastmod>
+    <lastmod>2026-08-31</lastmod>
   </url>
   <url>
     <loc>https://composeratlas.com/about.html</loc>
@@ -179,5 +179,9 @@
   <url>
     <loc>https://composeratlas.com/strategies.html?slug=beta-ballers-original</loc>
     <lastmod>2026-08-31</lastmod>
+  </url>
+  <url>
+    <loc>https://composeratlas.com/strategies.html?slug=rains-unified-best-signals</loc>
+    <lastmod>2026-09-01</lastmod>
   </url>
 </urlset>

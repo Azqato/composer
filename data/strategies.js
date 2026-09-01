@@ -2464,5 +2464,83 @@ window.STRATEGIES_DATA = [
       "hedge": "Defensive states include 3x inverse ETFs, TMF, GLD, AGG, SHY and BIL, a genuine mix, but the inverse and 3x-bond options are directional leveraged bets rather than pure ballast."
     },
     "author_note": "The original Beta Baller + TCCC collaborative build (source symphony version V3.0.2, backtest dated 1 December 2019), featured as the original of roughly 200 forked variants that share the Beta Baller name. The source symphony credits a group of community authors (Deez, BrianE, HinnomTX, DereckN, Garen, DJKeyhole, comrade). Its marketing name advertises a much higher no-fee return; the metrics shown here are Composer's standard backtest with slippage and fees applied. Symphony ID: mlgAKFuUIPZiCT0aV7ho."
+  },
+  {
+    "slug": "rains-unified-best-signals",
+    "name": "Rain's Unified Best Signals (Original)",
+    "symphony_url": "https://app.composer.trade/symphony/sEUgeRfSayPbBh8mJxSy/details",
+    "symphony_id": "sEUgeRfSayPbBh8mJxSy",
+    "annualized_rate_of_return": 4.608541051460858,
+    "max_drawdown": -0.21892657661206716,
+    "cumulative_return": 17880.241288999998,
+    "calmar_ratio": 21.05062401641207,
+    "sharpe_ratio": 3.2593443773850104,
+    "standard_deviation": 0.5795596002717976,
+    "min": -0.11723769210072243,
+    "mean": 0.007495969541688048,
+    "median": 0.00309751011178927,
+    "max": 0.5462990358105186,
+    "trailing_one_month_return": 0.1863580020709117,
+    "trailing_three_month_return": 0.14570274906845482,
+    "trailing_one_year_return": 1.116624742283404,
+    "backtest_days": 1430,
+    "description": "A grand unified ensemble by Rain that blends the 'best signals' of several well-known Composer strategies, TQQQ For The Long Term, The Holy Grail, KMLM Fund Surfing, Garen Phillips' Buy the Dips, and a Safe Sectors defensive rotation, into a single always-hedged system. An aggressive leveraged-Nasdaq frontrunner sits on top, rotating into volatility hedges when the market overheats and catching oversold dips, before handing off to the unified core. It is built for investors who want broad, leveraged tech exposure diversified across many independent, community-tested signals rather than any single rule.",
+    "tags": [
+      "rsi",
+      "momentum",
+      "leveraged-etfs",
+      "inverse-etfs",
+      "200d-ma",
+      "managed-futures",
+      "vix-tiers",
+      "mean-reversion",
+      "original"
+    ],
+    "last_updated": "2026-09-01",
+    "ai_summary": [
+      "Stripped to its essence, Rain's Unified Best Signals is a diversified, permanently-hedged bet on leveraged US tech that refuses to lean on any one signal. It stacks a large number of independent community strategies, TQQQ For The Long Term, The Holy Grail, KMLM Fund Surfing, Garen Phillips' dip-buyer, and a Safe Sectors bond rotation, and equal-weights them so that trend, momentum, mean-reversion, and managed-futures signals all vote at once. A VIX 'frontrunner' layer sits in front, stepping into UVXY or VIXY the moment several indices reach overbought RSI extremes, and a defensive 'Safe Sectors or Bonds' rotation absorbs capital whenever the leveraged sleeves stand down. The idea is that blending many proven signals smooths the ride and keeps the drawdown far shallower than any single leveraged strategy would.",
+      "The backtested numbers are extraordinary and unusually well-balanced: 461% annualized with a 3.26 Sharpe and a 21.05 Calmar, against a 22% max drawdown that is remarkably shallow for 58% volatility and heavy 3x exposure. Three cautions matter. First, the backtest is short, roughly 5.7 years, and only went out-of-sample in November 2025, so almost the entire record is an in-sample fit spanning the 2022 bear and the 2023 to 2025 AI bull, a stretch unusually kind to hedged dip-buyers. Second, the sheer complexity, dozens of stacked, individually-tuned thresholds, carries real overfitting risk: an ensemble this large can fit its own window more tightly than it generalizes. Third, it is still a leveraged system, so the shallow historical drawdown should be read as a property of a favourable, mostly in-sample window rather than a guarantee. Best understood as an ambitious attempt to diversify signal risk within leveraged tech, whose spectacular ratios deserve heavier discounting than a long, out-of-sample record would."
+    ],
+    "how_it_works": [
+      "Rain's Unified Best Signals is organized as an 'Aggressive Leveraged VIX/Long Frontrunner' wrapped around a large unified core. The frontrunner runs first as a ladder of overbought checks: if SPY RSI(10) exceeds 80, TECL exceeds 79, XLP exceeds 77.5, QQQ exceeds 79, or QQQE exceeds 79, the strategy steps into a volatility hedge, UVXY at the most extreme readings and VIXY at the milder ones. If nothing is overbought, it checks for a deep oversold dip: when TQQQ RSI(10) is below 31 it buys SOXL if SMH RSI(10) is below 23, TECL if QQQ RSI(10) is below 27, and otherwise routes through a 'Check With Bonds' gate that compares AGG against SH to pick either the defensive 'Safe Sectors or Bonds' basket or TECL. Only when neither the overbought ladder nor the oversold dip fires does the frontrunner hand off to the unified core.",
+      "The core, named in the symphony as 'Rain's Unified Signals: TQQQ FTLT, Holy Grail & KMLM,' is an equal-weight blend of two parallel sub-strategies: one gated on SPY's 200-day moving average and one on TQQQ's 200-day moving average. Each runs the same modules. A 'Bull Cross' (price above the 200-day MA while the 3-day average is still below it, a fresh crossover) selects the top 2 by RSI(10) from {TQQQ, TECL, SPXL, TMF}; a 'Bear Cross' selects the top 2 from {SQQQ, TECS, SPXU, TMF, TMV}. In an established uptrend above the 200-day MA, the core stacks several named community modules, 'SPY on Bonds' (20-day AGG RSI vs 60-day SH RSI, plus an HYG-vs-SPY check), 'SPY on Staples' (20-day XLP RSI vs 20-day SH RSI), Garen Phillips' 'Buy the Dips' (QQQ 5-day return below -6%), and 'KMLM Fund Surfing', each of which either commits to TQQQ-led leveraged sleeves or steps aside to the defensive basket.",
+      "'KMLM Fund Surfing' is the recurring regime switch: when XLK's 10-day RSI is above KMLM's (tech momentum beating managed futures), the module holds a TQQQ-heavy sleeve blended with TECL and SOXL; when KMLM leads, it rotates to the defensive basket or shorts through SQQQ and a {SQQQ, TECS, SOXS} sleeve. Below the 200-day moving average, each sub-strategy drops into 20-day SMA blocks on QQQ and TQQQ that use 10-day IEF vs 20-day PSQ RSI and a TQQQ 10-day return above 15% blow-off check to choose between TQQQ, SQQQ, and defense, with a deep-bear branch (QQQ 60-day return below -12%) comparing 15-day AGG RSI against TQQQ and QQQ. The defensive leaf throughout is 'Safe Sectors or Bonds,' a filter that buys the single lowest-RSI(10) name from {BSV, TLT, LQD, VBF, XLP, UGE, XLV, XLU}, a mean-reversion rotation across bonds and low-volatility sectors; its most recent selection, utilities (XLU), made up the bulk of the portfolio alongside a TQQQ sleeve."
+    ],
+    "signals": [
+      {
+        "name": "KMLM Fund Surfing (XLK vs KMLM RSI)",
+        "tag": "managed-futures",
+        "description": "The core regime switch, reused across the ensemble: XLK RSI(10) > KMLM RSI(10) (tech momentum beating managed futures) commits to a TQQQ-led leveraged sleeve with TECL and SOXL. When KMLM leads, the module rotates to the defensive basket or shorts via SQQQ and a {SQQQ, TECS, SOXS} sleeve."
+      },
+      {
+        "name": "VIX Overbought Frontrunner",
+        "tag": "vix-tiers",
+        "description": "A ladder of RSI(10) ceilings across SPY (>80), TECL (>79), XLP (>77.5), QQQ (>79) and QQQE (>79). Any breach steps the whole portfolio into UVXY at the most extreme readings or VIXY at milder ones, front-running froth before the core logic runs."
+      },
+      {
+        "name": "Dual 200-Day MA Regime (SPY + TQQQ)",
+        "tag": "200d-ma",
+        "description": "The unified core equal-weights two sub-strategies, one gated on SPY's 200-day MA and one on TQQQ's 200-day MA, each with fresh-crossover Bull Cross and Bear Cross momentum baskets. Running both references diversifies the trend signal across the broad market and leveraged Nasdaq."
+      },
+      {
+        "name": "Safe Sectors or Bonds Rotation",
+        "tag": "mean-reversion",
+        "description": "The recurring defensive leaf: a filter that buys the single lowest-RSI(10) name from {BSV, TLT, LQD, VBF, XLP, UGE, XLV, XLU}. A mean-reversion rotation across bonds and low-volatility sectors that absorbs capital whenever the leveraged sleeves stand down; utilities (XLU) was its most recent pick."
+      },
+      {
+        "name": "Bond and Staples Momentum Gates",
+        "tag": "momentum",
+        "description": "Relative-strength gates decide whether the leveraged sleeves engage: 20-day AGG vs 60-day SH, 10-day IEF vs 20-day PSQ, 20-day XLP vs 20-day SH, 15-day AGG vs TQQQ/QQQ, and HYG vs SPY. Strong bond or staples momentum routes to defense; weak bond momentum clears the way for TQQQ-led sleeves."
+      }
+    ],
+    "risk_profile": {
+      "verdict": "Aggressive",
+      "leverage": "The risk-on sleeves are 3x leveraged funds, TQQQ, TECL, SPXL and SOXL, with SQQQ, TECS, SPXU and SOXS on the short side and TMF/TMV on leveraged Treasuries. Even so, its max drawdown is one of the shallowest among the leveraged strategies here, a consequence of the ensemble's constant hedging rather than of low exposure.",
+      "backtest_limits": "The record is short, roughly 5.7 years, and only went out-of-sample on 8 November 2025, so nearly the entire backtest is an in-sample fit. It spans the 2022 bear and the 2023 to 2025 AI bull, a window unusually favourable to hedged, dip-buying leveraged strategies, and does not reach the 2008 or 2020 crashes. The exceptional Calmar and Sharpe should be read against that short, mostly in-sample window.",
+      "signal": "This is among the most complex trees in the library: an overbought VIX frontrunner over a two-way 200-day-MA core that itself stacks TQQQ FTLT, Holy Grail, KMLM Fund Surfing, Garen Phillips' dip-buyer and a Safe Sectors rotation. Diversifying across many signals is the whole thesis, but dozens of individually-tuned thresholds also make the strategy hard to audit by hand and raise the odds that some of its edge is fitted to the test window.",
+      "hedge": "Defensive states are plentiful: UVXY and VIXY volatility hedges, SQQQ/TECS/SPXU/SOXS inverse sleeves, TMF/TMV on Treasuries, and the 'Safe Sectors or Bonds' rotation across BSV, TLT, LQD, VBF, XLP, UGE, XLV and XLU. The inverse and leveraged-bond legs are directional bets rather than pure ballast, but the safe-sector rotation is genuine defensive breadth.",
+      "concentration": "Twenty instruments are reachable, and the equal-weighting spreads capital across many signals. In practice the portfolio still concentrates when the defensive rotation and a leveraged sleeve agree, the most recent holdings were dominated by utilities (XLU) alongside a TQQQ position."
+    },
+    "author_note": "The source symphony is named Rain's Unified \"Best Signals\". Its internal group names credit the strategies it unifies, TQQQ FTLT, The Holy Grail, KMLM Fund Surfing, and 'A Better Buy the Dips Nasdaq by Garen Phillips | Safe Sectors Mod'. Backtest covers about 5.7 years (1,430 trading days) and went out-of-sample on 2025-11-08; all metrics reflect that mostly in-sample window. Symphony ID: sEUgeRfSayPbBh8mJxSy."
   }
 ];

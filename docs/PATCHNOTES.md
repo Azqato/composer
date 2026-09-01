@@ -5,6 +5,25 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.39.0] - 2026-09-01
+
+### Added
+- **New curated strategy: Rain's Unified Best Signals (Original)** (symphony `sEUgeRfSayPbBh8mJxSy`),
+  bringing the curated library to 35. Added via the full "Adding a Strategy from a Composer URL"
+  workflow with a complete, end-to-end read of its 1,151-node logic tree per the full-tree rule.
+  - It is a grand unified ensemble: an "Aggressive Leveraged VIX/Long Frontrunner" (an overbought
+    RSI ladder across SPY/TECL/XLP/QQQ/QQQE that steps into UVXY or VIXY, plus an oversold TQQQ dip
+    branch) wrapped around "Rain's Unified Signals: TQQQ FTLT, Holy Grail & KMLM", an equal-weight
+    blend of a SPY-200d and a TQQQ-200d sub-strategy. Each sub-strategy stacks named community
+    modules (SPY on Bonds, SPY on Staples, Garen Phillips' Buy the Dips, KMLM Fund Surfing) over a
+    recurring "Safe Sectors or Bonds" defensive rotation (lowest-RSI of BSV/TLT/LQD/VBF/XLP/UGE/
+    XLV/XLU).
+  - Metrics (461% ARR, 3.26 Sharpe, 21.05 Calmar, 22% max drawdown, 58% volatility) come from the
+    stored database record; drift check clean. The risk profile flags the short, mostly in-sample
+    backtest (~5.7 years, out-of-sample only since 2025-11-08) and the ensemble's overfitting risk.
+  - Rebuilt `strategy_extras`, sitemap (35 strategy pages), and the index Curated count (34 -> 35).
+    All deploy gates pass.
+
 ## [1.38.12] - 2026-09-01
 
 ### Changed
