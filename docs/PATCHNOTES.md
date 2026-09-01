@@ -5,6 +5,23 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.38.8] - 2026-09-01
+
+### Changed
+- **Full-tree content audit, batch 7: TQQQ For The Long Term (Original) and Inside Nancy Pelosi's
+  Chips - V3 verified against complete logic-tree reads.**
+  - **TQQQ For The Long Term**: mechanics matched the tree exactly (SPY 200d gate, dual TQQQ/SPXL
+    overbought guards to UVXY, TECL/UPRO dip-buys, SQQQ-vs-TLT RSI filter, SQQQ oversold override).
+    Aligned drifted figures (ARR 165% -> 160%, Sharpe 1.86 -> 1.83, Calmar 3.08 -> 2.99).
+  - **Inside Nancy Pelosi's Chips - V3**: corrected a mis-read trend gate. The normal-regime routing
+    keys off a SOXX 10-day-vs-200-day EMA cross, not "10d EMA vs current price", and the direction
+    was inverted in the prose: an uptrend routes to the chip momentum filter (top-1 of SOXX/NVDA/
+    AMD/XLE/ENPH) and a downtrend to the defensive filter (top-2 of SPY/DBC/XLE), the opposite of
+    the previous "contrarian tilt" description. Also made the two co-equal NVDA/AMD sleeves explicit,
+    fixed the drawdown ranking ("deepest" -> second deepest, behind SOXL Growth), and aligned drift
+    (ARR 73% -> 75%, Sharpe 1.10 -> 1.11, Calmar 0.85 -> 0.87).
+- Drift check clean on both, all deploy gates pass.
+
 ## [1.38.7] - 2026-09-01
 
 ### Changed
