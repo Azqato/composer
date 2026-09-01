@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.38.7] - 2026-09-01
+
+### Changed
+- **Full-tree content audit, batch 6: The Holy Grail (Original) and 10d BND vs. 10d SPHB (Original)
+  verified against complete logic-tree reads.**
+  - **The Holy Grail**: removed fabricated mechanics. The tree holds a single asset at full weight in
+    every state with no fixed rebalance schedule, so the claimed "80% TQQQ allocation" and "5%
+    rebalance corridor" were untrue and have been rewritten to describe the actual single-asset,
+    signal-driven holding. UVXY re-described from "2x long VIX futures" to a leveraged long
+    VIX-futures ETF. Aligned drifted figures (ARR 154% -> 150%, Sharpe 1.80 -> 1.77, Calmar 3.24 ->
+    3.17, volatility 62% -> 63%).
+  - **10d BND vs. 10d SPHB**: mechanics matched the tree exactly (BND-vs-SPHB relative RSI regime,
+    SOXX overbought guard, UVXY 74/84 tiers, SOXL dip-buy override). Aligned the one drifted figure
+    (ARR 100.6% -> 98.5%).
+- Drift check clean on both, all deploy gates pass.
+
 ## [1.38.6] - 2026-08-31
 
 ### Changed
