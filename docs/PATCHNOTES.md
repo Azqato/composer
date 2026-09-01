@@ -5,6 +5,20 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.38.12] - 2026-09-01
+
+### Changed
+- **Full-tree content audit, batch 11 (final): SOXX Group verified against a complete read of its
+  logic tree (2,643 nodes, the largest in the library).** Every verifiable claim matched the tree:
+  the UVXY 30-day RSI > 63 volatility gate, the 30-20-10 SMH double-pop RSI cascade, the single-day
+  SMH magnitude tiers (-3/-5.5/-7 down, +3.5/+4.5/+5.5 up), the SMH RSI(10) < 30 SOXL dip-buy, the
+  four-instrument universe (BIL/BSV/SOXL/SOXS), and the SOXL FTLT fallback (SPY 10-day max-drawdown,
+  SVXY 5-day return, TQQQ 60-day RSI). Only metric drift needed fixing (ARR 111% -> 110%, volatility
+  66% -> 67%, Sharpe 1.46 -> 1.44, Calmar 1.61 -> 1.60).
+- **This completes the full-tree content audit of all 22 non-zoop curated strategies** begun in
+  v1.38.1. Every non-zoop strategy's prose has now been checked sentence-by-sentence against a full
+  read of its Composer logic tree, per the mandatory full-tree rule.
+
 ## [1.38.11] - 2026-09-01
 
 ### Changed
