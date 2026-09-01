@@ -5,6 +5,21 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.38.6] - 2026-08-31
+
+### Changed
+- **Full-tree content audit, batch 5: Top Cap by MA + RSI and The Gold Miner (Original) verified
+  against complete logic-tree reads.**
+  - **Top Cap by MA + RSI**: aligned drifted figures (ARR 133% -> 127%, Sharpe 1.64 -> 1.60, Calmar
+    2.31 -> 2.20); corrected the "leveraged attack" branch, which is a bottom-1 pick of the worst
+    5-day performer (mean reversion), previously called a "momentum filter"; UVXY re-described from
+    "2x long VIX" to leveraged long VIX futures.
+  - **The Gold Miner (Original)**: mechanics matched the tree exactly (GDXU RSI gates plus the
+    QQQ/GDXU/TLT momentum routing). Corrected a false backtest claim: the March 2021 record does
+    include the sharp 2022 gold-miner selloff (likely the source of its ~48% drawdown), not "none of
+    the 2022 commodity bear".
+- Drift check clean on both, all deploy gates pass.
+
 ## [1.38.5] - 2026-08-31
 
 ### Changed
