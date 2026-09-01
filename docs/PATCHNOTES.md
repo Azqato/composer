@@ -5,6 +5,21 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.38.4] - 2026-08-31
+
+### Changed
+- **Full-tree content audit, batch 3: Ob Os Staple my Bonds and Mean Reversion (Python) verified
+  against complete logic-tree reads.** Both are small trees whose mechanics were accurate; fixes
+  were factual, not structural:
+  - **Mean Reversion (Python)**: corrected "82% annualized" to about 79% (live ARR) and "a Calmar of
+    exactly 1.00, where the annualized return equals the maximum drawdown" to the actual 0.97 (return
+    has not quite repaid the drawdown); tightened a ">" comparator description ("reached or exceeded"
+    to "is above").
+  - **Ob Os Staple my Bonds V0.0**: corrected "17.4% annualized" to 17.3% (live), and removed a wrong
+    ticker ("VBF ... ticker BFUGX"; VBF is the Invesco Bond Fund closed-end fund). Its "lowest max
+    drawdown in the library" claim was verified true (-19.6%).
+- Drift check clean on both, all deploy gates pass.
+
 ## [1.38.3] - 2026-08-31
 
 ### Changed
