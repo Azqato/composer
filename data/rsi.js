@@ -1,7 +1,7 @@
 // RSI signals data - loaded as a script tag so the site works with file:// protocol.
 // To update: run scripts/refresh_rsi.py
 window.RSI_DATA = {
-  "refreshed_at": "2026-09-01T21:40:27Z",
+  "refreshed_at": "2026-09-01T23:55:12Z",
   "tickers": [
     {
       "symbol": "XLF",
@@ -20,7 +20,7 @@ window.RSI_DATA = {
     {
       "symbol": "VTV",
       "name": "Vanguard Value ETF",
-      "rsi_10": 42.4,
+      "rsi_10": 41.8,
       "price": 223.96,
       "price_date": "2026-09-01"
     },
@@ -62,7 +62,7 @@ window.RSI_DATA = {
     {
       "symbol": "XLK",
       "name": "Technology Select Sector SPDR",
-      "rsi_10": 48.5,
+      "rsi_10": 47.8,
       "price": 183.64,
       "price_date": "2026-09-01"
     },
@@ -118,7 +118,7 @@ window.RSI_DATA = {
     {
       "symbol": "EEM",
       "name": "iShares MSCI Emerging Markets ETF",
-      "rsi_10": 53.1,
+      "rsi_10": 52.5,
       "price": 66.77,
       "price_date": "2026-09-01"
     },
@@ -139,7 +139,7 @@ window.RSI_DATA = {
     {
       "symbol": "TLT",
       "name": "iShares 20+ Year Treasury Bond ETF",
-      "rsi_10": 41.2,
+      "rsi_10": 40.5,
       "price": 81.87,
       "price_date": "2026-09-01"
     }
