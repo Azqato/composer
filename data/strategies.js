@@ -2413,7 +2413,7 @@ window.STRATEGIES_DATA = [
     "trailing_three_month_return": 1.0494434219958468,
     "trailing_one_year_return": -0.42328200617982903,
     "backtest_days": 1700,
-    "description": "The original Beta Baller + TCCC build, one of the most-forked community strategies on Composer. It is a large regime-switching ensemble across 30-plus leveraged and macro instruments: a BIL-versus-IEF RSI switch and a 210/360-day SPY moving-average gate set the risk regime, then the strategy momentum-sorts small pools of 3x equity, bond (TMF/TMV), commodity (UCO, ERX, DBC), currency and international sleeves, with TQQQ RSI and crash gates plus UVXY tiers layering in overbought fades and dip-buys.",
+    "description": "The original Beta Baller + TCCC build, one of the most-forked names in the Composer community, with roughly 200 symphonies in the database sharing the Beta Baller name. It is a large, daily-rebalanced regime-switching machine trading a 33-instrument universe of leveraged, inverse, bond, commodity, currency and volatility ETFs, leaning more on buy-the-dip mean reversion in leveraged funds than on momentum, with layered trend, interest-rate and volatility gates that pull it toward defense when conditions turn. Best treated as a showcase of how far community regime-switching can be pushed, not a set-and-forget allocation.",
     "tags": [
       "rsi",
       "momentum",
@@ -2425,39 +2425,39 @@ window.STRATEGIES_DATA = [
     ],
     "last_updated": "2026-08-31",
     "ai_summary": [
-      "Beta Ballers is one of the most heavily forked strategies in the Composer community, a collaborative Beta Baller + TCCC lineage, and this is the original build behind the roughly 200 variants that share the name. Structurally it is a large regime-switching ensemble rather than a single trade. Two master switches set the tone: a BIL-versus-IEF 7-day RSI comparison acts as a risk-on/risk-off toggle, and a long-horizon SPY trend gate (a 210-day EMA against a 360-day moving average) defines the broad regime. From there the strategy branches into many small rotations that momentum-sort pools of leveraged equity (TQQQ, UPRO, SPXL, SOXL, TECL), 3x bonds (TMF, TMV), commodities and energy (UCO, ERX, DBC), currencies (UUP, EUO, YCS) and international (EEM, EFA, EPI, EWZ), each picking the single best or worst recent performer over short 5 to 22-day windows.",
-      "The result is an extremely aggressive, high-turnover machine. Since its December 2019 backtest start it shows about 721% annualized with a 78.3% max drawdown, a 2.69 Sharpe and a 9.21 Calmar. Those are eye-catching figures, but three cautions dominate. The drawdown is severe, roughly 78% at its worst; the backtest starts in late 2019 and leans heavily on the 2020 to 2021 leveraged bull run, so the window is favorable and the trailing one-year return here is negative; and the sheer number of branches and tuned thresholds makes overfitting a real risk. This is a showcase of complex regime-switching, best understood as the seed concept behind a large family rather than a set-and-forget allocation."
+      "Strip away the complexity and Beta Ballers is mostly a buy-the-dip bet on leveraged funds: when a high-beta ETF sells off, it tends to buy the weakest recent performer expecting a bounce, and it wraps that core idea in layers of trend, interest-rate and volatility gates that pull it into inverse funds, bonds, commodities or volatility when conditions turn hostile. Despite the aggressive name it is more mean-reversion than momentum, with more of its selection steps picking the weakest recent performer than the strongest. That same density of branches and hand-tuned thresholds is the catch, making it powerful in the conditions it was shaped around but genuinely hard to reason about, and impossible to treat as a simple black box.",
+      "The headline numbers are extraordinary, and they deserve equal skepticism. Since its December 2019 backtest start it shows about 721% annualized against a 78.3% max drawdown, a 2.69 Sharpe and a 9.21 Calmar. Three cautions dominate. The drawdown is brutal, meaning you would have had to sit through losing more than three-quarters of the account at the worst point; the backtest window opens right before the 2020 to 2021 leveraged bull run and leans heavily on it, while the trailing one-year return here is negative; and the sheer number of tuned branches makes overfitting a genuine risk rather than a footnote. Treat it as the seed concept behind a large family and a study in aggressive design, not a recommendation to deploy capital as it stands."
     ],
     "how_it_works": [
-      "Two top-level switches set the regime. A 7-day RSI comparison of BIL (cash) against IEF (intermediate treasuries) acts as a risk gauge, and a long SPY trend gate compares a 210-day exponential moving average against a 360-day simple moving average to decide whether the broad market is in an uptrend. Together these route the portfolio between the offensive and defensive halves of the tree.",
-      "Inside each regime, the strategy does not hold fixed positions; it runs many small selection steps that rank a pool by recent performance and take the single best or worst name. These pools span 3x equity (TQQQ, UPRO, SPXL, SOXL, TECL and their inverses), 3x bonds (TMF, TMV), commodities and energy (UCO, ERX, DBC), currencies (UUP, EUO, YCS, USD) and international equity (EEM, EFA, EPI, EWZ), sorted over short 5 to 22-day windows of moving-average return or cumulative return. This is the beta baller idea: chase whatever high-beta sleeve is leading, or fade whatever has been crushed, depending on the regime.",
-      "Layered across the tree are tactical gates borrowed from the wider Composer toolkit: TQQQ RSI(11) above 77 or RSI(10) below 30 for overbought fades and dip-buys, a TQQQ six-day crash with a one-day pop check, SPY two-day and six-day cumulative-return triggers, standard-deviation comparisons between DBC and SPY to read the volatility regime, and UVXY RSI tiers at 74 and 84 for panic detection. GLD, AGG, SHY and BIL provide the defensive and cash states."
+      "Beta Ballers rebalances daily across a 33-instrument held universe: leveraged long equity (TQQQ, UPRO, SPXL, SOXL, TECL, QLD, MVV, USD, CURE), unleveraged sector and international equity (PUI, EEM, EFA, EPI, EWZ), inverse equity (SQQQ, SPXS, SPXU, SOXS, TECS), volatility (UVXY, VIXY), treasuries and cash (TMF, TMV, AGG, SHY, BIL), commodities and energy (UCO, ERX, DBC, GLD) and currencies (UUP, EUO, YCS). TLT, IEF, HIBL and SPY appear only as signals, never held. The single top-level switch compares the 7-day RSI of BIL against IEF; the branch where BIL is relatively stronger is tiny (buy volatility if SPY is overbought, otherwise hold SOXL), and almost the entire tree lives in the other branch.",
+      "That main branch runs a cascade of gates. It first checks the S&P for stress: a 6-day SPY RSI below 27 is treated as extreme oversold (going long leveraged, or short via SOXS/SQQQ depending on a SHY-versus-HIBL RSI check), and a 10-day SPY RSI below 30 triggers a dip-buy that takes the worst 5-day performer from a leveraged basket. Failing those, it reads volatility through UVXY's 10-day RSI, holding UVXY outright between the 74 and 84 tiers and dropping into a large 'bear market / high inflation' sub-tree above 84 and, in the normal case, below 74. That sub-tree is driven by interest rates: TLT relative to its 200-day average and the sign of TLT's 20-day return split it into rising-rate baskets (favoring TMV) and falling-rate baskets (favoring TMF), and inside each, a 210-day EMA versus 360-day SMA of SPY plus a SPY-versus-DBC trend comparison route between offensive leveraged baskets and defensive ones.",
+      "Positions are chosen by 74 filter steps that rank a small pool over 5 to 22-day windows of moving-average return, cumulative return or RSI and take a single name. Most of them, 46 of 74, select the bottom of the pool (the weakest recent performer), so the engine is more contrarian dip-buying than trend-chasing, with 28 momentum-style top picks alongside. Tactical overlays recur throughout the tree: a TQQQ 11-day RSI above 77 flips to UVXY as an overbought fade (8 times), a TQQQ 10-day RSI below 30 forces a dip-buy, a 6-day TQQQ crash beyond -10% paired with a one-day pop above 5.5% buys UVXY, a 2-day SPY drop of -2% and an SPXU-6-day-versus-UPRO-3-day comparison flag crashes, and 'Defense | Modified' groups compare the 20-day standard deviation of DBC against SPY to decide when to sit in bonds, gold, cash-like SHY and BIL, or inverse funds."
     ],
     "signals": [
       {
-        "name": "BIL vs. IEF RSI Risk Switch",
+        "name": "BIL vs. IEF RSI Switch",
         "tag": "rsi",
-        "description": "A 7-day RSI comparison of BIL (cash) against IEF (treasuries) is the most-used gate in the tree, toggling the portfolio between risk-on and risk-off halves before any rotation runs."
+        "description": "A 7-day RSI comparison of BIL (cash) against IEF (treasuries) is both the top-level switch and the single most-repeated condition in the tree (15 uses). At the top it gates a tiny branch; deeper in the tree it is the recurring offense-versus-defense toggle that picks between leveraged and defensive baskets."
       },
       {
-        "name": "210/360-Day SPY Trend Gate",
-        "tag": "ema",
-        "description": "A 210-day EMA of SPY against its 360-day moving average defines the long-horizon regime, separating uptrend behavior from defensive behavior across the strategy."
+        "name": "TLT Interest-Rate Regime",
+        "tag": "200d-ma",
+        "description": "The large sub-tree that holds most of the logic is driven by rates: TLT against its 200-day moving average, and the sign of TLT's 20-day return, split it into rising-rate baskets (favoring 3x short treasuries, TMV) and falling-rate baskets (favoring 3x long treasuries, TMF)."
       },
       {
-        "name": "High-Beta Momentum Rotations",
-        "tag": "momentum",
-        "description": "Many small selection steps rank pools of leveraged equity, bonds, commodities, currencies and international ETFs by 5 to 22-day return and take the single best or worst performer, the core chase-or-fade high-beta engine."
+        "name": "Mean-Reversion and Momentum Rotations",
+        "tag": "mean-reversion",
+        "description": "74 filter steps rank small pools by 5 to 22-day moving-average return, cumulative return or RSI and take a single name. 46 of the 74 pick the weakest performer (buy-the-dip mean reversion) and 28 pick the strongest (momentum), so the engine leans contrarian rather than trend-chasing."
       },
       {
         "name": "TQQQ Overbought/Crash Gates and UVXY Tiers",
         "tag": "vix-tiers",
-        "description": "Tactical overlays: TQQQ RSI(11) above 77 and RSI(10) below 30 for fades and dip-buys, a six-day crash with a one-day pop check, and UVXY RSI tiers at 74 and 84 for panic detection."
+        "description": "Tactical overlays layered across the tree: TQQQ RSI(11) above 77 flips to UVXY (8 uses) and RSI(10) below 30 forces a dip-buy, a six-day TQQQ crash beyond -10% with a one-day pop above 5.5% buys UVXY, and UVXY's own 10-day RSI tiers at 74 and 84 gate volatility exposure."
       }
     ],
     "risk_profile": {
       "verdict": "Extremely Aggressive",
-      "leverage": "The tree is built almost entirely from 3x ETFs across equities, bonds, commodities and their inverses. Even the defensive rotations often land in leveraged instruments, which is what produces both the 721% annualized figure and the roughly 78% max drawdown.",
+      "leverage": "The offensive baskets are built largely from leveraged ETFs, mostly 3x (TQQQ, UPRO, SPXL, SOXL, TECL, TMF, TMV) with some 2x (QLD, MVV, USD, UCO, ERX, EUO, YCS), and even the defensive rotations often land in leveraged inverse or 3x-bond instruments. That is what produces both the 721% annualized figure and the roughly 78% max drawdown.",
       "backtest_limits": "The record begins in December 2019, so it is dominated by the 2020 to 2021 leveraged bull market and does not include a full pre-2020 cycle. The trailing one-year return in this refresh is negative, a reminder that the headline annualized number is period-driven.",
       "signal": "A very large, deeply nested tree with dozens of branches and tuned thresholds. This flexibility is its strength in-sample and its overfitting risk out-of-sample; behavior in a genuinely new regime is hard to predict.",
       "concentration": "Despite touching 30-plus tickers, the strategy holds only one or a few sleeves at a time via its bottom-1 and top-1 selection steps, so daily concentration is high.",

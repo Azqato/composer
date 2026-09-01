@@ -715,8 +715,8 @@ Provide a Composer.trade symphony URL to Claude Code and it automates the entire
 1. Extracts the symphony ID from the URL
 2. Fetches backtest metrics via `POST /api/v0.1/symphonies/{id}/backtest` (no auth required)
 3. Fetches the logic tree via `GET /api/v0.1/symphonies/{id}/score`
-4. Analyzes the logic tree to determine: primary trend gate, volatility routing, dip-buy conditions, cross-asset signals, correct canonical tags
-5. Drafts all content fields: `description`, `ai_summary`, `how_it_works`, `signals`, `risk_profile`
+4. **Reads the ENTIRE logic tree, end to end, before writing any content** (see "Full-tree rule" below). Every branch, threshold, sort/select node and leaf allocation is traced, not sampled, to determine: primary trend gate, volatility routing, dip-buy conditions, cross-asset signals, correct canonical tags
+5. Drafts all content fields per the "Content roles and factual bar" below: `description`, `ai_summary`, `how_it_works`, `signals`, `risk_profile`
 6. Proposes name and slug; asks for confirmation before inserting
 7. Inserts the complete entry into `data/strategies.json` and `data/strategies.js`
 8. Adds the `ai_summary` to `scripts/add_ai_summary.py` under the new slug
@@ -729,8 +729,16 @@ Provide a Composer.trade symphony URL to Claude Code and it automates the entire
  Name: s90 50/40 maxDD (Half Low Catch), slug: s90-half-low-catch"
 ```
 
+**Full-tree rule (curated strategies, mandatory from v1.38.x on).** For any curated strategy, the full logic tree MUST be read end to end before drafting or revising its page content. Do not characterize a strategy from the top few branches, the instrument list, or the name. Large trees are not truncated for curated work: if the `score` response is too large for one read, fetch and traverse it in parts until every node has been seen. The goal is that every factual statement on the page is verified against the specific tree, not generally plausible. (Truncation remains acceptable only for bulk, non-curated database analysis.)
+
+**Content roles and factual bar.** The strategy page stacks three prose blocks, which must not repeat each other:
+- **`description` (the Introduction, the lede):** 2 to 4 sentences. What it is, its provenance/positioning, the one-line core idea, and who it is for. No indicator-by-indicator mechanics, no metrics.
+- **`ai_summary` (the analyst's read):** two paragraphs, interpretive not descriptive. Paragraph 1 = the single real bet the strategy is making once complexity is stripped away, its character, how to think about it. Paragraph 2 = an honest appraisal with the metrics and three to four caveats (regime dependence, drawdown reality, overfitting risk, window bias). References mechanics lightly; never re-lists the logic tree.
+- **`how_it_works` (the mechanics):** the only home for the enumerated logic tree, indicators, thresholds and pools.
+
+Every sentence across all blocks must clear this factual bar: **metrics** match the live/stored numbers (the `check_stat_drift.py` advisory enforces this); **mechanics** come only from the traced logic tree; **provenance** claims are limited to what `author_note` and the source symphony record support (named authors, name-match counts) with no invented edit histories, adoption stories, or motivations; **interpretation** is allowed only as clearly analytical framing ("best understood as a bet that..."), never asserted as historical fact.
+
 **Known limitations:**
-- Very complex symphonies with very large logic trees may require truncation; Claude Code will note this
 - Short backtests (<1 year) yield metrics sensitive to the covered market period; surfaced in `risk_profile` and `author_note`
 - Always review drafted content and correct any characterizations that do not match the strategy's actual intent
 
