@@ -5,6 +5,20 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.38.5] - 2026-08-31
+
+### Changed
+- **Full-tree content audit, batch 4: SPY Energy Chips and Wooden ARKK Machine 2.2 verified against
+  complete logic-tree reads.** Mechanics matched the trees; fixes were metric drift plus one
+  structural overstatement:
+  - **SPY Energy Chips**: aligned drifted figures to live values (ARR 74% -> 71%, Sharpe 1.19 ->
+    1.17, Calmar 1.13 -> 1.09).
+  - **Wooden ARKK Machine 2.2**: aligned drifted figures (ARR 244% -> 229%, Sharpe 2.25 -> 2.18,
+    Calmar 5.48 -> 5.14), corrected the backtest length (about 4.3 years / ~1,080 days from mid-2022,
+    was "4-year / 1,028-day / 2021 to 2024"), and removed a wrong "90% allocated portfolio" claim
+    (the tree holds one asset at full weight).
+- Drift check clean on both, all deploy gates pass.
+
 ## [1.38.4] - 2026-08-31
 
 ### Changed
