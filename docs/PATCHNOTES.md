@@ -5,6 +5,55 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.58.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 13 of 23: `simons-kmlm-switcher`.** TL;DR, Underlying Assumptions,
+  Market Regime table and regime note for Simon's KMLM Switcher (Original), matching the shape
+  approved on `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. 94 nodes, 16
+  conditions, all distinct, in a single 58-line ladder. Five findings are stated on the page:
+
+  1. **The whole record is the fitting window.** The symphony's title reads
+     `BT 4/13/22 = A.R. 466% / D.D. 22% V2` and the 1,098 day record begins 12 April 2022, one day
+     before that date. There is no out-of-sample evidence at all, which matters more than any other
+     figure on the page given it reports a 612.1% annualized return.
+  2. **The advertised backtest no longer matches the live record.** The title claims 466% at a 22%
+     drawdown; the live metrics report 612.1% at -32.0%, so the drawdown is ten points deeper than
+     the number in the name.
+  3. **Eleven overbought rungs, one outcome.** All eleven hold UVXY, and ten of the eleven read
+     tickers the strategy cannot hold. The VOOG rung never decided a day, because every day it was
+     true had been caught by a rung above it. The eleven together decided 134 days, and the most
+     productive is the XLP consumer staples rung at 40.
+  4. **The strategy is named after a fund it never holds.** KMLM appears only inside the RSI
+     comparison that names it. Twelve tickers are signal-only against eight holdable.
+  5. **TLT is the only losing leg**, at -1.5% across 100 days, and it is one of only two places the
+     logic can go when tech momentum fails.
+
+- **A `Calmar 19.10` and a `Sharpe 2.90` both rank second in the library.** The page states that
+  those are the numbers to be most careful with on an entirely in-sample record, not least so.
+
+- **No reconstructed return is quoted.** Turnover is one allocation change every 2.8 trading days
+  entirely in 3x and inverse funds. The 2024 window is presented honestly as a case the holdings
+  cannot explain: SOXL, SVIX and SQQQ all fell over the year while the strategy's record shows a
+  strong one, so the switching rather than the holdings did the work and holdings shares cannot
+  show whether it worked.
+
+### Fixed
+- **A tooling display artifact was not reported as a defect.** `fetch_tree.py` and `analyse.py`
+  print one of the two filters as `relative-strength-index(None)`, which reads as a malformed sort.
+  The raw symphony stores that window under `sort-by-fn-params.window` rather than
+  `sort-by-window-days`, and it is 10. Both filters are well formed; only the scratchpad printer
+  misses the alternate key. Nothing in the repo needed changing.
+- **A miscount corrected before shipping.** A draft said nine of the eleven overbought rungs read
+  tickers the strategy cannot hold; it is ten, since only TECL among them is holdable.
+- **Backticks removed from page prose.** They survive into the rendered text rather than becoming
+  code formatting, so the backtest label in the assumptions is now written plainly.
+
+---
+
 ## [1.57.0] - 2026-09-02
 
 ### Added

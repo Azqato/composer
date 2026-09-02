@@ -2694,7 +2694,79 @@ window.STRATEGIES_DATA = [
       "hedge": "UVXY, SQQQ, SVIX and TLT are all reachable. SVIX is short volatility, so it sits on the opposite side of the trade from UVXY and is not a hedge despite appearing in the same universe.",
       "concentration": "Eight instruments, and the leveraged legs are all US growth, semiconductors or biotech."
     },
-    "author_note": "'Single pops' in the full symphony name refers to the sequential single-ticker overbought detection: each RSI check fires independently on a single ticker, unlike strategies that require multiple conditions simultaneously. KMLM (KFA Mount Lucas Managed Futures Index Strategy ETF) serves as the macro regime detector, when managed futures momentum outpaces tech, the strategy pivots to defensive or bearish positions."
+    "author_note": "'Single pops' in the full symphony name refers to the sequential single-ticker overbought detection: each RSI check fires independently on a single ticker, unlike strategies that require multiple conditions simultaneously. KMLM (KFA Mount Lucas Managed Futures Index Strategy ETF) serves as the macro regime detector, when managed futures momentum outpaces tech, the strategy pivots to defensive or bearish positions.",
+    "tldr": {
+      "thesis": "Three layers stacked in one 58-line ladder. Eleven overbought tests come first, on eleven different indexes and sectors, and every one of them leads to the same holding: UVXY. Below them sit four oversold rungs that buy a specific 3x fund when it is beaten down. What is left, 81% of the record, reaches a switch that compares tech momentum against managed futures momentum and goes either to the two most oversold leveraged longs or to SQQQ and TLT. The number that should be read first is not the {annualized_rate_of_return} return. It is the {backtest_days} day record, which begins on 12 April 2022, one day before the backtest date written into the strategy's own title.",
+      "works_well_in": [
+        "Semiconductor and tech uptrends reached through the switch. SOXL compounded +12,316.6% across the 440 days the rules named it and TECL +3,118.8% across 375, and together they take 40.0% of all capital deployed.",
+        "Falling markets, which it can be short in. SQQQ is the single largest position in the strategy at 23.1% of capital and compounded +349.8% across 254 days. Through the 2022 bear market the reconstruction held SQQQ on 52% of days while SQQQ rose 120.7%.",
+        "Volatility spikes, in the eleven-rung sense. UVXY was held on 134 days, 12.2% of capital, and compounded +245.8% across them.",
+        "Calm markets where short volatility pays. SVIX was held on 309 days and compounded +420.5%. Through the 2023 AI bull the reconstruction held it on 15% of days while SVIX rose 155.6%."
+      ],
+      "struggles_in": [
+        "Any market that does not resemble April 2022 onward, because there is no other market in the record. The strategy was fitted from a stated start date and the record begins there, so nothing here is out of sample.",
+        "Bonds as a defensive holding. TLT is the only losing leg in the strategy, at -1.5% across 100 days held, and it is one of only two places the logic can go when tech momentum fails.",
+        "Sideways leveraged markets where every holding drifts down. Across 2024 SOXL fell 1.8%, SVIX 32.9% and SQQQ 52.2%, while the reconstruction spread its days across those three and TECL in near-equal shares.",
+        "Anything that punishes turnover. The allocation changes on 399 of {backtest_days} days, about once every 2.8 trading days, entirely in 3x and inverse funds."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**An extreme 10-day RSI anywhere marks a top everywhere.** The eleven overbought rungs read QQQE, VTV, VOX, TECL, VOOG, VOOV, XLP, TQQQ, XLY, FAS and SPY. Ten of those eleven are things the strategy cannot hold, so the design assumes an overbought reading in one corner of the market is a reason to buy volatility across all of it.",
+        "**An extreme oversold reading in a 3x fund is a buy.** The four pop rungs check TQQQ, SOXL, SPXL and LABU below 30 or 25, and buy the leveraged fund itself. This is mean reversion applied to the most volatile instruments available.",
+        "**Tech momentum against managed futures momentum identifies the regime.** The switch compares a 10-day RSI on XLK against one on KMLM, and it decided 533 days, more than any other test in the tree.",
+        "**When tech is not leading, the right response is to be short or in bonds.** The else side picks the higher-RSI of SQQQ and TLT, so the alternative to being long is a directional short position rather than cash."
+      ],
+      "structural": [
+        "**The whole record is the fitting window.** The symphony's own title reads BT 4/13/22 = A.R. 466% / D.D. 22%, and the {backtest_days} day record begins on 12 April 2022. Every figure on this page describes the period the strategy was tuned on. There is no out-of-sample evidence of any kind.",
+        "**The advertised backtest no longer matches the live record.** The title claims an annual 466% at a 22% drawdown. The live metrics report {annualized_rate_of_return} at {max_drawdown_abs}, so the drawdown is ten points deeper than the number in the name.",
+        "**Eleven tests, one outcome.** All eleven overbought rungs hold UVXY. One of them, the VOOG rung, never decided a single day, because every day it was true had already been caught by a rung above it. The eleven together decided 134 days, and the most productive of them is the XLP rung at 40 days, a consumer staples signal with the lowest threshold in the ladder.",
+        "**The strategy is named after a fund it never holds.** KMLM is a managed futures fund and appears only inside the comparison that names the strategy. Twelve tickers in this tree are signal-only against eight it can hold.",
+        "**A {calmar_ratio} Calmar and a {sharpe_ratio} Sharpe both rank second among the 24 strategies in this library.** On a 4.4 year record that is entirely in-sample, those are the numbers to be most careful with, not least so.",
+        "**Every holdable asset is a leveraged or inverse fund.** Four 3x longs, one 3x short, one inverse volatility fund, one long volatility fund, and TLT. There is no cash branch and no unlevered equity anywhere.",
+        "**{max_drawdown_abs} is shallow for this library**, 19th deepest of 24, but it sits on {standard_deviation} annualized volatility, the fifth highest here, and the worst single day in the record was {worst_day}.",
+        "**Turnover is among the highest in this library**, at one allocation change every 2.8 trading days across 3x and inverse funds. It holds two positions on 533 days and one on 565. None of the figures on this page carries a commission, a spread or a slippage assumption."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Tech and semiconductor uptrend",
+        "expected": "Strong",
+        "why": "The switch sends the logic to the two most oversold of TECL, SOXL and SVIX, which is a leveraged long position taken on a pullback inside an uptrend.",
+        "example": "2023 AI bull: SOXL +237.8%, TECL +211.9%, SVIX +155.6%. The reconstruction held SOXL on 26% of days, TECL on 18% and SVIX on 15%."
+      },
+      {
+        "regime": "Sustained decline",
+        "expected": "Strong",
+        "why": "When tech momentum falls behind managed futures the logic can hold SQQQ outright, so a falling market is a market it is positioned for rather than one it hides from.",
+        "example": "From 12 April 2022 through the rest of that bear market: SQQQ +120.7%, SOXL -89.8%, TECL -77.5%. The reconstruction held SQQQ on 52% of days."
+      },
+      {
+        "regime": "Volatility spike",
+        "expected": "Strong",
+        "why": "Eleven separate overbought rungs all reach UVXY, so there are many ways into the long volatility position and it takes only one of them to fire.",
+        "example": "Across the 134 days the eleven rungs named UVXY it compounded +245.8%, on 12.2% of all capital deployed."
+      },
+      {
+        "regime": "Calm market after a shock",
+        "expected": "Strong",
+        "why": "SVIX is one of the three funds the switch can reach on the long side, and a falling volatility term structure is the one condition it needs.",
+        "example": "2025 rebound: SVIX +19.4%, SOXL +97.3%, UVXY -42.5%. The reconstruction held SVIX on 43% of days and SOXL on 35%."
+      },
+      {
+        "regime": "Sideways leveraged market",
+        "expected": "Mixed",
+        "why": "In a year where the long funds, the short fund and the volatility fund all drift lower, the result depends entirely on the daily switching rather than on the holdings, and holdings shares cannot show whether that switching worked.",
+        "example": "2024: SOXL -1.8%, SVIX -32.9%, SQQQ -52.2%, TECL +47.5%, with the reconstruction spread across all four in near-equal shares."
+      },
+      {
+        "regime": "A market unlike April 2022 onward",
+        "expected": "Unknown",
+        "why": "The record and the fitting window are the same {backtest_days} days. Sixteen conditions with hand-chosen thresholds have never been tested against a market the author did not already have in front of them.",
+        "example": "The record begins 12 April 2022, one day before the backtest date written into the strategy's own title."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which funds the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. No reconstructed return is quoted on this page. The allocation changes about once every 2.8 trading days entirely in 3x and inverse funds, and a costless model of that path would say more about the absence of costs than about the strategy, so the regimes above are ranked from holdings and price moves alone. The reconstruction covers {backtest_days} trading days from 12 April 2022 to 27 August 2026, matching the backtest window on record. Windows earlier than that date are outside the record and are not used here."
   },
   {
     "slug": "bnd-vs-sphb",
