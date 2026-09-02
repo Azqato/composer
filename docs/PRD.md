@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.41.0
+**Version:** 1.41.2
 **Status:** Active
-**Last Updated:** 2026-09-01
+**Last Updated:** 2026-09-02
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -905,6 +905,26 @@ git push origin main
    - **⚠️ `storage.csv` is deliberately larger than `database.json`, by design, confirmed 2026-07-15:** `storage.csv` retains URLs for symphonies that were later **purged** from `database.json` (see "Purging Flagged Full-Database Entries" below, 1,004 permanently-404/422-broken rows were removed from `database.json` outright in v1.11.14, but their URLs were deliberately kept in `storage.csv` forever, per its own "never lose a URL once seen" design). Running `sync_storage_to_database.py` blindly does not distinguish "genuinely new URL" from "URL that was intentionally purged as dead", it will resurrect every purged dead entry as a new unrefreshed row. This actually happened: running it to process 10 new `AddSymphony.csv` URLs pulled in 1,055 stale/purged entries instead of 10. Reverted (nothing was committed) and redone by adding just the specific new rows directly. **If `sync_storage_to_database.py` is ever run for real, sanity-check the entry-count delta against the number of genuinely new URLs before proceeding to refresh/commit**: a large mismatch means purged entries are being resurrected.
 5. Manually update the affected stats: run `scripts/refresh_full_database.py` (will pick up the new unrefreshed rows on its normal staleness check) or refresh just the new rows, then `scripts/export_summary.py` to regenerate `database_summary.json`/`.js`, then commit.
 6. Clear `data/AddSymphony.csv` back to just its header row once processed, so it doesn't get re-processed on the next pass.
+
+**The inbox can arrive id-keyed, not URL-keyed.** The 2026-09-01 batch was a `strategy_id` column of bare 20-character ids (with an instruction sentence sitting in row 1, not a real id), not the `url` column the section above assumes. `scripts/id_to_url.py` (added v1.39.1) is the reusable converter for this: `id_to_url()` builds the canonical `/details` URL that `storage.csv` expects, `url_to_id()` goes back, and it runs as a module or a CLI. Filter the inbox to valid 20-character ids first so a header/instruction row never becomes a malformed URL. Match each store on its own primary key while filtering (Section 14, The Primary Key Invariant): `symphony_id` for `database.json`, `url` for `storage.csv`.
+
+**Second run (v1.39.1, 2026-09-01).** 6,358 valid ids in the inbox; 142 new to `storage.csv`, 147 new to `database.json`. Appended the 142 URLs to storage, seeded the 147 skeleton rows directly (not via `sync_storage_to_database.py`, per the warning above), then backtested **only those 147** rows and left the rest of the database alone. Result: 144 OK, 3 transient `retry`, 0 dead/`excluded`. Database 6,669 -> 6,816; storage 7,714 -> 7,856; `check_database_keys.py` passed. **On the refresh step, prefer a scoped refresh over step 5's first option whenever any existing rows are stale:** 155 existing rows were past the 7-day cutoff that day, so an unscoped `refresh_full_database.py` run would have swept them in too, violating the "new ids only" scope. The scoped run imported `post`/`apply_backtest_result`/`write_js` from `refresh_full_database.py` and iterated only the newly-seeded rows, reusing the canonical schema logic without triggering the staleness sweep.
+
+**Before clearing the inbox, retry anything that never returned a backtest.** Step 6 destroys
+the id list, so a row seeded but never successfully refreshed is easy to strand: it sits in
+`database.json` as a skeleton with `flag: "retry"` and no `backtest_days`, and once the inbox is
+cleared nothing points at it any more. It is recoverable (every id is in `storage.csv` forever, by
+design) but nobody will think to look. Query the inbox ids for `backtest_days` in `(None, 0)` and
+re-run those specific ids before clearing.
+
+**Transient failures are worth retrying more than once.** On 2026-09-02, seven inbox ids had never
+returned a backtest. A scoped re-run recovered **five of them**: they had failed on HTTP 500s that
+were Composer's, not the symphonies'. Only two still failed, on repeated 500s across two attempts
+20 seconds apart. A single failed call says nothing about whether a symphony is alive.
+
+**500 is not 404.** A 5xx or 429 keeps `flag: "retry"`, because the symphony may be fine and the
+server is not. Only 404 and 422 justify `flag: "excluded"`, which is the state that means the
+symphony is genuinely gone. Do not promote a 500 to `excluded` to make a run look clean.
 
 **Deliberately not automated:** matches the same reasoning already established for `flag_name_noise.py`/`dedupe_symphonies.py`: this touches `database.json` and should only ever run when explicitly invoked, never from a scheduled GitHub Actions job.
 

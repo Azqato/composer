@@ -5,6 +5,55 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.41.2] - 2026-09-02
+
+### Changed
+- **Recovered five symphonies from the AddSymphony inbox that had been seeded but never
+  backtested.** Seven inbox ids sat in `data/database.json` as skeleton rows with `flag: "retry"`
+  and no metrics. A scoped re-run recovered five of them: `Squid Games s2` and
+  `Copy of Squid Games s2` (4,845 trading days each), `Banana Logic` (1,194),
+  `Bisonquant Monkey's Uncle` (119) and `The Holy Grail (RVI Split)` (123). They had failed on
+  Composer HTTP 500s that were the server's problem, not the symphonies'.
+- **Two remain unresolved and stay `retry`:** `4BoQE3JBHfM4Nz1MXgTs` and `NkcJodrN5J2qg6oyEpQg`,
+  both returning HTTP 500 on two attempts 20 seconds apart. Left as `retry` rather than promoted to
+  `excluded`, because a 500 means the server failed, not that the symphony is gone; only 404 and
+  422 justify `excluded`.
+- Row count is unchanged at 6,816, since all seven rows already existed. `database_summary.json`
+  and `.js` regenerated; `check_database_keys.py` passes.
+- **`data/AddSymphony.csv` cleared back to its `url` header row**, completing step 6 of the
+  Submitting New Symphonies runbook. Nothing is lost: every id is in `data/storage.csv`
+  permanently, by its "never lose a URL once seen" design.
+
+### Added
+- **Three rules added to the runbook in `docs/PRD.md` Section 11**: retry anything that never
+  returned a backtest *before* clearing the inbox, since clearing destroys the id list and strands
+  those rows where nobody will look; retry transient failures more than once, because five of seven
+  recovered on a second attempt; and never promote a 500 or 429 to `excluded`, which is reserved
+  for 404 and 422.
+
+### Notes
+- **Reconciliation verified end to end against both stores**, read-only, rather than taken from the
+  earlier run's notes: 6,358 ids in the inbox, **0 duplicates**, **0 missing from
+  `data/storage.csv`**, **0 missing from `data/database.json`**. Of the inbox ids, 6,154 are clean,
+  93 carry Composer's own data warnings (`caution`, which still returned data), and 111 are
+  `retry`.
+- **Correction to the v1.39.1 record: it reported 3 retries, and the true figure for the inbox as a
+  whole was 7.** The 3 counted only the newly-seeded batch from that run, not inbox ids that had
+  failed on earlier passes. The number was right about what it measured and wrong about what it
+  appeared to say.
+
+## [1.41.1] - 2026-09-02
+
+### Docs
+- **Documented the AddSymphony id-keyed ingest** in docs/PRD.md Section 11 ("Submitting New
+  Symphonies"). Records that the inbox can arrive as a `strategy_id` column of bare ids rather
+  than the `url` column the workflow assumed, points to `scripts/id_to_url.py` as the reusable
+  id<->URL converter, and captures the v1.39.1 run (147 new symphonies seeded and scoped-refreshed,
+  144 OK / 3 retry / 0 dead; database 6,669 -> 6,816). Adds the rule to prefer a scoped refresh
+  over an unscoped `refresh_full_database.py` run whenever existing rows are stale (155 were that
+  day), so the staleness sweep does not pull in rows outside the new-ids scope. No code or data
+  change; the ingest itself shipped in v1.39.1.
+
 ## [1.41.0] - 2026-09-02
 
 ### Changed
