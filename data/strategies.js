@@ -2158,7 +2158,79 @@ window.STRATEGIES_DATA = [
       "signal": "The name marks this as a third revision, and V3's structure suggests the stock-specific RSI thresholds were updated and an EMA regime filter added after earlier versions underperformed. Its Calmar is among the lowest in this library and below 1.0, meaning the drawdown has not been repaid by the return.",
       "hedge": "SOXS is the only defensive instrument and it is 3x inverse semiconductors. There is no broad-market filter such as a SPY 200-day average, which most other strategies here use to avoid being long through a secular bear market.",
       "concentration": "Nine instruments, almost all semiconductors or energy. Switching between SOXL and SOXS changes direction, not exposure."
-    }
+    },
+    "tldr": {
+      "thesis": "The name describes where the stock list came from, not what the strategy does. No congressional disclosure feeds into the logic and nothing in it reacts to a filing. What it actually runs is a short-horizon mean-reversion rule on SOXX, the semiconductor index, wrapped around a momentum picker over a five-name basket. The largest position in a strategy called Chips is ENPH, a solar company, at 23.2% of all capital deployed.",
+      "works_well_in": [
+        "Sustained single-name leadership, which is where nearly all of the return came from. The momentum filter picks the best of SOXX, NVDA, AMD, XLE and ENPH on 90-day average return, and it landed on the right one repeatedly: ENPH compounded +536.5% across 871 days held and NVDA +429.2% across 801.",
+        "Semiconductor uptrends with clean momentum. Through the 2023 AI bull the reconstruction held NVDA on 60% of days while NVDA rose 246.1%.",
+        "Sharp one-day reversals inside a strong or weak week. The two mean-reversion rungs at the top of the tree buy SOXL after a heavy week that ends with a down day and short after a weak week that ends with an up day. They decided 376 and 265 days across the record, and SOXL compounded +3,639.5% across the 546 days the rules named it.",
+        "Commodity and energy regimes, because the defensive filter reaches SPY, DBC and XLE. Through the 2022 decline the reconstruction held XLE on 33% of days while XLE rose 44.5% and SPY fell 24.5%."
+      ],
+      "struggles_in": [
+        "Anything involving the short leg. SOXS was held on 398 days and compounded -83.1% across them, the worst-performing leg of any strategy reviewed in this rollout so far.",
+        "Strong rallies, which the top rungs read as a reason to short. A SOXX five-day return above 5% sends the logic to SOXS unless the most recent day fell more than 2%, and that inner escape fired on only 14 days across the whole record. Through the 2023 AI bull the reconstruction was in SOXS on 18% of days while SOXS fell 85.1%.",
+        "Long grinding uptrends without a clear leader. Across 2012 to 2014 the reconstruction ended roughly flat while SPY rose 71.4%, because the momentum filter kept rotating between names that were not the ones running.",
+        "Single-name collapses. The filter concentrates into one stock and holds it while it falls. ENPH, the largest position in the strategy, fell 70.2% across the 2015 to 2016 decline and 47.8% through the 2023 AI bull."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**Recent momentum in a single stock predicts the next stretch.** The 90-day average return filter is what actually decides most days, and it is a bet that the best performer of the last quarter is the best holding for the next one.",
+        "**A strong week is a reason to short and a weak week a reason to buy.** The two rungs at the top of the tree are pure mean reversion on a 5-day SOXX return, applied through 3x leveraged funds. They are the rules the strategy is described by, and they decided 641 of {backtest_days} days between them.",
+        "**An extreme short-horizon RSI marks a turn.** Two nearly identical sub-branches watch for an 8-day RSI above 90 or a 3-day RSI below 15 on NVDA and AMD. The oversold tests decided 319 days between them; the overbought tests, which need a reading above 90, decided 18.",
+        "**This basket of five names will keep leading.** The universe was fixed in advance and includes two chip designers, a chip index fund, an energy fund and a solar company. Nothing in the logic revises it."
+      ],
+      "structural": [
+        "**The name is not a signal.** There is no disclosure data anywhere in the logic, no filing date, no trade feed. The connection to the name is the choice of tickers, and the strategy would run identically if the list had come from anywhere else.",
+        "**The largest holding is not a chip company.** ENPH, a solar microinverter manufacturer, is 23.2% of all capital deployed, ahead of NVDA at 21.8% and AMD at 16.2%. It is also the most volatile name in the basket, which is why the momentum filter reaches it so often.",
+        "**Two of the tree's branches are the same branch twice.** An equal-weight group holds an NVDA half and an AMD half that are identical except for which stock the RSI tests read, and both then run the same trend test and the same two filters. Across the record the two halves named identical holdings on 88.9% of evaluable days, so the split adds far less than it appears to.",
+        "**The short leg lost most of its value over the days it was used.** SOXS compounded -83.1% across 398 days. DBC also lost money, at -15.0% across 264 days. Those are the only two losing legs in the strategy, and one of them is its designated defensive position.",
+        "**The inner reversal tests almost never fire.** A one-day SOXX move beyond plus or minus 2% decided 18 and 14 days respectively across {backtest_days} trading days. The escape hatches inside the mean-reversion rungs exist mostly on paper.",
+        "**{max_drawdown_abs} is the second deepest drawdown in this library**, against a {sharpe_ratio} Sharpe and a {calmar_ratio} Calmar that are among the lowest here. {standard_deviation} annualized volatility on a concentrated single-stock book is the reason, and the worst single day in the record was {worst_day}.",
+        "**It is concentrated by construction.** It holds exactly one position on 82.2% of days, and that position is frequently a single stock rather than a fund.",
+        "**The record covers {backtest_days} trading days from 7 August 2012, and the reason is a lookback rather than a listing.** ENPH first traded on 30 March 2012 and is the youngest name in the universe, and the momentum filter that reaches it needs 90 days of its history. The record begins the day that becomes computable. The 2008 crisis is absent, and so is any period in which this particular five-name basket was not the interesting one."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Clear single-name leadership",
+        "expected": "Strong",
+        "why": "The 90-day momentum filter concentrates into one stock and holds it, which is the best case for a picker over a small fixed basket.",
+        "example": "2023 AI bull: NVDA +246.1%, and the reconstruction held NVDA on 60% of days."
+      },
+      {
+        "regime": "Sharp reversal inside a volatile week",
+        "expected": "Strong",
+        "why": "The two mean-reversion rungs are built for exactly this and reach 3x leveraged funds when they fire.",
+        "example": "COVID crash: SOXL -78.6% and SOXS +79.5% over the span, with the reconstruction holding SOXL on 43% of days and SOXS on 13%."
+      },
+      {
+        "regime": "Energy or commodity leadership",
+        "expected": "Strong",
+        "why": "The defensive filter picks the best two of SPY, DBC and XLE, so a period when energy leads and equities fall is one the basket can actually express.",
+        "example": "2022 bear market: SPY -24.5%, XLE +44.5%, DBC +21.4%. The reconstruction held XLE on 33% of days and DBC on 17%."
+      },
+      {
+        "regime": "Strong semiconductor rally",
+        "expected": "Poor",
+        "why": "A SOXX five-day return above 5% sends the logic short unless the most recent day fell more than 2%, and that escape fired on 14 days in the entire record.",
+        "example": "2023 AI bull: SOXS -85.1%, and the reconstruction held SOXS on 18% of days even while holding NVDA on 60%."
+      },
+      {
+        "regime": "Broad grind higher with no leader",
+        "expected": "Poor",
+        "why": "The momentum filter rotates between names on a 90-day reading, and in a market where the index rises steadily but no single name in the basket dominates, it rotates into whatever just finished running.",
+        "example": "2012 to 2014: SPY +71.4%, while the reconstruction spread its days across ENPH 34%, SOXL 12%, NVDA 12% and XLE 12%."
+      },
+      {
+        "regime": "Single-name collapse",
+        "expected": "Poor",
+        "why": "The strategy holds one stock on most days with no stop and no position limit, so a name that turns after a strong quarter is held into the decline.",
+        "example": "2015 to early 2016: ENPH -70.2% while SPY fell 12.2%. In the 2023 AI bull ENPH fell 47.8% while the index it belongs to rose."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that stock or fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which positions the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. Where a window is described as ending roughly flat, that is the reconstruction's own path and is quoted to rank the regime rather than as a return you could have earned. The reconstruction covers {backtest_days} trading days from 7 August 2012 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "top-cap-ma-rsi",

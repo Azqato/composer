@@ -5,6 +5,46 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.54.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 9 of 23: `nancy-pelosi-chips`.** TL;DR, Underlying Assumptions,
+  Market Regime table and regime note for Inside Nancy Pelosi's Chips - V3, matching the shape
+  approved on `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. Five findings are
+  stated on the page:
+
+  1. **The name is not a signal.** There is no disclosure data anywhere in the logic, no filing
+     date and no trade feed. The connection to the name is the choice of tickers, and the strategy
+     would run identically if the list had come from anywhere else. The page says this plainly and
+     without editorialising, because a reader could reasonably assume otherwise.
+  2. **The largest holding in a strategy called Chips is a solar company.** ENPH is 23.2% of all
+     capital deployed, ahead of NVDA at 21.8% and AMD at 16.2%.
+  3. **Two of the branches are the same branch twice.** An equal-weight group holds an NVDA half
+     and an AMD half identical except for which stock the RSI tests read, both ending in the same
+     trend test and the same two filters. Across the record the two halves named identical holdings
+     on 88.9% of evaluable days.
+  4. **SOXS compounded -83.1% across the 398 days it was held**, the worst-performing leg of any
+     strategy reviewed in this rollout so far. DBC, the designated defensive holding, also lost
+     money at -15.0% across 264 days.
+  5. **The escape hatches inside the mean-reversion rungs exist mostly on paper.** A one-day SOXX
+     move beyond plus or minus 2% decided 18 and 14 days respectively across 3,534 trading days.
+
+- **The backtest length has a precise cause.** ENPH first traded on 30 March 2012 and the momentum
+  filter that reaches it needs 90 days of history. The record begins on 7 August 2012, the day that
+  becomes computable. This is the second strategy in the rollout whose window is set by a lookback
+  on its youngest holding rather than by a listing date.
+
+### Fixed
+- **Three claims corrected before shipping.** A draft called SOXS the second worst leg in the
+  rollout; at -83.1% it is the worst. A draft said the RSI-above-90 overbought tests never decided
+  a day; they decided 18. And the record-length explanation was verified rather than assumed, which
+  is what turned it from a listing date into a lookback.
+
+---
+
 ## [1.53.0] - 2026-09-02
 
 ### Added
