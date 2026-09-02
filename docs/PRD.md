@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.39.0
+**Version:** 1.39.1
 **Status:** Active
 **Last Updated:** 2026-09-01
 
@@ -119,7 +119,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 ### MVP: Shipped (V1.0–V1.2.1)
 
 **Strategy Library**
-- Index page listing all 34 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
+- Index page listing all 35 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
 - Each strategy has a dedicated page with: name, description, tags, "Open in Composer" CTA, an AI Summary (Claude-authored analysis above How It Works), plain-English logic breakdown, signals used (cross-linked to glossary), risk profile, and full metrics table
 - Strategy card titles are clickable links
 
@@ -312,7 +312,7 @@ ComposerAtlas/
 │   ├── glossary.json           # 20 glossary concept entries, source of truth (was 8 at MVP)
 │   ├── glossary.js             # Same data as window.GLOSSARY_DATA, for file:// compat
 │   ├── symphony_scores.json    # Full logic trees; AI analysis only, not served publicly
-│   ├── database.json           # Full raw ~7,700-symphony database (not the curated 28); see Section 14
+│   ├── database.json           # Full raw ~6,800-symphony database (not the curated 35); see Section 14
 │   ├── database.js             # Same data as window.DATABASE_DATA, for file:// compat
 │   ├── database_summary.json   # Columnar, float-rounded subset of database.json for list/filter/score views (v1.16)
 │   ├── database_summary.js     # Same data as window.DATABASE_SUMMARY_DATA, for file:// compat (v1.16)
@@ -1113,7 +1113,7 @@ python scripts/dedupe_symphonies.py 20  # optional LIMIT arg, for a small test r
 
 Running `flag_name_noise.py` first matters: it removes `TESTPORT #`-prefixed rows from the dedup candidate pool entirely, so one can never win the `symphony_id` tiebreak and become the sole surviving "keeper" of a real strategy family. This is a sequencing choice, not special-case logic inside the dedup script itself.
 
-**MANUAL-ONLY, do not automate.** `dedupe_symphonies.py` makes roughly one live API call per candidate row (hundreds per run) against Composer's unauthenticated API, and a full pass can take 20–30+ minutes. Neither script is wired into GitHub Actions, and neither should be, the deploy workflow excludes `scripts/` entirely, `update-metrics.yml` only ever runs `update_metrics.py` (the curated 25 strategies), and `refresh-full-database.yml` (added v1.12.0, see "Updating the Full Database" above) only ever runs `refresh_full_database.py`. Running this unattended on a schedule risks hammering Composer's API far more often than a human would choose to, with no one watching for rate-limit or correctness problems. Every full-database maintenance script in `scripts/` follows this same manual-only rule except `refresh_full_database.py`, which was deliberately opted into weekly automation as a distinct decision.
+**MANUAL-ONLY, do not automate.** `dedupe_symphonies.py` makes roughly one live API call per candidate row (hundreds per run) against Composer's unauthenticated API, and a full pass can take 20–30+ minutes. Neither script is wired into GitHub Actions, and neither should be, the deploy workflow excludes `scripts/` entirely, `update-metrics.yml` only ever runs `update_metrics.py` (the curated 35 strategies), and `refresh-full-database.yml` (added v1.12.0, see "Updating the Full Database" above) only ever runs `refresh_full_database.py`. Running this unattended on a schedule risks hammering Composer's API far more often than a human would choose to, with no one watching for rate-limit or correctness problems. Every full-database maintenance script in `scripts/` follows this same manual-only rule except `refresh_full_database.py`, which was deliberately opted into weekly automation as a distinct decision.
 
 ---
 
@@ -1419,8 +1419,8 @@ rendered from the data instead.
 ### Full Database JSON Schema
 
 All fields in `data/database.json`. This is a separate, lighter schema from
-`strategies.json`: it holds the raw ~7,700-entry database (see Section 14 Roadmap),
-not the 31 curated strategies. `data/database.js` is its `.js` twin (assigns
+`strategies.json`: it holds the raw ~6,800-entry database (see Section 14 Roadmap),
+not the 35 curated strategies. `data/database.js` is its `.js` twin (assigns
 `window.DATABASE_DATA`, same file:// compat pattern as `strategies.js`/`glossary.js`).
 
 #### The Primary Key Invariant

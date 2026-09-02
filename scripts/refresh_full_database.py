@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 refresh_full_database.py: Fetch fresh backtest data from the Composer API
-for entries in data/database.json (the full ~6,500-symphony raw database,
-distinct from the 25 curated strategies in data/strategies.json).
+for entries in data/database.json (the full ~6,800-symphony raw database,
+distinct from the 35 curated strategies in data/strategies.json).
 
 Target schema (locked in PRD.md Section 14, V1.9.1): every DIRECT_FIELD is
 overwritten in full on every successful call (no partial/backfill merging),

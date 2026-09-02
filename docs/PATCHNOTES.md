@@ -5,6 +5,32 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.39.1] - 2026-09-01
+
+### Added
+- **`scripts/id_to_url.py`**: reusable Composer symphony id <-> URL converter (module + CLI).
+  Standardizes on the `/details` URL form that `data/storage.csv` has always used, so every
+  ingest route emits the same string and a symphony never lands in storage twice under two
+  different paths (`/details` vs `/factsheet`). Backs the AddSymphony ingest below and is meant
+  for reuse by any future backend id/URL plumbing.
+
+### Changed
+- **Full database ingest from `data/AddSymphony.csv`**: of the 6,358 valid ids in the file, 142
+  were new to `data/storage.csv` and 147 new to `data/database.json`. Seeded and backtested the
+  147 new symphonies (144 OK, 3 transient `retry`, 0 dead/`excluded`), matching each store on its
+  own primary key (`symphony_id` for the database, `url` for storage per docs/PRD.md Section 14).
+  Deliberately scoped to the AddSymphony delta only, NOT run through
+  `sync_storage_to_database.py`, whose seed set is the entire ~1,040-id storage backlog that is
+  archived-but-not-promoted on purpose. Database grows 6,669 -> 6,816; storage 7,714 -> 7,856.
+  `database_summary.json`/`.js` regenerated; `check_database_keys.py` passes.
+- **Documentation accuracy pass**: homepage stats bar refreshed (6,640 -> 6,816 strategies,
+  median ARR +48.7% -> +50.7%, median drawdown -34.7% -> -35.1%, Last Refreshed Jul 12 -> Sep 1);
+  corrected stale curated/database counts in `docs/PRD.md` (34 -> 35 strategy index; the
+  `database.json` directory note and Section 14 schema note both mislabeled the ~6,800-entry
+  database with storage's ~7,700 figure and gave old curated counts of 28/31; `update_metrics.py`
+  described as 25 curated -> 35) and in `scripts/refresh_full_database.py`'s docstring
+  (~6,500 / 25 curated -> ~6,800 / 35).
+
 ## [1.39.0] - 2026-09-01
 
 ### Added
