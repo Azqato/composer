@@ -5,6 +5,49 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.48.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 3 of 23: `tqqq-long-term`.** TL;DR, Underlying Assumptions,
+  Market Regime table and regime note for TQQQ For The Long Term (Original), matching the shape
+  approved on `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. Four findings
+  are stated on the page because they change what a reader should believe about the strategy:
+
+  1. **Two of the seven conditions are close to decorative.** The rung the description sells as
+     dip-buying on UPRO decided the day's holding 5 times in roughly 15 years, and UPRO returned
+     +5.8% across those 5 days. The SQQQ-oversold rung decided 12 days. Both conditions are true
+     far more often than that, but the tests above them almost always resolve first, so the chain
+     rarely reaches them.
+  2. **The bear branch is long 3x Nasdaq on 32.5% of its days.** Below the SPY gate the logic runs
+     five tests in order and holds TQQQ when none fires, so a decline can inflict full 3x losses
+     with the regime gate already shut. In the spring 2025 drawdown the reconstruction held TQQQ
+     on 44% of days while TQQQ fell 56.8%.
+  3. **TLT is the only losing leg, and it failed when it was needed.** It compounded -6.6% across
+     the 104 days it was held, and in 2022, the single bear market in the record, it fell 29.3%
+     at the same time as stocks. It is also chosen against SQQQ on a relative RSI reading rather
+     than on any view about rates.
+  4. **It is a close sibling of The Holy Grail and the difference is the gate.** This one measures
+     the regime on SPY rather than on TQQQ itself, which makes it slower to leave a decline and
+     quicker to return to it. Its longest continuous stretch below the gate is 87 trading days
+     against 262 for the Holy Grail's.
+
+- **Every figure on the page is computed, not recalled.** Live metrics are v1.45.0 tokens; the
+  condition frequencies and branch shares come from evaluating the symphony's own tree over daily
+  closes; the regime examples are ticker moves computed from those same closes.
+
+### Changed
+- **Condition frequency is now measured rather than asserted.** A new scratchpad checker walks
+  every conditional node in a symphony tree and reports, per condition, how often it was true and
+  how often it was the node that actually selected the day's holding. Those two numbers differ
+  sharply in nested logic, and the gap is what exposes a rung that reads as important but decides
+  almost nothing. It was cross-checked against the purpose-built holy-grail counter it replaces
+  and reproduces every figure exactly.
+
+---
+
 ## [1.47.0] - 2026-09-02
 
 ### Added
