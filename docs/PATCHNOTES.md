@@ -5,6 +5,45 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.57.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 12 of 23: `spy-energy-chips`.** TL;DR, Underlying Assumptions,
+  Market Regime table and regime note for SPY, Energy, Chips, Commodities, matching the shape
+  approved on `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. One conditional
+  node, one filter, eight tickers. Four findings are stated on the page:
+
+  1. **The Black Swan Catcher fired on 12 of 3,533 days, in exactly two episodes.** Eleven of them
+     are consecutive, 6 to 20 March 2020, and the twelfth is 5 August 2024. It did not fire in the
+     2022 bear market, the Q4 2018 selloff, the February 2018 volatility spike or the 2025 spring
+     drawdown. The dates were enumerated rather than inferred from the condition frequency.
+  2. **The rotator is three names wearing a diversified label.** ENPH is 34.0% of all capital
+     deployed, NVDA 29.9% and AMD 22.6%, so the three take 86.5% between them. SPY, DBC and SOXX
+     together account for 6.0%.
+  3. **The largest holding in a strategy about chips and energy is a solar company.** ENPH is the
+     most volatile name in the basket, which is why a 90-day momentum ranking reaches it most.
+  4. **DBC is the only losing leg**, at -6.4% across the 59 days it was held.
+
+- **The simpler design beat the more complicated one built on the same names.** This strategy's
+  seven-name rotation universe is exactly the seven unleveraged tickers in Inside Nancy Pelosi's
+  Chips, over an identical 3,534 day window. That one adds leveraged mean-reversion rungs and
+  returned 75.5% a year to this one's 71.4%, but on a -86.3% drawdown against -65.4%, so both its
+  Sharpe and its Calmar are lower. The comparison is stated on the page.
+
+### Fixed
+- **Two `check_stat_drift` false positives reworded rather than suppressed.** The checker reads a
+  bare number adjacent to a metric name as a quoted figure, so "a Calmar 19th" parsed as a Calmar of
+  19 and "75.5% annualized", a figure belonging to a different strategy, parsed as this one's
+  return. Both sentences were rephrased to keep the gate meaningful; no checker was changed.
+- **A misleading window comparison dropped.** A draft compared the reconstruction's 2012 to 2014
+  gain against SPY's, but the reconstruction covers only 602 days of that window because the record
+  starts in August 2012. The comparison was removed rather than footnoted.
+
+---
+
 ## [1.56.0] - 2026-09-02
 
 ### Added

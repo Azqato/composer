@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.56.0
+**Version:** 1.57.0
 **Status:** Active
 **Last Updated:** 2026-09-02
 

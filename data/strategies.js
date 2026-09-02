@@ -2546,7 +2546,79 @@ window.STRATEGIES_DATA = [
       "signal": "There is no SPY trend gate. The strategy can stay fully in semiconductor stocks through a bear market unless VIXM RSI triggers, and that requires sustained volatility elevation over 40 days rather than an immediate response to the market turning negative.",
       "hedge": "VIXM is the hedge leg. It carries moderate roll decay compared with UVXY and adds meaningful long-duration protection, which is the tradeoff it exists to make.",
       "concentration": "The rotation holds individual names including NVDA, AMD and ENPH. That is single-name risk inside volatile sectors, with no leverage to compensate for carrying it."
-    }
+    },
+    "tldr": {
+      "thesis": "One test and one filter. If VIXM's 40-day RSI is above 69 the strategy holds VIXM, and otherwise it holds whichever of seven names had the best 90-day average return. The volatility test, the part the author named Black Swan Catcher, fired on 12 of {backtest_days} days in two episodes: the COVID crash of March 2020 and a single day in August 2024. Everything else in the record is the rotator, and the rotator is really a bet on three names. ENPH, NVDA and AMD took 86.5% of all capital deployed between them.",
+      "works_well_in": [
+        "Clear single-name leadership. The filter concentrates fully into one holding and stays with it while it leads. ENPH compounded +4,054.3% across the 1,202 days the rules named it and NVDA +1,030.7% across 1,055.",
+        "Semiconductor uptrends. Through the 2023 AI bull the reconstruction held NVDA on 83% of days while NVDA rose 246.1%, and through 2024 it held NVDA on 82% while NVDA rose 178.9%.",
+        "Energy and commodity leadership, which is what the non-technology half of the basket exists for. Through the 2022 bear market the reconstruction held ENPH on 49% of days and XLE on 47% while XLE rose 44.5% and SPY fell 24.5%.",
+        "A genuine volatility shock, in the one case the catcher caught one. Across the COVID crash the reconstruction held VIXM on 48% of days while VIXM rose 97.7%."
+      ],
+      "struggles_in": [
+        "Broad markets rising without a leader in this basket. Through the 2021 melt-up the reconstruction gained 19.8% against SPY's 30.5%, holding four different names across the window.",
+        "Sharp declines that do not raise VIXM's 40-day RSI above 69, which is nearly all of them. In the Q4 2018 selloff the reconstruction held AMD on 98% of days while AMD fell 47.0%.",
+        "Single-name collapses. The filter holds one stock with no stop and no position limit. Through the 2026 spring wobble it held ENPH on 100% of days while ENPH fell 27.4% and SPY rose 1.6%.",
+        "Commodity exposure, which is the only losing leg in the strategy. DBC compounded -6.4% across the 59 days it was held."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**A 90-day average return predicts the next stretch.** This single reading decides 99.7% of days. There is no trend filter, no volatility check and no drawdown limit anywhere in the rotator.",
+        "**A persistently elevated VIXM reading marks a crisis worth hiding from.** The threshold is a 40-day RSI above 69, which is a slow reading by design, so it is looking for sustained stress rather than a single bad day.",
+        "**Mid-term VIX futures are a workable place to sit during that crisis.** VIXM decays structurally, so this only pays if the escape is brief and well timed.",
+        "**These seven names cover the ground that matters.** The basket holds two chip designers, a chip index fund, the broad market, energy, commodities and a solar company. Nothing in the logic revises it, and it was chosen after the fact."
+      ],
+      "structural": [
+        "**The Black Swan Catcher fired on 12 days in 14 years, in exactly two episodes.** Eleven of them are consecutive, 6 to 20 March 2020, and the twelfth is 5 August 2024. It did not fire in the 2022 bear market, the Q4 2018 selloff, the February 2018 volatility spike or the 2025 spring drawdown.",
+        "**The rotator is three names wearing a diversified label.** ENPH is 34.0% of all capital deployed, NVDA 29.9% and AMD 22.6%. SPY, DBC and SOXX together account for 6.0%, so the broad market, the commodity fund and the chip index fund are close to decorative.",
+        "**The largest holding in the strategy is a solar company.** ENPH is a microinverter manufacturer and the most volatile name in the basket, which is why a 90-day momentum ranking reaches it more often than anything else.",
+        "**It is fully concentrated at all times.** It holds exactly one asset on 100% of days, with no cash branch, no bond branch and no partial position.",
+        "**{max_drawdown_abs} is the seventh deepest drawdown among the 24 strategies in this library**, on {standard_deviation} annualized volatility, and the worst single day in the record was {worst_day}. A {sharpe_ratio} Sharpe ranks 21st of 24 here, and a {calmar_ratio} Calmar ranks 19th.",
+        "**The simpler design beat the complicated one built on the same names.** Inside Nancy Pelosi's Chips rotates over these same seven unleveraged tickers across an identical {backtest_days} day window, and adds leveraged mean-reversion rungs on top. It returned 75.5% a year to this strategy's {annualized_rate_of_return}, but did so on a drawdown of -86.3% against {max_drawdown_abs}, so its Sharpe and Calmar are both lower.",
+        "**Turnover is moderate**, at one allocation change every 13.3 trading days across individual stocks, and none of the figures on this page carries a commission, a spread or a slippage assumption.",
+        "**The record covers {backtest_days} trading days from 8 August 2012**, bounded by the 90-day lookback on ENPH, the youngest name in the basket, which first traded in March 2012. The 2008 crisis is absent, and so is any period in which this particular seven-name basket was not the interesting one."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Clear single-name leadership",
+        "expected": "Strong",
+        "why": "A 90-day momentum ranking over a small fixed basket concentrates fully into whatever is running, which is the best case for this design.",
+        "example": "2019 recovery: ENPH +431.1%, and the reconstruction held ENPH on 86% of days, ending the window up 330.1% against SPY's 31.1%."
+      },
+      {
+        "regime": "Semiconductor uptrend",
+        "expected": "Strong",
+        "why": "Three of the seven names are chip exposure, so a semiconductor cycle is the one the basket can express most fully.",
+        "example": "2023 AI bull: NVDA +246.1%, AMD +130.3%, and the reconstruction held NVDA on 83% of days, ending up 238.2%."
+      },
+      {
+        "regime": "Energy or commodity leadership",
+        "expected": "Strong",
+        "why": "XLE and DBC are in the basket, so a market where energy leads and equities fall is one the rotation can rotate into.",
+        "example": "2022 bear market: SPY -24.5%, XLE +44.5%, ENPH +34.5%. The reconstruction held ENPH on 49% of days and XLE on 47%, ending up 36.0%."
+      },
+      {
+        "regime": "Sustained volatility shock",
+        "expected": "Mixed",
+        "why": "The catcher works when it fires, but it has fired in two episodes across the whole record, so there is very little evidence about it either way.",
+        "example": "COVID crash: VIXM +97.7% and SPY -33.7%. The reconstruction held VIXM on 48% of days and ended the window up 32.5%."
+      },
+      {
+        "regime": "Broad rally with no leader in the basket",
+        "expected": "Poor",
+        "why": "The filter always holds exactly one name, so a market where the index rises steadily but none of these seven dominates leaves it rotating into whatever just finished running.",
+        "example": "2021 melt-up: SPY +30.5%, while the reconstruction gained 19.8% holding NVDA 40%, XLE 24%, ENPH 18% and AMD 16%."
+      },
+      {
+        "regime": "Fast selloff below the volatility trigger",
+        "expected": "Poor",
+        "why": "A decline that does not push VIXM's 40-day RSI above 69 leaves the strategy fully invested in one high-beta stock, and the RSI is slow enough that most declines do not.",
+        "example": "Q4 2018 selloff: AMD -47.0%, NVDA -56.0%, and the reconstruction held AMD on 98% of days, ending down 47.3% against SPY's 19.2%."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that stock or fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. Where a window quotes what the reconstruction gained or lost, that is the modelled path of those same holdings: it is a reading of the rules rather than a backtest, it carries no fees, no slippage and no rebalance timing, and it is quoted to rank the regime rather than as a return you could have earned. The allocation changes about once every 13.3 trading days, which is what makes that path meaningful enough to quote here. The reconstruction covers {backtest_days} trading days from 8 August 2012 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "simons-kmlm-switcher",
