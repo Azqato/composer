@@ -5,6 +5,47 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.53.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 8 of 23: `soxl-growth-rl`.** TL;DR, Underlying Assumptions, Market
+  Regime table and regime note for SOXL Growth (Original), matching the shape approved on
+  `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. Unlike the last
+  two strategies this one is compact, 15 conditions with no repetition and no dead branches, and
+  the problems are of a different kind. Four findings are stated on the page:
+
+  1. **The thresholds are precise to four decimal places.** The logic asks whether SOXL's 32-day
+     RSI is at or below 62.1995, whether its 105-day return volatility is at or below 4.9226, and
+     whether its 30-day volatility is at or above 5.4135. No market process justifies that
+     precision. The strategy names the fitting method in its own title: the RL stands for
+     reinforcement learning. This is the clearest overfitting signature in the library.
+  2. **One basket lists the same fund twice.** In two places the logic ranks TMV, SQQQ, SPXS and
+     SPXS by 3-day return and takes the bottom two, so SPXS occupies two of four slots and can win
+     both, receiving the entire allocation instead of half. That is a defect in the symphony rather
+     than a design choice.
+  3. **The fitted thresholds read fast rallies as a reason to be short.** In the 2023 AI bull the
+     reconstruction held SOXS on 36% of days while SOXS fell 85.1% and SOXL rose 237.8%. In the
+     2021 melt-up it held SOXS on 54% of days. Over the whole record SOXS compounded -62.0% across
+     1,056 days held, more than a quarter of the record.
+  4. **TMF is in the universe and was never held**, appearing in two baskets the logic never once
+     selected it from.
+
+- **It carries the deepest drawdown in the library at -87.8%**, with the third highest volatility,
+  and a Sharpe and Calmar that are the weakest pair among the eight pages written so far. No
+  reconstructed return is quoted: on a path that lost seven eighths of its value, a costless model
+  flatters the recovery more than anything else.
+
+### Fixed
+- **Two more claims corrected before shipping.** A draft called this the worst single day recorded
+  anywhere in the library; at -38.593% it is second, behind `gold-miner-original` at -38.598%, and
+  the two round to the same figure, so the page now says "within a rounding error". A second draft
+  miscounted the universe as four long and three short leveraged funds; it is four and four.
+
+---
+
 ## [1.52.0] - 2026-09-02
 
 ### Added

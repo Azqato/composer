@@ -2018,7 +2018,79 @@ window.STRATEGIES_DATA = [
       "signal": "The thresholds are reinforcement-learning optimised, and the strategy stays long through most downturns relying on those precise exit points rather than a broad regime filter like a 200-day average. Thresholds fitted to historical SOXL and TQQQ behaviour may be overfit and could behave differently in a new regime. Its Calmar and Sharpe are modest for the risk taken.",
       "hedge": "SOXS, SPXS and SQQQ are all leveraged inverse positions, so the defensive states are directional bets rather than ballast. TMF and TMV are the only non-equity legs and they point in opposite directions.",
       "concentration": "Semiconductors are the core exposure, and the strategy has recorded single-month losses approaching half the portfolio. That is what concentration and leverage look like together on a bad month."
-    }
+    },
+    "tldr": {
+      "thesis": "A machine-fitted trading rule that says so in its own name. The RL stands for reinforcement learning, and the thresholds show it: this strategy asks whether SOXL's 32-day RSI is at or below 62.1995, whether its 105-day return volatility is at or below 4.9226, whether its 30-day volatility is at or above 5.4135. Underneath the four decimal places it is a simple thing, a switch between 3x long semiconductors and 3x short semiconductors, and it landed on SOXL for 62.4% of all capital and SOXS for 27.1%. It carries the deepest drawdown of any strategy in this library.",
+      "works_well_in": [
+        "Semiconductor bull markets. SOXL is what the logic chooses more than everything else combined, and across the 2,506 days the rules named it, it compounded +4,073,038.8%. The {cumulative_return} headline is that leg.",
+        "Recoveries off a crash low, where the volatility tests clear and the strategy returns to 3x long quickly. Through the COVID recovery the reconstruction held SOXL on 56% of days and SPXL on 18% while SOXL rose 185.1%.",
+        "Calm, grinding uptrends. The main branch resolves to plain SOXL whenever SOXL's 32-day RSI is moderate and its 105-day volatility is low, and that pair of conditions decided 1,615 days on its own. Through 2012 to 2014 the reconstruction held SOXL on 81% of days while SOXL rose 401.1%.",
+        "Genuine crisis conditions, in the narrow sense that the crisis branch exists and does something. When SOXL's 60-day maximum drawdown reaches 50%, a different half of the tree takes over and reaches SPXS, SQQQ and TMV. That state covered 510 of {backtest_days} days."
+      ],
+      "struggles_in": [
+        "Being short semiconductors during a semiconductor rally, which happened repeatedly. In the 2021 melt-up the reconstruction held SOXS on 54% of days. In the 2023 AI bull it held SOXS on 36% of days while SOXS fell 85.1% and SOXL rose 237.8%.",
+        "Anything involving the short leg at all. SOXS was held on 1,056 days, more than a quarter of the record, and compounded -62.0% across them.",
+        "Sharp declines the logic reads as ordinary. In the Q4 2018 selloff the reconstruction held SOXL on 79% of days while SOXL fell 57.0% and SOXS rose 75.9%. In the February 2018 volatility spike it held SOXL on 100% of days while SOXL fell 32.5%.",
+        "Any environment where the thresholds are slightly wrong. Nothing in the logic is robust to a 62.1995 that should have been 61 or 64, and every one of the 15 conditions in the tree is a hard cutoff of that kind."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**Semiconductors rise over the long run and 3x leverage is the way to own them.** SOXL is 62.4% of all capital deployed and produced essentially the whole result. Everything else in the tree decides when to leave it.",
+        "**A fitted threshold generalises to the future.** This is the assumption the whole page turns on. The strategy names its own method, and the numbers it landed on are precise to four decimal places on readings that are themselves noisy.",
+        "**Volatility of returns predicts direction.** Five of the 15 conditions test a standard deviation of returns rather than a price or a trend. The design treats a calm market as a reason to be long and a volatile one as a reason to be short.",
+        "**The short side is a position rather than a hedge.** SOXS is chosen by the same fitted thresholds that choose SOXL and is held for more than a quarter of the record, so it is a directional bet in its own right."
+      ],
+      "structural": [
+        "**The thresholds are precise to four decimal places, and that is the largest warning on the page.** 62.1995, 4.9226, 5.4135, 57.49, alongside lookbacks of 32 and 105 days. No market process justifies that precision. A rule fitted this finely to {backtest_days} days of history is describing that history rather than a mechanism, and the strategy's own title records the fitting method.",
+        "**One basket lists the same fund twice.** In two places the logic ranks TMV, SQQQ, SPXS and SPXS by 3-day return and takes the bottom two. Because SPXS occupies two of the four slots it can win both, in which case it receives the entire allocation rather than half. This is a defect in the symphony rather than a design choice.",
+        "**The short leg lost most of its value over the days it was used.** SOXS compounded -62.0% across 1,056 days held. Three of the seven legs in the strategy lost money over their holding days: SOXS, SPXS at -2.9% and TMV at -8.6%.",
+        "**TMF is in the universe and was never held.** It appears in two baskets across the record and the logic never once selected it.",
+        "**{max_drawdown_abs} is the deepest drawdown of any strategy in this library**, and {standard_deviation} annualized volatility is the third highest. The worst single day in the record was {worst_day}, which is within a rounding error of the worst day recorded anywhere in this library.",
+        "**A {sharpe_ratio} Sharpe and a {calmar_ratio} Calmar are modest for the risk taken.** They are the weakest pair among the strategies reviewed so far in this rollout, and they are earned on a path that lost seven eighths of its value at the worst point.",
+        "**It is concentrated by construction.** It holds exactly one fund on 90.2% of days, and it can only ever hold eight, every one of them a 3x leveraged fund: four long and four short.",
+        "**The record covers {backtest_days} trading days from March 2011**, bounded by the launch of the leveraged semiconductor funds, so it misses the 2008 crisis and the 2000 semiconductor collapse. Turnover is moderate for this library, at one allocation change every 7.4 trading days, but none of the figures here carries a commission, a spread or a slippage assumption."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Calm semiconductor uptrend",
+        "expected": "Strong",
+        "why": "The main branch resolves to plain SOXL whenever the 32-day RSI is moderate and 105-day volatility is low. That pair decided 1,615 days on its own and is where the record was made.",
+        "example": "2012 to 2014: SPY +71.4%, SOXL +401.1%, and the reconstruction held SOXL on 81% of days."
+      },
+      {
+        "regime": "Recovery off a crash low",
+        "expected": "Strong",
+        "why": "The crisis branch hands back to leveraged long once the drawdown and volatility tests clear, which tends to happen while the rebound is still running.",
+        "example": "COVID recovery, 24 Mar to 31 Aug 2020: SOXL +185.1%, SPXL +167.9%. The reconstruction held SOXL on 56% of days and SPXL on 18%."
+      },
+      {
+        "regime": "Prolonged crisis",
+        "expected": "Mixed",
+        "why": "A 60-day drawdown of 50% or more opens a separate half of the tree that reaches inverse and rate funds. It ran on 510 days in long blocks rather than short bursts, so it is genuinely tested, but two of the strategy's three losing legs, SPXS and TMV, are reachable only from it.",
+        "example": "2022 bear market: SOXL -89.8%, SPXS +82.2%, SQQQ +120.7%, TMV +140.7%. The reconstruction held SOXL on 59% of days and SPXS on 15%."
+      },
+      {
+        "regime": "Strong semiconductor rally",
+        "expected": "Poor",
+        "why": "The fitted thresholds read a fast rally as a reason to be short. This is the most damaging pattern in the record and it recurred.",
+        "example": "2023 AI bull: SOXL +237.8%, SOXS -85.1%, and the reconstruction held SOXS on 36% of days. In the 2021 melt-up it held SOXS on 54%."
+      },
+      {
+        "regime": "Sharp selloff below the crisis trigger",
+        "expected": "Poor",
+        "why": "A decline that does not push SOXL's 60-day drawdown to 50% leaves the strategy in its ordinary branch, which defaults long.",
+        "example": "February 2018 spike: SOXL -32.5%, SOXS +38.8%, and the reconstruction held SOXL on 100% of days."
+      },
+      {
+        "regime": "A market unlike the fitted sample",
+        "expected": "Unknown",
+        "why": "Every threshold in this strategy is a hard cutoff chosen to four decimal places against {backtest_days} days of history. Nothing in the record tests what happens when the readings sit slightly on the other side of them.",
+        "example": "The tree contains 15 conditions, all distinct, including a 32-day RSI cutoff at 62.1995 and a 105-day volatility cutoff at 4.9226."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which fund the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. No reconstructed return is quoted on this page. On a strategy that lost seven eighths of its value at its worst point, a modelled path with no costs would flatter the recovery more than it flatters anything else, so the regimes above are ranked from holdings and price moves alone. The reconstruction covers {backtest_days} trading days from 4 March 2011 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "nancy-pelosi-chips",
