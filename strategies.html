@@ -503,108 +503,49 @@
            </section>`
         : '';
 
-      // PILOT (v1.42.0), gold-miner-original only, pending owner sign-off before
-      // this goes library-wide. Two changes are being judged on one page:
-      //   1. AI Summary sits directly under the Open in Composer button, above
-      //      the TL;DR card, rather than below it.
-      //   2. Assets drops today's position entirely and describes the reachable
-      //      universe instead.
-      // To roll out: delete this flag and the pre-pilot branches. To abandon:
-      // delete the pilot branches. Nothing else on the page is touched, so the
-      // other 35 strategies are the control.
-      const isLayoutPilot = s.slug === 'gold-miner-original';
-
-      // Item 6. What the logic CAN hold against what it IS holding, from the two
-      // halves of last_market_days_holdings: its keys are the reachable universe,
-      // its values are the last market day's position.
+      // Item 6, as rebuilt in v1.42.0 and approved library-wide in v1.43.0.
       //
-      // The gap is the whole point of the section. Across the 31 featured
-      // strategies the median universe is 6 tickers and the median position is 1,
-      // and not one strategy holds its full universe. `super-semiconductors` can
-      // reach 31 tickers and is holding SMH alone. Nothing else on the page shows
-      // this, and the Deeper Metrics note already has to warn that the Herfindahl
-      // index describes the backtest rather than today's position: this is where a
-      // reader can see today's position instead of inferring it from a number that
-      // disagrees with it.
+      // The keys of last_market_days_holdings are the reachable universe and its
+      // values are the last market day's position. This section renders the keys
+      // and deliberately discards the values.
       //
-      // Percentages, never the raw values. Those are aggregate dollars across
-      // Composer (four-horsemen reads $229,544,631, super-semiconductors $417,186),
-      // so they are not the reader's money and printing them would be a wall of
-      // unexplained millions. Normalised they are the strategy's own allocation,
-      // which is the thing a reader is actually asking about.
+      // It did not always. Through v1.41.x it led with "1 of 6 tickers held as of
+      // the last market day", an allocation bar per holding and a percentage
+      // beside it. Every one of those numbers was accurate and the section was
+      // still wrong to lead with them: what a strategy CAN hold is a durable fact
+      // about its logic, while what it holds today is one rebalance old and
+      // invites a reader to treat a position as a recommendation, which is the
+      // one thing this site does not do.
+      //
+      // What survives is the universe and its tax character, because that is the
+      // part that does not change between rebalances and the part a reader cannot
+      // look up quickly anywhere else.
       function assetsSection() {
         const holdings = extras.holdings || {};
-        const universe = Object.keys(holdings);
+        const universe = Object.keys(holdings).sort();
         if (!universe.length) return '';
         const since = extras.holdings_inception || {};
         const k1Set = new Set((extras.k1_holdings || []).map(h => h.ticker));
         const etnSet = new Set((extras.etn_holdings || []).map(h => h.ticker));
 
-        const total = universe.reduce((a, t) => a + (holdings[t] > 0 ? holdings[t] : 0), 0);
-        const held = universe.filter(t => holdings[t] > 0).sort((a, b) => holdings[b] - holdings[a]);
-        const idle = universe.filter(t => !(holdings[t] > 0)).sort();
+        const k1n = universe.filter(t => k1Set.has(t)).length;
+        const etnn = universe.filter(t => etnSet.has(t)).length;
+        const taxNote = [
+          k1n ? `${k1n} issue${k1n === 1 ? 's' : ''} a K-1` : '',
+          etnn ? `${etnn} ${etnn === 1 ? 'is an ETN' : 'are ETNs'}` : '',
+        ].filter(Boolean).join(', ');
 
-        const badges = t =>
-          (k1Set.has(t) ? '<span class="asset-badge k1">K-1</span>' : '') +
-          (etnSet.has(t) ? '<span class="asset-badge etn">ETN</span>' : '');
-
-        // PILOT. The universe, with no allocation and no snapshot.
+        // Chips, the same `.hold-ticker` used by the K-1 and ETN notices below,
+        // so every ticker list on the page reads as the same kind of thing.
         //
-        // What a strategy CAN hold is a durable fact about its logic. What it
-        // holds today is one rebalance old, and printing it invites a reader to
-        // read a position as a recommendation, which is the one thing this site
-        // does not do. The tax character of the universe survives, because that
-        // is the part that does not change between rebalances and the part a
-        // reader cannot look up quickly anywhere else.
-        if (isLayoutPilot) {
-          const all = universe.slice().sort();
-          const k1n = all.filter(t => k1Set.has(t)).length;
-          const etnn = all.filter(t => etnSet.has(t)).length;
-          const taxNote = [
-            k1n ? `${k1n} issue${k1n === 1 ? 's' : ''} a K-1` : '',
-            etnn ? `${etnn} ${etnn === 1 ? 'is an ETN' : 'are ETNs'}` : '',
-          ].filter(Boolean).join(', ');
-
-          const uRows = all.map(t => `
-            <div class="asset-row asset-row-plain">
-              <a class="asset-ticker" href="${u('/k1.html')}?t=${encodeURIComponent(t)}">${t}</a>
-              <span class="asset-flags">${badges(t)}</span>
-              <span class="asset-since">${since[t] ? 'first traded ' + since[t] : ''}</span>
-            </div>`).join('');
-
-          return `
-            <section class="mb-10">
-              <h2 style="color:var(--color-primary);margin-bottom:16px">Assets</h2>
-              <div class="asset-head">
-                <span class="asset-head-n">${all.length}</span>
-                <span class="asset-head-l">${all.length === 1 ? 'ticker' : 'tickers'} this
-                  strategy can hold${taxNote ? ', of which ' + taxNote : ''}</span>
-              </div>
-              <div class="asset-rows">${uRows}</div>
-              <p class="metric-grid-note"><strong>This is the full range of exposure the logic can
-              route into, not a portfolio.</strong> The strategy holds a subset of these at any
-              moment and can move between them on any rebalance, so read the list as what it is
-              allowed to own rather than as what it owns. Dates are when each fund first traded,
-              which is what bounds how far back the backtest can reach. Every ticker links to its
-              K-1 entry.</p>
-            </section>`;
-        }
-
-        // Guarded rather than assumed: a strategy fully in cash would have a zero
-        // total, and dividing by it would print NaN% on every row.
-        const rows = held.map(t => {
-          const pct = total > 0 ? (holdings[t] / total) * 100 : null;
-          return `
-            <div class="asset-row">
-              <a class="asset-ticker" href="${u('/k1.html')}?t=${encodeURIComponent(t)}">${t}</a>
-              <div class="asset-bar"><span style="width:${pct === null ? 0 : pct.toFixed(1)}%"></span></div>
-              <span class="asset-pct">${pct === null ? '&mdash;' : pct.toFixed(1) + '%'}</span>
-              <span class="asset-since">${since[t] ? 'since ' + since[t] : ''}</span>
-              <span class="asset-flags">${badges(t)}</span>
-            </div>`;
-        }).join('');
-
-        const chips = idle.map(t => `
+        // Nothing per-ticker survives in the row itself, and that is deliberate.
+        // Per-row K-1 and ETN badges were tried and removed: the notices directly
+        // below already name every affected ticker AND explain what the treatment
+        // costs, so a three-letter badge restated the fact worse. First-traded
+        // dates were tried and removed for the same reason: they existed to bound
+        // the backtest, and the Backtest window card does that properly by naming
+        // the binding holding and its date. The date stays on the chip's title.
+        const chips = universe.map(t => `
           <a class="hold-ticker" href="${u('/k1.html')}?t=${encodeURIComponent(t)}"
              title="${since[t] ? 'first traded ' + since[t] : t}">${t}</a>`).join('');
 
@@ -612,22 +553,17 @@
           <section class="mb-10">
             <h2 style="color:var(--color-primary);margin-bottom:16px">Assets</h2>
             <div class="asset-head">
-              <span class="asset-head-n">${held.length} of ${universe.length}</span>
-              <span class="asset-head-l">${held.length === 1 ? 'ticker held' : 'tickers held'}
-                as of the last market day</span>
+              <span class="asset-head-n">${universe.length}</span>
+              <span class="asset-head-l">${universe.length === 1 ? 'ticker' : 'tickers'} this
+                strategy can hold${taxNote ? ', of which ' + taxNote : ''}</span>
             </div>
-            <div class="asset-rows">${rows}</div>
-            ${idle.length ? `
-              <div class="asset-idle">
-                <span class="asset-idle-title">Can also hold, but is not holding today
-                  (${idle.length})</span>
-                <div class="hold-tickers">${chips}</div>
-              </div>` : ''}
-            <p class="metric-grid-note"><strong>The percentages are shares of this strategy's
-            own position, not of your account</strong>, and they are one snapshot: the logic can
-            route into any ticker above on any rebalance, so a ticker sitting in the second list
-            is a ticker this strategy may buy, not one it has abandoned. Dates are when each
-            fund first traded. Every ticker links to its K-1 entry.</p>
+            <div class="hold-tickers">${chips}</div>
+            <p class="metric-grid-note"><strong>This is the full range of exposure the logic can
+            route into, not a portfolio.</strong> The strategy holds a subset of these at any
+            moment and can move between them on any rebalance, so read the list as what it is
+            allowed to own rather than as what it owns. Every ticker links to its K-1 entry, and
+            the Backtest window card above names the holding that bounds how far back the
+            backtest can reach.</p>
           </section>`;
       }
       const assetsHtml = assetsSection();
@@ -638,26 +574,82 @@
         ? `<section class="mb-10">${k1Html}${etnHtml}</section>`
         : '';
 
-      // Item 4. Stated as arithmetic and left as arithmetic. The instruction in the
-      // roadmap is explicit that this must not become a score or a badge, because the
-      // raw number is more persuasive than any rating derived from it.
+      // Item 4, as rebuilt in v1.42.1 under PRD item 4a and approved library-wide
+      // in v1.43.0.
+      //
+      // Through v1.42.0 this card printed `top_five_percent_day_contribution`
+      // raw and warned, above 100%, that "the other 95% of days lost money on
+      // net: remove those days and this strategy is a net loser". Arithmetically
+      // true, and materially misleading, because the denominator is NET return:
+      // a small residual under a much larger gross. Plain buy-and-hold SPY scores
+      // 202% on the same measure and TLT 729%. The threshold flagged 28 of 36
+      // strategies, nearly all of which are LESS reliant on their best days than
+      // the index is.
+      //
+      // The fix is the anchor, not the arithmetic. The card prints the strategy
+      // against SPY over the SAME window, so 46% reads as "a little under half as
+      // reliant as the index" instead of a bare 87% a reader cannot place. Both
+      // raw figures stay on the card, so nobody has to take the ratio on trust.
+      //
+      // No warn colour. The strategies near parity sit inside the gap between
+      // Composer's formula and ours, so a hard line at exactly 100% would be new
+      // false precision in place of old.
+      //
+      // The honest end state needs per-strategy daily returns (V1.20 item 16):
+      // "drop the 10 best days and 34% a year becomes 12%" has no small
+      // denominator to go unstable on it, needs no benchmark, and would let both
+      // sides be computed with one formula. This is the best available without
+      // that data, not the destination.
       const top5 = extras.top_five_percent_day_contribution;
-      const top1 = extras.top_one_day_contribution;
-      const outlierCard = typeof top5 === 'number'
-        ? `<div class="rc-card">
-             <span class="rc-label">Outlier dependence</span>
-             <span class="rc-value ${top5 > 1 ? 'warn' : ''}">${pct1(top5)}</span>
-             <span class="rc-sub">of total return, from the best 5% of days</span>
-             <p class="rc-body">The best 5% of trading days in this backtest produced
-             <strong>${pct1(top5)}</strong> of its total return.
-             ${top5 > 1
-               ? `Above 100% means the other 95% of days lost money on net: <strong>remove those days and this strategy is a net loser</strong>.`
-               : `The remaining 95% of days contributed the other ${pct1(1 - top5)} on net.`}
-             ${typeof top1 === 'number' ? `The single best day alone produced ${pct1(top1)}.` : ''}
-             A backtest that depends on a handful of days is a bet on catching days like
-             them again, which is a different claim from the headline return.</p>
-           </div>`
-        : '';
+      const spyBase = extras.spy_best_day_baseline;
+      const pct0 = n => `${Math.round(n * 100)}%`;
+
+      let outlierCard = '';
+      if (typeof top5 === 'number' && spyBase) {
+        const spy5 = spyBase.top_five_percent_day_contribution;
+        const rel = top5 / spy5;
+        const days = spyBase.days.toLocaleString('en-US');
+        const verdict = rel > 1
+          ? `<strong>about ${pct0(rel - 1)} harder</strong> than simply holding SPY did over
+             the same period, so more of its headline return sits in a handful of sessions
+             than the index needed`
+          : `<strong>${pct0(rel)} as much</strong> as simply holding SPY did over the same
+             period, so its return is spread across ordinary days more evenly than the
+             index's was`;
+        outlierCard = `
+          <div class="rc-card">
+            <span class="rc-label">Reliance on its best days</span>
+            <span class="rc-value">${pct0(rel)}</span>
+            <span class="rc-sub">as reliant on its best days as the S&amp;P 500</span>
+            <p class="rc-body">Strip out the best 5% of trading days and every backtest looks
+            worse, the index included. This one leans on those days ${verdict}.</p>
+            <p class="rc-fine">This backtest ${pct0(top5)}, SPY ${pct0(spy5)}, both measured
+            over the same ${days} days.</p>
+          </div>`;
+      } else if (typeof top5 === 'number') {
+        // No baseline. Three strategies backtest roughly 27 years against the 16
+        // years of SPY closes in data/prices.json, so there is no honest same
+        // window comparison to draw.
+        //
+        // These deliberately do NOT fall back to the pre-pilot card. That card's
+        // threshold is the thing item 4a exists to remove, and a page with no
+        // benchmark is exactly where a reader is least equipped to discount it.
+        // So the figure is shown with its own limitation stated instead.
+        outlierCard = `
+          <div class="rc-card">
+            <span class="rc-label">Reliance on its best days</span>
+            <span class="rc-value">${pct0(top5)}</span>
+            <span class="rc-sub">of total return, from the best 5% of days</span>
+            <p class="rc-body">The best 5% of trading days in this backtest produced
+            <strong>${pct0(top5)}</strong> of its total return. <strong>On its own that number
+            says less than it looks like it does</strong>: it is measured against net return,
+            which is a small residual of much larger gains and losses, so it runs high for
+            anything volatile. Plain buy-and-hold SPY scores about 200% on the same measure.</p>
+            <p class="rc-fine">No like-for-like comparison on this page: this backtest reaches
+            further back than the price history the site stores, so SPY cannot be measured over
+            the same window.</p>
+          </div>`;
+      }
 
       // Item 5. oos_date records the last logic edit, so days-since is genuine
       // out-of-sample time. Worded as a measurement: unedited logic is real evidence,
@@ -759,7 +751,8 @@
               <a href="${s.symphony_url}" target="_blank" rel="noopener noreferrer"
                 class="btn btn-green btn-lg">Open in Composer ↗</a>
             </div>
-            ${isLayoutPilot ? aiSummary + tldrHtml : tldrHtml + aiSummary}
+            ${aiSummary}
+            ${tldrHtml}
             ${howItWorks}
             ${signals}
             ${regimeHtml}

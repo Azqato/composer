@@ -5,6 +5,133 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.43.0] - 2026-09-02
+
+### Changed
+- **The `gold-miner-original` layout pilot is approved and is now the layout for all 36 strategy
+  pages.** `isLayoutPilot` and every pre-pilot branch are deleted, so there is one renderer again
+  rather than two. The canonical section order is written down in `docs/DESIGN.md` under **Strategy
+  Page Section Order**, which is now the reference a new strategy page is checked against.
+  - **AI Summary sits directly under the Open in Composer button**, above the TL;DR card.
+  - **The Assets section is the reachable universe as chips**, with no allocation bars, no
+    percentages, no "held as of the last market day" header and no idle list. What a strategy can
+    hold is durable; what it holds today is one rebalance old and invites a reader to treat a
+    position as a recommendation.
+  - **"Outlier dependence" is now "Reliance on its best days", benchmarked against SPY.** The card
+    prints the strategy against the index over the same window, so gold miner reads **46%** rather
+    than a bare 87%. Both raw figures and the window length stay on the card.
+  - **The `warn` colour and the "net loser" sentence are gone from every page.** The old threshold
+    flagged 28 of 36 strategies on a test that plain buy-and-hold SPY also fails at 202%.
+
+### Added
+- **A no-baseline branch the pilot never exercised.** `dip-buying-tech`, `ob-os-staple-bonds` and
+  `safe-sectors-or-bonds-original` backtest roughly 27 years against the 16 years of SPY closes in
+  `data/prices.json`, so no same-window comparison exists. They print the raw figure with its own
+  limitation attached ("on its own that number says less than it looks like it does") rather than
+  falling back to the pre-v1.43.0 card. **Falling back would have put the misleading threshold on
+  exactly the three pages with no benchmark to discount it with.**
+- **Strategy Page Section Order** in `docs/DESIGN.md`: the approved shape as a table, plus the two
+  rules the review produced. Today's position is not content, and a figure gets a card or it gets
+  nothing.
+
+### Removed
+- **1,707 bytes of dead CSS.** `.asset-row`, `.asset-rows`, `.asset-bar`, `.asset-pct`,
+  `.asset-since`, `.asset-flags`, `.asset-badge`, `.asset-ticker`, `.asset-idle` and
+  `.asset-idle-title` styled the allocation row the Assets section no longer renders. Removed after
+  a grep across every `.html` and `.js` confirmed no remaining consumer. `.asset-head` survives.
+- **`.rc-value.warn`.** Nothing uses it and nothing should: the strategies near parity sit inside
+  the gap between Composer's formula and ours, so a colour change at exactly 100% would assert a
+  precision the data does not have.
+
+### Notes
+- **Verified by rendering all 36 strategy pages in headless Edge and asserting the shape on each**,
+  rather than by spot-checking the pilot. Per page: no pre-v1.43.0 wording, no allocation markup, a
+  best-days card present, a universe Assets section present, no `warn` class, AI Summary positioned
+  before the TL;DR in document order, and the correct one of the two data branches with its
+  headline percentage matching a figure recomputed from `strategy_extras.json`. **33 benchmarked (4
+  above SPY, 29 below), 3 with no baseline, 0 failures.** All four deploy gates pass.
+- **One assertion in that sweep was wrong before the pages were.** It treated "as of the last market
+  day" as pre-v1.43.0 wording and failed 18 pages including the approved pilot, whose Assets section
+  was already verified clean. The phrase legitimately appears in the K-1 and ETN notices, which say
+  a ticker is not currently in the position. The assertion was narrowed to the Assets header's own
+  phrasing. Recorded because the check failing loudly on a false positive is the behaviour worth
+  keeping, not a mistake to hide.
+- **A residual inconsistency, left deliberately.** The Assets section no longer states today's
+  position, but the K-1 and ETN notices below it still say "it is not in the position as of the last
+  market day". The owner reviewed and approved those notices as they stand, so they are unchanged
+  here rather than quietly rewritten to match a rule they predate.
+- **PRD item 19 is NOT resolved by this approval.** That gate covers the authored prose of items 13,
+  14 and 15, which happen to share the same pilot page. This approval covers layout. The PRD now
+  says so at the gate itself, because the shared slug makes the two easy to conflate.
+
+## [1.42.1] - 2026-09-02
+
+### Changed
+- **The Outlier dependence panel is now benchmarked against SPY, piloted on `gold-miner-original`
+  only.** PRD item 4a, raised by the owner and confirmed by measurement in v1.42.0: the card printed
+  a figure whose denominator is net return, warned above 100% that "the other 95% of days lost money
+  on net", and flagged 28 of 36 strategies on a threshold that plain buy-and-hold SPY also fails at
+  202%. The number was true and the impression it left was false.
+  - **Renamed to "Reliance on its best days."** "Outlier dependence" is a term the reader has to
+    decode before reaching the number.
+  - **The headline figure is now the strategy against SPY over the same window.** Gold miner reads
+    **46%**, meaning a little under half as reliant on its best days as the index, in place of a
+    bare 87% with nothing to compare it to. Both raw figures and the window length stay on the card
+    as a quiet provenance line, so nobody has to take the ratio on trust.
+  - **Both directions render the same card shape**, so the section keeps three cards on every
+    strategy page. Only the closing sentence differs: above SPY it reads "about 39% harder than
+    simply holding SPY did", below it reads "46% as much". A first pass demoted the below-SPY case
+    to a bare line under the grid; the owner reversed it on sight, because two cards and a loose
+    line read as a card that failed to load.
+  - **The `warn` colour is gone**, and so is the single-best-day figure, which carried the same
+    flaw and said nothing the 5% figure had not.
+
+### Added
+- `spy_best_day_baseline` in `data/strategy_extras.json`: SPY's own best-5%-of-days share, computed
+  per strategy over that strategy's own `backtest_days`. **Null, rather than approximate, when
+  `data/prices.json` cannot cover the window.**
+- `.rc-fine` and `.rc-note` in `css/main.css` for the provenance line and the below-SPY line.
+- A `build_strategy_extras.py` step in `.github/workflows/refresh-prices.yml`. The join reads
+  `data/prices.json` as of this version, so the weekly price commit has to rebuild it or
+  `check_strategy_extras.py` fails every deploy until the next nightly metrics run.
+
+### Fixed
+- **A truncating window match in the scratch analysis that produced the original ratios.** It sized
+  SPY's window with `min(backtest_days, len(closes) - 1)`, which shortened the baseline instead of
+  refusing when history ran out. Three strategies backtest roughly 27 years against 16 years of
+  stored SPY closes, so their comparisons were between different windows, and two of them were
+  reported as worse than SPY on that basis. The shipped builder returns null instead, and those
+  three render the pre-pilot card. Corrected count with windows genuinely matched: **4 of 33 above
+  SPY, 29 below, 3 with no baseline**, against 28 of 36 carrying the red warning before this change.
+
+- **The pilot Assets list becomes a wrapped row of ticker chips**, reusing the `.hold-ticker`
+  style the "can also hold, but is not holding today" list already uses, so the two ticker lists a
+  reader meets on this page look like the same kind of thing. It went through an intermediate
+  aligned-table form during review; the owner picked the chips.
+  - **The per-row K-1 and ETN badges are gone.** v1.42.0 had recorded them as an improvement, on
+    the grounds that they finally rendered on idle tickers too. On the page they were redundant:
+    the notice blocks immediately below already name every affected ticker and explain what the
+    treatment means, so the badge restated the fact worse and without its explanation.
+  - **The per-ticker first-traded dates are gone from the row** and survive as the chip's `title`.
+    They were there to bound the backtest, and the Backtest window card directly above does that
+    job properly by naming the binding holding and its date.
+  - **The count line keeps its "of which 2 are ETNs" summary**, which is the one place a reader
+    learns the shape of the list before reading it.
+  - `.asset-row-plain`, added in v1.42.0, has no consumer left and is removed.
+
+### Notes
+- **Verified in headless Edge.** `gold-miner-original` renders three cards, the first reading
+  "Reliance on its best days / 46%" with no warn colour, and an Assets section that is three chips
+  with no bars, no badges and no snapshot; `holy-grail` and `nancy-pelosi-chips` render the
+  pre-pilot card unchanged, red warning included, and the pre-pilot Assets section with its
+  allocation bars. All four deploy gates pass.
+- **Deliberately not fixed here: the metric is still a share of a small net residual.** The honest
+  version is "drop the 10 best days and 34% a year becomes 12%", which needs per-strategy daily
+  returns, V1.20 item 16. This makes the number interpretable; it does not make it robust.
+- **The above-SPY wording is unexercised on the pilot page**, because gold miner is below SPY.
+  Only four strategies in the library would show it, and none of them is the pilot. The card itself
+  now renders in both directions, so only the closing sentence is unreviewed.
+
 ## [1.42.0] - 2026-09-02
 
 ### Changed

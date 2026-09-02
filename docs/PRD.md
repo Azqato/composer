@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.42.0
+**Version:** 1.43.0
 **Status:** Active
 **Last Updated:** 2026-09-02
 
@@ -3192,7 +3192,13 @@ files already in the repo.
   `check_strategy_extras.py` failing on `main`, which fails `deploy.yml` before it builds. It was
   caught by hand during unrelated documentation work, not by anything designed to catch it.
 
-  Both workflows now run `build_strategy_extras.py` and commit its two outputs. The original intent
+  **A third workflow joined them in v1.42.1: `refresh-prices.yml`.** The join began reading
+  `data/prices.json` in that version, for the SPY best-days baseline, so the weekly Saturday price
+  commit would otherwise have left the extras stale against a fresh join until the daily metrics job
+  rebuilt them that evening: a roughly 13-hour window in which any deploy fails. It follows
+  `update-metrics.yml`'s philosophy, rebuilding before the commit step with no `if: always()`.
+
+  All three workflows now run `build_strategy_extras.py` and commit its two outputs. The original intent
   is preserved rather than discarded, and each workflow keeps its own failure philosophy:
   `update-metrics.yml` runs the rebuild **before** its commit step with no `if: always()`, so a
   genuine join miss stops the job and ships nothing (loud, and the next daily run retries);
@@ -3263,11 +3269,59 @@ files already in the repo.
   currently telling readers that most of the library is a net loser without its best days, using a
   threshold that plain SPY also fails.
 
-  **Not yet fixed: the replacement is an editorial decision, not a bug fix.** Options are to
-  benchmark the figure against SPY over the same window instead of against 100%, to keep the
-  number but delete the threshold and the `warn` colour, or to drop the panel. **A true statement
-  that reliably produces a false impression is not "stated as arithmetic and left that way"; it is
-  the same failure mode as the recited statistics, one level up.**
+  **A true statement that reliably produces a false impression is not "stated as arithmetic and
+  left that way"; it is the same failure mode as the recited statistics, one level up.**
+
+  **CLOSED 2026-09-02 in v1.43.0.** Piloted on `gold-miner-original` in v1.42.1, approved by the
+  owner, and rolled out to all 36 strategy pages. `isLayoutPilot` and every pre-pilot branch are
+  deleted, so there is one renderer again. Verified by rendering all 36 pages in headless Edge and
+  asserting the shape on each: 33 benchmarked (4 above SPY, 29 below) and 3 with no baseline.
+  Details of the decision, unchanged from when it was made: The owner considered
+  deleting the panel outright, which was defensible: the metric is broken at the root, and the
+  correct replacement is a roadmap item rather than a rewording. It was kept because the spread at
+  the tail is real information (`rains-unified-best-signals` at 73% against `nancy-pelosi-chips` at
+  263% is a genuine difference in how concentrated a return is), and because removing a disclosure
+  in the same week it was found to read favourably is the wrong instinct to build in. Four changes:
+
+  1. **Benchmark, not threshold.** The headline number becomes the strategy against SPY over the
+     same window: gold miner reads **46%**, "a little under half as reliant on its best days as the
+     index", instead of a bare 87% that a reader cannot place. `build_strategy_extras.py` computes
+     the baseline from `data/prices.json`, matched per strategy to its own `backtest_days`.
+  2. **One card shape in both directions, only the body sentence differs.** The first pass gave
+     the below-SPY case a bare line under the grid instead of a card, arguing that a measure passing
+     29 of 33 does not earn a paragraph on every page. **The owner reversed it on sight of the
+     render**, and was right: two cards with a loose line beneath them reads as a card that failed
+     to load, which is the exact ambiguity the line was meant to avoid. The standing rule from item
+     10 is that absence states itself, and a card saying "46% as much" states it better than a
+     footnote does.
+  3. **No `warn` colour.** The strategies clustered near parity sit inside the gap between
+     Composer's formula and ours, so a hard line at exactly 100% would be new false precision in
+     place of old. The prose distinguishes above from below without a colour asserting it.
+  4. **The single-best-day figure is dropped** from the pilot card. It carries the identical
+     small-denominator flaw and adds nothing the 5% figure has not already said.
+
+  **A measurement error in the first pass, found while implementing and worth recording.** The
+  scratch comparison that produced these ratios matched SPY's window with
+  `min(backtest_days, len(closes) - 1)`, which **silently truncated** rather than refusing. Three
+  strategies backtest roughly 27 years against the 16 years of SPY closes in `data/prices.json`
+  (`ob-os-staple-bonds`, `dip-buying-tech`, `safe-sectors-or-bonds-original`), so their "same
+  window" ratios compared a 27-year strategy figure to a 16-year SPY figure. Two of them were among
+  the six the first pass reported as worse than SPY. With the windows genuinely matched the count is
+  **4 of 33 above SPY, 29 below, and 3 with no honest baseline at all**, and those three fall back
+  to the pre-pilot card rather than to a fabricated comparison. **The failure shape is the one this
+  whole item is about: a function that returns a plausible number instead of refusing.**
+
+  **A fourth branch the pilot never exercised, added at rollout.** Three strategies
+  (`dip-buying-tech`, `ob-os-staple-bonds`, `safe-sectors-or-bonds-original`) backtest roughly 27
+  years against the 16 years of SPY closes in `data/prices.json`, so no same-window baseline exists.
+  **They deliberately do NOT fall back to the pre-v1.43.0 card**, whose threshold is the thing this
+  item exists to remove: a page with no benchmark is exactly where a reader is least equipped to
+  discount it. They print the figure with its own limitation attached instead.
+
+  **Still open: this is the best available today, not the destination.** The honest version needs
+  per-strategy daily returns (**V1.20 item 16**, unbuilt): "drop the 10 best days and 34% a year
+  becomes 12%" has no small denominator to go unstable, needs no benchmark, and would let both
+  sides be computed with one formula instead of two.
 
 - [x] **4. Outlier-dependence disclosure (v1.28.0).** Stated as plain arithmetic and left that way:
   no score, no badge, no rating. **25 of the 31 featured strategies are above 100%**, which means
@@ -3581,6 +3635,12 @@ files already in the repo.
 - [ ] **19. GATE: the owner reviews and explicitly approves the structure before it is written for
   any strategy beyond the pilot.** Added 2026-08-28, immediately after reviewing v1.29.0 to v1.29.3.
   **Nothing in items 13, 14 or 15 may be written for a second strategy until this is signed off.**
+
+  **STILL OPEN, and not resolved by the v1.43.0 approval.** The owner approved the
+  `gold-miner-original` page on 2026-09-02, and that approval covers the v1.42.x **layout** changes
+  only: section order, the Assets section, and the best-days card. Items 13, 14 and 15 are authored
+  **prose** on the same page and were not what was under review. The two are easy to conflate
+  because they share a pilot slug. They do not share a gate.
 
   **This is a hold point, not a task, and it is the highest-leverage item in the phase.** The pilot
   exists to be judged, and the owner's verdict on it was "good as a rough draft, it needs more
@@ -5931,7 +5991,7 @@ next, including an AI assistant with no memory of the previous session.
 | The RSI page's data | `scripts/refresh_rsi.py` |
 | Whether a ticker issues a K-1, or adding tickers to the lookup | `data/k1_seed.txt`, then `scripts/refresh_k1.py`, then commit `data/k1.json` **and** `data/k1.js` together |
 | Deploy behaviour or the deploy gates | `.github/workflows/deploy.yml`, `scripts/check_html_js.py`, `scripts/check_composer_ladder.py`, `scripts/check_database_keys.py`, `scripts/check_strategy_extras.py` |
-| **`data/database.json`, `data/k1.json`, or the featured set in `data/strategies.json`** | `scripts/build_strategy_extras.py`, then commit `data/strategy_extras.json` **and** `data/strategy_extras.js`. The strategy pages read that join, not the source files, so a refresh that skips this step leaves the page showing yesterday's numbers with no visible sign. `scripts/check_strategy_extras.py` fails the deploy if it is skipped. **Automated since v1.31.1** for the two workflow-driven inputs (`refresh-full-database.yml` for `database.json`, `update-metrics.yml` for `strategies.json`); the `k1.json` path and manual `database.json` edits are still hand-run |
+| **`data/database.json`, `data/k1.json`, `data/prices.json` (since v1.42.1), or the featured set in `data/strategies.json`** | `scripts/build_strategy_extras.py`, then commit `data/strategy_extras.json` **and** `data/strategy_extras.js`. The strategy pages read that join, not the source files, so a refresh that skips this step leaves the page showing yesterday's numbers with no visible sign. `scripts/check_strategy_extras.py` fails the deploy if it is skipped. **Automated since v1.31.1** for the two workflow-driven inputs (`refresh-full-database.yml` for `database.json`, `update-metrics.yml` for `strategies.json`); the `k1.json` path and manual `database.json` edits are still hand-run |
 | Which pages search engines are told about | `scripts/build_sitemap.py`, then re-run it. Never hand-edit `sitemap.xml`. Re-run automatically by `update-metrics.yml` since v1.26.1, so a forgotten run self-corrects within a day |
 | What Cloudflare serves publicly | `.assetsignore` (not `deploy.yml`, which governs GitHub Pages only) |
 | Product decisions, architecture, schemas, roadmap, policy | `docs/PRD.md`, this file |

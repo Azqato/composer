@@ -1033,23 +1033,73 @@ outlier panel becoming a score.
 "Aggressive", "Extremely Aggressive" or "Conservative", and colouring that scale would turn a
 self-description into a rating.
 
-### Assets Section (strategy detail pages, V1.20 item 6)
+### Assets Section (strategy detail pages, V1.20 item 6, rebuilt v1.43.0)
 
-Between the risk profile and the K-1 notices. What the logic can reach against what it is holding
-today, from the two halves of `last_market_days_holdings`.
+Between the risk profile and the K-1 notices. **The reachable universe, and nothing about today's
+position.** The keys of `last_market_days_holdings` are the universe and its values are the last
+market day's allocation; this section renders the keys and discards the values.
 
-**A grid, not a table.** Five fields per row and two of them are frequently empty (a ticker with no
-inception date, a ticker with no K-1 or ETN badge). A table would hold two blank columns open on
-every row to keep them aligned; the grid lets them collapse.
+A count line, a wrapped row of ticker chips, one paragraph. That is the whole component.
 
-**The bar is the component, not decoration.** The median featured strategy can reach 6 tickers and
-is holding 1. A column of percentages states that; a row of mostly-empty bars makes it land.
+**It did not always be this.** Through v1.41.x it led with "1 of 6 tickers held as of the last
+market day", an allocation bar per holding, a percentage beside each one, and a separate "can also
+hold, but is not holding today" list. Every number in it was accurate.
 
-**Below 640px the date and badges drop to a second line rather than the bar narrowing.** The bar is
-the field carrying the meaning, so it is the last thing allowed to lose width.
+**It was removed because accuracy was not the problem.** What a strategy CAN hold is a durable fact
+about its logic. What it holds today is one rebalance old, and putting it at the top of the section
+invites a reader to read a position as a recommendation, which is the one thing this site does not
+do. The chips say what the logic is allowed to own; the reader is never handed a portfolio.
 
-**Badges reuse the `/k1` colours**, yellow for K-1 and blue for ETN, so a reader who has seen that
-page or the holdings notices is not taught a third vocabulary for the same two facts.
+**Chips reuse `.hold-ticker`, the same component as the K-1 and ETN notices.** A reader meets one
+kind of ticker list on this page rather than two.
+
+**Nothing renders per-chip.** Two things were tried on the row and both removed in review:
+
+| Tried | Why it went |
+| --- | --- |
+| Per-ticker K-1 and ETN badges | The notices directly below already name every affected ticker **and** explain what the treatment costs. A three-letter badge restated the fact without its explanation, and its variable width was what stopped the rest of the row from aligning. |
+| Per-ticker first-traded dates | They existed to bound the backtest, and the Backtest window card above does that properly by naming the binding holding and its date. They survive as the chip's `title`. |
+
+**The count line keeps its tax summary** ("3 tickers this strategy can hold, of which 2 are ETNs").
+It is the one place a reader learns the shape of the list before reading it, so it is a summary
+rather than a repeat.
+
+**`.asset-row`, `.asset-bar`, `.asset-pct`, `.asset-since`, `.asset-flags`, `.asset-badge`,
+`.asset-ticker` and `.asset-idle` were deleted in v1.43.0** after a grep confirmed no remaining
+consumer. `.asset-head` and its two children are all that survive.
+
+### Strategy Page Section Order (site-wide, v1.43.0)
+
+**Approved by the owner on 2026-09-02 after review of the `gold-miner-original` pilot, and rolled
+out to all 36 strategy pages in the same version.** This is the canonical shape. A new strategy
+page is correct when it matches this order, and a change to the order is a change to every page.
+
+| # | Section | Note |
+| --- | --- | --- |
+| 1 | Hero metric strip | V1.20 item 2 |
+| 2 | Open in Composer button | |
+| 3 | **AI Summary** | **Moved above the TL;DR in v1.42.0.** It was already below the button; the TL;DR card sat between them |
+| 4 | TL;DR card | V1.20 item 13 |
+| 5 | Underlying Assumptions | V1.20 item 14 |
+| 6 | Market Regime table | V1.20 item 15, moved above Risk Profile in v1.29.3 |
+| 7 | Risk Profile | V1.20 item 10 |
+| 8 | **Assets** | The reachable universe as chips. No allocation, no snapshot |
+| 9 | K-1 and ETN notices | Moved below Risk Profile in v1.29.1 |
+| 10 | Beyond the Backtest | Reliance on its best days, Out of sample, Backtest window |
+| 11 | Deeper Metrics | V1.20 item 3 |
+| 12 | Provenance chips | V1.20 item 8 |
+
+**Two rules the v1.42.x review produced, both of which generalise beyond the sections that taught
+them:**
+
+1. **Today's position is not content.** Anything one rebalance old that could be read as a
+   recommendation does not lead a section. What the logic CAN do is durable; what it did this
+   morning is not. This is why the Assets section lost its allocation bars.
+2. **A figure gets a card or it gets nothing.** A bare line under a grid of cards reads as a card
+   that failed to load. The below-SPY case of the best-days figure was demoted to a line for one
+   review round and reversed on sight: if a measurement is worth stating, it is worth the same
+   container as every other measurement on the page. This is the same reasoning as the item 10 rule
+   that an absent risk category states itself explicitly rather than vanishing.
 
 ### Reality Check Cards (strategy detail pages, V1.20 items 4, 5 and 9)
 
@@ -1073,6 +1123,35 @@ made to fit.
 **`.rc-value` is 1.75rem because the number is the argument.** The paragraph below it is the
 footnote, not the other way round. This is the same reasoning as the oversized verdict on `/k1`,
 one size down because there are two of these on a page rather than one.
+
+**A number in `.rc-value` must be interpretable without leaving the card. Added v1.43.0, and it
+cost a rewrite to learn.** The first card in this section printed
+`top_five_percent_day_contribution` raw and coloured it yellow above 100%, warning that "the other
+95% of days lost money on net: remove those days and this strategy is a net loser". Arithmetically
+true. Materially false as an impression, because the denominator is NET return, a small residual
+under a much larger gross: plain buy-and-hold SPY scores **202%** on the same measure and TLT
+**729%**. The threshold flagged 28 of 36 strategies, nearly all of which are less reliant on their
+best days than the index is.
+
+The card now prints the strategy against SPY over the same window, so **46%** reads as "a little
+under half as reliant as the index" rather than as a bare figure the reader cannot place. Both raw
+figures and the window length stay on the card in `.rc-fine`, so the ratio never has to be taken on
+trust.
+
+**`.rc-value.warn` was deleted in v1.43.0.** Nothing uses it, and that is on purpose. The
+strategies clustered near parity sit inside the gap between Composer's formula and ours, so a hard
+colour change at exactly 100% would assert a precision the data does not have. The prose
+distinguishes above from below; a colour would have made it a verdict.
+
+**A card with no comparison available states that, rather than falling back.** Three strategies
+backtest further back than `data/prices.json` reaches, so there is no honest same-window baseline.
+They print the raw figure with its own limitation attached ("on its own that number says less than
+it looks like it does") instead of reverting to the pre-v1.43.0 card. A page with no benchmark is
+exactly where a reader is least equipped to discount a threshold.
+
+```css
+.rc-fine { font-size: 0.75rem; font-family: var(--font-mono); color: var(--color-disabled); line-height: 1.6; margin-top: 12px; }
+```
 
 **The backtest-window card (v1.33.0) carries no `.warn` and no colour at all.** It states a length,
 the earliest date the window could have started, and the holding that sets that date. Both of its

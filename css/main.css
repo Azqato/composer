@@ -1337,67 +1337,19 @@ p { color: var(--color-secondary); }
    this without being taught. Blue matches .k1-etn there for the same reason. This is
    not .risk-box: risk_profile is authored prose about how a strategy behaves, this is
    a mechanical fact about a position held today, and the two should not look alike. */
-/* ---- Assets section (strategy detail pages, V1.20 item 6) ----
-   What the logic can hold against what it is holding today. The bar is the
-   point of the component: the median featured strategy can reach 6 tickers and
-   is holding 1, and a column of percentages alone does not make that land the
-   way a row of mostly-empty bars does.
+/* ---- Assets section (strategy detail pages, V1.20 item 6, rebuilt v1.43.0) ----
+   The section renders the reachable universe as chips and no longer renders
+   today's position, so the allocation row this block used to style is gone:
+   .asset-row, .asset-bar, .asset-pct, .asset-since, .asset-flags, .asset-badge,
+   .asset-ticker and .asset-idle were removed in v1.43.0 after a grep confirmed
+   no remaining consumer in any .html or .js.
 
-   Grid rather than a table. Five fields, two of which are frequently empty (a
-   ticker with no inception date, a ticker with no K-1 or ETN badge), and a
-   table would hold open two blank columns on every row to keep them aligned. ---- */
+   What is left is the count line. The chips themselves reuse .hold-ticker
+   below, which is the same component the K-1 and ETN notices use, so a reader
+   meets one kind of ticker list on this page rather than two. ---- */
 .asset-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .asset-head-n { font-family: var(--font-mono); font-size: 1.25rem; font-weight: 600; color: var(--color-primary); }
 .asset-head-l { font-size: 0.8125rem; color: var(--color-secondary); }
-
-.asset-rows { display: flex; flex-direction: column; gap: 6px; }
-.asset-row {
-  display: grid;
-  grid-template-columns: 4.5rem 1fr 3.25rem;
-  align-items: center;
-  gap: 10px;
-}
-/* The date and the badges drop to a second line below 640px rather than
-   squeezing the bar, which is the field that carries the meaning. */
-.asset-since, .asset-flags { grid-column: 2 / -1; }
-@media (min-width: 640px) {
-  .asset-row { grid-template-columns: 4.5rem 1fr 3.25rem 6.5rem auto; }
-  .asset-since, .asset-flags { grid-column: auto; }
-}
-
-.asset-ticker {
-  font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 600;
-  color: var(--color-primary); text-decoration: none;
-}
-.asset-ticker:hover, .asset-ticker:focus { text-decoration: underline; }
-.asset-bar {
-  height: 8px; border-radius: 4px; overflow: hidden;
-  background: var(--color-border);
-}
-.asset-bar > span { display: block; height: 100%; background: var(--color-green); }
-.asset-pct { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-secondary); text-align: right; }
-.asset-since { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--color-disabled); }
-.asset-flags { display: flex; gap: 4px; }
-.asset-badge {
-  font-size: 0.625rem; font-weight: 600; letter-spacing: 0.03em;
-  padding: 1px 5px; border-radius: var(--radius-sm); border: 1px solid;
-}
-/* Same two colours /k1 and the holdings notices already use, so a reader who
-   has seen either one does not have to be taught these. */
-.asset-badge.k1 { color: var(--color-yellow); border-color: var(--color-yellow); }
-.asset-badge.etn { color: var(--color-blue); border-color: var(--color-blue); }
-
-/* Universe rows (v1.42.0 pilot): with no allocation there is no bar and no
-   percentage, so the grid above does not apply. Flex instead, because nothing
-   left in the row is wide enough to need a protected column at narrow widths. */
-.asset-row-plain { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.asset-row-plain .asset-ticker { min-width: 4.5rem; }
-
-.asset-idle { margin-top: 16px; }
-.asset-idle-title {
-  display: block; font-size: 0.75rem; color: var(--color-disabled);
-  margin-bottom: 8px;
-}
 
 .hold-notice {
   border: 1px solid var(--color-border);
@@ -1490,7 +1442,6 @@ p { color: var(--color-secondary); }
   display: block;
 }
 
-.rc-value.warn { color: var(--color-yellow); }
 
 .rc-sub {
   display: block;
@@ -1508,6 +1459,18 @@ p { color: var(--color-secondary); }
 }
 
 .rc-body strong { color: var(--color-primary); }
+
+/* Provenance line inside a card (v1.42.1 pilot): the two raw figures the
+   headline ratio was derived from. Deliberately quieter than .rc-body, because
+   a reader who accepts the comparison never needs to read it, and one who does
+   not needs it to be there. */
+.rc-fine {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--color-disabled);
+  line-height: 1.6;
+  margin-top: 12px;
+}
 
 /* ---- AI Summary box ---- */
 .ai-summary {

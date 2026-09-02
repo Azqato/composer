@@ -42,6 +42,7 @@ STRATEGIES = BASE_DIR / "data" / "strategies.json"
 DATABASE = BASE_DIR / "data" / "database.json"
 K1 = BASE_DIR / "data" / "k1.json"
 INCEPTION = BASE_DIR / "data" / "ticker_inception.json"
+PRICES = BASE_DIR / "data" / "prices.json"
 OUT_JSON = BASE_DIR / "data" / "strategy_extras.json"
 OUT_JS = BASE_DIR / "data" / "strategy_extras.js"
 
@@ -74,11 +75,60 @@ def load(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def best_day_share(closes):
+    """Share of the summed daily return produced by the best 5% of days.
+
+    The same statistic Composer reports as `top_five_percent_day_contribution`,
+    computed the additive way: sum simple daily returns, take the best 5% of
+    them, divide by the total. Returns None rather than a number whenever the
+    result would be meaningless.
+    """
+    rets = [b / a - 1.0 for a, b in zip(closes, closes[1:]) if a and b and a > 0]
+    if len(rets) < 60:
+        return None
+    total = sum(rets)
+    if total <= 0:
+        # A flat or negative window makes the denominator useless: the ratio
+        # explodes or flips sign for reasons that say nothing about outliers.
+        return None
+    n5 = max(1, int(round(len(rets) * 0.05)))
+    return sum(sorted(rets, reverse=True)[:n5]) / total
+
+
+def spy_baseline(spy_closes, backtest_days):
+    """What SPY itself scores on the best-days measure over the SAME window.
+
+    PRD item 4a. The raw figure is uninterpretable alone, because its
+    denominator is NET return, a small residual under a much larger gross:
+    plain buy-and-hold SPY scores 202% over its full history and TLT 729%.
+    Benchmarking gives the number an anchor a reader can actually use.
+
+    Returns None when data/prices.json does not reach far enough back to cover
+    the strategy's window. Three featured strategies backtest roughly 27 years
+    against 16 years of stored SPY closes, and quietly comparing a 27-year
+    strategy figure to a 16-year SPY figure would be a new wrong number in
+    place of the old misleading one. Those pages fall back to the plain figure.
+    """
+    if not spy_closes or not backtest_days:
+        return None
+    need = int(backtest_days) + 1
+    if len(spy_closes) < need:
+        return None
+    share = best_day_share(spy_closes[-need:])
+    if share is None:
+        return None
+    # Rounded so an appended close cannot churn the committed file through
+    # float noise alone. check_strategy_extras.py demands byte equality.
+    return {"days": need - 1, "top_five_percent_day_contribution": round(share, 6)}
+
+
 def build():
     strategies = load(STRATEGIES)
     database = load(DATABASE)
     k1 = load(K1)["tickers"]
     inception = load(INCEPTION)["tickers"] if INCEPTION.exists() else {}
+    spy = (load(PRICES)["tickers"].get("SPY") or {}).get("closes") or [] \
+        if PRICES.exists() else []
 
     by_id = {}
     for row in database:
@@ -142,6 +192,7 @@ def build():
             t: inception[t] for t in tickers if inception.get(t)
         }
         entry["backtest_floor"] = backtest_floor(tickers, inception)
+        entry["spy_best_day_baseline"] = spy_baseline(spy, s.get("backtest_days"))
         entry["k1_holdings"] = k1_holdings
         entry["etn_holdings"] = etn_holdings
         extras[s["slug"]] = entry
@@ -210,6 +261,13 @@ def main():
         k for k, e in extras.items()
         if (e.get("top_five_percent_day_contribution") or 0) > 1
     )
+    no_base = sorted(k for k, e in extras.items() if not e.get("spy_best_day_baseline"))
+    above_spy = sorted(
+        k for k, e in extras.items()
+        if e.get("spy_best_day_baseline")
+        and (e.get("top_five_percent_day_contribution") or 0)
+        > e["spy_best_day_baseline"]["top_five_percent_day_contribution"]
+    )
 
     floored = sum(1 for e in extras.values() if e["backtest_floor"]["date"])
     partial = sorted(k for k, e in extras.items()
@@ -220,6 +278,11 @@ def main():
     print("  holding a K-1 issuer: %d" % k1_count)
     print("  holding an ETN:       %d" % etn_count)
     print("  best 5%% of days above 100%% of total return: %d" % len(outlier))
+    print("  more reliant on its best days than SPY over the same window: %d" % len(above_spy))
+    if no_base:
+        print("  no SPY baseline, so these render the plain figure (%d): %s"
+              % (len(no_base), ", ".join(no_base)))
+        print("    Expected when the backtest window predates data/prices.json.")
     if no_oos:
         print("  no oos_date (the panel renders as \"not recorded\"): %s" % ", ".join(no_oos))
     if partial:

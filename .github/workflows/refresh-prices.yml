@@ -28,11 +28,24 @@ jobs:
       - name: Run refresh_prices.py
         run: python scripts/refresh_prices.py
 
+      # data/prices.json is an input to the build-time join since v1.42.1: the
+      # SPY best-days baseline on each strategy page is computed from it, matched
+      # to that strategy's own backtest window. Without this step a Saturday price
+      # commit leaves strategy_extras.json stale against a fresh join, and
+      # check_strategy_extras.py fails every deploy until the daily metrics job
+      # rebuilds it that evening. Placed before the commit step and without
+      # if: always(), for the same reason as the identical step in
+      # update-metrics.yml: a join miss is a human configuration error, and
+      # stopping here ships nothing rather than shipping something wrong.
+      - name: Rebuild strategy_extras.json/.js
+        run: python scripts/build_strategy_extras.py
+
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/prices.json data/prices.js
+          git add data/prices.json data/prices.js \
+            data/strategy_extras.json data/strategy_extras.js
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
