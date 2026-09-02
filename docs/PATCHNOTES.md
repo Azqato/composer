@@ -5,6 +5,46 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.49.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 4 of 23: `wooden-arkk`.** TL;DR, Underlying Assumptions, Market
+  Regime table and regime note for Wooden ARKK Machine 2.2, matching the shape approved on
+  `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. This strategy
+  is structurally unlike the two before it and four findings are stated on the page:
+
+  1. **It is contrarian twice over.** Both baskets are ranked by 4-day average return and the
+     bottom one is taken, so the logic is structurally incapable of buying strength. The regime
+     gate is inverted in the same spirit: when Treasuries are stronger than high-beta stocks,
+     which is the classic risk-off tell, it buys from the long leveraged basket.
+  2. **Turnover is the defining fact and appears in no published figure.** The allocation changed
+     on 574 of 1,082 days, about once every 1.9 trading days, and the regime gate itself flipped
+     196 times. Every metric on the page is computed on closing prices with no cost model.
+  3. **The mean-reversion instinct cuts both ways, and two consecutive windows show it.** In the
+     spring 2025 drawdown the reconstruction held TARK on 41% of days while TARK fell 64.2%. In
+     the rebound that followed it held SARK on 33% of days while SARK fell 35.0% and TARK rose
+     108.4%.
+  4. **It was in the inverse basket on 56.0% of days across a window in which SPY rose 97.4%.**
+     PSQ, a short-Nasdaq fund and the third most-held name in the strategy, compounded -13.3%
+     across the 133 days it was held.
+
+- **No reconstructed return is quoted on this page at all.** At 53% daily turnover a modelled path
+  with no fees or slippage is the least trustworthy number available, so the regimes are ranked
+  from holdings shares and ticker moves only. This is a deliberate narrowing of what the
+  reconstruction is used for, and the regime note says so explicitly.
+
+### Fixed
+- **A ranking claim was caught before it shipped.** A draft sentence called this strategy's Sharpe
+  and Calmar the strongest pair in the library. Checked against the data: at 2.18 and 5.14 it is
+  fourth or lower on both, behind `rains-unified-best-signals`, `simons-kmlm-switcher` and
+  `gold-miner-original`. The sentence now states the window and turnover caveat instead, which is
+  what was actually worth saying.
+
+---
+
 ## [1.48.0] - 2026-09-02
 
 ### Added

@@ -1432,7 +1432,78 @@
       "hedge": "PSQ is the only unleveraged inverse position. SARK, TYO and DRV are inverse but leveraged, so they are directional bets rather than ballast, and the drawdown record shows the strategy is not immune to trending crashes.",
       "concentration": "Twelve instruments spanning innovation equities, semiconductors, emerging markets, real estate and Treasuries. The diversification is across sectors, not across the mean-reversion assumption every leg depends on."
     },
-    "author_note": "Named after Cathie Wood, founder of ARK Invest and the ARKK ETF. TARK (2x long ARKK) and SARK (inverse ARKK) are the anchors of the two pools. Version 2.2 implies prior iterations exist."
+    "author_note": "Named after Cathie Wood, founder of ARK Invest and the ARKK ETF. TARK (2x long ARKK) and SARK (inverse ARKK) are the anchors of the two pools. Version 2.2 implies prior iterations exist.",
+    "tldr": {
+      "thesis": "Two contrarian bets stacked on top of each other. First it compares a 7-day RSI on IEI, an intermediate Treasury fund, against the same reading on SPHB, the high-beta corner of the S&P. Then it picks a basket and, within that basket, buys the single worst performer over the last four days. It never buys strength. It holds exactly one fund on every day of the record and changes that fund roughly every other trading day, which makes it the most active strategy in this library by a wide margin.",
+      "works_well_in": [
+        "Two-way markets that reverse quickly. Buying the worst four-day performer only pays if declines snap back, and the {backtest_days}-day record is dense with exactly that. The allocation changed on 574 of those days, so the logic gets many small attempts rather than a few large ones.",
+        "Sharp equity declines, where the inverse basket does the work. Across the record DRV compounded +117.3% over the 187 days it was held and SARK +73.2% over 219 days, and those two are the largest holdings in the whole strategy.",
+        "Sector rotations inside a rising market. The long basket spans leveraged tech, semiconductors, China, emerging markets, long Treasuries and leveraged ARKK, so on any given day something in it has just fallen hard enough to be selected. TECL compounded +363.7% over the 93 days it was named.",
+        "Bond and rate reversals. TMV and TMF sit on opposite sides of the same trade, one in each basket, and both were profitable over the days they were held: TMV +135.6% over 57 days and TMF +52.8% over 63."
+      ],
+      "struggles_in": [
+        "Trends that keep going. The filter takes the bottom performer, so a fund that has fallen for four days and keeps falling is bought again and again. In the spring 2025 drawdown the reconstruction held TARK on 41% of days while TARK fell 64.2%.",
+        "Rebounds it is positioned against. In the recovery immediately after that drawdown it held SARK on 33% of days while SARK fell 35.0% and TARK rose 108.4%. The same mean-reversion instinct that finds bottoms also sells them.",
+        "Any environment where trading costs are real. The allocation changed on 53.0% of days, about once every 1.9 trading days, and the regime gate itself flipped 196 times. None of the figures on this page carries a commission, a spread or a slippage assumption.",
+        "Steady one-directional bull markets. The gate put the strategy in the inverse basket on 56.0% of days across a window in which SPY rose 97.4%. PSQ, a short-Nasdaq fund, was held on 133 days and compounded -13.3% across them."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**The worst recent performer is the best thing to buy.** This is the whole engine. Both baskets are ranked by 4-day average return and the bottom one is taken, so the strategy is structurally incapable of buying strength. It is a bet that four days is long enough to identify an overreaction and short enough that the reversal has not already happened.",
+        "**Relative strength between Treasuries and high-beta stocks identifies the regime, in the opposite direction to the obvious reading.** When IEI is stronger than SPHB, which is the classic risk-off tell, this strategy buys from its long leveraged basket. When high-beta is stronger, it buys inverse funds. It is contrarian on the regime as well as on the security.",
+        "**Reversals will keep arriving as often as they did.** The gate crossed 196 times in {backtest_years} years, and 68 of the 99 stretches on the inverse side lasted 5 trading days or fewer. A market that trends for months rather than days gives this logic almost nothing to do that is not wrong.",
+        "**Fills are available at close prices in thinly traded leveraged funds.** TARK, SARK, TYO, EDC and DRV are small, and the strategy expects to move its entire book between them on roughly every other day."
+      ],
+      "structural": [
+        "**The strategy is never diversified and never hedged.** It holds exactly one fund on 100% of days across the entire record. The largest single holding by share of capital is SARK at 20.2%, which sounds moderate but only means the concentration rotates.",
+        "**Turnover is the defining structural fact, and it is not in any published figure.** 574 allocation changes across {backtest_days} days is roughly 135 round trips a year, every one of them a complete move of the book between leveraged or inverse funds. Every metric on this page is computed on closing prices with no cost model, so real-world results would diverge from them faster here than on any other strategy in this library.",
+        "**Two of the twelve legs lost money over the days they were held.** PSQ compounded -13.3% across 133 days and SOXX -4.7% across 29. PSQ is the third most-held fund in the strategy.",
+        "**SOXX is the only unleveraged, non-inverse fund in the universe.** Everything else is 2x, 3x or short. It was held on 29 days and contributes 2.7% of capital, so the twelve-fund basket is effectively eleven leveraged bets and one ordinary one.",
+        "**The record is the second shortest of the 24 public strategies here.** {backtest_days} trading days beginning 5 May 2022, bounded by the launch of the leveraged ARKK funds. It contains one bear market, which it happened to start inside, and no rate regime other than the one that began in 2022.",
+        "**{standard_deviation} annualized volatility and a {max_drawdown_abs} maximum drawdown are the price of the record above.** A {sharpe_ratio} Sharpe and a {calmar_ratio} Calmar are strong, but they are computed over the second shortest window in this library and by far the highest turnover, which is the combination most likely to flatter a result.",
+        "**The lookbacks are short and unexplained.** A 7-day RSI decides the regime and a 4-day average return decides the security. Nothing in the design says why 7 and 4, and at those lengths both readings change constantly, which is why the strategy trades as often as it does."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Choppy, fast-reversing market",
+        "expected": "Strong",
+        "why": "The home environment. Buying the worst four-day performer needs the decline to reverse within days, and a market that swings both ways gives the logic a fresh attempt roughly every other session.",
+        "example": "Across the record the allocation changed on 574 of {backtest_days} days and the regime gate flipped 196 times."
+      },
+      {
+        "regime": "Sharp equity decline",
+        "expected": "Strong",
+        "why": "The gate tends to sit on the inverse basket and the two largest holdings in the whole strategy, DRV and SARK, are both in it.",
+        "example": "Spring 2025 drawdown: SPY -18.8%, SARK +117.9%, DRV +42.7%, PSQ +28.8%."
+      },
+      {
+        "regime": "Sector rotation inside a rising market",
+        "expected": "Strong",
+        "why": "The long basket spans tech, semiconductors, China, emerging markets and long Treasuries, so on almost any day something in it has fallen far enough to be selected, and rotation is what makes those falls temporary.",
+        "example": "2023 AI bull: SPY +26.7%, TECL +211.9%, TARK +131.1%, while YINN fell 57.5% and SARK fell 47.7%."
+      },
+      {
+        "regime": "Sustained one-directional bull",
+        "expected": "Mixed",
+        "why": "The gate spends most of its time on the inverse basket during rallies, and buying the worst performer inside a basket of short funds means buying whatever the rally has hurt most.",
+        "example": "2024 bull: SPY +25.6%, and the reconstruction held SARK on 21% of days and PSQ on 16% while SARK fell 39.1% and PSQ fell 17.0%."
+      },
+      {
+        "regime": "Fast reversal against the position",
+        "expected": "Poor",
+        "why": "The logic buys weakness and therefore sells strength, so a V-shaped recovery can find it holding the inverse fund it bought at the low.",
+        "example": "Spring 2025 rebound: TARK +108.4%, SARK -35.0%, and the reconstruction held SARK on 33% of days."
+      },
+      {
+        "regime": "Long trend with no reversals",
+        "expected": "Unknown",
+        "why": "There is no such period in the record. The longest continuous stretch on either side of the gate was 46 trading days, and the median stretch on the inverse side was 3. Nothing here shows what happens when four-day losers keep losing for months.",
+        "example": "The record covers {backtest_days} days from 5 May 2022, the second shortest of the 24 public strategies in this library."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which fund the rules would name on a given day. It carries no fees, no slippage and no rebalance timing, which matters more here than anywhere else in this library, because this strategy changes its entire position roughly every other trading day. For that reason no reconstructed return is quoted on this page at all, and the regimes above are ranked from holdings and ticker moves rather than from a modelled path. The reconstruction covers {backtest_days} trading days from 5 May 2022 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "super-semiconductors",
