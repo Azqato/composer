@@ -2288,7 +2288,79 @@
       "signal": "The UVXY allocation fires during extreme overbought conditions. If the hedge fires early and no pullback follows, the position pays VIX futures roll decay for the whole duration.",
       "hedge": "UVXY is the only hedge leg, and it is a decaying instrument that only works over short holds.",
       "concentration": "The mega-cap basket is a handful of individual names including AAPL, AMZN, TSLA, MSTR, KO, WMT and BRK/B. That is a mix of defensives and high-beta single names rather than an index, so stock-specific risk is real."
-    }
+    },
+    "tldr": {
+      "thesis": "Two tests, three outcomes, and that is the entire tree. On 92.5% of days none of the tests fires and the strategy holds whichever of seven large-cap stocks had the best five-day average return. The other two branches are extreme hedges, one into UVXY when SPY's 6-day RSI reaches 90 and one into the worst of three 3x funds when it drops to 28. Despite the name, the ETF hedge decided 213 of {backtest_days} days. What the strategy really is, is a five-day momentum rotation across seven stocks, and MSTR and TSLA between them took 48.3% of all capital deployed.",
+      "works_well_in": [
+        "Sharp, sustained single-name runs. The rotation concentrates fully into one stock and holds it while it leads. TSLA compounded +1,285.5% across 716 days held and MSTR +1,060.4% across 648.",
+        "Markets where a crypto proxy is running. MSTR is in the basket and was its largest contributor in the strongest years: it rose 335.5% through the 2023 AI bull and 322.7% through 2024, with the reconstruction holding it on 35% and 40% of days respectively.",
+        "Panic lows, in the narrow case the oversold branch catches one. A 6-day RSI on SPY at or below 28 fired on 191 days and buys the most beaten-down of TQQQ, LABU and SPXL. TQQQ compounded +229.1% and LABU +210.8% across the days the rules named them.",
+        "Blow-off tops, again narrowly. The overbought branch fired on 22 days across {backtest_years} years and went to UVXY, which compounded +174.7% across them."
+      ],
+      "struggles_in": [
+        "Broad declines with no obvious leader. The default branch is always fully invested in one stock, with no cash, no bonds and no way to be flat. Through the 2015 to 2016 decline the reconstruction rotated between AMZN, TSLA, WMT and AAPL while every one of them fell.",
+        "Defensive rotations. WMT and KO are the two names meant to be steady, and they are the only two losing legs in the strategy: WMT compounded -19.1% across 261 days held and KO -14.2% across 183.",
+        "Choppy markets. The ranking uses a five-day average return, so the holding changes on 1,180 of {backtest_days} days, about once every 2.4 trading days, across individual stocks.",
+        "Sharp selloffs that never trigger the hedge. The overbought test needs a 6-day RSI of 90 and fired on 22 days in the whole record. In the Q4 2018 selloff the reconstruction held TSLA on 31% of days and LABU on 28% while LABU fell 71.8%."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**Five-day momentum in a single stock predicts the next five days.** This one reading decides 92.5% of days. Nothing else in the logic runs unless SPY reaches an extreme.",
+        "**These seven names are the right seven.** The basket is fixed and was chosen after the fact. It contains AAPL, AMZN, TSLA, MSTR, BRK/B, WMT and KO, which is not a list anyone would have written in 2015 without knowing what came next.",
+        "**An extreme short-horizon RSI marks a turning point.** Both hedge branches key off a 6-day RSI on SPY, at 90 and at 28. Those are rare readings by construction, and the strategy spends almost all of its life ignoring them.",
+        "**Buying the most beaten-down leveraged fund at a panic low pays.** The oversold branch takes the bottom performer of TQQQ, LABU and SPXL, so it deliberately picks the one that has fallen furthest."
+      ],
+      "structural": [
+        "**The hedge in the name decided 213 of {backtest_days} days.** The overbought branch fired on 22 and the oversold branch on 191, which is 7.5% of the record between them. This is a stock-picking strategy with two rarely-used escape hatches, not a hedged one.",
+        "**MSTR is in a basket called Top Cap.** It is a software company that became a bitcoin holding vehicle, and it is the second largest position in the strategy at 23.0% of all capital. Including it is the single largest hindsight decision in the design, and it is also what produced the best years in the record.",
+        "**The strategy is never diversified and never in cash.** It holds exactly one position on 100% of days across the entire record, and on 92.5% of them that position is a single stock.",
+        "**Both defensive names lost money over the days they were held.** WMT compounded -19.1% and KO -14.2%. A five-day momentum ranking reaches a low-volatility staple mainly when everything else is falling, which is when the staple is falling too, just more slowly.",
+        "**The symphony's own title advertises a different backtest than the one recorded here.** It reads TESTPORT #019 with +177% from 1 February 2018. The record on this page covers {backtest_days} trading days beginning 3 June 2015 and reports {cumulative_return}. The title is a working label from the author's own testing rather than a description of this window.",
+        "**{max_drawdown_abs} maximum drawdown and {standard_deviation} annualized volatility are the price of the record above.** A {sharpe_ratio} Sharpe and a {calmar_ratio} Calmar both rank 14th of the 24 strategies in this library, and the worst single day in the record was {worst_day}.",
+        "**Turnover is high for a strategy holding individual stocks.** One allocation change every 2.4 trading days across a seven-name basket, and none of the figures on this page carries a commission, a spread or a slippage assumption.",
+        "**The record covers {backtest_days} trading days from June 2015** and contains one full bear market. The 2008 crisis is absent."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Strong single-name leadership",
+        "expected": "Strong",
+        "why": "The five-day ranking concentrates fully into whichever name is running and stays there while it keeps running. This is the whole strategy working as intended.",
+        "example": "2024 bull: MSTR +322.7%, TSLA +62.6%, and the reconstruction held MSTR on 40% of days and TSLA on 19%."
+      },
+      {
+        "regime": "Crypto proxy rally",
+        "expected": "Strong",
+        "why": "MSTR is the most volatile name in the basket by a wide margin, so a five-day momentum ranking reaches it disproportionately when it moves.",
+        "example": "2023 AI bull: MSTR +335.5%, and the reconstruction held it on 35% of days."
+      },
+      {
+        "regime": "Panic low",
+        "expected": "Strong",
+        "why": "A 6-day RSI on SPY at or below 28 buys the most beaten-down of three 3x funds, which is the highest-beta way to express a bounce.",
+        "example": "The oversold branch fired on 191 days, and across them TQQQ compounded +229.1% and LABU +210.8%."
+      },
+      {
+        "regime": "Blow-off top",
+        "expected": "Unknown",
+        "why": "The overbought branch works when it fires but it fired on 22 days in {backtest_years} years, so there is very little evidence about it either way.",
+        "example": "A 6-day RSI of 90 or more on SPY occurred on 22 of {backtest_days} days, and UVXY compounded +174.7% across them."
+      },
+      {
+        "regime": "Broad decline with no leader",
+        "expected": "Poor",
+        "why": "The default branch is always fully invested in one stock. It has no cash option, and a five-day ranking in a falling market simply picks whichever name fell least last week.",
+        "example": "2015 to early 2016: SPY -12.2%, TSLA -37.6%, AAPL -21.0%, BRK/B -12.8%, WMT -7.9%."
+      },
+      {
+        "regime": "Fast selloff below the hedge trigger",
+        "expected": "Poor",
+        "why": "A decline that never drives SPY's 6-day RSI to 28 leaves the strategy fully invested in a single high-beta stock, and one that does trigger it buys the most beaten-down 3x fund available.",
+        "example": "Q4 2018 selloff: SPY -19.2%, LABU -71.8%, AAPL -35.2%. The reconstruction held TSLA on 31% of days and LABU on 28%."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that stock or fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which position the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. Because the holding changes about once every 2.4 trading days across individual stocks, no reconstructed return is quoted on this page, and the regimes above are ranked from holdings and price moves alone. The reconstruction covers {backtest_days} trading days from 3 June 2015 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "mean-reversion-py",

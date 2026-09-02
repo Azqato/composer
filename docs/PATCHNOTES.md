@@ -5,6 +5,54 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.55.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 10 of 23: `top-cap-ma-rsi`.** TL;DR, Underlying Assumptions,
+  Market Regime table and regime note for Top Cap by MA + RSI ETF Hedge, matching the shape
+  approved on `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. This is the
+  smallest tree in the rollout so far, 19 lines and two conditions, and the findings are about what
+  those two conditions do not do:
+
+  1. **The ETF hedge in the name decided 213 of 2,826 days.** The overbought branch, a 6-day RSI on
+     SPY at or above 90, fired on 22 days across the whole record. The oversold branch, the same
+     RSI at or below 28, fired on 191. The remaining 92.5% of days are decided by a five-day
+     momentum ranking over seven stocks, so this is a stock picker with two rarely-used escape
+     hatches rather than a hedged strategy.
+  2. **MSTR is the second largest position in a basket called Top Cap**, at 23.0% of all capital
+     deployed. It is a software company that became a bitcoin holding vehicle, and it is also what
+     produced the strongest years in the record: +335.5% through the 2023 AI bull and +322.7%
+     through 2024.
+  3. **The two defensive names are the only two losing legs.** WMT compounded -19.1% across 261
+     days held and KO -14.2% across 183. A five-day momentum ranking reaches a low-volatility
+     staple mainly when everything else is falling.
+  4. **The oversold branch takes the bottom performer**, deliberately buying the most beaten-down
+     of TQQQ, LABU and SPXL.
+
+- **The symphony's own title advertises a different backtest than the record here.** It reads
+  `TESTPORT #019 ... (+177%) Back test from 1FEB2018`, while the window on record covers 2,826
+  trading days from 3 June 2015. The page states this as a working label from the author's testing
+  rather than a description of this window.
+
+- **No reconstructed return is quoted.** The holding changes on 1,180 of 2,826 days, about once
+  every 2.4 trading days across individual stocks, so the regimes are ranked from holdings shares
+  and ticker price moves alone. The regime note states that basis.
+
+### Fixed
+- **`BRK/B` price gap closed for analysis only.** Composer spells Berkshire B shares `BRK/B`;
+  Yahoo returns 404 for that and wants `BRK-B`. Without it only 216 of 2,826 days were computable.
+  The series was fetched as `BRK-B` and cached under the symphony's spelling in the scratchpad,
+  taking computable days to 3,978. `data/prices.json` was deliberately left untouched.
+- **Two ranking claims checked before shipping.** A draft called this the simplest logic in the
+  library; the claim was dropped rather than verified tree by tree. A draft said its Sharpe and
+  Calmar sit in the middle of the library; both rank 14th of 24, which the page now states
+  precisely.
+
+---
+
 ## [1.54.0] - 2026-09-02
 
 ### Added
