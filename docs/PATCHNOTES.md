@@ -5,6 +5,52 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.51.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 6 of 23: `four-horsemen`.** TL;DR, Underlying Assumptions, Market
+  Regime table and regime note for The Four Horsemen of the Apocalypse, matching the shape approved
+  on `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full 498-line tree was traversed before writing**, per the standing full-tree rule. It is
+  the largest tree in the library so far and four findings are stated on the page:
+
+  1. **The four horsemen are four variants of one idea.** Inside the symphony they are named TQQQ
+     FTLT, TQQQ 20d SMA, TQQQ FTLT with a 20-day modification, and TQQQ 20d SMA with a sideways
+     modification. Two of them are 49.6% and 55.3% TQQQ on their own, and the assembly puts 33.0%
+     of all capital into TQQQ, more than three times the next largest holding.
+  2. **116 conditional nodes, 18 distinct expressions.** One test, a 10-day RSI on TLT against the
+     same reading on SQQQ, appears 28 separate times. The apparent sophistication is repetition
+     rather than range.
+  3. **25 of the 116 conditions never selected anything across 3,683 trading days**, including the
+     whole deleveraging block behind a QQQ 252-day return under -20%.
+  4. **One block is a literal duplicate of its own sub-branch.** In the sideways-market protection,
+     an equal-weight group holds a test for SPY above its 20-day average alongside a second copy of
+     that test's own else-branch, so below the 20-day average both halves resolve to the same fund
+     and it receives the full allocation rather than half.
+
+- **SVXY is the risk the page flags hardest.** It is the second most-held fund in the strategy, is
+  carried at a fixed weight rather than selected by any test, and is not covered by the overbought
+  guards that protect the leveraged longs. Across the February 2018 volatility spike it fell 92.6%.
+
+- **No reconstructed return is quoted**, following the ruling made for `wooden-arkk`. This strategy
+  changes its allocation about once every two trading days across as many as nine funds at once.
+
+### Fixed
+- **A real bug in the analysis tooling, found by this strategy and fixed before it could mislead.**
+  The per-leg counter assumed a day's allocation named each ticker once. This tree reaches the same
+  fund through several simultaneously-held branches, so a leg was counted and compounded once per
+  occurrence, reporting TQQQ at 9,138 days held out of 3,683 and a return of +13,991,171,923.5%.
+  The allocation is now aggregated by ticker before anything is measured.
+- **Checked whether any published page was affected.** Of the five finished pages, only
+  `s90-half-low-catch` ever names a ticker twice in one day, and its page was written with the
+  purpose-built engine rather than this tool. Re-deriving its figures with the corrected code
+  reproduces every published number exactly, including UVXY +107.0% over 55 days, VIXY +54.6% over
+  76 and ZSL +105.3% over 10. No shipped page changed.
+
+---
+
 ## [1.50.0] - 2026-09-02
 
 ### Added

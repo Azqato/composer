@@ -1731,7 +1731,81 @@
       "signal": "Several components run in parallel on different time horizons, a SPY 200-day moving average against a TQQQ 20-day, with a deep bear-market protocol that uses QQQ cumulative-return detection. That is more nuanced protection than a simple RSI dip-buy. The cost is that the logic tree is among the largest and most complex in this library, so checking by hand what this strategy would do in a given market is harder here than almost anywhere else on the site.",
       "hedge": "The deep bear protocol rotates defensively rather than holding a standing hedge, and the reachable universe includes PSQ, SQQQ and TLT for that purpose. SVXY is not a hedge despite sitting alongside them: short volatility pays in calm markets and fails in exactly the conditions a hedge exists to cover.",
       "concentration": "The claim worth making about this strategy is diversification: it runs more parallel components than anything else in this library's leveraged tier. The 2022 bear market is the counterexample worth knowing, because all components were simultaneously in bear mode. The diversification is across time horizons and signals, not across outcomes when the whole market falls at once."
-    }
+    },
+    "tldr": {
+      "thesis": "Four sub-strategies held in equal quarters, and all four are variants of the same idea. Their names inside the symphony are TQQQ FTLT, TQQQ 20d SMA, TQQQ FTLT with a 20-day modification, and TQQQ 20d SMA with a sideways modification. Each is a complete bull and bear engine built on the same handful of tests, so what looks like a committee of four is closer to one strategy voting four times. Across the record TQQQ was 33.0% of all capital deployed, more than three times the next largest holding.",
+      "works_well_in": [
+        "Long uptrends. The whole assembly sits on SPY's 200-day average, which was passed on 3,172 of {backtest_days} days in a reconstruction of the logic over real prices, and above that gate a third of the book is in TQQQ. Across the record TQQQ compounded +52,921.5% over the 2,593 days it was held.",
+        "Volatility selling in a calm market. SVXY is the second largest holding at 10.9% of capital, and it compounded +4,735.7% across the 2,578 days the rules named it. It is carried at a fixed 33% weight inside one of the four horsemen rather than being selected by any test.",
+        "Deep bear markets, where the cascading bear rungs have time to work. Through the 2022 decline the reconstruction held SQQQ on 24% of days and PSQ on 23% while SQQQ rose 120.7% and PSQ rose 41.2%.",
+        "Volatility spikes. Two separate overbought guards reach UVXY and a third branch reaches VIXY. UVXY compounded +2,272.6% over 149 days held and VIXY +253.7% over 22. In the February 2018 spike the reconstruction held VIXY on 28% of days and UVXY on 11%, while VIXY rose 99.6% and UVXY rose 181.4%.",
+        "Semiconductor and tech leadership, since the leveraged sector funds sit in the top-three momentum basket. TECL compounded +195,040.5% over 1,801 days held and SOXL +318,771.3% over 1,770."
+      ],
+      "struggles_in": [
+        "Sharp selloffs that do not last. The gate crossed 66 times across the record and 19 of its 33 stretches below lasted 5 trading days or fewer, so most regime switches fire into a decline that is nearly over.",
+        "Declines the bear half sits out. Below the gate the reconstruction still held TQQQ on 26.4% of days, because several of the four horsemen route back to leveraged long positions through their own fallbacks.",
+        "A volatility shock while short volatility. SVXY is held on more days than anything except TQQQ and is not gated by any of the overbought tests protecting the rest of the book. Across the February 2018 spike SVXY fell 92.6%.",
+        "Any environment where trading costs are real. The allocation changed on 1,845 of {backtest_days} days, about once every two trading days, spread across up to nine funds at once."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**Leveraged Nasdaq keeps working.** Whatever the four components look like separately, together they put 33.0% of all capital into TQQQ and another 20.4% into TECL, SOXL, UPRO and UDOW. This is a leveraged long-equity strategy with a large and elaborate exit.",
+        "**Short volatility is a persistent source of return.** SVXY is carried at a fixed weight rather than selected by any test, and it was held on 2,578 of {backtest_days} days, second only to TQQQ. Nothing gates it when volatility spikes.",
+        "**A raw 200-day moving average on SPY identifies the regime.** One close against one average, unbuffered, deciding what all four components do at once. It was crossed 66 times in {backtest_years} years.",
+        "**Combining several similar systems reduces risk.** This is the premise of the name and the equal-weight structure. It holds only to the extent the four differ, and their holdings overlap heavily: two of them are roughly half TQQQ on their own."
+      ],
+      "structural": [
+        "**The tree is 498 lines built from 18 distinct tests.** It contains 116 conditional nodes, but only 18 unique expressions among them. One test, a 10-day RSI on TLT against the same reading on SQQQ, appears 28 separate times. The apparent sophistication is repetition rather than range.",
+        "**25 of those 116 conditions never selected anything in the whole record.** Entire blocks, including the deleveraging logic behind a QQQ 252-day return below -20%, sit in branches the evaluation never reached across {backtest_days} trading days.",
+        "**One block is a literal duplicate of its own sub-branch.** Inside the sideways-market protection, an equal-weight group holds a test for SPY above its 20-day average alongside a second copy of that test's own else-branch. When SPY is below its 20-day average both halves resolve to the same fund, which then receives the full allocation instead of half of it.",
+        "**The four components are not four ideas.** All four are named after TQQQ inside the symphony. Two are FTLT variants carrying 28 and 54 conditions; the other two are 20-day moving average variants carrying 5 and 29. The two smaller ones are 49.6% and 55.3% TQQQ by themselves.",
+        "**It does hold several positions at once, which most strategies here do not.** The most common state is four distinct funds, on 1,469 of {backtest_days} days, and it ranged from one to nine. That is real breadth in count, though not in kind.",
+        "**Turnover is high and appears in no published figure.** 1,845 allocation changes across the record is about one every two trading days, and none of the metrics on this page carries a commission, a spread or a slippage assumption.",
+        "**Two legs lost money over the days they were held.** IWM compounded -10.0% across 112 days and SPLV -3.8% across 119. Both are defensive picks inside the froth basket.",
+        "**{standard_deviation} annualized volatility and a {max_drawdown_abs} maximum drawdown are the price of the record above.** A {sharpe_ratio} Sharpe and a {calmar_ratio} Calmar are strong, and the worst single day in the record was {worst_day}.",
+        "**The record starts in January 2012 and covers {backtest_days} trading days**, bounded by the launch of the leveraged and inverse funds it uses, so the 2008 crisis is absent. It contains one full bear market."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Sustained uptrend",
+        "expected": "Strong",
+        "why": "SPY holds above its 200-day average and all four components converge on leveraged long positions, with a fixed short-volatility sleeve alongside them.",
+        "example": "2023 AI bull: SPY +26.7%, TQQQ +204.9%, TECL +211.9%, SVXY +75.6%. The reconstruction held TQQQ on 39% of days."
+      },
+      {
+        "regime": "Long, deep bear market",
+        "expected": "Strong",
+        "why": "The gate stays shut long enough for the cascading bear rungs to settle on inverse funds rather than cycling back to leveraged longs.",
+        "example": "2022 bear market: SPY -24.5%, TQQQ -78.8%, SQQQ +120.7%, PSQ +41.2%. The reconstruction held SQQQ on 24% of days and PSQ on 23%."
+      },
+      {
+        "regime": "Vertical crash",
+        "expected": "Strong",
+        "why": "The overbought guards fire on the way in and the bear branches take over on the way down, so the book turns defensive while the decline is still running.",
+        "example": "COVID crash: SPY -33.7%, TQQQ -69.8%, SQQQ +84.4%, UVXY +552.3%, PSQ +30.5%."
+      },
+      {
+        "regime": "Overheated bull",
+        "expected": "Mixed",
+        "why": "A 60-day RSI above 60 on SPY moves parts of the book into short-term bonds, the dollar, staples or long Treasuries, so the strategy steps back from a rally that may continue.",
+        "example": "2017 low-volatility bull: SPY +20.8% and TQQQ +112.9%, while the reconstruction held SHV on 18% of days and TMF on 7%."
+      },
+      {
+        "regime": "Volatility shock",
+        "expected": "Poor",
+        "why": "SVXY is held on more days than any fund except TQQQ and is carried at a fixed weight, outside the overbought guards that protect the leveraged long positions.",
+        "example": "February 2018 spike, 26 Jan to 8 Feb: SPY -10.1%, SVXY -92.6%, UVXY +181.4%, VIXY +99.6%."
+      },
+      {
+        "regime": "Short, sharp selloff",
+        "expected": "Poor",
+        "why": "The gate is an unbuffered comparison of one close to one average, and several components route back to leveraged longs from inside their own bear branches.",
+        "example": "Spring 2025 drawdown: SPY -18.8%, TQQQ -56.8%, TECL -62.0%. The reconstruction held TECL on 26% of days and TQQQ on 19%."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which positions the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. Because this strategy changes its allocation about once every two trading days across as many as nine funds at once, no reconstructed return is quoted on this page, and the regimes above are ranked from holdings and price moves alone. The reconstruction covers {backtest_days} trading days from 4 January 2012 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "soxx-group",
