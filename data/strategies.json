@@ -1007,7 +1007,77 @@
       "hedge": "UVXY, VIXY, SQQQ, TLT and SBIT are all reachable, so both volatility and inverse legs exist. UVXY and VIXY decay from VIX futures roll costs and work only as short-term positions.",
       "concentration": "Twenty-seven instruments are reachable, but the deployment rule concentrates capital into whichever one is at an extreme. Breadth of universe is not breadth of position."
     },
-    "author_note": "Note: Backtest covers approximately 2.4 years (about {backtest_days} trading days from early 2024). All metrics reflect this short window. Interpret with caution. Metrics are accurate as of the last_updated date."
+    "author_note": "Note: Backtest covers approximately 2.4 years (about {backtest_days} trading days from early 2024). All metrics reflect this short window. Interpret with caution. Metrics are accurate as of the last_updated date.",
+    "tldr": {
+      "thesis": "Two strategies share the book in equal halves. One is a 21-rung ladder waiting for catastrophic oversold prints in leveraged sector funds, which is the half the name advertises. The other is a complete bull/bear engine that is almost always holding leveraged equity. In a reconstruction of the logic over real prices the ladder found something to buy on 15 of {backtest_days} days, so for roughly 97 days in every 100 this is the engine running on the whole portfolio and the low catchers are machinery sitting idle.",
+      "works_well_in": [
+        "Sustained equity uptrends, which is nearly the whole record. The engine splits on whether SPY closes above its 200-day average, and in a reconstruction over real prices that test passed on 91.1% of days. Its default state on the other side of that gate is 3x long the S&P.",
+        "Sharp panics that resolve quickly, because the volatility legs were timed well rather than held. Across only the days the logic named them, UVXY compounded +107.0% over 55 days and VIXY +54.6% over 76 days, while over the backtest window itself those two funds fell 88.6% and 66.7%.",
+        "A genuine blow-off top in a metal. The single low-catcher rung that fires with any regularity is the short-silver one, and across its ten fires it returned +105.3%, though +49.4% of that came from one session on 30 January 2026."
+      ],
+      "struggles_in": [
+        "A real bear market, which the record does not contain. The engine's bear branch ran on 53 of {backtest_days} days, in four short stretches between March 2025 and April 2026. Nothing here shows what the logic does in a decline that lasts quarters rather than weeks.",
+        "Whipsaw around the 200-day average, where the entire engine changes character on a single crossing. There is no buffer or confirmation on that gate: one close either side of the line swaps a 3x-long default for a branch that can hold volatility.",
+        "Any market that does not produce extremes. The low-catcher ladder only pays when something falls far enough to trip a threshold set well below conventional oversold, and 16 of its 21 rungs never fired once in the reconstruction.",
+        "Conditions where the cost of holding matters more than the direction. Roughly 22% of days hold a volatility fund, and both UVXY and VIXY lose value structurally whenever they are held for longer than the move they were bought for."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**The 2024 to 2026 window is representative of the future.** This is the largest assumption on the page, and a bigger one here than anywhere else in the library. The backtest is {backtest_days} trading days, the shortest of any strategy here, and it contains one long equity bull market: SPY rose 51.7% across it while SOXL rose 160.0%. Its only declines were brief.",
+        "**Leveraged sector funds mean-revert from extremes.** Every rung of the low-catcher ladder is a bet that a fund which has fallen far enough will bounce rather than keep falling. That is a bet the record barely tests, because the thresholds are set so low that almost nothing reached them.",
+        "**A 200-day moving average is the right way to tell a bull market from a bear one.** It is the only thing separating the two halves of the engine, and it is a single unbuffered comparison of one close against one average.",
+        "**Volatility can be bought profitably as a long position rather than a hedge.** In a sustained uptrend the bull branch buys VIXY when SPY's 60-day or 200-day RSI runs hot, which is a bet against the trend the same branch is otherwise riding."
+      ],
+      "structural": [
+        "**16 of the 21 low-catcher rungs never fired.** In a reconstruction of the logic over real prices across the backtest window, only five ever selected anything: the 2-day SOXL crash rung once, the UVXY spike rung twice, the homebuilder rung once, the bitcoin rung once, and the short-silver rung ten times. The biotech, China, Dow, financials, small-cap, Korea, regional-bank, bond and gold rungs did not trigger on a single day. The ladder the strategy is named for is mostly untested rather than proven.",
+        "**One nested test in the bear branch can never pass.** The logic asks whether UVXY's 10-day RSI is above 99 and then, inside that branch, whether the same reading is below 84. Nothing satisfies both, so the UVXY and BIL pair behind the inner test is unreachable and that branch always resolves to SOXL.",
+        "**The bull branch carries two assets at zero weight.** Its split allocates 100% to the decision tree and exactly 0% to both GLD and SPY. They appear in the asset list and can never receive capital from that branch.",
+        "**The bear branch is only 80% logic.** The remaining fifth is a fixed sleeve of BIL, GLD and TLT at roughly 6.67% each, held regardless of what the tree decides. Since the bear branch ran on 53 days, that sleeve is a small part of a small part of the record.",
+        "**Thresholds are tuned to the digit.** RSI limits of 22, 14, 18, 15, 16, 17, 10, 9, 12, 88, 92 and 99 sit beside return limits of -31%, -37%, -57%, -25%, -20%, -16% and -24%. Nothing in the logic explains why any of them is that number rather than the one beside it, and the symphony's own title records a target Sharpe and standard deviation, which is what a fitted result looks like.",
+        "**The backtest cannot start earlier, and the reason is an asset the logic never buys.** SBIT, the inverse bitcoin fund, first traded on 2 April 2024 and is the youngest instrument in the universe. From its first close to the last day in this project's price data is 604 trading days, against the {backtest_days} the pipeline records. SBIT is reachable only from the final low-catcher rung, which never fired.",
+        "**These are leveraged and inverse funds, and several are thinly traded.** The universe runs to 27 instruments including 3x sector funds, 2x metals funds and inverse bitcoin. Modelled slippage of 0.50% is written into the symphony's own title, which is an unusually frank admission that fills are expected to cost real money."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Sustained equity bull",
+        "expected": "Strong",
+        "why": "SPY holds above its 200-day average, the engine's default state is 3x long, and the low catchers stay idle. This is the state the headline return was earned in.",
+        "example": "1 Apr to 10 Jul 2024: SPY +7.8%, SOXL +43.3%, TECL +39.0%."
+      },
+      {
+        "regime": "Sharp panic, quick resolution",
+        "expected": "Strong",
+        "why": "The crash rungs and the volatility legs both fire, and the recovery is fast enough that the leveraged longs are back on before the bounce finishes.",
+        "example": "3 to 8 Apr 2025, the tariff selloff: SPY -7.5%, SOXL -27.7%, UVXY +54.4%."
+      },
+      {
+        "regime": "Rebound off a panic low",
+        "expected": "Strong",
+        "why": "The engine returns to leveraged equity while the recovery runs, and the semiconductor leg is the most levered way it can express that.",
+        "example": "9 Apr to 30 Jun 2025: SOXL +97.3%, TECL +81.0%, UVXY -42.5%."
+      },
+      {
+        "regime": "Extended drawdown below the 200-day",
+        "expected": "Mixed",
+        "why": "The bear branch takes over and can hold volatility or inverse funds, but it ran on only 53 days in the whole record, so this is the least evidenced state on the page.",
+        "example": "19 Feb to 8 Apr 2025: SPY -18.8%, SOXL -73.7%, UVXY +173.1%, SQQQ +103.6%."
+      },
+      {
+        "regime": "Metal blow-off and crash",
+        "expected": "Strong, and almost entirely untested",
+        "why": "The short-silver rung is the only low catcher that fires with any regularity. It sells strength rather than buying weakness, which makes it the odd one out in a ladder described as catching lows.",
+        "example": "The rung fired on 10 days and returned +105.3%. On 30 Jan 2026 alone SLV fell 28.5%, the largest single-day fall in this site's price history, which begins in 2010, and ZSL rose 49.4%."
+      },
+      {
+        "regime": "Prolonged bear market",
+        "expected": "Unknown",
+        "why": "There is no such period in the record. The longest continuous stretch below the 200-day average was 24 trading days. Every figure on this page describes a market that recovered quickly.",
+        "example": "Bear branch spans: 10 to 21 Mar 2025, 26 Mar to 3 Apr 2025, 7 Apr to 9 May 2025, and 20 Mar to 7 Apr 2026."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each figure is the move in that ticker between the first and last trading day of the window, computed from daily closes. The regimes themselves were identified by reconstructing this strategy's state machine over those same closes, which is a reading of the logic rather than a backtest: it carries no fees, no slippage and no rebalance timing, and it answers only which asset the rules would name on a given day. It reproduces the split the strategy is built around, finding the engine on the whole portfolio for 590 of {backtest_days} days and the low catchers active on the other 15, which is the reason it is trusted this far and no further. Prices for 13 of the 27 instruments are not carried in this site's own price file and were fetched separately from the same source for this analysis."
   },
   {
     "slug": "holy-grail",

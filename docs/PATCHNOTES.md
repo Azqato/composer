@@ -5,6 +5,55 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.46.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 1 of 23: `s90-half-low-catch`.** TL;DR, Underlying
+  Assumptions, Market Regime table and regime note, matching the shape approved on
+  `gold-miner-original` in v1.43.0. Only public-facing strategies are in scope; the 12 unlisted
+  ones keep the v1.45.0 banner instead.
+
+### Notes
+- **The full 721-node tree was traversed before writing**, per the standing full-tree rule, and
+  three findings from it are stated on the page because they change what a reader should believe:
+
+  1. **16 of the 21 low-catcher rungs never fired.** In a reconstruction of the state machine over
+     real daily closes across the backtest window, only five ever selected anything, and the
+     ladder as a whole was active on 15 of 605 days. The strategy is named for machinery that is
+     idle roughly 97 days in 100.
+  2. **One nested test can never pass.** The bear branch asks whether UVXY's 10-day RSI is above
+     99 and then, inside that branch, whether the same reading is below 84. The inner leaf is
+     unreachable and the branch always resolves to SOXL.
+  3. **The bull branch carries GLD and SPY at exactly 0% weight**, so both appear in the asset
+     list and can never receive capital from it.
+
+- **The backtest length has a cause worth naming.** At 605 trading days it is the shortest in the
+  library, and the binding constraint is SBIT, the inverse bitcoin fund, which first traded on
+  2 April 2024. From its first close to the last day in this project's price data is 604 trading
+  days. SBIT is reachable only from the final low-catcher rung, which never fired, so the shortest
+  record in the library is imposed by an asset the logic never actually buys.
+
+- **Every figure on the page is computed, not recalled.** Live metrics are v1.45.0 tokens; the
+  frequency claims come from the state-machine reconstruction; the regime examples are ticker
+  moves computed from daily closes. 13 of the 27 instruments are outside the Signal Miner universe
+  that `data/prices.json` carries, so their closes were fetched separately for the analysis.
+  **They were deliberately not added to `data/prices.json`**, which is the Signal Miner's committed
+  dataset and its ticker picker: adding 13 leveraged funds there would change a different page.
+
+- **A silver figure was verified rather than trusted.** The short-silver rung returned +105.3%
+  across its ten fires, of which +49.4% came from one session, and that session rests on SLV
+  falling 28.5% in a day. Three independent series agree on it (SLV -28.5%, the 2x fund AGQ
+  -60.0%, the -2x fund ZSL +49.4%), so it is a real move and not a bad print.
+
+### Fixed
+- **The scratchpad tree reader was misreporting the logic.** Lookback windows live in
+  `lhs-fn-params: {"window": 10}` on most nodes and in `lhs-window-days` on a minority, and it knew
+  only the second spelling, so it printed `rsi(SPY)` where the symphony reads `rsi(SPY, 10)`. It
+  also ignored `rhs-fixed-value?`, which turned `rsi(PSQ,10) > 65` into a comparison against
+  another indicator on the two nodes that carry both keys.
+
+---
+
 ## [1.45.0] - 2026-09-02
 
 ### Added
