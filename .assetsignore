@@ -15,6 +15,17 @@ README.md
 # Build, test and data-refresh tooling (Python; never executed by the site)
 scripts/
 
+# Input to scripts/update_metrics.py, not a site asset. No .html or .js
+# references it, and deploy.yml already excluded it from the GitHub Pages build
+# without this file being kept in step.
+#
+# It has to be here, not merely ought to be: on 2026-09-01 a routine metrics
+# refresh (90f6dcf) grew it from 22.8 MB past Cloudflare's 25 MiB per-file
+# upload limit, which fails the WHOLE deployment. The site stopped updating and
+# the only symptom was a red build. scripts/check_asset_sizes.py now catches
+# this class of failure before a push.
+data/symphony_scores.json
+
 # Local UI mockups: gitignored as well, listed here as a second line of defence
 _wf-mockup.html
 _harness_*.html

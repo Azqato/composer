@@ -5,6 +5,44 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.43.2] - 2026-09-02
+
+### Fixed
+- **The live site stopped deploying, and had been failing since 2026-09-01.**
+  `data/symphony_scores.json` is now excluded in `.assetsignore`. A routine metrics refresh
+  (`90f6dcf`, "chore: weekly backtest metrics update") grew it from 22.8 MB to 26.3 MB, which is
+  **210 KB past Cloudflare's 25 MiB per-file upload limit**. Cloudflare rejects the entire
+  deployment over one oversized file, so every commit after that point built green on GitHub and
+  never reached production. v1.42.x and v1.43.x were all sitting on `main` unpublished.
+
+  **The file was never a site asset.** No `.html` or `.js` references it, only
+  `scripts/update_metrics.py` reads it, and `deploy.yml` already excluded it from the GitHub Pages
+  build. `.assetsignore` simply was never kept in step with that exclusion, so the two deploy
+  targets disagreed about what the site contains.
+
+### Added
+- **`scripts/check_asset_sizes.py`.** Walks every tracked file that `.assetsignore` does not
+  exclude and fails if any exceeds 25 MiB, warning at 70%. Verified by running it against the
+  broken tree first, where it reproduced the failure independently before the fix was applied.
+
+  **Warning at 70% rather than 80% is calibrated on what actually happened.**
+  `symphony_scores.json` went from 87% of the limit to over it in ten days, so an 80% threshold
+  would have given about a fortnight's notice. It currently warns on `data/database.json` and
+  `data/database.js`, both 19.05 MiB and growing weekly. **Those two are the next casualties** and
+  the warning exists so that is a scheduled problem rather than another silent outage.
+
+- **Not wired into any workflow.** Whether this becomes a fifth deploy gate is the same open ruling
+  PRD item 10b holds for `check_risk_profiles.py` and `check_stat_drift.py`. Note that the existing
+  gates run in `deploy.yml`, which publishes to GitHub Pages, and the live site is Cloudflare, so a
+  gate there would not have caught this anyway.
+
+### Notes
+- **Nothing in the repo could have noticed.** The four deploy gates check data correctness, not
+  deliverability: the join was valid, the twins matched, the ladder was sound, and the site was
+  simply not being published. The only signal was a red build in a dashboard.
+- **`data/Full Database.xlsx` (5.5 MiB) is served publicly** and is not referenced by any page.
+  Under the limit and unrelated to this failure, but flagged: it may or may not be intended.
+
 ## [1.43.1] - 2026-09-02
 
 ### Changed

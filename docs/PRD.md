@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.43.1
+**Version:** 1.43.2
 **Status:** Active
 **Last Updated:** 2026-09-02
 
@@ -344,7 +344,8 @@ ComposerAtlas/
 │   ├── refresh_prices.py       # Fetches full Yahoo Finance daily-close history for the Signal Miner universe (v1.15.0)
 │   ├── refresh_k1.py           # Builds data/k1.json: reads each fund's Structure field, derives its tax form (v1.27.0)
 │   ├── build_strategy_extras.py # Joins the featured strategies to database.json and k1.json at build time (v1.28.0)
-│   └── check_strategy_extras.py # Deploy gate: the committed join matches a fresh one, both twins (v1.28.0)
+│   ├── check_strategy_extras.py # Deploy gate: the committed join matches a fresh one, both twins (v1.28.0)
+│   └── check_asset_sizes.py     # No served file exceeds Cloudflare's 25 MiB per-file limit (v1.43.2, manual)
 ├── index.html                  # Home page: marketing/landing (hero, stats, explore cards, how-it-works) (V2.2, 2026-07-15)
 ├── strategies.html             # Strategy listing + detail (?slug=X), single file
 ├── glossary.html               # Glossary listing + concept detail (?slug=X), single file
