@@ -1578,7 +1578,81 @@
       "hedge": "UVXY and VIXY provide a volatility leg and SOXS and SSG a sector-inverse one. Systematic bear-mode short exposure makes this one of the few strategies here that trades both semiconductor bull and bear cycles rather than only stepping aside.",
       "concentration": "Selecting the top individual names creates significant single-name concentration inside a sector that is already cyclical. That is stock risk and sector risk stacked, not one offsetting the other."
     },
-    "author_note": "Created by Dereck Nielsen. Strategy description in Composer reads: 'The goal of this strategy is to invest in the semiconductor sector of the market under normal market conditions. Added a MACD feature to this strategy when the semiconductor ETF SMH is trading above the 200 day moving average of SPY.'"
+    "author_note": "Created by Dereck Nielsen. Strategy description in Composer reads: 'The goal of this strategy is to invest in the semiconductor sector of the market under normal market conditions. Added a MACD feature to this strategy when the semiconductor ETF SMH is trading above the 200 day moving average of SPY.'",
+    "tldr": {
+      "thesis": "A semiconductor specialist that spends a surprising amount of its time owning no semiconductors. A smoothed trend gate, an 8-day exponential average of SPY against its 200-day average, splits the logic in two. In the bull half, a 60-day RSI above 60 pulls the whole book out of chips and into a defensive basket of long Treasuries, the dollar, staples and low-volatility equity. Only when the market is rising but not overheated does it run its actual thesis: hold the best three of 19 named chip companies on 90-day momentum. It is one of only four strategies here that buy individual stocks rather than funds, and its 19-name universe is by far the largest of them.",
+      "works_well_in": [
+        "Semiconductor bull markets with clear leadership. The top-three momentum basket is where the design's conviction lives, and across the record its winners were large: MU compounded +1,354.0% over the 707 days it was held, AMD +814.8% over 724 days and NVDA +813.3% over 710.",
+        "Long bear markets, where the short leg gets time to work. Below the trend gate the logic ranks SSG against BSV and takes the stronger, and SSG compounded +125.2% across the 129 days it was named. Through the 2022 decline the reconstruction held SSG on 42% of days while SSG rose 119.6%.",
+        "Vertical crashes. The gate is smoothed rather than fast, but a fall steep enough still breaks it, and the defensive rungs sit ready underneath. Through the COVID crash the reconstruction held SSG on 26% of days and SOXL on 17%, while SSG rose 54.6% and SOXS rose 79.5%.",
+        "Volatility spikes inside a bull market. The froth branch reaches VIXY and the RSI 80 rung reaches UVXY, and both were profitable across the days they were held: UVXY +429.9% over 78 days and VIXY +82.5% over 22. In the February 2018 spike the reconstruction was in VIXY on 56% of days while VIXY rose 99.6%.",
+        "Deep sector capitulations. The SOXL dip-buy rungs fire when SMH's 10-day RSI drops under 30 or 31, and SOXL compounded +1,172.2% across the 107 days the rules named it."
+      ],
+      "struggles_in": [
+        "Strong, broad bull markets, which is the least intuitive weakness on this page. When SPY's 60-day RSI runs above 60 the strategy leaves semiconductors entirely for bonds, the dollar and staples. That condition was true on 15.0% of days and actually selected the holding on 491 of them. Through 2017, when SPY rose 20.8%, the reconstruction held TMF on 18% of days, SPLV on 16% and XLP on 10%.",
+        "Sharp sector-specific drawdowns. The gate is deliberately slow, so a chip selloff inside an intact market leaves the strategy long. In the spring 2025 drawdown the reconstruction held SMH on 29% of days and SOXL on 12% while SMH fell 30.1% and SOXL fell 73.7%.",
+        "Momentum reversals in single names. The top-three basket is ranked on 90-day average return, which buys what has already run. MRVL is the largest losing leg in the strategy: -49.6% across the 329 days it was held.",
+        "Any market where trading costs matter. The allocation changed on 1,229 of {backtest_days} days, about once every three trading days, across a universe of 19 individual stocks and 12 funds."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**Semiconductors are the right sector to specialise in.** The entire design is a bet that chips lead, and the record covers a period in which they did: SMH compounded +266.8% across the 874 days it was held, and it is the largest single holding in the strategy at 22.0% of capital.",
+        "**Recent momentum in a single stock predicts the next stretch.** The top-three basket ranks 19 names on 90-day average return and buys the leaders. It is the opposite instinct to the dip-buying rungs sitting a few lines below it in the same tree.",
+        "**An overheated market is a reason to leave the sector rather than trim it.** A 60-day RSI above 60 on SPY moves the entire book into TMF, UUP, VIXY, XLP or SPLV. That is a strong claim about a fairly ordinary reading, and it is the single largest determinant of how much of a bull market the strategy actually participates in.",
+        "**Long Treasuries hedge equity risk.** TMF is the fifth largest holding at 4.7% of capital. That relationship held for most of the record and broke in 2022, when TMF fell 68.8% during the one full bear market in the window."
+      ],
+      "structural": [
+        "**The 19-company universe was chosen with hindsight, and this is the largest assumption on the page.** NVDA, AMD, AVGO, MU and the rest are a fixed hand-picked list, written after it was known which chip companies mattered. A strategy that picks the best three of 19 names is only as good as the 19, and nothing in the logic selects them. Any company that failed or was acquired over the period is absent by construction.",
+        "**It holds individual stocks, and more of them than anything else here.** Three other strategies in this library name single companies, with universes of two, three and four. This one carries 19. Single-name risk, earnings gaps and company-specific failures are all live, and holding three names at a time does not diversify them away.",
+        "**The trend gate is smoothed, and the difference is measurable.** Using an 8-day exponential average of SPY rather than a raw close, the gate crossed only 24 times in {backtest_years} years, with a median stretch below it of 31 trading days and only 2 of its 12 stretches lasting 5 days or fewer. The comparable raw-price gates in this library crossed 77 and 83 times. This is the clearest evidence in the library that the smoothing choice, not the 200-day average itself, is what determines whether a trend gate whipsaws.",
+        "**Even below the gate it is long semiconductors on 39.2% of days.** The bear half runs three tests and its final fallback is plain SMH. Being below the trend gate is not the same as being defensive here.",
+        "**It genuinely diversifies, which is uncommon in this library.** It holds more than one position on 54.2% of days, through the top-three basket and through a paired SHY and SMH allocation. The trend-following strategies reviewed alongside it hold exactly one fund on every single day of their records.",
+        "**Turnover is high for a strategy described as a sector specialist.** 1,229 allocation changes across {backtest_days} days is about one every three trading days, and none of the figures on this page carries a commission, a spread or a slippage assumption.",
+        "**{standard_deviation} annualized volatility and a {max_drawdown_abs} maximum drawdown are the price of the record above.** A {sharpe_ratio} Sharpe and a {calmar_ratio} Calmar are solid rather than exceptional, and the worst single day in the record was {worst_day}.",
+        "**Thresholds are specific in a way the logic does not explain.** RSI limits of 80, 70, 60, 31 and 30, MACD-style averages of 12 and 26 days, moving averages of 200, 25 and 8, and lookbacks of 90, 15 and 10 days. Two of those rungs differ by a single point: SMH's RSI below 30 in one branch and below 31 in another.",
+        "**The record starts in January 2012 and covers {backtest_days} trading days**, so it misses the 2008 crisis and the 2000 semiconductor collapse, which is the one event that would most directly test a chip specialist."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Semiconductor bull with clear leaders",
+        "expected": "Strong",
+        "why": "The top-three momentum basket runs, and in a sector where leadership concentrates, picking three of 19 on 90-day momentum lands on the names that are running.",
+        "example": "2023 AI bull: SMH +74.7%, NVDA +246.1%, AMD +130.3%. The reconstruction held SMH on 23% of days and NVDA on 16%."
+      },
+      {
+        "regime": "Long, deep bear market",
+        "expected": "Strong",
+        "why": "The trend gate stays shut for months rather than days, and the bear half ranks the inverse semiconductor fund against short-term bonds and takes the stronger.",
+        "example": "2022 bear market: SPY -24.5%, SMH -44.4%, SSG +119.6%. The reconstruction held SSG on 42% of days."
+      },
+      {
+        "regime": "Vertical crash",
+        "expected": "Strong",
+        "why": "A fall steep enough breaks even a smoothed gate, and the froth and dip-buy rungs above it fire on the way down.",
+        "example": "COVID crash: SPY -33.7%, SMH -31.2%, SSG +54.6%, SOXS +79.5%, UVXY +552.3%."
+      },
+      {
+        "regime": "Overheated broad bull",
+        "expected": "Mixed",
+        "why": "The 60-day RSI rung pulls the entire book out of semiconductors and into Treasuries, the dollar and staples. Whether that helps or costs depends entirely on how much further the bull market runs.",
+        "example": "2017 low-volatility bull: SPY +20.8% and SMH +38.2%, while the reconstruction held TMF on 18% of days, SPLV on 16% and XLP on 10%."
+      },
+      {
+        "regime": "Sector selloff inside an intact market",
+        "expected": "Poor",
+        "why": "The gate is slow by design, so a chip-specific decline that does not break the broad trend leaves the strategy long, and the SOXL dip-buy rung can add 3x leverage into it.",
+        "example": "Spring 2025 drawdown: SMH -30.1%, SOXL -73.7%, MRVL -54.9%. The reconstruction held SMH on 29% of days and SOXL on 12%."
+      },
+      {
+        "regime": "Whipsaw around the trend gate",
+        "expected": "Mild",
+        "why": "The weakness that dominates the raw-price trend strategies in this library is largely absent here, and that is a measured difference rather than a claim. Only 2 of the 12 stretches below the gate lasted 5 trading days or fewer.",
+        "example": "The gate crossed 24 times across {backtest_days} days, about once every 153 trading days."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that stock or fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which positions the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. Because this strategy changes its allocation about once every three trading days, no reconstructed return is quoted on this page, and the regimes above are ranked from holdings and price moves alone. The reconstruction covers {backtest_days} trading days from 26 January 2012 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "four-horsemen",

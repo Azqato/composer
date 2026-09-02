@@ -5,6 +5,51 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.50.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 5 of 23: `super-semiconductors`.** TL;DR, Underlying Assumptions,
+  Market Regime table and regime note for Super Semiconductors, matching the shape approved on
+  `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full 56-line tree was traversed before writing**, per the standing full-tree rule. Four
+  findings are stated on the page:
+
+  1. **The sector specialist leaves the sector in strong bull markets.** When SPY's 60-day RSI runs
+     above 60 the entire book moves into long Treasuries, the dollar, staples or low-volatility
+     equity. That condition was true on 15.0% of days and actually selected the holding on 491 of
+     them. Through 2017, when SPY rose 20.8% and SMH rose 38.2%, the reconstruction held TMF on
+     18% of days, SPLV on 16% and XLP on 10%.
+  2. **Smoothing the trend gate is what stops it whipsawing, and the effect is measurable.** This
+     gate compares an 8-day exponential average of SPY to its 200-day average and crossed 24 times
+     in roughly 14.6 years, with a median stretch below it of 31 trading days and only 2 of its 12
+     stretches lasting 5 days or fewer. The raw-price gates in `holy-grail` and `tqqq-long-term`
+     crossed 83 and 77 times, with median stretches of 4 and 5 days. Same 200-day average, very
+     different behaviour.
+  3. **The 19-company universe was chosen with hindsight**, which is the largest assumption on the
+     page. A strategy that picks the best three of 19 names is only as good as the 19, nothing in
+     the logic selects them, and any company that failed or was acquired is absent by construction.
+  4. **It genuinely diversifies**, holding more than one position on 54.2% of days, which sets it
+     apart from the trend followers reviewed alongside it. It is also one of only four strategies
+     in the library that hold individual stocks, and its universe is by far the largest of them.
+
+- **No reconstructed return is quoted on this page**, following the ruling made for `wooden-arkk`.
+  At one allocation change every three trading days a modelled path with no cost assumptions is
+  not worth quoting, so the regimes are ranked from holdings shares and price moves alone.
+
+### Fixed
+- **Two library-wide claims were checked and corrected before shipping.** A draft called this the
+  only strategy here holding individual stocks; it is one of four, alongside `nancy-pelosi-chips`,
+  `top-cap-ma-rsi` and `spy-energy-chips`. A second draft sentence generalised "every other
+  strategy holds exactly one fund every day" from the four pages written so far to the whole
+  library; it now names the comparison it can actually support.
+- **The render checker no longer fails on a formatting artifact.** Stripping a tag leaves a space
+  behind, so a bold run closing mid-sentence read as `days , so it misses` and was reported as
+  missing content. The check now ignores whitespace on both sides. All five finished pages pass.
+
+---
+
 ## [1.49.0] - 2026-09-02
 
 ### Added
