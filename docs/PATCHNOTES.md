@@ -5,6 +5,43 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.42.0] - 2026-09-02
+
+### Changed
+- **Two strategy-page layout changes, piloted on `gold-miner-original` only, pending owner
+  sign-off before they go library-wide.** The other 35 strategies are untouched and act as the
+  control, matching the pilot pattern already used for items 13, 14 and 15.
+  - **AI Summary moves directly under the Open in Composer button**, above the TL;DR card. It was
+    already below the button; the TL;DR card sat between them.
+  - **The Assets section drops today's position entirely.** Gone: the "N of M tickers held as of
+    the last market day" header, the allocation bars and percentages, and the "can also hold, but
+    is not holding today" split. What remains is the full reachable universe, each ticker with its
+    first-traded date and its K-1 or ETN badge. What a strategy CAN hold is a durable fact about
+    its logic; what it holds today is one rebalance old and invites a reader to treat a position as
+    a recommendation.
+  - **A side effect worth naming: the badges got better.** They previously rendered only on
+    currently-held rows, so an ETN sitting in the idle list showed nothing. Every ticker now
+    carries its own tax badge.
+  - The separate K-1 and ETN notice blocks below the section are unchanged.
+
+### Added
+- `.asset-row-plain` in `css/main.css`: with no allocation there is no bar and no percentage, so
+  the row uses flex rather than the allocation grid.
+
+### Notes
+- **Verified in headless Edge by rendering the pilot and a control side by side.**
+  `gold-miner-original` renders button, AI Summary, TL;DR, and an Assets section with no bars, no
+  "as of the last market day" and no "not holding today". `holy-grail` and `four-horsemen` render
+  exactly as before. All five gates pass.
+- **Open finding, recorded as PRD item 4a and not fixed here: the Outlier dependence panel
+  misrepresents what it measures.** The owner questioned it; measurement confirmed it. The card
+  warns above 100% that "the other 95% of days lost money on net", but the same statistic computed
+  on plain buy-and-hold SPY is **202.5%**, and on TLT 729.2%. The library ranges from 73% to 263%,
+  so nearly every curated strategy is less outlier-dependent than SPY while 28 of 36 carry the red
+  warning. The ratio is large whenever a small net return sits under a much larger gross, which is
+  true of any volatile series. Fixing it needs an editorial decision on what replaces it, so it is
+  filed rather than patched.
+
 ## [1.41.2] - 2026-09-02
 
 ### Changed

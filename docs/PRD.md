@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.41.2
+**Version:** 1.42.0
 **Status:** Active
 **Last Updated:** 2026-09-02
 
@@ -3236,6 +3236,39 @@ files already in the repo.
   alone, which is 1.00. It arrives with the backtest statistics, alongside Sortino and turnover, so
   it describes the backtest. Labelling it as current concentration would have been wrong on at least
   4 of the 31.
+- [ ] **4a. OPEN, and it invalidates how item 4 is presented: the Outlier dependence panel
+  reads as a strategy-specific warning for a number that is normal for any volatile series.**
+  Raised by the owner 2026-09-02, confirmed by measurement the same day. The card prints
+  `top_five_percent_day_contribution` and, above 100%, warns "the other 95% of days lost money on
+  net: remove those days and this strategy is a net loser". That sentence is arithmetically true
+  and materially misleading, because the denominator is **net** return, which is a small residual
+  of much larger gross gains and losses.
+
+  Computing the same statistic on plain buy-and-hold price series from `data/prices.json`:
+
+  | Series | Best 5% of days, as a share of net return |
+  | --- | --- |
+  | **SPY** | **202.5%** |
+  | QQQ | 188.6% |
+  | XLP | 222.9% |
+  | GLD | 311.9% |
+  | TLT | 729.2% |
+
+  For SPY the up days sum to +1,624%, the down days to -1,379%, and the net is +245%. The best 5%
+  of days are +497%, which is 202% of that net. Nothing about SPY is outlier-dependent; the ratio
+  is just large whenever a small net sits under a large gross.
+
+  **The library's range is 73% to 263%, so nearly every curated strategy scores BETTER than
+  buy-and-hold SPY on this measure, while 28 of 36 carry the red `warn` treatment.** The panel is
+  currently telling readers that most of the library is a net loser without its best days, using a
+  threshold that plain SPY also fails.
+
+  **Not yet fixed: the replacement is an editorial decision, not a bug fix.** Options are to
+  benchmark the figure against SPY over the same window instead of against 100%, to keep the
+  number but delete the threshold and the `warn` colour, or to drop the panel. **A true statement
+  that reliably produces a false impression is not "stated as arithmetic and left that way"; it is
+  the same failure mode as the recited statistics, one level up.**
+
 - [x] **4. Outlier-dependence disclosure (v1.28.0).** Stated as plain arithmetic and left that way:
   no score, no badge, no rating. **25 of the 31 featured strategies are above 100%**, which means
   the other 95% of their days lost money on net, and the panel says exactly that when it applies.

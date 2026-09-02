@@ -503,6 +503,17 @@
            </section>`
         : '';
 
+      // PILOT (v1.42.0), gold-miner-original only, pending owner sign-off before
+      // this goes library-wide. Two changes are being judged on one page:
+      //   1. AI Summary sits directly under the Open in Composer button, above
+      //      the TL;DR card, rather than below it.
+      //   2. Assets drops today's position entirely and describes the reachable
+      //      universe instead.
+      // To roll out: delete this flag and the pre-pilot branches. To abandon:
+      // delete the pilot branches. Nothing else on the page is touched, so the
+      // other 35 strategies are the control.
+      const isLayoutPilot = s.slug === 'gold-miner-original';
+
       // Item 6. What the logic CAN hold against what it IS holding, from the two
       // halves of last_market_days_holdings: its keys are the reachable universe,
       // its values are the last market day's position.
@@ -536,6 +547,48 @@
         const badges = t =>
           (k1Set.has(t) ? '<span class="asset-badge k1">K-1</span>' : '') +
           (etnSet.has(t) ? '<span class="asset-badge etn">ETN</span>' : '');
+
+        // PILOT. The universe, with no allocation and no snapshot.
+        //
+        // What a strategy CAN hold is a durable fact about its logic. What it
+        // holds today is one rebalance old, and printing it invites a reader to
+        // read a position as a recommendation, which is the one thing this site
+        // does not do. The tax character of the universe survives, because that
+        // is the part that does not change between rebalances and the part a
+        // reader cannot look up quickly anywhere else.
+        if (isLayoutPilot) {
+          const all = universe.slice().sort();
+          const k1n = all.filter(t => k1Set.has(t)).length;
+          const etnn = all.filter(t => etnSet.has(t)).length;
+          const taxNote = [
+            k1n ? `${k1n} issue${k1n === 1 ? 's' : ''} a K-1` : '',
+            etnn ? `${etnn} ${etnn === 1 ? 'is an ETN' : 'are ETNs'}` : '',
+          ].filter(Boolean).join(', ');
+
+          const uRows = all.map(t => `
+            <div class="asset-row asset-row-plain">
+              <a class="asset-ticker" href="${u('/k1.html')}?t=${encodeURIComponent(t)}">${t}</a>
+              <span class="asset-flags">${badges(t)}</span>
+              <span class="asset-since">${since[t] ? 'first traded ' + since[t] : ''}</span>
+            </div>`).join('');
+
+          return `
+            <section class="mb-10">
+              <h2 style="color:var(--color-primary);margin-bottom:16px">Assets</h2>
+              <div class="asset-head">
+                <span class="asset-head-n">${all.length}</span>
+                <span class="asset-head-l">${all.length === 1 ? 'ticker' : 'tickers'} this
+                  strategy can hold${taxNote ? ', of which ' + taxNote : ''}</span>
+              </div>
+              <div class="asset-rows">${uRows}</div>
+              <p class="metric-grid-note"><strong>This is the full range of exposure the logic can
+              route into, not a portfolio.</strong> The strategy holds a subset of these at any
+              moment and can move between them on any rebalance, so read the list as what it is
+              allowed to own rather than as what it owns. Dates are when each fund first traded,
+              which is what bounds how far back the backtest can reach. Every ticker links to its
+              K-1 entry.</p>
+            </section>`;
+        }
 
         // Guarded rather than assumed: a strategy fully in cash would have a zero
         // total, and dividing by it would print NaN% on every row.
@@ -706,8 +759,7 @@
               <a href="${s.symphony_url}" target="_blank" rel="noopener noreferrer"
                 class="btn btn-green btn-lg">Open in Composer ↗</a>
             </div>
-            ${tldrHtml}
-            ${aiSummary}
+            ${isLayoutPilot ? aiSummary + tldrHtml : tldrHtml + aiSummary}
             ${howItWorks}
             ${signals}
             ${regimeHtml}

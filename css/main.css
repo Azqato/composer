@@ -1387,6 +1387,12 @@ p { color: var(--color-secondary); }
 .asset-badge.k1 { color: var(--color-yellow); border-color: var(--color-yellow); }
 .asset-badge.etn { color: var(--color-blue); border-color: var(--color-blue); }
 
+/* Universe rows (v1.42.0 pilot): with no allocation there is no bar and no
+   percentage, so the grid above does not apply. Flex instead, because nothing
+   left in the row is wide enough to need a protected column at narrow widths. */
+.asset-row-plain { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.asset-row-plain .asset-ticker { min-width: 4.5rem; }
+
 .asset-idle { margin-top: 16px; }
 .asset-idle-title {
   display: block; font-size: 0.75rem; color: var(--color-disabled);
