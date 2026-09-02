@@ -5,6 +5,56 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.41.0] - 2026-09-02
+
+### Changed
+- **The twelve zoop 2026 editions are now unlisted.** `zoops-2026-frontrunner`,
+  `zoops-holy-grail-2026`, `zoops-tqqq-long-term-2026`, `zoops-excellent-adventure-2026`,
+  `zoops-sometimes-tqqq-2026`, `zoops-safety-checks-2026`, `zoops-manhattan-project-2026`,
+  `zoops-kmlm-switcher-2026`, `zoops-upro-ftlt-2026`, `zoops-leveraged-tqqq-symphony-2026`,
+  `zoops-tqqq-200d-ma-3x-2026` and `zoops-soxl-growth-2026` carry a new `hidden: true` flag. They
+  are dated editions due to be replaced by 2027 editions, so this is a staging decision rather
+  than a retirement. The newly added `zoops-frontrunner` is deliberately **not** hidden.
+- **Hidden means unlisted, not deleted.** Every field is retained, so un-hiding is deleting one
+  key. The detail pages still render at `strategies.html?slug=<slug>`: these slugs have been live
+  for months and carry inbound links, and unlisting is reversible where a 404 is not. They are
+  dropped from `sitemap.xml`, which is where the site advertises what it wants crawled.
+- **Filtering lives in one function.** `loadStrategies()` in `js/app.js` now returns only visible
+  strategies, and a new `loadAllStrategies()` returns the full set. Every listing path already went
+  through `loadStrategies()`, so the strategy grid, the tag filter and the glossary's per-concept
+  counts all picked the change up at once, and a listing added later cannot leak a hidden entry by
+  forgetting to filter. The detail renderer in `strategies.html` is the single deliberate caller of
+  `loadAllStrategies()`.
+- Homepage Curated count 36 -> 24. `sitemap.xml` 47 -> 35 URLs (11 pages plus 24 strategy pages).
+- **Hidden strategies are still refreshed.** `update_metrics.py` and `build_strategy_extras.py`
+  operate on the full file, so a hidden entry stays current and can be un-hidden without a data
+  catch-up. `check_strategy_extras.py` still joins all 36.
+
+### Added
+- **`hidden` documented in the strategy schema**, plus a "Hiding a Strategy" runbook in
+  `docs/PRD.md` and an "Unlisted Strategies" section in `docs/DESIGN.md` covering why the filter
+  sits at the loader rather than at each call site.
+
+### Notes
+- **Known and accepted: the unlisted pages still recite stale statistics.** All 37 outstanding
+  `check_stat_drift.py` findings belong to these twelve entries. Leaving them wrong was the
+  explicit call, on the grounds that 2027 editions will replace the prose wholesale and rewriting
+  it now is throwaway work. The pages are unlisted but reachable, so the inaccuracy is still live
+  for anyone with a direct link. Revisit when the 2027 editions land.
+- **The wider version of that problem is untouched and larger than the zoop set: 35 of 36
+  strategies quote performance figures in prose, 148 figures in total.** `docs/DESIGN.md` says
+  prose "may not quote" and that `check_stat_drift.py` enforces it; the checker only catches
+  figures that have gone stale, not the act of quoting, so the rule as written is not enforced
+  anywhere and `docs/PRD.md` states a weaker version that contradicts it. Deferred by the owner,
+  recorded here so it is not rediscovered from scratch.
+- **A slug pattern is not a taxonomy.** The first cut of this change matched `^zoops-.*-2026$` and
+  found 11 of the 12, because `zoops-2026-frontrunner` carries the year in the middle. An
+  assertion on the expected count caught it before anything was written; selection now goes by the
+  `zoop` tag.
+- **Verified in headless Edge** (never Chrome): the listing renders 24 slugs with no hidden slug
+  linked and `zoops-frontrunner` present, a hidden strategy's own page still resolves rather than
+  404ing, and the glossary's per-concept counts top out at 24. All five gates pass.
+
 ## [1.40.0] - 2026-09-01
 
 ### Added

@@ -994,6 +994,21 @@ which crises the record contains.
 
 `scripts/check_stat_drift.py` enforces this.
 
+### Unlisted Strategies (site-wide, v1.41.0)
+
+A strategy with `hidden: true` is removed from every listing but keeps its own page.
+
+The rule is enforced at one function, `loadStrategies()` in `js/app.js`, rather than at each grid.
+Every path that lists strategies already called it, so filtering there makes the safe behaviour the
+default for code that does not yet exist; the detail renderer opts out explicitly via
+`loadAllStrategies()`. The alternative, filtering at each call site, is the shape that leaks the
+first time someone adds a listing and forgets.
+
+**The page survives, the advertisement does not.** Hidden entries are dropped from `sitemap.xml`,
+since that file is where the site states what it wants crawled, but the detail page still resolves
+for anyone holding a link. Hiding is a reversible editorial act, not a deletion, and it is used for
+strategies awaiting replacement rather than for strategies being retired.
+
 ### Categorised Risk Profile (strategy detail pages, V1.20 item 10)
 
 Replaces the single `.risk-box` blob with a verdict badge and a stack of named categories. As of

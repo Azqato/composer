@@ -164,8 +164,10 @@
       }
 
       // ---- Detail view ----
+      // loadAllStrategies, not loadStrategies: a hidden strategy's own page
+      // still renders for anyone holding the link. It is unlisted, not deleted.
       const [strategies, glossary, allExtras] = await Promise.all([
-        loadStrategies(), loadGlossary(), loadStrategyExtras(),
+        loadAllStrategies(), loadGlossary(), loadStrategyExtras(),
       ]);
       const s = strategies.find(x => x.slug === slug);
 

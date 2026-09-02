@@ -28,11 +28,20 @@ function u(path) {
 // ---- Data loading ----
 // Prefers window globals set by data/strategies.js and data/glossary.js (works on file://).
 // Falls back to fetch() when those script tags are absent (e.g. HTTP server without them).
-async function loadStrategies() {
+async function loadAllStrategies() {
   if (window.STRATEGIES_DATA) return window.STRATEGIES_DATA;
   const res = await fetch(`${BASE}/data/strategies.json`);
   if (!res.ok) throw new Error('Failed to load strategies.json');
   return res.json();
+}
+
+// Everything that LISTS strategies goes through here, so a hidden entry cannot
+// leak into a grid, a tag filter or a glossary count by being forgotten. The
+// detail renderer deliberately calls loadAllStrategies() instead: a hidden page
+// stays reachable by direct URL, because these slugs have been live for months
+// and unlisting is reversible where a 404 is not.
+async function loadStrategies() {
+  return (await loadAllStrategies()).filter(s => !s.hidden);
 }
 
 // The featured strategies joined to data/database.json and data/k1.json at build

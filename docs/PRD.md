@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.40.0
+**Version:** 1.41.0
 **Status:** Active
 **Last Updated:** 2026-09-01
 
@@ -119,7 +119,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 ### MVP: Shipped (V1.0–V1.2.1)
 
 **Strategy Library**
-- Index page listing all 36 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
+- Index page listing every **visible** curated strategy with key metrics at a glance (ARR, Max DD, Sharpe). 24 of the 36 entries in `data/strategies.json` are listed as of v1.41.0; the other 12 carry `hidden: true` (see the schema table and "Hiding a Strategy" below)
 - Each strategy has a dedicated page with: name, description, tags, "Open in Composer" CTA, an AI Summary (Claude-authored analysis above How It Works), plain-English logic breakdown, signals used (cross-linked to glossary), risk profile, and full metrics table
 - Strategy card titles are clickable links
 
@@ -744,6 +744,31 @@ Every sentence across all blocks must clear this factual bar: **metrics** match 
 
 ---
 
+### Hiding a Strategy
+
+Set `"hidden": true` on the entry in **both** `data/strategies.json` and `data/strategies.js`
+(or set it in the JSON and re-run `scripts/add_ai_summary.py`, which rewrites both), then re-run
+`python scripts/build_sitemap.py` and update the Curated count in `index.html`.
+
+**Hidden means unlisted, not deleted, and that distinction is the whole point.** The entry keeps
+every field, so un-hiding is deleting one key. The detail page keeps rendering, because these slugs
+have been live for months and carry inbound links: unlisting is reversible and a 404 is not.
+
+**All filtering happens in `loadStrategies()` in `js/app.js`, deliberately.** That function is the
+single choke point every listing path already went through, so a new grid, filter or count added
+later cannot leak a hidden strategy by forgetting to filter. The detail renderer in
+`strategies.html` calls `loadAllStrategies()` instead, which is the only caller that should.
+
+**Hidden strategies are still refreshed.** `update_metrics.py` and `build_strategy_extras.py` both
+operate on the full file, so a hidden entry's metrics stay current and it can be un-hidden without a
+data catch-up. `check_strategy_extras.py` therefore still expects a join over all 36.
+
+**Select by tag, not by slug pattern.** The first attempt at the v1.41.0 hide matched
+`^zoops-.*-2026$` and silently found 11 of 12, because `zoops-2026-frontrunner` carries the year in
+the middle of its slug. An assertion on the expected count caught it. Slugs are not a taxonomy.
+
+---
+
 ### Adding a New Strategy (Manual)
 
 Use when you prefer full control or the Composer API is unavailable.
@@ -1363,6 +1388,7 @@ All fields in `data/strategies.json`. Both `strategies.json` and `strategies.js`
 | `trailing_three_month_return` | float | Yes | Return over trailing 3-month period |
 | `trailing_one_year_return` | float | Yes | Return over trailing 1-year period |
 | `backtest_days` | integer | Yes | Backtest length in trading days. Display as `~X yrs (N trading days)` using `Math.round(days / 252)`. |
+| `hidden` | boolean | Optional (**v1.41.0**) | When `true`, the strategy is **unlisted**: it does not appear in the strategy grid, the tag filter or the glossary's per-concept counts, and it is left out of `sitemap.xml`. **Its detail page still renders** at `strategies.html?slug=<slug>`, so existing inbound links keep working. Omit the key entirely for a visible strategy; do not write `hidden: false`. Filtering happens in one place, `loadStrategies()` in `js/app.js`. |
 | `description` | string | Yes | Short plain-English description (1-3 sentences). No HTML tags. |
 | `tags` | string[] | Yes | Concept tags for glossary cross-linking. Must match `slug` values in `data/glossary.json`. |
 | `last_updated` | string | Yes | ISO date metrics were last updated (YYYY-MM-DD) |

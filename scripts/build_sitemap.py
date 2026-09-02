@@ -106,6 +106,11 @@ def collect_strategies():
         if not slug:
             print(f"  skipped (no slug): {entry.get('name', '?')}")
             continue
+        # Hidden strategies are unlisted on the site, so the sitemap must not
+        # advertise them either. The page itself still resolves by direct URL.
+        if entry.get("hidden"):
+            print(f"  skipped (hidden): {slug}")
+            continue
         lastmod = entry.get("last_updated")
         if not (isinstance(lastmod, str) and DATE_RE.match(lastmod)):
             lastmod = None

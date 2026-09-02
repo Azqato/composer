@@ -3,6 +3,7 @@
 window.STRATEGIES_DATA = [
   {
     "slug": "zoops-2026-frontrunner",
+    "hidden": true,
     "name": "zoop's 2026 Frontrunner",
     "symphony_url": "https://app.composer.trade/symphony/4aI4kVT5cEc0XJpTLei3/details",
     "symphony_id": "4aI4kVT5cEc0XJpTLei3",
@@ -74,6 +75,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "zoops-holy-grail-2026",
+    "hidden": true,
     "name": "zoop's Holy Grail (2026 Edition)",
     "symphony_url": "https://app.composer.trade/symphony/Y2xvfu7iFNyO6up77gBI/details",
     "symphony_id": "Y2xvfu7iFNyO6up77gBI",
@@ -150,6 +152,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "zoops-tqqq-long-term-2026",
+    "hidden": true,
     "name": "zoop's TQQQ FOR THE LONG TERM (2026 Edition)",
     "symphony_url": "https://app.composer.trade/symphony/yIMvLUHfzAMATCpOKr9T/details",
     "symphony_id": "yIMvLUHfzAMATCpOKr9T",
@@ -227,6 +230,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "zoops-excellent-adventure-2026",
+    "hidden": true,
     "name": "zoop's Excellent Adventure (2026 Edition)",
     "symphony_url": "https://app.composer.trade/symphony/YIiBr33X4rRTVlOWhCNq/details",
     "symphony_id": "YIiBr33X4rRTVlOWhCNq",
@@ -303,6 +307,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "zoops-sometimes-tqqq-2026",
+    "hidden": true,
     "name": "zoop's Sometimes TQQQ (2026 Edition)",
     "symphony_url": "https://app.composer.trade/symphony/uAaEkEq8cPOmGgfEWTOU/details",
     "symphony_id": "uAaEkEq8cPOmGgfEWTOU",
@@ -384,6 +389,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "zoops-safety-checks-2026",
+    "hidden": true,
     "name": "zoop's Safety Checks (2026 Edition)",
     "symphony_url": "https://app.composer.trade/symphony/RLt1Rzz79I6Fa2X9QKqY/details",
     "symphony_id": "RLt1Rzz79I6Fa2X9QKqY",
@@ -460,6 +466,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "zoops-manhattan-project-2026",
+    "hidden": true,
     "name": "zoop's Manhattan Project (2026 Edition)",
     "symphony_url": "https://app.composer.trade/symphony/cCi1mupGsluFmre7HpOm/details",
     "symphony_id": "cCi1mupGsluFmre7HpOm",
@@ -541,6 +548,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "zoops-kmlm-switcher-2026",
+    "hidden": true,
     "name": "zoop's KMLM Switcher (2026 Edition)",
     "symphony_url": "https://app.composer.trade/symphony/4AuTagHMeiS4usdZEuDK/details",
     "symphony_id": "4AuTagHMeiS4usdZEuDK",
@@ -616,6 +624,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "zoops-upro-ftlt-2026",
+    "hidden": true,
     "name": "zoop's UPRO FTLT (2026 Edition)",
     "symphony_url": "https://app.composer.trade/symphony/9ETFQi5cmSWq2mT4ZH2d/details",
     "symphony_id": "9ETFQi5cmSWq2mT4ZH2d",
@@ -692,6 +701,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "zoops-leveraged-tqqq-symphony-2026",
+    "hidden": true,
     "name": "zoop's Leveraged TQQQ Symphony (2026 Edition)",
     "symphony_url": "https://app.composer.trade/symphony/U6lT1G0PdE9fUxoy2opg/details",
     "symphony_id": "U6lT1G0PdE9fUxoy2opg",
@@ -773,6 +783,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "zoops-tqqq-200d-ma-3x-2026",
+    "hidden": true,
     "name": "zoop's TQQQ 200d MA 3x Leverage (2026 Edition)",
     "symphony_url": "https://app.composer.trade/symphony/ZBpjzxS9RkLzft9NNWhO/details",
     "symphony_id": "ZBpjzxS9RkLzft9NNWhO",
@@ -849,6 +860,7 @@ window.STRATEGIES_DATA = [
   },
   {
     "slug": "zoops-soxl-growth-2026",
+    "hidden": true,
     "name": "zoop's SOXL Growth (2026 Edition)",
     "symphony_url": "https://app.composer.trade/symphony/wcEUcb13v7M8bEluRc1h/details",
     "symphony_id": "wcEUcb13v7M8bEluRc1h",
