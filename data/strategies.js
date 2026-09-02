@@ -2967,7 +2967,79 @@ window.STRATEGIES_DATA = [
       "concentration": "Three instruments, one of them a broad market index. Concentration is not the risk here.",
       "suitability": "Conservative relative to the rest of this library, with modest returns for a strategy that is always invested and never leveraged. Its value is educational rather than competitive."
     },
-    "author_note": "The full Composer name: 'Dip Buying Tech Below 10d RSI of 30 using XLP as the \"cash\" position and XLK as the \"tech\" etf to backtest through the dot com crash. Backtest to April 26th 1999.' The author explicitly positions this as a backtesting study and validation tool rather than a live strategy recommendation."
+    "author_note": "The full Composer name: 'Dip Buying Tech Below 10d RSI of 30 using XLP as the \"cash\" position and XLK as the \"tech\" etf to backtest through the dot com crash. Backtest to April 26th 1999.' The author explicitly positions this as a backtesting study and validation tool rather than a live strategy recommendation.",
+    "tldr": {
+      "thesis": "The plainest strategy in this library, and one of the two with the longest record. Two tests, three unlevered ETFs, no leverage anywhere. If SPY is above its 200-day moving average it holds SPY, and that covers 84.9% of days. If not, it holds XLP, consumer staples, unless QQQ's 10-day RSI has fallen below 30, in which case it buys XLK. The dip buy the strategy is named for is the smallest part of it: XLK is 1.8% of all capital deployed. Its {annualized_rate_of_return} return is the lowest of the 24 strategies here, and its {max_drawdown_abs} drawdown is the third shallowest.",
+      "works_well_in": [
+        "Bear markets, which is what it is actually built for. Through the 2022 bear market the reconstruction lost 8.9% against SPY's 24.5%, sitting in XLP on 68% of days.",
+        "Fast crashes, where the moving average gets it out. Across the COVID crash the reconstruction lost 22.3% against SPY's 33.7%, and across the 2011 downgrade selloff 10.4% against 17.9%.",
+        "Corrections that resolve sideways. Through the 2015 to 2016 China and oil decline the reconstruction gained 2.4% while SPY fell 12.2%.",
+        "Long uptrends, where it simply is SPY. Through 2017, the 2021 melt-up and 2024 it held SPY on 100% of days and matched the index exactly."
+      ],
+      "struggles_in": [
+        "Recoveries, because the gate is slow to turn back on. Through the COVID recovery the reconstruction gained 32.6% against SPY's 44.3%, and through the 2023 AI bull 20.1% against 26.7%.",
+        "Any comparison based on return alone. {annualized_rate_of_return} annualized is the lowest figure among the 24 strategies in this library, and a {sharpe_ratio} Sharpe is the lowest as well.",
+        "Whipsaw around the moving average. The gate crossed 78 times across the reconstructed span, 21 of the 39 stretches below the average lasted five days or fewer, and each one moves the whole portfolio between an index fund and a staples fund.",
+        "Being judged as a dip-buying strategy at all. The dip test only runs when SPY is already below its 200-day average, so a tech selloff inside a bull market is ignored. QQQ's 10-day RSI fell below 30 on 135 days and only 72 of them reached XLK."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**SPY's price relative to its 200-day moving average identifies the regime.** This one test decides everything. Unlike some strategies in this library that organise themselves around the same gate, here the two sides genuinely differ, and the record shows the difference doing work.",
+        "**Consumer staples is a workable stand-in for cash.** XLP is where the strategy waits out downtrends, so it accepts equity risk rather than holding bills or bonds. Across the 531 days it was held it compounded +21.1%.",
+        "**An oversold Nasdaq inside a downtrend is a buying opportunity.** The dip rung buys technology, not the broad market, on the theory that the most beaten-down sector rebounds hardest.",
+        "**A 200-day average is slow enough to avoid noise and fast enough to matter.** No confirmation period, no second filter and no minimum stretch is applied to the crossing."
+      ],
+      "structural": [
+        "**The dip buy is nearly vestigial.** XLK is 1.8% of all capital deployed and was held on 72 of the 3,989 reconstructed days. The condition that reaches it was true on 135 days, so nearly half the dips it identifies are ignored because SPY happened to be above its average at the time.",
+        "**It is SPY with a staples escape hatch.** SPY is 84.9% of all capital deployed. In four of the sixteen windows examined the reconstruction held SPY on every single day and matched the index exactly.",
+        "**The ticker choices are documented in the strategy's own title, and the reason is a good one.** It names XLP as the cash position and XLK as the tech fund specifically so the backtest could run through the dot-com crash. Both listed in December 1998, which is what makes a {backtest_days} day record possible.",
+        "**{backtest_days} trading days ties for the longest record in this library**, running from April 1999, and the only kind of window here that contains both the dot-com crash and the 2008 financial crisis.",
+        "**Every figure here is unlevered.** Three plain sector and index funds, one position on 100% of days, no leveraged fund, no inverse fund and no volatility product anywhere in the tree.",
+        "**{standard_deviation} annualized volatility is the third lowest in this library and {max_drawdown_abs} the third shallowest drawdown.** The worst single day in the record was {worst_day}, which is mild by the standards of everything else here.",
+        "**A {sharpe_ratio} Sharpe ranks 24th of 24 here, and a {calmar_ratio} Calmar ranks 23rd.** Read alongside the risk figures, that says the defensive machinery costs more in return than it earns back in smoothness, at least measured this way.",
+        "**Turnover is low**, at one allocation change every 30.5 trading days, though none of the figures here carries a commission, a spread or a slippage assumption."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Sustained bear market",
+        "expected": "Strong",
+        "why": "The moving average keeps the strategy in staples for most of a long decline, which is the whole design.",
+        "example": "2022 bear market: SPY -24.5%, XLK -33.1%, XLP -10.6%. The reconstruction sat in XLP on 68% of days and lost 8.9%."
+      },
+      {
+        "regime": "Fast crash",
+        "expected": "Strong",
+        "why": "A sharp break through the 200-day average moves the portfolio out of the index within days rather than weeks.",
+        "example": "COVID crash: SPY -33.7%, while the reconstruction lost 22.3% holding XLP on 48% of days and XLK on 17%."
+      },
+      {
+        "regime": "Long uptrend",
+        "expected": "Mixed",
+        "why": "Above the average the strategy is SPY, so it neither adds nor subtracts. That is a reasonable outcome, and it is also the reason the return figures sit at the bottom of this library.",
+        "example": "2021 melt-up and 2024: the reconstruction held SPY on 100% of days in both and returned exactly the index, +30.5% and +25.6%."
+      },
+      {
+        "regime": "Recovery off a low",
+        "expected": "Poor",
+        "why": "The gate needs SPY back above a 200-day average before the strategy is fully invested again, so it participates late in the strongest part of the rebound.",
+        "example": "COVID recovery: SPY +44.3%, while the reconstruction gained 32.6% and was still in XLP on 39% of days."
+      },
+      {
+        "regime": "Choppy market around the average",
+        "expected": "Poor",
+        "why": "The crossing has no confirmation period, so a market oscillating around its 200-day average moves the whole portfolio back and forth.",
+        "example": "Across the reconstructed span the gate crossed 78 times, and 21 of the 39 stretches below the average lasted five days or fewer."
+      },
+      {
+        "regime": "Tech selloff inside a bull market",
+        "expected": "Poor",
+        "why": "The dip rung sits inside the below-average branch, so an oversold Nasdaq while SPY is still in an uptrend does nothing at all.",
+        "example": "QQQ's 10-day RSI fell below 30 on 135 reconstructed days, and only 72 of them reached XLK."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. Where a window quotes what the reconstruction gained or lost, that is the modelled path of those same holdings: a reading of the rules rather than a backtest, with no fees, no slippage and no rebalance timing, quoted to rank the regime rather than as a return you could have earned. Turnover of one change every 30.5 trading days in unlevered funds is what makes that path meaningful enough to quote. **One limit matters more here than on any other page.** The record on file covers {backtest_days} trading days from April 1999, but the price history available for this reconstruction begins on 18 October 2010, so it covers 3,989 of those days. The dot-com crash and the 2008 financial crisis are inside the strategy's record and outside this reconstruction, and nothing in the table above is evidence about either."
   },
   {
     "slug": "ob-os-staple-bonds",

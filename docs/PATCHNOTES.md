@@ -5,6 +5,44 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.60.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 15 of 23: `dip-buying-tech`.** TL;DR, Underlying Assumptions,
+  Market Regime table and regime note for Dip Buying Tech, matching the shape approved on
+  `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. 12 nodes, two
+  conditions, three unlevered ETFs. Four findings are stated on the page:
+
+  1. **The dip buy the strategy is named for is nearly vestigial.** XLK is 1.8% of all capital
+     deployed and was held on 72 of 3,989 reconstructed days. The condition that reaches it was
+     true on 135 days, so nearly half the dips it identifies are ignored, because the dip rung sits
+     inside the below-average branch and a tech selloff during a bull market never reaches it.
+  2. **It is SPY with a staples escape hatch.** SPY is 84.9% of all capital deployed, and in four of
+     the sixteen windows examined the reconstruction held SPY on every single day and matched the
+     index exactly.
+  3. **The ticker choices are documented in the title and the reason is a good one.** XLP as the
+     cash position and XLK as the tech fund were chosen because both listed in December 1998, which
+     is what makes a 6,901 day record spanning the dot-com crash possible.
+  4. **It sits at the bottom of the library on return and at the top on calm.** 14.0% annualized and
+     a 0.82 Sharpe both rank last of 24; an 18.1% standard deviation and a -26.3% drawdown are both
+     third mildest. The page states that trade plainly rather than reading it as a verdict.
+
+- **A limit is stated more prominently here than on any prior page.** The record covers 6,901 days
+  from April 1999, but the price history available for the reconstruction begins 18 October 2010 and
+  covers 3,989 of them. The dot-com crash and the 2008 financial crisis are inside the strategy's
+  record and outside this reconstruction, and the regime note says so in those words.
+
+### Fixed
+- **Two claims corrected before shipping.** A draft called this the longest record in the library;
+  it ties with `ob-os-staple-bonds` at 6,901 days. And "a Calmar 23rd" tripped `check_stat_drift`,
+  which reads a bare number adjacent to a metric name as a quoted figure, so the sentence was
+  rephrased rather than the checker weakened.
+
+---
+
 ## [1.59.0] - 2026-09-02
 
 ### Added
