@@ -1524,6 +1524,52 @@ window.STRATEGY_EXTRAS_DATA = {
     "total_costs": 49442537.75,
     "win_rate": 0.5320441988950276
   },
+  "zoops-frontrunner": {
+    "annualized_turnover": 27.573403502725228,
+    "backtest_floor": {
+      "date": "2018-01-25",
+      "dated": 5,
+      "tickers": [
+        "VXX"
+      ],
+      "total": 5
+    },
+    "etn_holdings": [
+      {
+        "held": false,
+        "name": "iPath Series B S&P 500 VIX Short-Term Futures ETN",
+        "ticker": "VXX"
+      }
+    ],
+    "herfindahl_index": 0.9999997891681162,
+    "holdings": {
+      "SOXL": 0.0,
+      "SPXL": 0.0,
+      "SPY": 1787.904474915396,
+      "TQQQ": 0.0,
+      "VXX": 0.0
+    },
+    "holdings_inception": {
+      "SOXL": "2010-03-11",
+      "SPXL": "2008-11-05",
+      "SPY": "1993-01-29",
+      "TQQQ": "2010-02-11",
+      "VXX": "2018-01-25"
+    },
+    "k1_holdings": [],
+    "kurtosis": 157.566117021785,
+    "oos_date": "2026-09-01",
+    "refresh_date": "2026-09-01",
+    "skewness": 8.448306340784368,
+    "sortino_ratio": 3.8339396074796332,
+    "symphony_id": "zPBn8HkmTIQ5BEJdff0v",
+    "tail_ratio": 1.1692739856304635,
+    "top_five_percent_day_contribution": 1.2934066216285978,
+    "top_one_day_contribution": 0.08869400569378033,
+    "top_ten_percent_day_contribution": 1.7181845942654848,
+    "total_costs": 73205.61,
+    "win_rate": 0.5595567867036011
+  },
   "zoops-holy-grail-2026": {
     "annualized_turnover": 33.55358728047663,
     "backtest_floor": {

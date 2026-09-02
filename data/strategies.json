@@ -2540,5 +2540,75 @@
       "concentration": "Twenty instruments are reachable, and the equal-weighting spreads capital across many signals. In practice the portfolio still concentrates when the defensive rotation and a leveraged sleeve agree, the most recent holdings were dominated by utilities (XLU) alongside a TQQQ position."
     },
     "author_note": "The source symphony is named Rain's Unified \"Best Signals\". Its internal group names credit the strategies it unifies, TQQQ FTLT, The Holy Grail, KMLM Fund Surfing, and 'A Better Buy the Dips Nasdaq by Garen Phillips | Safe Sectors Mod'. Backtest covers about 5.7 years (1,430 trading days) and went out-of-sample on 2025-11-08; all metrics reflect that mostly in-sample window. Symphony ID: sEUgeRfSayPbBh8mJxSy."
+  },
+  {
+    "slug": "zoops-frontrunner",
+    "name": "zoop's Frontrunner",
+    "symphony_url": "https://app.composer.trade/symphony/zPBn8HkmTIQ5BEJdff0v/details",
+    "symphony_id": "zPBn8HkmTIQ5BEJdff0v",
+    "annualized_rate_of_return": 0.7708536056185544,
+    "max_drawdown": -0.287898874999705,
+    "cumulative_return": 135.198996,
+    "calmar_ratio": 2.6775151713230705,
+    "sharpe_ratio": 1.6826981938530259,
+    "standard_deviation": 0.3782680786802822,
+    "min": -0.13417657485229806,
+    "mean": 0.002525837352331608,
+    "median": 0.0012326353192716466,
+    "max": 0.5462810465689152,
+    "trailing_one_month_return": 0.00542437090458181,
+    "trailing_three_month_return": 0.14584077847885824,
+    "trailing_one_year_return": 0.39248924818102693,
+    "backtest_days": 2166,
+    "description": "zoop's Frontrunner is a compact daily rotator that holds plain SPY most of the time and only leaves it when a 10-day RSI reaches an extreme. A deeply oversold reading routes it into a 3x leveraged long matched to whichever index is most beaten down, while a single overbought reading anywhere across a twelve-name watchlist of indices and sectors routes it into long volatility instead. With five holdable instruments and five ordered rules it is among the simplest strategies in the library, built for investors who want leveraged exposure only at the moments the tape looks stretched. Despite the shared name it is a separate and far simpler symphony than zoop's 2026 Frontrunner.",
+    "tags": [
+      "rsi",
+      "mean-reversion",
+      "leveraged-etfs",
+      "vix-tiers",
+      "zoop"
+    ],
+    "last_updated": "2026-09-01",
+    "ai_summary": [
+      "Stripped to its essence, zoop's Frontrunner is a bet that short-term RSI extremes are reliable turning points, and it takes that bet in both directions with leverage. Most of the time it is simply long SPY, so its baseline is the market itself. The strategy only earns or loses its edge in the tails: at the bottom it swaps into a 3x fund to catch the sharpest available bounce, and at the top it swaps into long volatility to front-run the pullback its name refers to. What makes it unusual among the leveraged strategies here is how rarely it is actually leveraged. Every branch is all-or-nothing and the default state is unlevered, which is why its volatility sits far below what a permanent 3x holding would produce. It is best understood as an SPY position with two rented options attached, one on a violent bounce and one on a violent top, rather than as a leveraged strategy that occasionally steps aside.",
+      "The backtested numbers are strong: 77% annualized with a 1.68 Sharpe and a 2.68 Calmar against a 29% max drawdown and 38% volatility, over roughly 8.6 years. Four cautions matter, and the first outweighs the rest. The symphony's logic was last edited on 1 September 2026, so it has no out-of-sample record whatsoever; every figure here describes the same window the rules were selected against. Second, the backtest cannot begin before January 2018 because VXX is the youngest instrument in its universe, so the record misses 2008 and the 2015 to 2016 selloff outright. Third, the thresholds are precise in a way that invites overfitting: 23, 28, 28 and 79 are tuned numbers, and a twelve-name overbought basket carries a great many degrees of freedom for its size. Fourth, the compounded return leans on a small number of days, so it depends on a handful of switches having been timed correctly. The simplicity is a genuine virtue, the whole tree can be audited in a minute, but simplicity is not the same as robustness, and a freshly-edited strategy has earned no evidence yet."
+    ],
+    "how_it_works": [
+      "The entire strategy is one ordered if-else ladder, evaluated top to bottom every day, that resolves to exactly one position. The first three rungs look for oversold conditions and buy the matching leveraged fund. If SMH's 10-day RSI is below 23 it buys SOXL, the 3x semiconductor fund. Otherwise, if QQQ's 10-day RSI is below 28 it buys TQQQ, the 3x Nasdaq-100 fund. Otherwise, if SPY's 10-day RSI is below 28 it buys SPXL, the 3x S&P 500 fund. The ordering is doing real work: semiconductors are checked first and given the tightest threshold of the three, so the deepest dip in the most volatile index takes priority over the broader ones, and SPY is only ever the dip-buy of last resort.",
+      "If nothing is oversold, a single overbought check runs. It compares the 10-day RSI of twelve names against one ceiling of 79: SMH, QQQ, SPY, TQQQ, TECL, QQQE, VOOG, VOOV, VTV, FAS, XLP and XLY. The test is an 'any' condition, so one breach anywhere in that list is enough to fire it. When it does, the strategy buys VXX, a long-volatility ETN, front-running an expected pullback rather than merely stepping aside into cash or bonds. The breadth of the watchlist is the point: it spans the Nasdaq and the S&P, growth and value (VOOG, VOOV, VTV), semiconductors and 3x tech (SMH, TECL, TQQQ), financials (FAS) and both consumer sectors (XLP, XLY), so almost any broad rally that pushes one corner of the market to an RSI of 79 will put the portfolio into volatility.",
+      "If neither the oversold ladder nor the overbought check fires, the strategy holds SPY, and this is the default state rather than an edge case. Rebalancing is daily and every branch terminates in a single asset, so the portfolio is always 100 percent in one instrument and can switch completely from one day to the next. Exactly five instruments are ever held: SOXL, TQQQ, SPXL, VXX and SPY. As of the most recent market day the ladder was in its default state, with the portfolio entirely in SPY."
+    ],
+    "signals": [
+      {
+        "name": "Oversold Leveraged Ladder",
+        "tag": "mean-reversion",
+        "description": "Three ordered dip-buys on 10-day RSI, each with its own threshold and its own 3x fund: SMH below 23 buys SOXL, then QQQ below 28 buys TQQQ, then SPY below 28 buys SPXL. Order and threshold together mean the narrowest, most volatile index is checked first and has to be the most beaten down to qualify."
+      },
+      {
+        "name": "Twelve-Name Overbought Frontrunner",
+        "tag": "vix-tiers",
+        "description": "A single RSI(10) ceiling of 79 tested against SMH, QQQ, SPY, TQQQ, TECL, QQQE, VOOG, VOOV, VTV, FAS, XLP and XLY as an 'any' condition. One breach anywhere buys VXX. This is the strategy's namesake move: it goes long volatility on froth rather than waiting for the decline to confirm."
+      },
+      {
+        "name": "SPY as the Default Holding",
+        "tag": "rsi",
+        "description": "With no RSI extreme in either direction the strategy holds SPY unlevered. This is where it spends most of its time, so the baseline return is the market's and the leveraged and volatility legs act as occasional overlays rather than as the core position."
+      },
+      {
+        "name": "Single-Instrument Daily Rotation",
+        "tag": "leveraged-etfs",
+        "description": "Every branch of the tree ends in one asset and the symphony rebalances daily, so the portfolio is always fully concentrated in a single instrument and can move from SPY to a 3x fund to VXX on consecutive days. There is no partial sizing and no blending anywhere in the tree."
+      }
+    ],
+    "risk_profile": {
+      "verdict": "Aggressive",
+      "leverage": "The three dip-buy legs are 3x daily-reset funds, SOXL on semiconductors, TQQQ on the Nasdaq-100 and SPXL on the S&P 500, all of which decay in choppy markets and can lose badly if a dip keeps going. VXX is not leveraged but is arguably the harsher instrument to hold: a long-volatility ETN in structural decay that bleeds steadily whenever the pullback it anticipates does not arrive. The mitigating fact is exposure time rather than exposure size, since the default state is unlevered SPY and the leveraged legs are visited only at RSI extremes.",
+      "backtest_limits": "The record runs from 18 January 2018 to 1 September 2026, about 8.6 years. It cannot start earlier because VXX is the youngest instrument in the universe, so 2008 and the 2015 to 2016 selloff are missing entirely. What it does cover is useful: the February 2018 volatility spike, the Q4 2018 drawdown, the 2020 crash and the 2022 bear market are all inside the window. The decisive limitation is not length but freshness: the logic was last edited on 1 September 2026, so the strategy has no out-of-sample record at all and every metric describes the window its own rules were chosen against.",
+      "signal": "One indicator carries the whole strategy. Every branch is a 10-day RSI reading, so there is no trend filter, no moving-average regime gate and no confirmation of any kind, and a single indicator misbehaving misroutes the entire portfolio. The thresholds are also finely tuned (23, 28, 28 and 79) and a twelve-name overbought basket offers many degrees of freedom, which is where the overfitting risk sits. The offsetting virtue is auditability: the tree is five rules deep and can be checked by hand in a minute, which is not true of most strategies in this library.",
+      "hedge": "VXX is the only defensive state, and it is a directional long-volatility bet rather than ballast. It pays off sharply when a top is called correctly and bleeds when it is not, so it does not behave like the bond and staples rotations that other strategies here fall back on. There is no cash leg, no bond leg and no inverse equity leg anywhere in the tree.",
+      "concentration": "Concentration is total by construction. Every branch resolves to one asset, so the portfolio is always 100 percent in a single instrument, and the reachable universe is only five names: SOXL, TQQQ, SPXL, VXX and SPY. Turnover is correspondingly high, since the ladder is re-evaluated daily and any switch is a complete one.",
+      "suitability": "Reasonable for someone who wants market exposure as the default and is willing to accept short, violent excursions into 3x funds and long volatility at the edges. It is not a strategy to size on its backtest, because that backtest contains no out-of-sample evidence yet."
+    },
+    "author_note": "The source symphony is named zoop's Frontrunner (symphony ID zPBn8HkmTIQ5BEJdff0v). It is a distinct symphony from zoop's 2026 Frontrunner (4aI4kVT5cEc0XJpTLei3), which is already in this library under a similar name and a considerably more complex tree. The backtest covers 2,166 trading days from 2018-01-18, and the symphony's logic was last edited on 2026-09-01, so none of the record is out-of-sample."
   }
 ]

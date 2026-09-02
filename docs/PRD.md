@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.39.1
+**Version:** 1.40.0
 **Status:** Active
 **Last Updated:** 2026-09-01
 
@@ -119,7 +119,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 ### MVP: Shipped (V1.0–V1.2.1)
 
 **Strategy Library**
-- Index page listing all 35 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
+- Index page listing all 36 strategies with key metrics at a glance (ARR, Max DD, Sharpe)
 - Each strategy has a dedicated page with: name, description, tags, "Open in Composer" CTA, an AI Summary (Claude-authored analysis above How It Works), plain-English logic breakdown, signals used (cross-linked to glossary), risk profile, and full metrics table
 - Strategy card titles are clickable links
 
@@ -152,7 +152,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 
 ### Shipped: Full Database Initiative (v1.12.0)
 
-Separate from the 30 curated strategies, `data/database.json` holds the full raw
+Separate from the 36 curated strategies, `data/database.json` holds the full raw
 symphony database, originally seeded by an external Google Apps Script scrape (the
 original 6,488-row scrape plus rows synced in from `data/storage.csv` over time).
 The goal was to recreate that refresh pipeline on composeratlas.com itself against
@@ -1113,7 +1113,7 @@ python scripts/dedupe_symphonies.py 20  # optional LIMIT arg, for a small test r
 
 Running `flag_name_noise.py` first matters: it removes `TESTPORT #`-prefixed rows from the dedup candidate pool entirely, so one can never win the `symphony_id` tiebreak and become the sole surviving "keeper" of a real strategy family. This is a sequencing choice, not special-case logic inside the dedup script itself.
 
-**MANUAL-ONLY, do not automate.** `dedupe_symphonies.py` makes roughly one live API call per candidate row (hundreds per run) against Composer's unauthenticated API, and a full pass can take 20–30+ minutes. Neither script is wired into GitHub Actions, and neither should be, the deploy workflow excludes `scripts/` entirely, `update-metrics.yml` only ever runs `update_metrics.py` (the curated 35 strategies), and `refresh-full-database.yml` (added v1.12.0, see "Updating the Full Database" above) only ever runs `refresh_full_database.py`. Running this unattended on a schedule risks hammering Composer's API far more often than a human would choose to, with no one watching for rate-limit or correctness problems. Every full-database maintenance script in `scripts/` follows this same manual-only rule except `refresh_full_database.py`, which was deliberately opted into weekly automation as a distinct decision.
+**MANUAL-ONLY, do not automate.** `dedupe_symphonies.py` makes roughly one live API call per candidate row (hundreds per run) against Composer's unauthenticated API, and a full pass can take 20–30+ minutes. Neither script is wired into GitHub Actions, and neither should be, the deploy workflow excludes `scripts/` entirely, `update-metrics.yml` only ever runs `update_metrics.py` (the curated 36 strategies), and `refresh-full-database.yml` (added v1.12.0, see "Updating the Full Database" above) only ever runs `refresh_full_database.py`. Running this unattended on a schedule risks hammering Composer's API far more often than a human would choose to, with no one watching for rate-limit or correctness problems. Every full-database maintenance script in `scripts/` follows this same manual-only rule except `refresh_full_database.py`, which was deliberately opted into weekly automation as a distinct decision.
 
 ---
 
@@ -1420,7 +1420,7 @@ rendered from the data instead.
 
 All fields in `data/database.json`. This is a separate, lighter schema from
 `strategies.json`: it holds the raw ~6,800-entry database (see Section 14 Roadmap),
-not the 35 curated strategies. `data/database.js` is its `.js` twin (assigns
+not the 36 curated strategies. `data/database.js` is its `.js` twin (assigns
 `window.DATABASE_DATA`, same file:// compat pattern as `strategies.js`/`glossary.js`).
 
 #### The Primary Key Invariant
@@ -2288,10 +2288,16 @@ of which 4,470 are assets.
 
 ### Symphony ID Reference
 
-All Composer Atlas curated strategies with their Composer symphony IDs. **The heading on this list
-previously read "All 24"; the table itself has 31 rows, which matches `data/strategies.json`
-exactly, so the count in the heading was the stale half and has been removed rather than corrected
-to a number that will go stale again.**
+All Composer Atlas curated strategies with their Composer symphony IDs. **No count is given in
+the heading on purpose: it was wrong twice before ("All 24" against a 31-row table) and a number
+here goes stale every time the library grows.**
+
+**The table itself drifted anyway, and worse, because it went stale silently.** An earlier note
+claimed it matched `data/strategies.json` exactly. By 2026-09-01 it was missing five entries: the
+three added in v1.38.0, Rain's Unified Best Signals from v1.39.0, and zoop's Frontrunner from
+v1.40.0. All five are appended below. Removing the count fixed the visible half of the problem and
+left the invisible half in place, which is the more useful lesson: a hand-maintained mirror of a
+data file needs a check, not a caveat. Nothing generates or validates this table today.
 
 | Strategy | Symphony ID |
 |---|---|
@@ -2326,6 +2332,11 @@ to a number that will go stale again.**
 | Sometimes TQQQ (Original) | `MyRyWhvbdxTsRfzHmE1U` |
 | Triple Accelerator | `0jPwZ5Lm2Y3xH24oEijB` |
 | The Gold Miner (Original) | `tlDwKY3NRXjYU61jCt0g` |
+| Beta Ballers (Original) | `mlgAKFuUIPZiCT0aV7ho` |
+| TQQQ or Not (Original) | `g0J87gnk7SausotpUoCt` |
+| Safe Sectors or Bonds (Original) | `DtlEo2Y1DWR7hngZkxTB` |
+| Rain's Unified Best Signals (Original) | `sEUgeRfSayPbBh8mJxSy` |
+| zoop's Frontrunner | `zPBn8HkmTIQ5BEJdff0v` |
 
 Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 

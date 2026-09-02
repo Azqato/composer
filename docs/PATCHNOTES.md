@@ -5,6 +5,55 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.40.0] - 2026-09-01
+
+### Added
+- **New curated strategy: zoop's Frontrunner** (symphony `zPBn8HkmTIQ5BEJdff0v`, slug
+  `zoops-frontrunner`), bringing the curated library to 36. Added via the full "Adding a Strategy
+  from a Composer URL" workflow with a complete, end-to-end read of its logic tree, which at 21
+  nodes is the smallest in the library by a wide margin.
+  - It is one ordered if-else ladder on a single indicator. Three oversold rungs on 10-day RSI buy
+    a matching 3x fund (SMH below 23 buys SOXL, then QQQ below 28 buys TQQQ, then SPY below 28 buys
+    SPXL); one overbought check tests twelve names (SMH, QQQ, SPY, TQQQ, TECL, QQQE, VOOG, VOOV,
+    VTV, FAS, XLP, XLY) against a single RSI ceiling of 79 and buys VXX on any breach; everything
+    else holds plain SPY. Five holdable instruments, daily rebalance, always 100% in one of them.
+  - **It is a different symphony from the already-curated zoop's 2026 Frontrunner**
+    (`4aI4kVT5cEc0XJpTLei3`), despite the near-identical name and the same author. The two are
+    noted as distinct in the new entry's `author_note` and `description` so the library does not
+    look like it lists one strategy twice.
+  - Metrics (77% annualized, 1.68 Sharpe, 2.68 Calmar, 29% max drawdown, 38% volatility, 2,166
+    trading days) come from the stored database record; drift check clean.
+
+### Changed
+- **The stored database row for this symphony was a version behind, and the gap was large.** Its
+  logic was edited on 2026-09-01, hours before the row was read, which moved the backtest window
+  from 3,682 trading days to 2,166 and the annualized return from 29% to 77%. The row was refreshed
+  before any of it was quoted. The refresh was **scoped to this one symphony**, not run through
+  `refresh_full_database.py` unscoped, whose staleness sweep would have pulled in every other stale
+  row as a side effect.
+- **Documentation accuracy pass.** Homepage Curated count 35 -> 36; the same count corrected in
+  `docs/PRD.md` (the feature list, the `database.json` directory note, the Full Database Initiative
+  section, and the `update_metrics.py` description, which variously said 30 or 35) and in
+  `scripts/refresh_full_database.py`'s docstring.
+
+### Fixed
+- **The Symphony ID Reference table in `docs/PRD.md` had gone stale silently, and was five rows
+  short.** It was missing the three strategies added in v1.38.0, Rain's Unified Best Signals from
+  v1.39.0, and the new entry above. A note above the table had claimed it "matches
+  `data/strategies.json` exactly", which stopped being true two releases ago. All five rows are
+  appended and the note now records that nothing generates or validates the table, so the next
+  addition can break it the same way.
+
+### Notes
+- **The strategy's headline risk is not leverage or drawdown, it is freshness.** Its logic was last
+  edited on 2026-09-01, so it has no out-of-sample record whatsoever and every metric on the page
+  describes the window the rules were selected against. That is stated plainly in
+  `risk_profile.backtest_limits` and again in the second `ai_summary` paragraph rather than left
+  for the out-of-sample panel to imply.
+- **The backtest cannot start before January 2018** because VXX is the youngest instrument in the
+  universe, so the record misses 2008 and the 2015 to 2016 selloff outright. Verified against
+  `data/ticker_inception.json` rather than assumed from the first backtest day.
+
 ## [1.39.1] - 2026-09-01
 
 ### Added
