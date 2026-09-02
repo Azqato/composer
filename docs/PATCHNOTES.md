@@ -5,6 +5,47 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.59.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 14 of 23: `bnd-vs-sphb`.** TL;DR, Underlying Assumptions, Market
+  Regime table and regime note for 10d BND vs. 10d SPHB (Original), matching the shape approved on
+  `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. 35 nodes, six
+  conditions, two holdable tickers. Five findings are stated on the page:
+
+  1. **Neither fund in the name is ever held.** BND and SPHB are signal-only, alongside SOXX and
+     UVXY. The strategy owns exactly two things: SOXL and SHV.
+  2. **The gate is inverted from the obvious reading, and the page says so plainly.** Bonds
+     outrunning high-beta stocks on 10-day RSI is normally risk-off; here it is the signal to hold
+     a 3x semiconductor fund. On the 1,699 days that comparison was true the reconstruction held
+     SOXL on 98.2% of them; on the days it was false it sat in SHV on 99.0%.
+  3. **The gate whipsaws.** 596 crossings across 3,737 days, about one every six trading days, with
+     a median stretch of three days on the bond-leading side and 187 of 299 such stretches lasting
+     five days or fewer. Every crossing is a full switch between a 3x fund and Treasury bills.
+  4. **The volatility tiers are ordered so that more fear means more risk.** A 10-day UVXY RSI above
+     84 buys SOXL; a reading between 74 and 84 goes to cash unless SOXL is itself oversold.
+  5. **Three of the five tests barely matter.** The SOXX rung decided 7 days, the two identical SOXL
+     oversold rungs 36 between them, and the upper UVXY tier 13.
+
+- **More than half the record is a cash return.** SHV is 54.8% of all capital deployed and
+  compounded +13.6% across the 2,047 days it was held. The other half carries all of the risk, at a
+  -70.0% drawdown, the fifth deepest of the 24 visible strategies.
+
+- **No reconstructed return is quoted.** Every allocation change is a full switch between a 3x fund
+  and a bill fund, one about every 5.9 trading days, so the regimes are ranked from holdings shares
+  and ticker moves alone.
+
+### Fixed
+- **A regime downgraded before shipping.** The capitulation-spike row was drafted as Strong on the
+  strength of the UVXY-above-84 rung. That rung decided 13 days in the whole record, which is not
+  enough to judge, so the row is now Unknown and says why. The matching TL;DR bullet was replaced
+  with one the record supports.
+
+---
+
 ## [1.58.0] - 2026-09-02
 
 ### Added

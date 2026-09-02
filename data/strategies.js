@@ -2834,7 +2834,79 @@ window.STRATEGIES_DATA = [
       "concentration": "Two instruments. All of the risk sits in one 3x sector fund and the only alternative is cash.",
       "suitability": "Requires exceptional risk tolerance and very long holding periods to survive inevitable periods of severe loss."
     },
-    "author_note": "The median daily return was not available from the Composer API for this symphony and is displayed as 0.00%. SPHB (Invesco S&P 500 High Beta ETF) launched in May 2011, which is why the backtest cannot extend to the 2008 financial crisis or the dot-com bust despite both BND and SOXL having longer histories."
+    "author_note": "The median daily return was not available from the Composer API for this symphony and is displayed as 0.00%. SPHB (Invesco S&P 500 High Beta ETF) launched in May 2011, which is why the backtest cannot extend to the 2008 financial crisis or the dot-com bust despite both BND and SOXL having longer histories.",
+    "tldr": {
+      "thesis": "Neither fund in the name is ever held. BND and SPHB are read as signals, and the strategy owns exactly two things: SOXL, a 3x semiconductor fund, and SHV, a Treasury bill fund that stands in for cash. The gate is deliberately contrarian, and it is worth reading twice. When bonds have stronger 10-day momentum than high-beta stocks, which is the risk-off reading, the strategy buys 3x semiconductors. When high-beta stocks lead, it sits in cash. It was in cash on 54.8% of {backtest_days} days.",
+      "works_well_in": [
+        "Falling markets where high-beta leadership has already broken. Through the 2022 bear market the reconstruction sat in SHV on 67% of days while SOXL fell 89.8% and SPY fell 24.5%.",
+        "Semiconductor recoveries taken from a contrarian entry. SOXL compounded a very large gain across the 1,689 days the rules named it, and through the COVID recovery the reconstruction held it on 69% of days while SOXL rose 185.1%.",
+        "Long semiconductor uptrends, even at partial participation. Across 2012 to 2014 the reconstruction held SOXL on 44% of days while SOXL rose 401.1%, and through the 2019 recovery it held it on 53% while SOXL rose 223.3%.",
+        "Periods when being out is the whole job. SHV is 54.8% of all capital deployed, so more than half of this strategy's life is spent holding Treasury bills, and the record credits it with the drawdowns it avoided."
+      ],
+      "struggles_in": [
+        "Whipsaw, which is the defining problem here. The gate crossed 596 times across {backtest_days} days, about once every six trading days, and 187 of the 299 stretches on the bond-leading side lasted five days or fewer.",
+        "Declines where bond momentum leads all the way down, because that is the signal to be long 3x semiconductors. Through the 2025 spring drawdown the reconstruction held SOXL on 85% of days while SOXL fell 73.7%.",
+        "Sharp selloffs generally. In the Q4 2018 selloff it held SOXL on 78% of days while SOXL fell 57.0%.",
+        "Sustained rallies led by high-beta stocks, which put the strategy in cash for the duration. Through the 2021 melt-up it sat in SHV on 63% of days while SOXL rose 121.9%."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**Relative 10-day momentum between bonds and high-beta stocks identifies the regime.** This comparison decided 1,699 of {backtest_days} days directly and gates every other test in the tree.",
+        "**The right response to that signal is the opposite of the obvious one.** Bonds outrunning high-beta stocks is normally read as risk-off, and this strategy reads it as the moment to hold a 3x semiconductor fund. The design is a bet that the reading marks a washout rather than the start of a decline.",
+        "**Semiconductors are the right thing to be contrarian in.** There is no other risky holding anywhere in the tree. The signal is about the broad market and bonds; the expression is entirely in one sector, at 3x leverage.",
+        "**An extreme volatility reading means capitulation, and a moderate one means danger.** A 10-day RSI on UVXY above 84 buys SOXL, while a reading between 74 and 84 goes to cash unless SOXL is itself oversold. The tiers are ordered so that more fear means more risk taken."
+      ],
+      "structural": [
+        "**The two funds in the name are never held.** BND and SPHB are signal-only, alongside SOXX and UVXY. Four tickers feed the logic and two are holdable.",
+        "**It is a binary switch with nothing in between.** SOXL or SHV, one position on 100% of days. There is no partial allocation, no second risky asset and no hedge.",
+        "**The gate whipsaws badly.** 596 crossings in {backtest_days} days, a median stretch of three days on the bond-leading side, and 187 of 299 such stretches lasting five days or fewer. Every one of those is a full switch between a 3x fund and Treasury bills.",
+        "**Three of the five tests barely matter.** The SOXX overbought rung decided 7 days, the two identical SOXL oversold rungs decided 36 between them, and the upper UVXY tier decided 13. The bond-versus-high-beta comparison decided 1,699 days on its own.",
+        "**{max_drawdown_abs} is the fifth deepest drawdown among the 24 strategies in this library**, on {standard_deviation} annualized volatility, and the worst single day in the record was {worst_day}. A {sharpe_ratio} Sharpe and a {calmar_ratio} Calmar both rank 17th of 24.",
+        "**Half the record is spent earning a cash return.** SHV compounded +13.6% across the 2,047 days it was held, which is roughly what Treasury bills paid over that stretch. The other half carries all of the risk and all of the return.",
+        "**Turnover is meaningful for a two-asset strategy**, at one allocation change every 5.9 trading days, each one a full move between a 3x leveraged fund and a bill fund. None of the figures on this page carries a commission, a spread or a slippage assumption.",
+        "**The record covers {backtest_days} trading days from 17 October 2011**, bounded by UVXY, which first traded on 4 October 2011, plus the 10-day lookback its RSI test needs. The 2008 crisis is absent, and so is the 2000 semiconductor collapse."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Decline after high-beta leadership breaks",
+        "expected": "Strong",
+        "why": "Once high-beta stocks stop leading, the gate flips to the side that holds cash, so the strategy is out of the way for the part of the decline that follows.",
+        "example": "2022 bear market: SPY -24.5%, SOXL -89.8%. The reconstruction sat in SHV on 67% of days."
+      },
+      {
+        "regime": "Semiconductor recovery",
+        "expected": "Strong",
+        "why": "The contrarian gate tends to be on the SOXL side coming out of a washout, and SOXL is the only risky thing it can own.",
+        "example": "COVID recovery: SOXL +185.1%, and the reconstruction held it on 69% of days."
+      },
+      {
+        "regime": "Capitulation spike",
+        "expected": "Unknown",
+        "why": "A 10-day RSI on UVXY above 84 goes straight into SOXL, so the most extreme fear reading in the tree is the one that takes the most risk. It fired on 13 days in {backtest_days}, which is far too few to judge.",
+        "example": "That rung was true on 15 of {backtest_days} days and decided 13 of them. The tier below it, a UVXY reading between 74 and 84, goes to cash instead unless SOXL is itself oversold."
+      },
+      {
+        "regime": "High-beta led rally",
+        "expected": "Poor",
+        "why": "When high-beta stocks lead, the gate holds cash, so the strategy sits out exactly the rallies its own risky asset would benefit from most.",
+        "example": "2021 melt-up: SOXL +121.9%, and the reconstruction sat in SHV on 63% of days."
+      },
+      {
+        "regime": "Decline led by bond strength",
+        "expected": "Poor",
+        "why": "Bonds outrunning high-beta stocks is the signal to be long a 3x semiconductor fund, and a decline in which that stays true holds the position all the way down.",
+        "example": "2025 spring drawdown: SOXL -73.7%, and the reconstruction held SOXL on 85% of days."
+      },
+      {
+        "regime": "Choppy market with no clear leadership",
+        "expected": "Poor",
+        "why": "The gate crosses about once every six trading days and each crossing is a complete switch between a 3x fund and Treasury bills, so an indecisive market maximises the number of round trips.",
+        "example": "Across the record the gate crossed 596 times, with a median stretch of three days on the bond-leading side."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which of the two funds the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. No reconstructed return is quoted on this page. Every allocation change here is a full switch between a 3x leveraged fund and a Treasury bill fund, and one happens about every 5.9 trading days, so a costless model of that path would flatter it substantially. The regimes above are ranked from holdings and price moves alone. The reconstruction covers {backtest_days} trading days from 17 October 2011 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "dip-buying-tech",
