@@ -5,6 +5,55 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.47.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 2 of 23: `holy-grail`.** TL;DR, Underlying Assumptions, Market
+  Regime table and regime note for The Holy Grail (Original), matching the shape approved on
+  `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule, and the
+  reconstruction turned up one finding that changes what a reader should believe about the
+  strategy:
+
+  1. **The bear branch is long 3x Nasdaq on 40.4% of its days.** The description presents the
+     200-day gate as a switch between a bull mode and a defensive mode. It is not. Below the gate
+     the logic tests four conditions in order and, if none fires, holds TQQQ. So being below the
+     200-day average is not the same as being defensive, and a decline can inflict full 3x losses
+     with the gate already shut. The Q4 2018 selloff is the clearest case: SPY fell 19.2%, TQQQ
+     fell 57.5%, and the reconstruction fell 42.4%.
+  2. **The 200-day gate whipsaws.** It was crossed 83 times across the record. Of the 42 separate
+     stretches below it, the median lasted 4 trading days and 25 lasted 5 days or fewer, so most
+     regime switches fire into a decline that is already over.
+  3. **The SOXL rung is the only losing leg in the strategy.** It buys 3x semiconductors on a
+     10-day RSI below 30, fired on 20 days, and compounded -14.8% across them. Every other leg
+     was profitable over the days the rules named it.
+  4. **The strategy is never diversified.** It holds exactly one fund on 100% of days, and TQQQ
+     accounts for 83.4% of all capital deployed. The page says so plainly, because the headline
+     return is very largely one leveraged Nasdaq position held since 2011.
+
+- **Every figure on the page is computed, not recalled.** Live metrics are v1.45.0 tokens; the
+  frequency and branch-share claims come from evaluating the symphony's own tree over daily
+  closes; the regime examples are ticker moves computed from those same closes.
+
+### Changed
+- **The rollout is now driven by generic tooling rather than per-strategy hand-coding.** Page 1
+  reconstructed `s90-half-low-catch` with a purpose-built state machine, which does not scale to
+  23 pages and puts a fresh chance of transcription error in front of every one of them. That is
+  replaced by a single interpreter that reads the symphony tree the site already references, so
+  it is validated once instead of re-derived per page. It was checked against the hand-coded s90
+  engine and agrees on capital shares to within 0.05 percentage points, which is rounding.
+- **Section content is now authored as JSON and applied by a checked writer**, which refuses an
+  em-dash, a `--` used as punctuation, or a token `check_prose_tokens.py` would reject, before
+  anything is written to `data/strategies.json`.
+- **Render verification is now scripted.** A headless Edge check loads the page from `file://`,
+  strips inline script and style before reading the DOM text, and asserts every string in all
+  four sections appears with no unresolved `{token}` left behind. Run against both finished
+  pages: both pass.
+
+---
+
 ## [1.46.0] - 2026-09-02
 
 ### Added

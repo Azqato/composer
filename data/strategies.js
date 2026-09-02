@@ -1148,7 +1148,78 @@ window.STRATEGIES_DATA = [
       "signal": "Using TQQQ's own 200-day average rather than SPY's as the primary gate means the strategy can flip to bear mode purely from leveraged-instrument volatility: TQQQ can cross below its average while QQQ remains in an uptrend. Because each state holds a single asset at full weight with no fixed rebalance schedule, turnover is driven entirely by how often the regime and RSI gates flip rather than by periodic rebalancing.",
       "hedge": "SQQQ and UVXY are the defensive legs. UVXY functions here only as a short-term hedge during overbought extremes, because its roll decay makes any longer hold a losing position by construction.",
       "concentration": "Six instruments, all Nasdaq, technology or semiconductor exposure, with no non-equity ballast beyond BSV."
-    }
+    },
+    "tldr": {
+      "thesis": "One gate decides everything: is TQQQ trading above its own 200-day moving average. Above it, the strategy is 3x long the Nasdaq unless a 10-day RSI above 79 flips it into UVXY for a few days. Below it, four nested tests choose between buying the dip in leveraged tech, going short, or parking in short-term bonds. It holds exactly one fund on every single day of the record, and that fund was TQQQ on 83.4% of all days. The Holy Grail is, in practice, leveraged Nasdaq with an exit.",
+      "works_well_in": [
+        "Long uptrends, which is most of the record. In a reconstruction of the logic over real prices, TQQQ closed above its 200-day average on 2,945 of {backtest_days} days, and above that gate the strategy held TQQQ on 95.1% of them. The {annualized_rate_of_return} annualized return is overwhelmingly this one state.",
+        "Deep bear markets that last long enough for the gate to stay shut. Across the 2022 decline the reconstruction was in SQQQ or bonds for most of the span while SPY fell 24.5%, and SQQQ rose 120.7% over that window. This is the case the strategy was clearly designed for and the case it handles best.",
+        "Vertical crashes, for the same reason. Through the COVID crash the reconstruction ended higher while SPY fell 33.7%, because the gate shut early and the short leg carried it. Across the days the rules named it, SQQQ compounded +680.9% over 195 days held.",
+        "Frothy tops inside an uptrend. The RSI 79 test moved into UVXY on roughly 5% of above-gate days, and across the 143 days it was ever held UVXY compounded +1,493.3%, against a fund that loses value structurally over any longer horizon."
+      ],
+      "struggles_in": [
+        "Short sharp selloffs, which is the single clearest weakness in the record. The gate shut 42 separate times and the median stretch below it lasted 4 trading days. 25 of those 42 stretches lasted 5 days or fewer, so most of the time the regime switch fires it is switching into a decline that is already over.",
+        "Any decline where the bear branch stays long. Below the gate the logic still held TQQQ on 40.4% of days, because its innermost else returns to 3x long whenever TQQQ closes above its 20-day average. Being below the 200-day is not the same as being defensive here.",
+        "Falling knives in semiconductors. The SOXL rung buys 3x semis when their 10-day RSI drops under 30, and it is the only leg in the entire strategy that lost money on the days it was held: -14.8% over 20 days.",
+        "Choppy markets generally. The allocation changed on 348 of {backtest_days} days, about once every 11 trading days, and every one of those changes is a full move between single concentrated positions rather than a trim."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**The Nasdaq keeps outperforming, and leverage keeps paying for itself.** 83.4% of the capital in this strategy was in TQQQ, and that leg compounded +83,040.9% across the 3,125 days it was held. The {cumulative_return} headline is essentially a bet on 3x Nasdaq that was placed in 2011 and has been right ever since.",
+        "**A 200-day moving average separates bull markets from bear markets.** This is the load-bearing assumption of the whole design. It is one close compared to one average, with no buffer, no confirmation window and no second opinion, and it was crossed 83 times in {backtest_years} years.",
+        "**Oversold means cheap.** Two of the bear-branch tests buy weakness: TECL when TQQQ's RSI drops below 31, SOXL when its own RSI drops below 30. Both are 3x funds, so each is a bet that a violent decline reverses before leverage compounds against it.",
+        "**Overbought means a top is near.** The RSI 79 test in the bull branch sells the trend it is otherwise riding and buys volatility instead. It worked across the record, but it is a countertrend bet inside a trend-following strategy."
+      ],
+      "structural": [
+        "**The bear branch is long 3x Nasdaq on 40.4% of its days.** This is the most important thing on the page and it is not visible from the description. Below the 200-day gate the logic checks four conditions in order, and if none of them fires it holds TQQQ. In the Q4 2018 selloff the reconstruction fell 42.4% while SPY fell 19.2%, and TQQQ fell 57.5% across that window while SQQQ rose 92.7%.",
+        "**The strategy is never diversified.** It holds exactly one fund on 100% of days across the entire record. There is no sleeve, no partial hedge and no cash buffer: every day is a single concentrated position in a leveraged or inverse fund, or in BSV.",
+        "**The short-and-bonds choice is decided by relative RSI, not by direction.** When TQQQ is below both its 200-day and 20-day averages, the logic ranks SQQQ and BSV by 10-day RSI and takes whichever is higher. It is picking between a 3x inverse fund and a short-term bond fund on a momentum reading, so nothing in that test asks whether shorting is a good idea.",
+        "**The safe asset is not very safe and not very productive.** BSV was held on 149 days and compounded +4.7% across them. It is the only unleveraged holding in a six-fund universe where every other name moves at three times the market or worse.",
+        "**{standard_deviation} annualized volatility and a {max_drawdown_abs} maximum drawdown are the price of the record above.** A {sharpe_ratio} Sharpe and a {calmar_ratio} Calmar are strong, but they are computed on a path that nearly halved at its worst point, and the underlying holdings routinely move more than 5% in a day. The worst single day in the record was {worst_day}.",
+        "**Thresholds are specific in a way the logic does not explain.** RSI limits of 79, 31 and 30, moving averages of 200 and 20 days, an RSI lookback of 10. Nothing in the design says why 79 rather than 78, and a strategy named The Holy Grail with a {sharpe_ratio} Sharpe over {backtest_years} years is exactly what a well-fitted rule set looks like.",
+        "**The record starts in late 2011, so the 2008 crisis is absent.** The backtest covers {backtest_days} trading days beginning 3 October 2011, bounded by the launch of UVXY. The one environment that would most test a leveraged trend-follower, a multi-year bear market with a credit event inside it, is not in the sample."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Sustained uptrend",
+        "expected": "Strong",
+        "why": "TQQQ holds above its 200-day average and the strategy is simply 3x long the Nasdaq. This state covers 2,945 of {backtest_days} days and produced nearly all of the headline return.",
+        "example": "2023 AI bull: SPY +26.7%, TQQQ +204.9%, and the reconstruction held TQQQ on 88% of days."
+      },
+      {
+        "regime": "Long, deep bear market",
+        "expected": "Strong",
+        "why": "The gate stays shut long enough for the short leg to work, and the nested tests spend most of the decline in SQQQ or BSV rather than back in leveraged longs.",
+        "example": "2022 bear market: SPY -24.5%, TQQQ -78.8%, SQQQ +120.7%. The reconstruction held SQQQ on 43% of days."
+      },
+      {
+        "regime": "Vertical crash",
+        "expected": "Strong",
+        "why": "A fall fast enough to break the 200-day average decisively puts the strategy short while the decline is still running, and the inverse fund gains faster than the index falls.",
+        "example": "COVID crash, 19 Feb to 23 Mar 2020: SPY -33.7%, TQQQ -69.8%, SQQQ +84.4%, UVXY +552.3%."
+      },
+      {
+        "regime": "Short, sharp selloff",
+        "expected": "Poor",
+        "why": "The clearest weakness on the page. The gate shuts, but the bear branch's default is still TQQQ, so a decline can inflict full 3x losses before any defensive rung fires, and the reversal often comes before the strategy has committed.",
+        "example": "Q4 2018 selloff: SPY -19.2%, TQQQ -57.5%. The reconstruction fell 42.4% despite holding SQQQ on 19% of days."
+      },
+      {
+        "regime": "Choppy market around the 200-day",
+        "expected": "Poor",
+        "why": "Every crossing of an unbuffered gate is a full switch between concentrated leveraged positions. 25 of the 42 stretches below the gate lasted 5 trading days or fewer.",
+        "example": "2015 to early 2016: SPY -12.2%, TQQQ -40.1%, and the reconstruction fell 33.0% while rotating between four funds."
+      },
+      {
+        "regime": "Semiconductor capitulation",
+        "expected": "Poor",
+        "why": "The SOXL rung buys 3x semiconductors on a 10-day RSI below 30, which is a bet that the worst is over. It is the only leg in the strategy that lost money over the days it was held.",
+        "example": "SOXL was named on 20 days across {backtest_days} and compounded -14.8% over them."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes. The regimes themselves were identified by reconstructing this strategy's logic over those same closes, which is a reading of the rules rather than a backtest: it carries no fees, no slippage and no rebalance timing, and it answers only which fund the rules would name on a given day. Where a percentage is attributed to the reconstruction it is quoted to rank a regime as strong or poor, never as a return you could have earned. The reconstruction covers {backtest_days} trading days from 3 October 2011 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "tqqq-long-term",
