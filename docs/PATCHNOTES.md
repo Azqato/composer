@@ -5,6 +5,51 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.52.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 7 of 23: `soxx-group`.** TL;DR, Underlying Assumptions, Market
+  Regime table and regime note for SOXX Group, matching the shape approved on
+  `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full 1,843-line tree was traversed before writing**, per the standing full-tree rule. It is
+  by a wide margin the largest tree in the library, and it produces the smallest set of answers.
+  Four findings are stated on the page:
+
+  1. **281 conditional nodes drawn from 32 distinct tests, and 123 of them never selected a single
+     day** across 3,663 trading days. Three tests each appear 45 separate times. The whole tree can
+     only ever resolve to one of four holdings: SOXL, SOXS, BSV or BIL, and two of those are cash
+     equivalents.
+  2. **The short leg lost three quarters of its value over the days it was used.** SOXS compounded
+     -73.2% across the 1,039 days the rules named it, more than a quarter of the record. It is the
+     worst-performing leg of any strategy reviewed in this rollout so far.
+  3. **It is heavily long into sharp semiconductor declines.** In the spring 2025 drawdown the
+     reconstruction held SOXL on 88% of days while SOXL fell 73.7% and SOXS rose 171.8%. In the
+     Q4 2018 selloff it held SOXL on 85% of days while SOXL fell 57.0%. The short position is held
+     often, and mostly not when it would have helped.
+  4. **The high-volatility branch almost never runs.** The top-level gate, a 30-day RSI on UVXY
+     above 63, was true on 39 of 3,663 days, and stayed shut for one continuous stretch of 1,098
+     trading days. The regime table marks that state Unknown rather than guessing at it.
+
+- **Turnover is the highest in the library.** The allocation changed on 2,248 of 3,663 days, about
+  once every 1.6 trading days, in 3x leveraged funds. No reconstructed return is quoted on the page.
+
+### Changed
+- **Structural summaries are now produced by a shared script** rather than ad-hoc queries. It
+  reports conditional node count, distinct expressions, repetition, dead branches, holdable assets
+  and positions held per day for any symphony. Repetition and dead branches have now turned up on
+  three consecutive strategies, so counting them is part of the standard pass rather than a
+  one-off.
+
+### Fixed
+- **A ranking claim was checked and softened before shipping.** A draft called this the deepest
+  drawdown in the library. At -69.2% it is sixth, behind `soxl-growth-rl`, `nancy-pelosi-chips`,
+  `mean-reversion-py`, `beta-ballers-original` and `bnd-vs-sphb`. The page now says "among the
+  deepest" and states the figure through a token.
+
+---
+
 ## [1.51.0] - 2026-09-02
 
 ### Added

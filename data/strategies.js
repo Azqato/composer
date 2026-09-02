@@ -1877,7 +1877,79 @@ window.STRATEGIES_DATA = [
       "hedge": "SOXS is the only defensive position and it is 3x inverse semiconductors, so the defensive state is itself a leveraged directional bet on the same sector.",
       "concentration": "A single-sector strategy with a two-instrument core. There is no diversification available inside it, by design."
     },
-    "author_note": "Created by Garen and DN, as credited in the strategy group name 'K Wave V6 (w/ SOXX Double Pops) Pure SOXX l Garen/DN'. The 'K Wave' name references Kondratiev waves, long-term (40-60 year) economic cycles that Garen likely uses as a macro framework. This is version 6 of the K Wave series."
+    "author_note": "Created by Garen and DN, as credited in the strategy group name 'K Wave V6 (w/ SOXX Double Pops) Pure SOXX l Garen/DN'. The 'K Wave' name references Kondratiev waves, long-term (40-60 year) economic cycles that Garen likely uses as a macro framework. This is version 6 of the K Wave series.",
+    "tldr": {
+      "thesis": "The largest tree in this library and the smallest set of answers. 1,843 lines and 281 conditional nodes resolve to a choice among exactly four holdings: SOXL, SOXS, and two cash-like bond funds. Every test in it, whether it reads UVXY's volatility, SMH's single-day move, the S&P's drawdown or the relationship between bond and equity RSI, is ultimately asking one question: leveraged long semiconductors, leveraged short semiconductors, or neither. Across the record it answered SOXL 54.6% of the time and spent 61.4% of days changing its mind.",
+      "works_well_in": [
+        "Semiconductor bull markets. SOXL is the answer more often than everything else combined, and across the 2,486 days the rules named it, it compounded +1,303,173.8%. That single leg is the strategy.",
+        "Strong recoveries off a low, where the logic re-enters leveraged long quickly. Through the COVID recovery the reconstruction held SOXL on 79% of days while SOXL rose 185.1%.",
+        "Trending markets in either direction, as long as the trend lasts longer than the tests do. The gate that opens the high-volatility branch stayed shut for one stretch of 1,098 trading days, so for years at a time the strategy simply runs its main SOXL-or-cash cascade.",
+        "Periods where sitting out is worth something. BSV takes 31.5% of all capital and BIL another 1.3%, so roughly a third of the record is spent in short-duration bonds rather than in either semiconductor position."
+      ],
+      "struggles_in": [
+        "Sharp semiconductor declines, which is a serious problem for a semiconductor strategy. In the spring 2025 drawdown the reconstruction held SOXL on 88% of days while SOXL fell 73.7% and SOXS rose 171.8%. In the Q4 2018 selloff it held SOXL on 85% of days while SOXL fell 57.0% and SOXS rose 75.9%.",
+        "Anything involving the short leg. SOXS was held on 1,039 days, more than a quarter of the record, and compounded -73.2% across them. It is the worst-performing leg of any strategy reviewed in this library so far.",
+        "High-volatility regimes, in the sense that the branch built for them almost never runs. The top-level gate, a 30-day RSI on UVXY above 63, was true on 39 of {backtest_days} days, or 1.1%.",
+        "Any environment where trading costs are real. The allocation changed on 2,248 of {backtest_days} days, about once every 1.6 trading days, which is the highest turnover of any strategy reviewed here."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**Semiconductors go up over time, and 3x leverage is the way to own them.** SOXL is 54.6% of all capital deployed and carries essentially the whole result. The elaborate machinery around it decides when to be out, not what to be in.",
+        "**Short-term signals can time a 3x sector fund.** Most of the tests read one-day moves in SMH or 5-day and 10-day windows. The strategy is betting that readings this short carry information about tomorrow, in an instrument that moves three times as fast as the sector.",
+        "**The short side is a usable position rather than a hedge.** SOXS is a full holding here, not an overlay, and it is selected by the same short-horizon tests that select the long side.",
+        "**Volatility regimes can be identified from UVXY's own 30-day RSI.** That reading is the top-level split of the entire strategy, and across {backtest_years} years it put the logic into its high-volatility branch on 39 days."
+      ],
+      "structural": [
+        "**281 conditional nodes drawn from 32 distinct tests, and 123 of them never selected anything.** Nearly half the conditions in the tree did not decide a single day across {backtest_days} trading days. Three tests, a 10-day maximum drawdown on SPY above 6%, a 5-day cumulative return on SVXY above zero, and a 60-day RSI on TQQQ above 50, each appear 45 separate times.",
+        "**The whole tree can only ever say one of four things.** SOXL, SOXS, BSV or BIL. No amount of nesting changes the size of the answer set, and two of the four are cash equivalents.",
+        "**The short leg lost three quarters of its value over the days it was used.** SOXS compounded -73.2% across 1,039 days held. For comparison, in the two sharpest semiconductor declines in the record the strategy was in SOXL on 85% and 88% of days. The short position is held often, and mostly not when it would have helped.",
+        "**Turnover is the highest in this library.** 2,248 allocation changes across {backtest_days} days is about one every 1.6 trading days, in 3x leveraged funds, and none of the metrics on this page carries a commission, a spread or a slippage assumption.",
+        "**It holds one position on 59.4% of days and two on most of the rest.** The equal-weight groups produce a SOXL-and-bonds blend rather than genuine breadth, since there are only four things it can hold.",
+        "**{standard_deviation} annualized volatility and a {max_drawdown_abs} maximum drawdown are the price of the record above.** That drawdown is among the deepest in this library, the worst single day in the record was {worst_day}, and a {sharpe_ratio} Sharpe with a {calmar_ratio} Calmar is the weakest risk-adjusted pair of the strategies reviewed so far.",
+        "**Thresholds are tuned to a granularity the logic cannot justify.** Single-day SMH return limits of -0.1%, -0.5%, 0.8%, -3%, -5.5% and -7% sit beside RSI limits of 30, 44, 50, 63, 70, 75 and 80 across lookbacks of 10, 20, 30 and 60 days. A test on a one-day move of -0.1% is not distinguishable from noise.",
+        "**The record starts in February 2012 and covers {backtest_days} trading days**, bounded by the launch of the leveraged semiconductor funds, so it misses the 2008 crisis and the 2000 semiconductor collapse entirely."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Semiconductor bull market",
+        "expected": "Strong",
+        "why": "The cascade resolves to SOXL more often than to everything else combined, and 3x exposure to a rising sector is what produced the record.",
+        "example": "2023 AI bull: SOXL +237.8%, SOXS -85.1%. The reconstruction held SOXL on 60% of days."
+      },
+      {
+        "regime": "Recovery off a panic low",
+        "expected": "Strong",
+        "why": "The short-horizon tests re-enter leveraged long quickly once single-day moves turn positive, which is exactly when the sector rebounds fastest.",
+        "example": "COVID recovery, 24 Mar to 31 Aug 2020: SOXL +185.1%, and the reconstruction held SOXL on 79% of days."
+      },
+      {
+        "regime": "Long trend in either direction",
+        "expected": "Strong",
+        "why": "The strategy is at its simplest when nothing triggers, running a plain SOXL-or-bonds cascade. Its high-volatility branch stayed shut for one continuous stretch of 1,098 trading days.",
+        "example": "2012 to 2014: SPY +71.4%, SOXL +401.1%. The reconstruction held SOXL on 55% of days and BSV on 35%."
+      },
+      {
+        "regime": "Sharp semiconductor selloff",
+        "expected": "Poor",
+        "why": "The clearest weakness on the page. The short-horizon tests keep resolving to the long side while the sector falls, and the short leg that exists for exactly this case is barely used.",
+        "example": "Spring 2025 drawdown: SOXL -73.7%, SOXS +171.8%, and the reconstruction held SOXL on 88% of days and SOXS on 6%."
+      },
+      {
+        "regime": "Volatility spike",
+        "expected": "Unknown",
+        "why": "The branch designed for it almost never runs. A 30-day RSI on UVXY above 63 was true on 39 days in {backtest_years} years, so the high-volatility machinery is essentially untested.",
+        "example": "February 2018 spike: SPY -10.1%, SOXL -32.5%, and the reconstruction was in BSV or BIL on 77% of days."
+      },
+      {
+        "regime": "Choppy, directionless market",
+        "expected": "Poor",
+        "why": "The logic reads one-day and five-day moves, so a market with no follow-through flips it repeatedly between a 3x long, a 3x short and cash.",
+        "example": "Across the record the allocation changed on 2,248 of {backtest_days} days, about once every 1.6 trading days."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which positions the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. That caveat matters more here than on any other page in this library, because this strategy changes its allocation about once every 1.6 trading days in 3x leveraged funds. For that reason no reconstructed return is quoted, and the regimes above are ranked from holdings and price moves alone. The reconstruction covers {backtest_days} trading days from 2 February 2012 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "soxl-growth-rl",
