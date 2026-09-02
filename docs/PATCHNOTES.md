@@ -5,6 +5,48 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.56.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 11 of 23: `mean-reversion-py`.** TL;DR, Underlying Assumptions,
+  Market Regime table and regime note for Mean Reversion Comparison to Python Code, matching the
+  shape approved on `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. Three conditional
+  nodes, two distinct tests, three tickers. Four findings are stated on the page:
+
+  1. **The 200-day moving average gate never changed a holding.** SPY was above its average on
+     3,187 of 3,747 days and below it on 560, crossing 77 times, but the only difference between
+     the two halves of the tree is what happens when TQQQ's 10-day RSI passes 79. All 143 of those
+     days fell on the above-the-average side, so the below-the-average RSI test decided zero days.
+     The gate the strategy is organised around is inert across the entire record.
+  2. **SPY is in the universe and was never held.** It is the defensive holding in the branch that
+     never resolved, so one of three tickers is dead code.
+  3. **There is no defensive branch anywhere.** Both halves default to TQQQ, so falling below the
+     moving average changes nothing. In four of the six falling windows examined, the
+     reconstruction's path and TQQQ's own price move are the same number, because the overbought
+     test does not fire on the way down.
+  4. **The hedge is most active where it costs most.** UVXY's largest share of any window is 12% of
+     days, in the 2017 low-volatility bull, a window in which UVXY fell 93.2%.
+
+- **The comparison it was built for is unflattering to itself.** It shares a 3,747 day window with
+  Holy Grail and TQQQ For The Long Term exactly. Over that window it returned 79.4% annualized at
+  -81.7%, against 150.2% at -47.4% and 160.4% at -53.6%. Its drawdown is the third deepest of the
+  24 visible strategies and its worst day the third worst; Sharpe and Calmar both rank 20th of 24.
+
+- **The record is bounded by UVXY**, which first traded on 4 October 2011, one day after the window
+  opens.
+
+### Fixed
+- **Two ranking claims corrected before shipping.** A draft called this the smallest tree reviewed
+  so far; `top-cap-ma-rsi`, shipped in v1.55.0, has two conditional nodes to this one's three, so
+  the superlative was dropped for the counts themselves. A draft called its turnover the lowest in
+  the rollout, which was not checked against every prior page, so the page now states the interval
+  without the ranking.
+
+---
+
 ## [1.55.0] - 2026-09-02
 
 ### Added

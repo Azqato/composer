@@ -2417,7 +2417,79 @@
       "signal": "There is no time-based exit from bear mode and no alternative long-term bear strategy. Its Calmar is below 1.0, meaning the drawdown has not been repaid by the return, which is precisely the comparison this strategy exists to make.",
       "hedge": "UVXY is the only non-equity instrument in a three-ticker universe, and it is a short-term volatility position rather than ballast.",
       "concentration": "Three instruments. This is a reference implementation rather than a portfolio and should be read as one."
-    }
+    },
+    "tldr": {
+      "thesis": "Three conditional nodes, two distinct tests and three tickers. Its name says what it is: a symphony built to cross-check a separately written Python backtest, not a strategy designed to be traded. In practice it holds TQQQ on 96.2% of days and steps into UVXY on the 143 days when TQQQ's 10-day RSI passed 79. The one finding that matters most is that the SPY 200-day moving average gate, the thing the strategy is organised around, never changed a single holding across {backtest_days} days.",
+      "works_well_in": [
+        "Long Nasdaq uptrends, because that is essentially what it holds. TQQQ compounded +45,244.4% across the 3,603 days the rules named it, and a plain buy and hold of TQQQ over the same window returned +27,038.1%.",
+        "Short-term overbought spikes, which is the one thing the logic actually does. UVXY was held on 143 days and compounded +1,493.3% across them, on 3.8% of all capital deployed.",
+        "Melt-ups and recoveries, where a 3x fund with no defensive branch is exactly the right instrument. Through the COVID recovery TQQQ rose 270.4% and through the 2023 AI bull 204.9%, with the reconstruction in TQQQ on 96% and 98% of days.",
+        "Being compared against. It shares a {backtest_days} day window with Holy Grail and TQQQ For The Long Term exactly, which is what it was built for, and the gap between them is a clean measure of what their extra branches add."
+      ],
+      "struggles_in": [
+        "Bear markets, entirely. The below-the-average half of the tree holds TQQQ too, so falling below the 200-day moving average changes nothing. Through the 2022 bear market the reconstruction held TQQQ on 100% of days while TQQQ fell 78.8%.",
+        "Fast crashes. In the Q4 2018 selloff and the 2025 spring drawdown the reconstruction was in TQQQ on 100% of days, and its path matched TQQQ exactly at -57.5% and -56.8%, because the overbought test does not fire on the way down.",
+        "Any decline that starts from a calm reading. The only exit is an RSI above 79, which is a sign of strength rather than of danger, so the strategy is always fully invested in a 3x fund when a decline begins.",
+        "Comparison with the strategies it was built alongside. Over the identical window it returned {annualized_rate_of_return} against 150.2% for Holy Grail, at {max_drawdown_abs} against Holy Grail's -47.4%."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**The Nasdaq 100 rises over the long run and 3x leverage is the way to own it.** TQQQ is the default on both sides of the tree and 96.2% of all capital deployed. Every other part of the logic only decides when to briefly leave it.",
+        "**A 10-day RSI above 79 marks a short-term top.** This is the only test that ever moved money, and the 79 threshold on TQQQ is shared with several other strategies in this library.",
+        "**Long volatility is the right expression of an overbought reading.** The bull branch goes to UVXY, a fund that decays structurally and lost more than 99% over the 2012 to 2014 stretch, which only pays if the timing is right.",
+        "**SPY's price relative to its 200-day moving average identifies the regime.** The tree is built around this test. The record does not support the assumption, because the two halves it separates behave identically except in a state that never occurred."
+      ],
+      "structural": [
+        "**The 200-day moving average gate never changed a holding.** SPY was above its average on 3,187 of {backtest_days} days and below it on 560, and the gate crossed 77 times. But the only difference between the two halves is what happens when TQQQ's 10-day RSI passes 79, and every one of those 143 days fell on the above-the-average side. The below-the-average RSI test decided zero days.",
+        "**SPY is in the universe and was never held.** It appears only as the defensive holding in the branch that never resolved, so one of the strategy's three tickers is dead code.",
+        "**It was built as a validation harness, and its name says so.** Simplicity here is a feature of that purpose rather than a design decision about risk, and the page reads it that way.",
+        "**{max_drawdown_abs} is the third deepest drawdown among the 24 strategies in this library**, and {worst_day} is the third worst single day. There is no defensive holding anywhere in the tree.",
+        "**A {sharpe_ratio} Sharpe and a {calmar_ratio} Calmar both rank 20th of 24 here.** A Calmar below 1.0 means the drawdown was larger than the annualized return that paid for it.",
+        "**The comparison it was built for is unflattering to itself.** Over the identical {backtest_days} day window it returned {annualized_rate_of_return} annualized at {max_drawdown_abs}, against 150.2% at -47.4% for Holy Grail and 160.4% at -53.6% for TQQQ For The Long Term.",
+        "**Turnover is low**, at one allocation change every 34.1 trading days, and it holds exactly one asset on 100% of days. None of the figures here carries a commission, a spread or a slippage assumption.",
+        "**The record covers {backtest_days} trading days from 3 October 2011, bounded by UVXY**, which first traded on 4 October 2011. The 2008 crisis and the 2000 collapse of the index this strategy is leveraged to are both absent, and so is any period in which a levered Nasdaq position was a losing decade-long bet."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Sustained Nasdaq uptrend",
+        "expected": "Strong",
+        "why": "The strategy is a 3x Nasdaq position with a rare exit. In a long uptrend that is the whole point and nothing gets in the way.",
+        "example": "2012 to 2014: SPY +71.4%, TQQQ +442.6%, with the reconstruction in TQQQ on 95% of days."
+      },
+      {
+        "regime": "Recovery off a crash low",
+        "expected": "Strong",
+        "why": "There is no re-entry condition to satisfy, because the strategy never left. It holds the rebound in full from the first day.",
+        "example": "COVID recovery: TQQQ +270.4%, and the reconstruction held it on 96% of days."
+      },
+      {
+        "regime": "Sharp overbought spike",
+        "expected": "Strong",
+        "why": "A 10-day RSI above 79 on TQQQ is the one test that moves money, and it reaches a fund that can move several hundred percent in weeks.",
+        "example": "Across the 143 days the rules named UVXY it compounded +1,493.3%, on 3.8% of all capital deployed."
+      },
+      {
+        "regime": "Bear market",
+        "expected": "Poor",
+        "why": "There is no defensive branch. Falling below the 200-day moving average moves the logic into a half of the tree that also holds TQQQ, so nothing changes.",
+        "example": "2022 bear market: TQQQ -78.8%, with the reconstruction in TQQQ on 100% of days and its path matching TQQQ exactly."
+      },
+      {
+        "regime": "Fast selloff from a calm reading",
+        "expected": "Poor",
+        "why": "The only exit requires an overbought RSI, which is the opposite of what a decline produces, so the strategy is fully invested in a 3x fund throughout.",
+        "example": "Q4 2018 selloff: SPY -19.2%, TQQQ -57.5%, UVXY +143.9%, and the reconstruction held TQQQ on 100% of days."
+      },
+      {
+        "regime": "Prolonged low-volatility drift",
+        "expected": "Mixed",
+        "why": "The RSI test fires more often in calm markets, and UVXY loses value structurally in them, so the hedge is most active exactly where it costs the most.",
+        "example": "2017 low-volatility bull: TQQQ +112.9%, UVXY -93.2%, and the reconstruction was in UVXY on 12% of days, its highest share of any window."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which fund the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. Where a window says the reconstruction matched TQQQ exactly, that is because the overbought test did not fire once inside it, so the modelled path and the fund's own price move are the same number. The reconstruction covers {backtest_days} trading days from 3 October 2011 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "spy-energy-chips",
