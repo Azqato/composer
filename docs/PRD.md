@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.43.2
+**Version:** 1.45.0
 **Status:** Active
 **Last Updated:** 2026-09-02
 
@@ -721,7 +721,7 @@ Provide a Composer.trade symphony URL to Claude Code and it automates the entire
 6. Proposes name and slug; asks for confirmation before inserting
 7. Inserts the complete entry into `data/strategies.json` and `data/strategies.js`
 8. Adds the `ai_summary` to `scripts/add_ai_summary.py` under the new slug
-9. Runs `python scripts/add_ai_summary.py` to write the summary into both data files
+9. Runs `python scripts/add_ai_summary.py` to write the summary into both data files. **Any performance figure in the summary is a token** (`{sharpe_ratio}`, `{max_drawdown_abs:0}`); see the Strategy JSON Schema section. The script is the canonical store, so a figure typed here as a literal survives every later refresh as a stale number.
 10. Updates `docs/PATCHNOTES.md`
 
 **Example usage:**
@@ -737,7 +737,7 @@ Provide a Composer.trade symphony URL to Claude Code and it automates the entire
 - **`ai_summary` (the analyst's read):** two paragraphs, interpretive not descriptive. Paragraph 1 = the single real bet the strategy is making once complexity is stripped away, its character, how to think about it. Paragraph 2 = an honest appraisal with the metrics and three to four caveats (regime dependence, drawdown reality, overfitting risk, window bias). References mechanics lightly; never re-lists the logic tree.
 - **`how_it_works` (the mechanics):** the only home for the enumerated logic tree, indicators, thresholds and pools.
 
-Every sentence across all blocks must clear this factual bar: **metrics** match the live/stored numbers (the `check_stat_drift.py` advisory enforces this); **mechanics** come only from the traced logic tree; **provenance** claims are limited to what `author_note` and the source symphony record support (named authors, name-match counts) with no invented edit histories, adoption stories, or motivations; **interpretation** is allowed only as clearly analytical framing ("best understood as a bet that..."), never asserted as historical fact.
+Every sentence across all blocks must clear this factual bar: **metrics** are written as tokens rather than typed, so they match the stored numbers by construction (`check_prose_tokens.py` gates this, and `check_stat_drift.py` remains as the advisory that catches a newly hand-typed figure); **mechanics** come only from the traced logic tree; **provenance** claims are limited to what `author_note` and the source symphony record support (named authors, name-match counts) with no invented edit histories, adoption stories, or motivations; **interpretation** is allowed only as clearly analytical framing ("best understood as a bet that..."), never asserted as historical fact.
 
 **Known limitations:**
 - Short backtests (<1 year) yield metrics sensitive to the covered market period; surfaced in `risk_profile` and `author_note`
@@ -1428,10 +1428,26 @@ All fields in `data/strategies.json`. Both `strategies.json` and `strategies.js`
 curated field on the page: the trust boundary is `data/strategies.json` itself, which only a
 maintainer writes.
 
-**Numbers written into these fields must be historical facts about fixed date windows, never live
-metrics.** A restated metric goes stale on the next refresh with nothing to catch it, which has
-already happened to `risk_profile` and `ai_summary` on several strategies. Anything that changes is
-rendered from the data instead.
+**A live metric quoted in these fields must be a token, never a typed number (v1.45.0).** Write
+`{sharpe_ratio}`, not `2.89`. `resolveStrategyTokens` in `js/app.js` substitutes it at render time
+from the same object the metrics table reads, so the sentence and the table cannot disagree.
+`scripts/check_prose_tokens.py` fails the build on an undefined token or one that reads a null
+field, and the full token list is in the `PROSE_TOKENS` object in `js/app.js`.
+
+A token may carry a precision, because the library's prose voice rounds: `{max_drawdown_abs}` is
+`78.3%` and `{max_drawdown_abs:0}` is `78%`. `max_drawdown` is stored negative, so use
+`{max_drawdown_abs}` for the magnitude and `{max_drawdown}` when the sign is wanted.
+
+**This reverses the previous rule, which was to keep live metrics out of prose entirely.** That was
+right while a quoted figure could only be typed by hand: a restated metric went stale on the next
+refresh with nothing to catch it, and by v1.45.0 that had happened to 37 figures across 12 pages,
+including a Sharpe of 2.63 advertised against a database value of 2.56. A token cannot go stale, so
+a live metric is now the *safest* number to put in a sentence.
+
+**Numbers that are not live metrics still must be historical facts about fixed date windows**, for
+example "GDXU rose 695.2% during 2025", or a figure belonging to a different strategy in a
+comparative sentence. Those stay literals: they do not drift, and there is nothing on this strategy
+to resolve them from.
 
 **Metric calculation notes:**
 - `calmar_ratio` = `annualized_rate_of_return` / abs(`max_drawdown`)

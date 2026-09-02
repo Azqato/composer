@@ -393,6 +393,94 @@ function renderConceptCard(concept, strategyCount) {
 }
 
 // ---- Metrics Table rendering ----
+// ---- Metric tokens in authored prose (v1.45.0) ----
+//
+// Prose may quote a performance figure, but only through a token: `{sharpe_ratio}`
+// rather than a typed "2.89". The value is read from the same strategy object
+// renderMetricsTable reads, so the sentence and the table cannot drift apart.
+//
+// Why this exists. Every performance figure quoted in prose was typed by hand,
+// and the ones worth quoting are exactly the ones update_metrics.py rewrites
+// nightly, so they were wrong within days of being written and nothing said so.
+// scripts/check_stat_drift.py catches a stale quote after the fact; a token
+// cannot go stale in the first place. 125 citations are tokens as of v1.45.0.
+//
+// The 141 percentages still typed as literals are historical measurements over
+// fixed windows ("GDXU rose 695.2% during 2025") and figures belonging to other
+// strategies in comparative sentences. Those do not drift, because the window
+// does not move, and they are deliberately NOT tokenised: there is nothing on
+// this strategy to resolve them from.
+//
+// Formatting differs from the table on purpose. formatPct prefixes "+", which is
+// correct in a column of figures and wrong in a sentence. Values are identical;
+// only presentation differs.
+//
+// A token may carry a precision: {max_drawdown_abs} is "78.3%" and
+// {max_drawdown_abs:0} is "78%". The library's prose voice rounds, so most
+// citations want :0; the default is the fuller figure, so leaving the precision
+// off never quietly loses information. Each token picks its own default, because
+// two decimals is right for a Sharpe and absurd for a cumulative return.
+const PROSE_TOKENS = {
+  sharpe_ratio:              (s, d = 2) => s.sharpe_ratio.toFixed(d),
+  calmar_ratio:              (s, d = 2) => s.calmar_ratio.toFixed(d),
+  annualized_rate_of_return: (s, d = 1) => `${(s.annualized_rate_of_return * 100).toFixed(d)}%`,
+  cumulative_return:         (s, d = 0) => `${(s.cumulative_return * 100).toLocaleString('en-US', { maximumFractionDigits: d })}%`,
+  standard_deviation:        (s, d = 1) => `${(s.standard_deviation * 100).toFixed(d)}%`,
+  trailing_one_year_return:  (s, d = 1) => `${(s.trailing_one_year_return * 100).toFixed(d)}%`,
+  // max_drawdown is stored negated on all 36 strategies. Both spellings exist
+  // because prose needs both: "a 45.2% max drawdown" and "fell 45.2%" want the
+  // bare magnitude, while "its -45.2% drawdown" wants the sign. Not two numbers.
+  max_drawdown:              (s, d = 1) => `${(s.max_drawdown * 100).toFixed(d)}%`,
+  max_drawdown_abs:          (s, d = 1) => `${(Math.abs(s.max_drawdown) * 100).toFixed(d)}%`,
+  worst_day:                 (s, d = 1) => `${(s.min * 100).toFixed(d)}%`,
+  best_day:                  (s, d = 1) => `${(s.max * 100).toFixed(d)}%`,
+  mean_day:                  (s, d = 2) => `${(s.mean * 100).toFixed(d)}%`,
+  median_day:                (s, d = 2) => `${(s.median * 100).toFixed(d)}%`,
+  // Precision is meaningless on a day count, so it is ignored rather than
+  // accepted and silently misapplied.
+  backtest_days:             s => s.backtest_days.toLocaleString('en-US'),
+  backtest_years:            (s, d = 1) => (s.backtest_days / 252).toFixed(d),
+};
+
+// An unresolvable token renders as itself rather than vanishing. A blank where a
+// number should be is invisible in review; "{sharp_ratio}" on the page is not.
+// The real defence is scripts/check_prose_tokens.py, which fails the build before
+// a reader ever sees one.
+function resolveTokens(text, s) {
+  return text.replace(/\{([a-z_]+)(?::(\d))?\}/g, (whole, key, digits) => {
+    const fn = PROSE_TOKENS[key];
+    if (!fn) {
+      console.error(`Unknown prose token {${key}} on ${s.slug}`);
+      return whole;
+    }
+    const v = digits === undefined ? fn(s) : fn(s, Number(digits));
+    if (v === null || v === undefined || v === 'NaN' || String(v).includes('NaN')) {
+      console.error(`Prose token {${key}} has no value on ${s.slug}`);
+      return whole;
+    }
+    return v;
+  });
+}
+
+// Resolved once, centrally, on a deep copy, rather than at each of the dozen
+// places prose is rendered. Same reasoning as loadStrategies() filtering hidden
+// entries in one place: a renderer added later cannot forget to call this,
+// because it never sees an unresolved string. The copy matters because
+// window.STRATEGIES_DATA is shared with the listing page.
+function resolveStrategyTokens(s) {
+  const walk = v => {
+    if (typeof v === 'string') return resolveTokens(v, s);
+    if (Array.isArray(v)) return v.map(walk);
+    if (v && typeof v === 'object') {
+      const o = {};
+      for (const k of Object.keys(v)) o[k] = walk(v[k]);
+      return o;
+    }
+    return v;
+  };
+  return walk(s);
+}
+
 function renderMetricsTable(s) {
   function row(label, value, cls) {
     return `<div class="metrics-row"><dt>${metricLabel(label)}</dt><dd class="${cls || ''}">${value}</dd></div>`;

@@ -5,6 +5,60 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.45.0] - 2026-09-02
+
+### Added
+- **Metric tokens in authored prose.** A performance figure quoted in a sentence is now written as
+  a token, `{sharpe_ratio}` rather than a typed `2.89`, and resolved at render time from the same
+  strategy object the metrics table reads. **162 citations across all 36 strategies were
+  converted.** The table and the sentence can no longer disagree about a number, because there is
+  only one number.
+
+  **This closed 37 figures that were already wrong on the live site.** `update_metrics.py` refreshes
+  metrics nightly and cannot rewrite prose, so every quoted figure was correct only on the day it
+  was typed. `zoops-kmlm-switcher-2026` was advertising a 2.63 Sharpe against a database value of
+  2.56, and eleven other pages were similarly stale. `check_stat_drift.py` now reports **0 checkable
+  claims**: there are no hand-typed performance figures left for it to find.
+
+- **A precision suffix on tokens.** `{max_drawdown_abs}` renders `78.3%` and `{max_drawdown_abs:0}`
+  renders `78%`. **Added because the library's prose voice rounds**: "returns 150% annualized with a
+  47% max drawdown" is how every `ai_summary` reads, and a token fixed at one decimal could not say
+  it. Without this the system would have covered 54 of 162 citations and left the rounded majority,
+  which is the wrong half to leave behind. A precision suffix rather than a second set of token
+  names, so the whitelist stays singular.
+
+- **`scripts/check_prose_tokens.py`.** Fails if a token is not defined in `js/app.js`, or resolves
+  to a null field on that strategy. The token list is **parsed out of `js/app.js` rather than
+  restated**, because two copies of a whitelist drift and singularity is the entire point of the
+  file. It also carries a now-empty advisory list of hand-typed figures, which has become a
+  regression check rather than a migration aid.
+
+- **An unlisted-page banner**, directly under the title on the 12 hidden strategy pages. They stay
+  reachable by direct URL and, since v1.43.0, visibly lack sections every other page has. The banner
+  says the page is unlisted, that the writing is not maintained, and that **the metrics below are
+  still refreshed on the normal schedule**, so a reader knows which half of the page to trust. Muted
+  greys rather than a warning colour, because nothing on the page is wrong.
+
+### Notes
+- **Conversion was guarded on a keyword, not on the value.** A bare number proves nothing:
+  `zoops-manhattan-project-2026` writes "Frontrunner (50% weight)" and its standard deviation is
+  also 50%. A literal was only converted when a word naming the metric sat within 45 characters, and
+  that single case was correctly refused. The same guard now backs the checker's advisory list, so
+  it can reach zero and stay there instead of flagging that sentence forever.
+- **The already-drifted figures needed a second pass.** The first pass matched literals equal to the
+  live value, so it stepped over exactly the 37 that were wrong. The second pass is driven by
+  `check_stat_drift.py`'s own claim regexes, which find a figure because the sentence names the
+  metric beside it rather than because the number still agrees.
+- **The remaining 141 percentages in prose are deliberately not tokens.** They are historical
+  measurements over fixed windows ("GDXU rose 695.2% during 2025") and figures belonging to other
+  strategies in comparative sentences. Those do not drift, and there is nothing on the strategy to
+  resolve them from.
+- Verified by rendering all 36 pages in headless Edge and checking every token's rendered value
+  against an independent Python reimplementation of the formatters, so a bug in `PROSE_TOKENS` could
+  not confirm itself. 36 pages, 0 failures.
+
+---
+
 ## [1.43.2] - 2026-09-02
 
 ### Fixed

@@ -1101,6 +1101,55 @@ them:**
    container as every other measurement on the page. This is the same reasoning as the item 10 rule
    that an absent risk category states itself explicitly rather than vanishing.
 
+### Metric Tokens in Prose (site-wide, v1.45.0)
+
+**A performance figure quoted in a sentence is written as a token and resolved at render time.**
+`{sharpe_ratio}`, not a typed `2.89`. `resolveStrategyTokens` in `js/app.js` walks a deep copy of
+the strategy object once, in `strategies.html`, before anything renders, so no template below has to
+know tokens exist and a renderer added later cannot forget to call it.
+
+**Why.** `update_metrics.py` refreshes metrics nightly and cannot rewrite prose, so a hand-typed
+figure was correct only on the day it was written. At the time of the conversion 37 figures across
+12 pages were already wrong on the live site. `check_stat_drift.py` catches a stale quote after the
+fact; a token cannot go stale in the first place.
+
+**The rule.** If a number in prose is a value the database holds for that strategy, it is a token.
+If it is a historical measurement over a fixed window, or a figure belonging to a different
+strategy in a comparative sentence, it stays a literal, because there is nothing on this strategy to
+resolve it from. As of v1.45.0 that split is 162 tokens against 141 literals.
+
+**Precision is optional and the prose picks it.** `{max_drawdown_abs}` is `78.3%`,
+`{max_drawdown_abs:0}` is `78%`. The library's voice rounds, so most citations use `:0`. The default
+is the fuller figure, so omitting the suffix never quietly loses information, and each token sets
+its own default because two decimals is right for a Sharpe and absurd for a cumulative return.
+
+**`max_drawdown` has two spellings on purpose.** It is stored negated on all 36 strategies.
+`{max_drawdown}` keeps the sign for "its -45.2% drawdown"; `{max_drawdown_abs}` gives the magnitude
+for "a 45.2% max drawdown". One number, two sentences.
+
+**Formatting deliberately differs from the metrics table.** `formatPct` prefixes `+`, which is right
+in a column of figures and wrong mid-sentence. The values are identical; only presentation differs.
+
+**An unresolvable token renders as itself** rather than vanishing, because a blank where a number
+should be is invisible in review and `{sharp_ratio}` on the page is not. The real defence is
+`scripts/check_prose_tokens.py`, which fails before a reader sees one, and which parses the token
+list out of `js/app.js` rather than restating it.
+
+### Unlisted Page Banner (v1.45.0)
+
+Directly under the `<h1>` and above the description on the 12 hidden strategy pages, because a
+reader who is going to act on the page needs it before they read anything else on it.
+
+It states three things: the page is unlisted, the writing is not maintained, and **the metrics are
+still refreshed on the normal schedule**. The third is the one that matters. Without it a reader has
+no way to know which half of the page to trust, and the honest answer is that the numbers are
+current and the words around them are not.
+
+Bordered and tinted rather than a plain paragraph, since it is a statement about the page rather
+than part of the page's content. Muted greys rather than a warning colour, because nothing here is
+wrong: the strategy is real, the metrics are live, and the page is simply not being written to any
+more.
+
 ### Reality Check Cards (strategy detail pages, V1.20 items 4, 5 and 9)
 
 The Beyond the Backtest section, after the risk profile. Two columns above 720px, stacked below it.

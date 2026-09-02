@@ -169,7 +169,10 @@
       const [strategies, glossary, allExtras] = await Promise.all([
         loadAllStrategies(), loadGlossary(), loadStrategyExtras(),
       ]);
-      const s = strategies.find(x => x.slug === slug);
+      // Tokens resolved before anything renders, so no template below has to
+      // know they exist. See resolveStrategyTokens in js/app.js.
+      const raw = strategies.find(x => x.slug === slug);
+      const s = raw ? resolveStrategyTokens(raw) : raw;
 
       if (!s) {
         document.getElementById('content').innerHTML = `
@@ -755,6 +758,14 @@
               ${provHtml}
               ${tags ? `<div class="card-tags" style="margin-bottom:12px">${tags}</div>` : ''}
               <h1 style="color:var(--color-primary);font-size:clamp(1.5rem,3vw,2rem);margin-bottom:12px">${s.name}</h1>
+              ${s.hidden ? `
+                <div class="unlisted-notice">
+                  <strong>This page is unlisted and is not being maintained.</strong>
+                  It does not appear in the strategy library, the tag filters or the sitemap, and it
+                  is excluded from the section and wording updates the maintained strategies receive.
+                  The metrics below are still refreshed on the normal schedule, so the numbers are
+                  current even though the writing around them is not. The link to Composer works.
+                </div>` : ''}
               <p style="color:var(--color-secondary);font-size:1rem;line-height:1.7;margin-bottom:24px">${s.description}</p>
               ${heroHtml}
             </div>
