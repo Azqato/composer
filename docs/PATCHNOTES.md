@@ -5,6 +5,48 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.64.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 20 of 24: `safe-sectors-or-bonds-original`.** TL;DR, Underlying
+  Assumptions, Market Regime table and regime note for Safe Sectors or Bonds (Original), matching
+  the shape approved on `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. 12 nodes and
+  **zero conditional nodes**: the entire logic is one filter taking the lowest 10-day RSI of seven
+  funds. Five findings are stated on the page:
+
+  1. **Six of the seven holdings are closed-end funds and only XLP is an ETF.** BKT, NAN, MMU, PMM,
+     EVN and VBF all trade at a discount or premium to net asset value, on volume far below a
+     comparable ETF.
+  2. **The basket is less diversified than it looks.** NAN, MMU, PMM and EVN are municipal income
+     funds, BKT a bond trust and VBF a corporate bond fund, so the rotation mostly moves between
+     near-identical instruments. In the 2022 bear market all seven fell together, 10.6% to 29.5%.
+  3. **Turnover is one change every 2.7 trading days in the least liquid instruments in the
+     library**, 1,563 changes across 4,178 reconstructed days. The missing spread assumption matters
+     more here than on any other page.
+  4. **"Safe" is the intent, not the record.** 16.1% annualized volatility is the lowest in the
+     library and the 0.51 Calmar is also the lowest, either side of a -41.0% drawdown.
+  5. **Liquidity crises hit it precisely where it is supposed to help.** Closed-end discounts widen
+     in a scramble, so in the COVID crash MMU fell 28.5%, PMM 28.4% and EVN 27.4% against SPY's
+     33.7%.
+
+- **No reconstructed return is quoted**, for the reason given on `ob-os-staple-bonds` and more
+  strongly: the modelled path gains 133.1% across 2012 to 2014 when the best of its seven holdings
+  returned 62.0%. Reconstruction coverage is also stated: 4,178 of 6,847 days, so the dot-com crash
+  and 2008 are outside the table.
+
+### Fixed
+- **Three claims corrected before shipping.** A draft called five of the closed-end funds municipal;
+  four are, with BKT a bond trust and VBF a corporate bond fund. A draft called the turnover the
+  highest in the rollout; `top-cap-ma-rsi` changes every 2.4 days to this one's 2.7. And a draft
+  asserted this and `ob-os-staple-bonds` were built by the same author, which the shared naming
+  convention suggests but does not establish, so the page now says only that they share a
+  convention, two holdings and an idea.
+
+---
+
 ## [1.63.0] - 2026-09-02
 
 ### Added

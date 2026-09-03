@@ -3629,7 +3629,79 @@ window.STRATEGIES_DATA = [
       "concentration": "One fund at a time out of seven. Six of the seven are interest-rate-sensitive bond or municipal funds, so despite the diversified-looking pool the dominant risk is duration and credit, not equities.",
       "suitability": "Fits a capital-preservation sleeve or a low-volatility complement to an aggressive strategy, not a primary growth engine."
     },
-    "author_note": "This is the original long-history version of the widely forked Safe Sectors or Bonds template (source symphony name 'Safe Sectors or Bonds (29,32,1999)'), whose 1999 start makes it the longest backtest in this library. It is featured as the original because dozens of later Composer symphonies rebuild the same lowest-RSI defensive rotation on shorter windows. Symphony ID: DtlEo2Y1DWR7hngZkxTB."
+    "author_note": "This is the original long-history version of the widely forked Safe Sectors or Bonds template (source symphony name 'Safe Sectors or Bonds (29,32,1999)'), whose 1999 start makes it the longest backtest in this library. It is featured as the original because dozens of later Composer symphonies rebuild the same lowest-RSI defensive rotation on shorter windows. Symphony ID: DtlEo2Y1DWR7hngZkxTB.",
+    "tldr": {
+      "thesis": "There are no conditions in this strategy at all. The entire logic is one filter: rank seven funds by 10-day RSI and hold the single most beaten-down one, every day. Six of those seven are closed-end funds and four of those are municipal income funds, so what looks like a diversified basket of safe havens is six bond funds and one equity ETF. The word safe describes the intent rather than the record: {standard_deviation} annualized volatility is the lowest in this library, and the {max_drawdown_abs} drawdown alongside it gives the lowest Calmar here.",
+      "works_well_in": [
+        "Equity selloffs that leave municipal bonds alone. Through the Q4 2018 selloff SPY fell 19.2% while MMU rose 8.8% and BKT 1.1%, and the reconstruction spread its days evenly across MMU, VBF, XLP and EVN.",
+        "Falling rate environments, which is what municipal closed-end funds are levered to. Through the 2015 to 2016 China and oil decline SPY fell 12.2% while EVN rose 13.8%, PMM 10.4% and NAN 10.1%.",
+        "Flights to quality. Across the 2011 downgrade selloff SPY fell 17.9% while MMU rose 8.3% and BKT 3.2%.",
+        "Its one equity holding, in the periods staples lead. XLP is 20.1% of all capital deployed and the strongest leg here, compounding +226.4% across the 840 days the rules named it."
+      ],
+      "struggles_in": [
+        "Rising rates, which hit every holding at once. Through the 2022 bear market all seven funds fell: PMM 29.5%, NAN 27.4%, EVN 26.4%, BKT 24.7%, VBF 23.9%, MMU 21.9% and XLP 10.6%.",
+        "Liquidity crises, where closed-end fund discounts widen just when the underlying bonds are already falling. Across the COVID crash MMU fell 28.5%, PMM 28.4% and EVN 27.4%, against SPY's 33.7%.",
+        "Bull markets, which it has no way to participate in. Through the 2023 AI bull SPY rose 26.7% while the best of these seven funds, NAN, rose 7.5% and XLP fell 0.4%.",
+        "Trading friction. The holding changes on 1,563 of the 4,178 reconstructed days, about once every 2.7 trading days, and six of the seven instruments are closed-end funds rather than ETFs."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**The most beaten-down defensive asset is the one most likely to bounce.** That single idea is the entire strategy. There is no trend filter to say whether the beaten-down fund is in a dip or a decline.",
+        "**A 10-day RSI is the right way to measure beaten-down.** One lookback, applied to all seven funds, with no confirmation and no second reading.",
+        "**These seven funds are different enough to rotate between.** Four of them are municipal income closed-end funds and two more are other bond funds, and the record contains two windows in which all seven fell together.",
+        "**Closed-end fund prices are tradeable signals.** A closed-end fund's price moves with both its underlying bonds and its discount to net asset value, so a low RSI here can mean the bonds fell, or that the discount widened, or both."
+      ],
+      "structural": [
+        "**The tree contains zero conditional nodes.** One filter, seven assets, bottom one by 10-day RSI. Nothing else. There is no regime gate, no cash branch and no way to be out.",
+        "**Six of the seven holdings are closed-end funds, and only XLP is an ETF.** BKT, NAN, MMU, PMM, EVN and VBF all trade at a discount or premium to net asset value, on volume far below a comparable ETF.",
+        "**Turnover is very high, and it happens in the least liquid instruments in this library.** One allocation change every 2.7 trading days, 1,563 of them across the reconstructed span. None of the figures on this page carries a commission, a spread or a slippage assumption, and that omission is larger here than anywhere else.",
+        "**The basket is less diversified than it looks.** NAN, MMU, PMM and EVN are all municipal income funds and BKT is a bond trust, so rotating into the most beaten-down defensive usually means rotating between near-identical instruments. In the 2022 bear market they fell 21.9% to 29.5% together.",
+        "**{standard_deviation} annualized volatility is the lowest in this library, and a {calmar_ratio} Calmar is also the lowest.** Those two facts sit either side of a {max_drawdown_abs} drawdown, which is what a low-volatility strategy looks like when its assets are correlated and it has nowhere to hide.",
+        "**{annualized_rate_of_return} annualized ranks 22nd of 24 here and a {sharpe_ratio} Sharpe ranks 19th.** The worst single day in the record was {worst_day}.",
+        "**Two of the seven legs barely earned anything.** MMU compounded +5.1% across 562 days held and NAN +13.8% across 517. No leg lost money, but the median one did little.",
+        "**{backtest_days} trading days is the third longest record in this library**, running from 1999. It shares both a naming convention and two of its holdings, XLP and VBF, with Ob Os Staple my Bonds, which is built on the same idea."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Equity selloff with municipals intact",
+        "expected": "Strong",
+        "why": "The basket is bond-heavy and largely uncorrelated with equities in an ordinary selloff, so it simply is not exposed to what is falling.",
+        "example": "Q4 2018 selloff: SPY -19.2%, MMU +8.8%, BKT +1.1%, XLP -8.7%. The reconstruction spread its days across MMU, VBF, XLP and EVN at roughly 22% each."
+      },
+      {
+        "regime": "Falling rates",
+        "expected": "Strong",
+        "why": "Municipal closed-end funds are leveraged holders of long-duration bonds, so a fall in yields moves them more than the bonds themselves.",
+        "example": "2015 to 2016 China and oil decline: SPY -12.2%, EVN +13.8%, PMM +10.4%, NAN +10.1%. The reconstruction held VBF on 32% of days and XLP on 30%."
+      },
+      {
+        "regime": "Flight to quality",
+        "expected": "Strong",
+        "why": "A shock that sends money into bonds is one where six of the seven holdings are on the receiving end of it.",
+        "example": "2011 downgrade selloff: SPY -17.9%, MMU +8.3%, BKT +3.2%, VBF +1.3%."
+      },
+      {
+        "regime": "Rising rates",
+        "expected": "Poor",
+        "why": "Every holding except XLP is a bond fund, and most of them are leveraged, so a rate rise has nowhere to rotate to.",
+        "example": "2022 bear market: PMM -29.5%, NAN -27.4%, EVN -26.4%, BKT -24.7%, VBF -23.9%, MMU -21.9%, XLP -10.6%."
+      },
+      {
+        "regime": "Liquidity crisis",
+        "expected": "Poor",
+        "why": "Closed-end fund discounts widen in a scramble for liquidity, so these funds fall by more than the bonds they hold, exactly when a defensive strategy is supposed to work.",
+        "example": "COVID crash: MMU -28.5%, PMM -28.4%, EVN -27.4%, NAN -24.2%, against SPY's -33.7%."
+      },
+      {
+        "regime": "Sustained bull market",
+        "expected": "Poor",
+        "why": "There is no equity exposure beyond consumer staples and no mechanism to add any, so a rising market is one the strategy watches.",
+        "example": "2023 AI bull: SPY +26.7%, while the best of the seven, NAN, rose 7.5% and XLP fell 0.4%."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which fund the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. **No reconstructed return is quoted here, for the same reason as on Ob Os Staple my Bonds and more strongly.** The modelled path repeatedly returns more than any of its seven holdings, gaining 133.1% across 2012 to 2014 when the best of them returned 62.0%. That is what costless daily switching between correlated mean-reverting assets manufactures, and here the switching happens every 2.7 trading days in closed-end funds with real spreads. The regimes above are ranked from holdings and price moves alone. One further limit: the record on file covers {backtest_days} trading days from 1999, and the price history available for this reconstruction begins on 19 January 2010 and covers 4,178 of them, so the dot-com crash and the 2008 financial crisis are inside the strategy's record and outside this table."
   },
   {
     "slug": "tqqq-or-not-original",
