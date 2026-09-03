@@ -3094,7 +3094,79 @@ window.STRATEGIES_DATA = [
       "concentration": "Three instruments, none of them a concentrated position.",
       "suitability": "VBF (Invesco Bond Fund) is an actively managed closed-end bond fund. Anyone replicating this strategy today might substitute a passive alternative such as BND or AGG."
     },
-    "author_note": "The strategy notes four versions by start date in its Composer description: V0.0 (1999), V0.1 (2007), V0.2 (2010), V0.3 (2011). The (23,19,1999) in the symphony name likely refers to a specific backtest start date of November 23 or November 19, 1999. This page covers V0.0 only."
+    "author_note": "The strategy notes four versions by start date in its Composer description: V0.0 (1999), V0.1 (2007), V0.2 (2010), V0.3 (2011). The (23,19,1999) in the symphony name likely refers to a specific backtest start date of November 23 or November 19, 1999. This page covers V0.0 only.",
+    "tldr": {
+      "thesis": "A defensive pair-switch with a rarely-used equity escape. On 96.4% of days it holds either XLP, consumer staples, or VBF, a bond fund, and it picks whichever of the two has the lower 10-day RSI. That is mean reversion applied between two defensive assets: it buys the one that has been beaten down more. The remaining 3.6% is the only time it owns stocks at all, when QQQ's own 10-day RSI drops to 30 or below. It carries the shallowest drawdown of any strategy in this library at {max_drawdown_abs}, and its {annualized_rate_of_return} return ranks 23rd of 24.",
+      "works_well_in": [
+        "Equity selloffs where staples and bonds hold up. Through the Q4 2018 selloff SPY fell 19.2% and QQQ 22.7%, while XLP fell 8.7% and VBF 3.6%, and the reconstruction sat in VBF on 55% of days and XLP on 34%.",
+        "Nasdaq capitulation, in the narrow window the escape opens. The QQQ rung was reached on 149 days across the reconstructed span and QQQ compounded +205.6% across them.",
+        "Corrections that resolve sideways. Through the 2015 to 2016 China and oil decline SPY fell 12.2% while VBF rose 5.2% and XLP was roughly flat.",
+        "Any comparison where the drawdown is what matters. {max_drawdown_abs} is the shallowest in this library and {standard_deviation} annualized volatility the second lowest, over a record that ties for the longest here."
+      ],
+      "struggles_in": [
+        "Bull markets, which it sits out almost entirely. Through the 2023 AI bull SPY rose 26.7% and QQQ 55.9%, while the reconstruction held XLP on 51% of days and VBF on 47% and those two returned -0.4% and +0.3%.",
+        "Rising rates, because the bond leg is a position rather than a haven. VBF is 54.3% of all capital deployed and fell 23.9% through the 2022 bear market, a window in which the reconstruction held it on 64% of days.",
+        "Stress that hits both defensives at once. Across the COVID crash VBF fell 23.2% and XLP 24.2%, so the switch had nowhere useful to go.",
+        "Trading friction, which this design is unusually exposed to. The allocation changes about every 5.1 trading days, and more than half of those changes involve a closed-end fund rather than an ETF."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**The more beaten-down of two defensive assets is the better one to own.** The filter takes the bottom performer by 10-day RSI, so a run of weakness in staples is the reason to buy staples. This single choice decides 96.4% of days.",
+        "**Consumer staples and corporate bonds are different enough to rotate between.** The design assumes one is usually recovering while the other is not. The record contains two windows where both fell hard together.",
+        "**An oversold Nasdaq is worth a full equity position, briefly.** The escape holds QQQ outright, unhedged and at full weight, whenever its 10-day RSI reaches 30 or below.",
+        "**A 10-day RSI is the right horizon for all three decisions.** Every test and the filter itself use the same lookback. There is no slow trend filter anywhere to say whether the beaten-down asset is in a downtrend or a dip."
+      ],
+      "structural": [
+        "**VBF is not an ETF, and it is the largest position in the strategy.** The Invesco Bond Fund is a closed-end fund: it trades at a discount or premium to its net asset value, on far lower volume than a comparable ETF. It is 54.3% of all capital deployed, and the strategy moves in or out of it every few days.",
+        "**Turnover is high for a defensive strategy.** The allocation changed on 827 of the 4,178 reconstructed days, about once every 5.1 trading days. None of the figures on this page carries a commission, a spread or a slippage assumption, and on a closed-end fund that omission is larger than it would be elsewhere.",
+        "**The equity escape is a small part of the strategy.** The QQQ rung decided 149 of 4,178 reconstructed days. For the other 96.4% this is a two-asset defensive rotation, whatever the market is doing.",
+        "**Both defensive holdings fell together in the two worst stress windows.** Across the COVID crash VBF fell 23.2% and XLP 24.2%; through the 2022 bear market VBF fell 23.9% and XLP 10.6%. A rotation between two assets cannot help when both are falling.",
+        "**{max_drawdown_abs} is the shallowest drawdown among the 24 strategies in this library** and {standard_deviation} annualized volatility the second lowest. The worst single day in the record was {worst_day}.",
+        "**{annualized_rate_of_return} annualized ranks 23rd of 24 here, and a {sharpe_ratio} Sharpe ranks 23rd as well.** A {calmar_ratio} Calmar ranks 21st. The calm is real and it is paid for in return.",
+        "**{backtest_days} trading days ties for the longest record in this library**, running from April 1999. QQQ first traded on 10 March 1999 and the 10-day lookback its test needs sets the start date. XLP listed in December 1998 and VBF has traded since 1970, so the equity leg is what bounds the window.",
+        "**Nothing here is leveraged.** Three unlevered funds, one position on 100% of days, no inverse fund and no volatility product anywhere in the tree."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Equity selloff with defensives intact",
+        "expected": "Strong",
+        "why": "This is the case the strategy is built for: stocks fall, staples and bonds do not, and it is already holding one of them.",
+        "example": "Q4 2018 selloff: SPY -19.2%, QQQ -22.7%, XLP -8.7%, VBF -3.6%. The reconstruction sat in VBF on 55% of days and XLP on 34%."
+      },
+      {
+        "regime": "Nasdaq capitulation",
+        "expected": "Strong",
+        "why": "The escape takes a full, unhedged QQQ position at an extreme oversold reading, which is the only equity exposure in the design.",
+        "example": "The rung was reached on 149 of 4,178 reconstructed days, and QQQ compounded +205.6% across them."
+      },
+      {
+        "regime": "Correction that resolves sideways",
+        "expected": "Strong",
+        "why": "A decline in stocks that leaves bonds and staples steady is one where holding the defensive pair is simply the right position.",
+        "example": "2015 to 2016 China and oil decline: SPY -12.2%, QQQ -13.0%, VBF +5.2%, XLP -0.6%."
+      },
+      {
+        "regime": "Sustained bull market",
+        "expected": "Poor",
+        "why": "There is no trend filter and no way to be long stocks except through an oversold reading, so a market that keeps rising is one the strategy never joins.",
+        "example": "2023 AI bull: SPY +26.7%, QQQ +55.9%, while XLP returned -0.4% and VBF +0.3% and the reconstruction held those two on 98% of days between them."
+      },
+      {
+        "regime": "Rising rates",
+        "expected": "Poor",
+        "why": "More than half of all capital sits in a bond fund that is chosen for being beaten down, so a sustained bond decline is bought into rather than avoided.",
+        "example": "2022 bear market: VBF -23.9%, and the reconstruction held it on 64% of days."
+      },
+      {
+        "regime": "Stress in stocks and bonds together",
+        "expected": "Poor",
+        "why": "The switch chooses between two assets. When both fall there is no third place to go, and the equity escape makes it worse by buying stocks into the decline.",
+        "example": "COVID crash: VBF -23.2%, XLP -24.2%, QQQ -27.9%, and the reconstruction held QQQ on 22% of days."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which fund the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. **No reconstructed return is quoted here, and this page has a concrete reason.** The modelled path returns more than either of its two holdings in several windows, gaining 55.7% across 2019 when VBF returned 29.7% and XLP 28.2%. That gap is what costless daily switching between two mean-reverting assets produces, not a result, and quoting it would be misleading. The regimes above are ranked from holdings and price moves alone. One further limit: the record on file covers {backtest_days} trading days from April 1999, but the price history available for this reconstruction begins on 19 January 2010 and covers 4,178 of them, so the dot-com crash and the 2008 financial crisis are inside the strategy's record and outside this table."
   },
   {
     "slug": "sometimes-tqqq",

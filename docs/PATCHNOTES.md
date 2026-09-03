@@ -5,6 +5,49 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.61.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 17 of 24: `ob-os-staple-bonds`.** TL;DR, Underlying Assumptions,
+  Market Regime table and regime note for Ob Os Staple my Bonds (Original), matching the shape
+  approved on `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. 13 nodes, one
+  condition, one filter, three unlevered funds. Five findings are stated on the page:
+
+  1. **It is a defensive pair-switch, not an equity strategy.** On 96.4% of days it holds XLP or
+     VBF, picking whichever has the *lower* 10-day RSI, so it buys the defensive asset that has
+     been beaten down more. QQQ, its only equity exposure, was reached on 149 of 4,178
+     reconstructed days.
+  2. **VBF is not an ETF and it is the largest position.** The Invesco Bond Fund is a closed-end
+     fund trading at a discount or premium to net asset value on far lower volume than a comparable
+     ETF. It is 54.3% of all capital deployed and the strategy moves in or out of it every few days.
+  3. **Turnover is high for a defensive strategy**, one change every 5.1 trading days, and more than
+     half of those involve that closed-end fund. The page says the missing spread assumption matters
+     more here than elsewhere.
+  4. **Both defensive holdings fell together in the two worst stress windows.** COVID crash: VBF
+     -23.2%, XLP -24.2%. 2022 bear: VBF -23.9%, XLP -10.6%. A two-asset rotation has nowhere to go.
+  5. **It holds the shallowest drawdown in the library at -19.6%** and the second lowest volatility,
+     while ranking 23rd of 24 on both annualized return and Sharpe.
+
+- **No reconstructed return is quoted, and for the first time the page gives the concrete reason.**
+  The modelled path gains 55.7% across 2019 while its two holdings returned 29.7% and 28.2%, and
+  27.3% across 2024 against 6.4% and 11.0%. That gap is what costless daily switching between two
+  mean-reverting assets manufactures. The regime note states this in those terms rather than
+  gesturing at turnover.
+
+- **Reconstruction coverage stated, as on `dip-buying-tech`.** The record is 6,901 days from April
+  1999; the price history supports 4,178 of them from 19 January 2010, so the dot-com crash and 2008
+  are inside the record and outside the table.
+
+### Fixed
+- **Page numbering corrected.** Earlier entries in this rollout labelled pages "of 23". There are 24
+  visible strategies, so the denominator was off by one throughout. Entries from here read "of 24";
+  the shipped page content was never affected.
+
+---
+
 ## [1.60.0] - 2026-09-02
 
 ### Added
