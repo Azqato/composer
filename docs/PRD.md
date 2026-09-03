@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.68.2
+**Version:** 1.68.3
 **Status:** Active
 **Last Updated:** 2026-09-02
 
@@ -2446,7 +2446,7 @@ numbering schemes; they answer different questions.
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
-| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 15, 17, 19 shipped; **13, 14, 15 complete on all 24 visible strategies (v1.68.0)**; items 6, 11, 16, 18 open | v1.68.0 (partial) |
+| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1 to 10, 12, 13, 14, 15, 17 and 19 shipped; **13, 14, 15 complete on all 24 visible strategies (v1.68.0)**; **items 10b, 11, 16 and 18 open** | v1.68.2 (partial) |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -3258,9 +3258,11 @@ files already in the repo.
   alone, which is 1.00. It arrives with the backtest statistics, alongside Sortino and turnover, so
   it describes the backtest. Labelling it as current concentration would have been wrong on at least
   4 of the 31.
-- [ ] **4a. OPEN, and it invalidates how item 4 is presented: the Outlier dependence panel
-  reads as a strategy-specific warning for a number that is normal for any volatile series.**
-  Raised by the owner 2026-09-02, confirmed by measurement the same day. The card prints
+- [x] **4a. Fixed in v1.43.0.** The Outlier dependence panel read as a strategy-specific warning
+  for a number that is normal for any volatile series. The card is now **"Reliance on its best
+  days", benchmarked against SPY over the same window**, and the `warn` colour and the "net loser"
+  sentence are gone from every page. Raised by the owner 2026-09-02, confirmed by measurement the
+  same day. The card prints
   `top_five_percent_day_contribution` and, above 100%, warns "the other 95% of days lost money on
   net: remove those days and this strategy is a net loser". That sentence is arithmetically true
   and materially misleading, because the denominator is **net** return, which is a small residual
@@ -3648,9 +3650,11 @@ files already in the repo.
 
 **Tier 3: new written content, and this is where the real cost is. Every item multiplies by 31.**
 
-- [ ] **19. GATE: the owner reviews and explicitly approves the structure before it is written for
-  any strategy beyond the pilot.** Added 2026-08-28, immediately after reviewing v1.29.0 to v1.29.3.
-  **Nothing in items 13, 14 or 15 may be written for a second strategy until this is signed off.**
+- [x] **19. GATE: the owner reviews and explicitly approves the structure before it is written for
+  any strategy beyond the pilot. Signed off 2026-09-02 in v1.43.0.** Added 2026-08-28, immediately
+  after reviewing v1.29.0 to v1.29.3. The gate held: nothing beyond the pilot was written until the
+  layout was approved, and items 13, 14 and 15 then rolled out to the remaining 23 visible
+  strategies across v1.44.0 to v1.68.0.
 
   **STILL OPEN, and not resolved by the v1.43.0 approval.** The owner approved the
   `gold-miner-original` page on 2026-09-02, and that approval covers the v1.42.x **layout** changes

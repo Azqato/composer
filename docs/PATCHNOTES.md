@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.68.3] - 2026-09-02
+
+### Changed
+- **Three stale V1.20 checkboxes corrected**, found while working out what is actually next on the roadmap.
+  - **Item 4a is done, fixed in v1.43.0.** It was still marked OPEN and described as invalidating how item 4 is presented. The Outlier dependence card became **"Reliance on its best days", benchmarked against SPY**, and the `warn` colour and the "net loser" sentence were removed from every page in that release. Verified against `strategies.html`, whose comment records the old behaviour as ending at v1.42.0.
+  - **Item 19's gate is signed off**, recorded in v1.43.0 and now reflected in its checkbox rather than only in the surrounding prose.
+  - **The V1.20 milestone row listed item 6 as open**; it shipped in v1.34.0. The row introduced that error in v1.68.1 and now reads items 10b, 11, 16 and 18, which is the true remaining set.
+
+---
+
 ## [1.68.2] - 2026-09-02
 
 ### Fixed
