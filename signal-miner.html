@@ -120,6 +120,12 @@
     table.sl-table th.sorted.asc::after { content: ' \25B4'; }
     table.sl-table td.sig, table.sl-table th.sig { text-align: left; white-space: normal; font-family: var(--font-mono); color: var(--color-primary); min-width: 260px; }
     table.sl-table td.tgt { text-align: left; font-family: var(--font-mono); color: var(--color-green); }
+    /* Plateau columns (V2.2 item A). These carry no sort handler, so they must
+       not wear the pointer cursor and hover colour that promise one. `help` is
+       the honest cursor: everything they have to say is in the tooltip. */
+    table.sl-table th.nosort { cursor: help; }
+    table.sl-table th.nosort:hover { color: var(--color-disabled); }
+    table.sl-table td.plat { color: var(--color-secondary); cursor: help; }
     table.sl-table tbody tr:hover { background: var(--color-surface); }
     .num-pos { color: var(--color-green); }
     .num-neg { color: var(--color-pink); }
@@ -1624,7 +1630,11 @@
       // 70ms were logged for runs that really took 3.7s and 9.4s). Throughput
       // figures in docs/PRD.md come from scripts/measure_throughput.py, which
       // times runs from the parent process instead.
-      sigCache = { store, cache, tgt, targetLret, N, win, busyMs: busyTotal };
+      // `W` is the run's ACTIVE window grid, not the full WINDOWS list: the
+      // min-period control filters it, and the indicator cache only holds the
+      // windows that survived. The plateau reader steps along this lattice.
+      sigCache = { store, cache, tgt, targetLret, N, win, W, busyMs: busyTotal };
+      plateauCache.clear();
       runBtn.disabled = false;
       setTimeout(() => { prog.style.display = 'none'; }, 600);
 
@@ -1749,6 +1759,313 @@
     }
 
     // ---------- rendering ----------
+    // ---------- parameter plateau (V2.2 item A) ----------
+    //
+    // A signal that only works at one setting found a lucky corner of the
+    // parameter grid. One that works at 20, 21 and 22 found something. The
+    // tool has always ranked on the peak alone, which is precisely the ranking
+    // that cannot tell those two apart, and a grid this dense produces the
+    // first kind in quantity.
+    //
+    // This is a DIAGNOSTIC and nothing more. It adds two read-only columns and
+    // changes no ranking. Ranking on the neighbourhood instead of the peak is
+    // a genuine change to what the tool promises and is deliberately not made
+    // here, and not made silently anywhere.
+    //
+    // Where the numbers come from. NOT the Pass 1 store. The store keeps only
+    // specs that turned a profit with finite Sortino and Calmar, so reading
+    // neighbours out of it would drop every losing neighbour and then report a
+    // plateau across the survivors of a filter the reader cannot see. A losing
+    // neighbour is not a hole. It is a low number, and it is exactly the number
+    // that should end a plateau. So each neighbour is re-evaluated directly,
+    // against indicator caches that are already in memory: one boolean pass and
+    // one backtest, the same work Pass 1 does millions of times.
+    //
+    // Cost. A fixed ring per row: 8 level positions and 4 window positions for
+    // a threshold family, 4 for `self`, 8 for `cmp`. At most 12 backtests for
+    // each of the <=100 rows on screen, memoised per row and metric, so a sort
+    // click recomputes nothing.
+    //
+    // Two axes, two different shapes, stated because they are easy to conflate:
+    //   - LEVEL exists only for the four `lvl` families, is uniform inside a
+    //     window, and is quotable in the units the reader thinks in ("holds
+    //     from 20% to 28%").
+    //   - WINDOW exists for every family, but WINDOWS is log-uniform, so a
+    //     neighbourhood there is measured in GRID POSITIONS, never in days.
+    //     One step from 5 is 7; one step from 200 is 252.
+    //
+    // Scope, said out loud rather than implied: singles only. A combined AND
+    // row has two specs and therefore a product of two lattices, with no honest
+    // one-dimensional plateau to quote; those rows report nothing at all.
+    const PLATEAU_LVL_RADIUS = 4;   // level steps evaluated each side
+    const PLATEAU_WIN_RADIUS = 2;   // window grid positions evaluated each side
+    const PLATEAU_MED_LVL = 2;      // level steps inside the neighbourhood median
+    const PLATEAU_MED_WIN = 1;      // window steps inside the neighbourhood median
+    const PLATEAU_DROP = 0.2;       // a neighbour holds within 20% of the row
+
+    // Reused across every neighbour, exactly as Pass 1 reuses its own buffer:
+    // backtest() consumes it synchronously, so there is nothing to retain.
+    let plateauBuf = null;
+    // rowKey + metric -> result. Plateau values depend only on the spec, the
+    // target and the metric, so the section-3 filters never invalidate them;
+    // only a new run does, and that clears this where sigCache is replaced.
+    const plateauCache = new Map();
+
+    // Score one perturbed spec. Returns the metric bundle, or null if the spec
+    // is not evaluable (an indicator the run never cached, say). A null here is
+    // a hole and is counted as one; it is never read as a zero.
+    function plateauScore(spec, target) {
+      try {
+        const [L, R] = leftRight(spec, sigCache.cache);
+        if (!L) return null;
+        if (typeof R !== 'number' && !R) return null;
+        if (!plateauBuf || plateauBuf.length !== N) plateauBuf = new Uint8Array(N);
+        const arr = boolInto(L, R, spec.dir === 'GT', plateauBuf);
+        return backtest(arr, sigCache.targetLret[target], sigCache.win.s0, sigCache.win.len);
+      } catch (e) { return null; }
+    }
+
+    // Evaluate one axis of the ring. `move(k)` returns the spec k steps from
+    // the row, or null when k leaves the lattice. Each slot ends up as an
+    // object (scored), the string 'edge' (the lattice ended here) or null (a
+    // hole: in the lattice, but not scorable). Keeping those three apart is
+    // what lets the UI say "one-sided at the bracket edge" instead of quietly
+    // reporting a shorter plateau.
+    function plateauAxis(move, target, metric, radius) {
+      const vals = new Array(2 * radius + 1).fill(null);
+      const beyond = { lo: true, hi: true };
+      let holes = 0;
+      for (const dir of [-1, 1]) {
+        const side = dir < 0 ? 'lo' : 'hi';
+        for (let k = 1; k <= radius; k++) {
+          const off = dir * k;
+          const sp = move(off);
+          if (!sp) {           // out of lattice: everything further out is too
+            for (let j = k; j <= radius; j++) vals[dir * j + radius] = 'edge';
+            beyond[side] = false;
+            break;
+          }
+          const m = plateauScore(sp, target);
+          const v = m ? m[metric] : NaN;
+          if (v !== v) { holes++; continue; }
+          vals[off + radius] = { v, spec: sp };
+        }
+        // Does the lattice continue past the ring? Asked with the mover alone
+        // and no backtest, so it costs nothing. Without it, a walk that holds
+        // all the way to the search radius is reported as "may run wider" even
+        // when the grid ends one step later, which is the one case where that
+        // sentence is false. It was 20 of 394 axis ends in the harness run
+        // that found it.
+        if (beyond[side] && !move(dir * (radius + 1))) beyond[side] = false;
+      }
+      return { vals, radius, holes, beyond };
+    }
+
+    // The contiguous run of neighbours that stay within PLATEAU_DROP of the
+    // row, walked outward from the centre. Anything that is not a scored value
+    // above the floor stops the walk, holes included: an unscored neighbour is
+    // not evidence that the plateau continues through it.
+    //
+    // `stop` records WHY each side stopped, because the three reasons mean
+    // different things. 'edge' is a one-sided neighbourhood at a bracket end
+    // and the width is a floor, not a measurement. 'ring' means the walk used
+    // up its radius while still holding, so the plateau is at least this wide
+    // and probably wider. 'break' is the only one that is a real measurement.
+    function plateauWalk(ax, floor) {
+      const R = ax.radius;
+      const out = { lo: 0, hi: 0, stop: { lo: 'break', hi: 'break' } };
+      for (const side of ['lo', 'hi']) {
+        const dir = side === 'lo' ? -1 : 1;
+        let n = 0;
+        while (n < R) {
+          const cell = ax.vals[dir * (n + 1) + R];
+          if (cell === 'edge') { out.stop[side] = 'edge'; break; }
+          if (!cell || cell.v < floor) break;
+          n++;
+        }
+        // Held all the way out. 'ring' only if there is more lattice to hold
+        // across; otherwise the walk really did reach the end of the grid.
+        if (n === R && out.stop[side] === 'break')
+          out.stop[side] = ax.beyond[side] ? 'ring' : 'edge';
+        out[side] = n;
+      }
+      return out;
+    }
+
+    // The scored slots within `radius` of the centre, for the median.
+    function plateauNear(ax, radius) {
+      const out = [];
+      for (let k = -radius; k <= radius; k++) {
+        if (!k) continue;
+        const cell = ax.vals[k + ax.radius];
+        if (cell && cell !== 'edge') out.push(cell.v);
+      }
+      return out;
+    }
+
+    function median(xs) {
+      if (!xs.length) return NaN;
+      const a = xs.slice().sort((x, y) => x - y), h = a.length >> 1;
+      return a.length % 2 ? a[h] : (a[h - 1] + a[h]) / 2;
+    }
+
+    // The two window axes are the same code with a different slot, so they are
+    // built by one factory. The same-ticker canonical rule (p1 < p2, from
+    // pushCmpSpecs) is enforced here too: a neighbour that violates it is a
+    // spec the run never built and, on one ticker, a comparison of a series
+    // against itself. It is out of lattice, not a hole.
+    function windowMover(spec, slot) {
+      const f = FAM[spec.f], W = sigCache.W;
+      const base = slot === 'p2' ? spec.p2 : spec.p1;
+      const at = W.indexOf(base);
+      if (at < 0) return null;
+      return k => {
+        const j = at + k;
+        if (j < 0 || j >= W.length) return null;
+        const p = W[j];
+        // `self` pins both operands to one window, so its two slots move
+        // together; leftRight reads p1, and p2 is kept equal for the label.
+        if (f.kind === 'self') return Object.assign({}, spec, { p1: p, p2: p });
+        if (slot === 'p2') {
+          if (spec.t1 === spec.t2 && !(spec.p1 < p)) return null;
+          return Object.assign({}, spec, { p2: p });
+        }
+        if (f.kind === 'cmp' && spec.t1 === spec.t2 && !(p < spec.p2)) return null;
+        return Object.assign({}, spec, { p1: p });
+      };
+    }
+
+    function levelMover(spec) {
+      const f = FAM[spec.f];
+      if (f.kind !== 'lvl') return null;
+      // The grid is regenerated rather than stored. It is a pure function of
+      // the family and the window, and float equality on a lattice value is not
+      // something to rely on, so the row's own level is matched by nearest.
+      const grid = f.lv(spec.p1);
+      let at = -1, best = Infinity;
+      for (let i = 0; i < grid.length; i++) {
+        const d = Math.abs(grid[i] - spec.level);
+        if (d < best) { best = d; at = i; }
+      }
+      if (at < 0) return null;
+      return { grid, at, move: k => {
+        const j = at + k;
+        if (j < 0 || j >= grid.length) return null;
+        return Object.assign({}, spec, { level: grid[j] });
+      } };
+    }
+
+    function stepNote(stop) {
+      if (stop === 'edge') return 'stops at the end of the grid, so this side is one-sided';
+      if (stop === 'ring') return 'still holding at the edge of the search, so it may run wider';
+      return 'ends at a neighbour that drops out of band';
+    }
+
+    // Everything above, assembled into what one table row needs.
+    function plateauFor(r, metric) {
+      if (!sigCache || restored) return null;
+      if (!r.single || !r.spec) return null;
+      const self = r[metric];
+      if (self == null || self !== self) return null;
+
+      const key = rowKey(r) + '|' + metric;
+      const hit = plateauCache.get(key);
+      if (hit !== undefined) return hit;
+
+      const spec = r.spec, f = FAM[spec.f];
+      // 20% WORSE, not 80% of the stored number. On a metric that can be
+      // negative (Max DD always is, Calmar sometimes) multiplying by 0.8 moves
+      // toward zero, which is an IMPROVEMENT, and the band would then admit
+      // every neighbour that is worse than the row. Subtracting a fifth of the
+      // magnitude degrades in the right direction on both signs.
+      const floor = self - PLATEAU_DROP * Math.abs(self);
+
+      const axes = [];
+      const lvl = levelMover(spec);
+      if (lvl) axes.push({ id: 'level', grid: lvl.grid, at: lvl.at,
+                           ax: plateauAxis(lvl.move, r.target, metric, PLATEAU_LVL_RADIUS),
+                           med: PLATEAU_MED_LVL });
+      const slots = f.kind === 'cmp' ? ['p1', 'p2'] : ['p1'];
+      for (const slot of slots) {
+        const mv = windowMover(spec, slot);
+        if (!mv) continue;
+        axes.push({ id: slot, ax: plateauAxis(mv, r.target, metric, PLATEAU_WIN_RADIUS),
+                    med: PLATEAU_MED_WIN });
+      }
+      if (!axes.length) { plateauCache.set(key, null); return null; }
+
+      let holes = 0;
+      const pool = [self];
+      for (const a of axes) {
+        a.walk = plateauWalk(a.ax, floor);
+        holes += a.ax.holes;
+        for (const v of plateauNear(a.ax, a.med)) pool.push(v);
+      }
+
+      // Text for one axis, in the units that axis actually has.
+      const W = sigCache.W;
+      for (const a of axes) {
+        if (a.id === 'level') {
+          const lo = a.grid[a.at - a.walk.lo], hi = a.grid[a.at + a.walk.hi];
+          a.span = a.walk.lo + a.walk.hi;
+          a.text = a.span ? levelText(f.a, lo) + ' to ' + levelText(f.a, hi)
+                          : 'only ' + levelText(f.a, spec.level);
+          a.name = 'level';
+        } else {
+          const base = a.id === 'p2' ? spec.p2 : spec.p1;
+          const at = W.indexOf(base);
+          a.span = a.walk.lo + a.walk.hi;
+          a.text = a.span ? W[at - a.walk.lo] + 'd to ' + W[at + a.walk.hi] + 'd'
+                          : 'only ' + base + 'd';
+          a.name = f.kind === 'cmp' ? (a.id === 'p1' ? 'first window' : 'second window')
+                                    : 'window';
+        }
+      }
+
+      // The cell quotes ONE axis. Level when there is one, because it is the
+      // axis a reader can act on directly. For a two-window comparison it is
+      // the TIGHTER of the two, since that is the constraint that actually
+      // binds; the other is one hover away rather than hidden.
+      let primary = axes[0];
+      if (!lvl && axes.length > 1) primary = axes[0].span <= axes[1].span ? axes[0] : axes[1];
+      let text = primary.text;
+      if (primary.walk.stop.lo === 'ring' || primary.walk.stop.hi === 'ring') text += '+';
+
+      const detail = axes.map(a =>
+        a.name + ': ' + a.text + ' (' + a.walk.lo + ' step' + (a.walk.lo === 1 ? '' : 's') +
+        ' below, ' + a.walk.hi + ' above; low side ' + stepNote(a.walk.stop.lo) +
+        ', high side ' + stepNote(a.walk.stop.hi) + ')').join('\n');
+
+      const out = {
+        text: text,
+        med: median(pool),
+        steps: primary.span,
+        holes: holes,
+        title: 'Plateau on the ranking metric, within ' + (PLATEAU_DROP * 100) +
+               '% of this row.\n' + detail +
+               (holes ? '\n' + holes + ' neighbour' + (holes === 1 ? '' : 's') +
+                        ' could not be scored and ' + (holes === 1 ? 'was' : 'were') +
+                        ' treated as breaks, not as zeros.' : '') +
+               '\nNeighbourhood median is over ' + pool.length + ' scored setting' +
+               (pool.length === 1 ? '' : 's') + ' including this one.' +
+               '\nWindow steps are grid positions, not days: the window grid is log-uniform.',
+      };
+      plateauCache.set(key, out);
+      return out;
+    }
+
+    // The metric the two plateau columns speak about. It follows the sort, so
+    // "neighbourhood median" always means the median of whatever the table is
+    // currently ranked by. Sorting by a text column leaves it on Calmar, which
+    // is the default ranking metric.
+    function plateauMetric() {
+      return (sortKey === 'label' || sortKey === 'target') ? 'calmar' : sortKey;
+    }
+    function plateauMetricLabel() {
+      const c = COLS.find(x => x.key === plateauMetric());
+      return c ? c.label : 'Calmar';
+    }
+
     const COLS = [
       { key: '_sel',    label: '' },
       { key: 'label',   label: 'Signal', cls: 'sig' },
@@ -1757,6 +2074,12 @@
       { key: 'annRet',  label: 'Annualized', fmt: 'pct' },
       { key: 'sortino', label: 'Sortino', fmt: 'num' },
       { key: 'calmar',  label: 'Calmar', fmt: 'num' },
+      // Computed at render time for the displayed rows only, which is also why
+      // neither is sortable: the value does not exist for the millions of rows
+      // outside the top 100, so a sort on it would order a sample while looking
+      // like it had ordered the set.
+      { key: '_nbhd',    label: () => 'Nbhd ' + plateauMetricLabel(), cls: 'nosort' },
+      { key: '_plateau', label: 'Plateau', cls: 'nosort' },
       { key: 'maxDD',   label: 'Max DD', fmt: 'pct' },
       { key: 'tim',     label: 'Time in Mkt', fmt: 'pct0' },
       { key: 'pf',      label: 'Profit Factor', fmt: 'num' },
@@ -1868,10 +2191,19 @@
       const shown = picked.rows;
 
       const head = document.getElementById('sl-head');
+      const metric = plateauMetric();
+      const metricFmt = (COLS.find(c => c.key === metric) || {}).fmt || 'num';
       head.innerHTML = COLS.map(c => {
         if (c.key === '_copy' || c.key === '_sel') return '<th></th>';
+        const label = typeof c.label === 'function' ? c.label() : c.label;
+        if (c.key === '_nbhd' || c.key === '_plateau') {
+          const tip = c.key === '_nbhd'
+            ? `Median ${plateauMetricLabel()} across this row and its immediate neighbours on the parameter grid. A row far above its own neighbourhood is a spike, not a setting.`
+            : `The range of settings either side of this row that stay within ${PLATEAU_DROP * 100}% of it. Hover a cell for the detail. Single signals only.`;
+          return `<th class="nosort" title="${escapeHtml(tip)}">${label}</th>`;
+        }
         const sorted = c.key === sortKey ? ' sorted' + (sortAsc ? ' asc' : '') : '';
-        return `<th class="${c.cls || ''}${sorted}" data-key="${c.key}">${c.label}</th>`;
+        return `<th class="${c.cls || ''}${sorted}" data-key="${c.key}">${label}</th>`;
       }).join('');
 
       const body = document.getElementById('sl-body');
@@ -1887,6 +2219,15 @@
               return `<td class="sig">${escapeHtml(r.label)}${tag}</td>`;
             }
             if (c.key === 'target') return `<td class="tgt">${r.target}</td>`;
+            if (c.key === '_nbhd' || c.key === '_plateau') {
+              // Computed once per row and read twice: plateauFor memoises, so
+              // the second column costs a map lookup, not a second ring.
+              const pl = plateauFor(r, metric);
+              if (!pl) return '<td class="plat"><span style="color:var(--color-disabled)" title="Plateau is scored for single signals only: a combined row sits on two parameter grids at once and has no single range to quote.">-</span></td>';
+              const body = c.key === '_nbhd' ? fmtVal(pl.med, metricFmt)
+                                             : escapeHtml(pl.text);
+              return `<td class="plat" title="${escapeHtml(pl.title)}">${body}</td>`;
+            }
             return `<td>${fmtVal(r[c.key], c.fmt)}</td>`;
           });
           return '<tr>' + cells.join('') + '</tr>';
@@ -1942,7 +2283,9 @@
       const el = document.getElementById('sl-baseline');
       if (!el) return;
       if (!lastBaselines || !lastBaselines.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
-      const cols = COLS.filter(c => c.key !== 'label' && c.key !== 'target' && c.key !== '_copy');
+      const cols = COLS.filter(c => c.key !== 'label' && c.key !== 'target' &&
+                                   c.key !== '_copy' && c.key !== '_nbhd' &&
+                                   c.key !== '_plateau');
       el.style.display = 'block';
       el.innerHTML =
         '<div class="sl-baseline-title">Buy &amp; hold benchmarks over the same window</div>' +

@@ -5,6 +5,29 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.73.0] - 2026-09-03
+
+### Added
+- **Parameter plateau scoring in the Signal Miner.** V2.2 item A, shipped as a diagnostic. Two new read-only columns on the results table. **Plateau** says how far either side of a row's setting the result still holds, quoted in real units: `20% to 28%`, `21d to 63d`. **Nbhd** is the median of the ranking metric across the row and its immediate neighbours on the parameter grid. A row far above its own neighbourhood is a spike; a row level with it found something.
+- **`scripts/run_harness.py plateau`**, a fourth headless gate on `signal-miner.html`, which independently recomputes every plateau it checks rather than re-reading what the page decided.
+
+### Fixed
+- **The `settings` harness had been hanging for its full 900-second timeout with no output and no JavaScript error.** Pre-existing, not caused by this change: it reproduced against an unmodified page and an unmodified hook, in 2 of 3 baseline runs, and only ever on the second Edge launch of the two-phase pair. Edge schedules sync and component-update work at startup once a profile has state to reconcile, so under `--virtual-time-budget` the tab never reaches the idle point `--dump-dom` waits for. `--disable-sync --disable-component-update` fixes it, 6 of 6. Written up as trap 13.
+- **A walk that held to the edge of the search said "may run wider" even when the parameter grid ended one step later.** Caught by the harness rather than by eye: two independently derived accounts of the same 394 axis ends disagreed by exactly 20. The lattice is now probed one position past the search radius, which costs no backtest at all, and the two accounts agree exactly.
+
+### Notes
+- **The ranking is unchanged, deliberately and completely.** Both columns are diagnosis. The roadmap's stronger version, ranking on the neighbourhood median instead of the peak, changes what the leaderboard *is* and is not something to do quietly; it is now a decision with evidence behind it rather than a guess, and it is still open.
+- **What the first real run showed, which is why the diagnostic shipped first.** Across the top 100 single signals: **18 are knife edges**, holding at exactly one setting and nowhere adjacent. Widths cluster at 1 to 4 steps (25, 19, 17 and 15 rows) and only 6 rows exceed 4. The neighbourhood median runs at 0.91 of the row's own Calmar at the median, 0.73 at the tenth percentile. So roughly a fifth of the leaderboard is what over-fitting looks like from the inside, and it was previously indistinguishable from the rest.
+- **Neighbours are re-evaluated, not read out of the Pass 1 store, and that is the opposite of what the roadmap entry proposed.** The store keeps only specs that turned a profit with finite Sortino and Calmar. Reading neighbours out of it would drop every losing neighbour and report a plateau across the survivors of a filter the reader cannot see. A losing neighbour is not a hole; it is a low number, and it is exactly the number that should end a plateau. The harness proves the difference by scoring specs at the far ends of a level grid, which never fire, have a total of exactly zero, and were therefore never kept: 17 of 40 probed.
+- **The cost is what makes this affordable.** A fixed ring per row, at most 12 backtests, computed only for the rows on screen and memoised per row and metric, so a sort click recomputes nothing. At the measured 23 ns per spec-target-day that is roughly a millisecond per row against the millions of backtests Pass 1 already ran.
+- **The two axes are not the same shape and are not scored with one formula.** Level exists only for the four threshold families, is uniform inside a window, and is quotable in the units the reader thinks in. Window exists for every family, but the window grid is log-uniform, so a neighbourhood there is measured in grid positions: one step from 5 is 7, one step from 200 is 252.
+- **Neither column is sortable, and that is forced rather than chosen.** The value only exists for the hundred rows on screen, so a sort on it would order a sample while looking like it had ordered the set.
+- **Single signals only, said in the empty cell rather than implied by a dash.** A combined AND row sits on two parameter grids at once and has no single range to quote.
+- **A one-sided neighbourhood is reported as one, never padded.** 89 of 394 axis ends in the harness run were at a genuine grid edge. The tooltip distinguishes all three ways a plateau can end: a neighbour that drops out of band, the end of the grid, and the edge of the search.
+- All four gates and the six advisory checkers pass.
+
+---
+
 ## [1.72.0] - 2026-09-03
 
 ### Added

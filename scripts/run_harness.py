@@ -7,9 +7,11 @@
     python scripts/run_harness.py inertness   # cross-ticker operand degeneracy
     python scripts/run_harness.py memory      # peak heap
     python scripts/run_harness.py settings    # persistence and the Default button
-    python scripts/run_harness.py all         # verify + live + settings (the gates)
+    python scripts/run_harness.py plateau     # parameter plateau scoring (V2.2 item A)
+    python scripts/run_harness.py all         # the four gates
 
-`verify`, `live` and `settings` gate a change to signal-miner.html. `inertness`
+`verify`, `live`, `settings` and `plateau` gate a change to signal-miner.html.
+`inertness`
 and `memory` are measurement tools, run when a number in docs/PRD.md needs
 re-establishing rather than on every edit.
 
@@ -31,13 +33,14 @@ import _edge  # noqa: E402
 HARNESSES = {
     'settings':  dict(driver='settings.js', timeout=900),
     'verify':    dict(driver='verify_specs.js', timeout=1200),
+    'plateau':   dict(driver='plateau.js', timeout=1800),
     'live':      dict(driver='live_run.js', timeout=1800),
     'inertness': dict(driver='inertness.js', timeout=1800),
     'memory':    dict(driver='memory.js', timeout=3600,
                       flags=('--enable-precise-memory-info',)),
 }
 
-GATES = ['verify', 'live', 'settings']
+GATES = ['verify', 'live', 'settings', 'plateau']
 
 # `settings` is the odd one out: it tests localStorage, so it needs two Edge
 # invocations over the SAME profile, and the first of them needs that profile to

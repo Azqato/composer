@@ -30,6 +30,13 @@ TRAP 4: READ THE DUMPED DOM AS BYTES.
     dies on the first non-ASCII byte (the page uses a middot separator). Take
     subprocess stdout as bytes and .decode('utf-8', 'replace').
 
+TRAP 13: A SECOND LAUNCH OVER A POPULATED PROFILE NEEDS TWO MORE FLAGS.
+    --disable-sync and --disable-component-update. Without them the second Edge
+    invocation of a two-phase harness hangs until the wall-clock timeout, with
+    no JavaScript error and no output at all. Phase 1 on an empty profile
+    always passes, so it reads as a bug in whatever the page changed since.
+    See the flags in run() for the measurement behind this.
+
 Also: USE EDGE, NEVER CHROME, so the owner's browser session is untouched.
 `window.confirm` auto-dismisses under --headless=new and is stubbed to true.
 """
@@ -61,6 +68,12 @@ HOOK = """    window.__t = {
       composerCondition, composerFlat, pctGrid, scaledPctGrid, syncChips,
       DEFAULT_SETTINGS, SETTING_IDS, applySettings, saveSettings, loadSettings,
       SETTINGS_STORE_KEY,
+      plateauFor, plateauMetric, plateauScore, plateauAxis, plateauWalk,
+      levelMover, windowMover, leftRight, backtest, storeRow, selectTop,
+      PLATEAU_LVL_RADIUS, PLATEAU_WIN_RADIUS, PLATEAU_DROP,
+      DISPLAY_CAP,
+      get lastResults() { return lastResults; },
+      get sortKey() { return sortKey; },
       get targets() { return targets; },
       get compares() { return compares; },
       get sigCache() { return sigCache; },
@@ -139,7 +152,21 @@ def run(driver_js, timeout=1800, throttle=False, flags=(), profile=None, config=
         ephemeral = True
     url = 'file:///' + html_path.replace('\\', '/').replace(' ', '%20')
     argv = [edge_path(), '--headless=new', '--disable-gpu', '--no-sandbox',
-            '--virtual-time-budget=2000000000', '--user-data-dir=' + prof]
+            '--virtual-time-budget=2000000000', '--user-data-dir=' + prof,
+            # TRAP 13: a SECOND launch over a populated profile hangs without
+            # these. Measured 2026-09-03 against an unmodified page and an
+            # unmodified hook: `settings` phase 2 hung in 2 of 3 baseline runs
+            # and passed 6 of 6 with them. Phase 1, on an empty profile, always
+            # passed, which is exactly what makes this look like a bug in
+            # whatever the page changed since rather than a browser one. Edge
+            # schedules sync and component-update work at startup once a
+            # profile has state to reconcile, and under --virtual-time-budget
+            # the tab then never reaches the idle point --dump-dom waits for.
+            # The run burns its full wall clock and surfaces as TimeoutExpired
+            # with no JavaScript error anywhere. Either flag alone was enough
+            # in testing; both are passed because the failure is intermittent
+            # and neither costs anything.
+            '--disable-sync', '--disable-component-update']
     argv += list(flags)
     argv += ['--dump-dom', url]
     try:

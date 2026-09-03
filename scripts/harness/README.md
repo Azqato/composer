@@ -11,14 +11,16 @@ Run them from the repository root:
 ```
 python scripts/run_harness.py verify      # spec lockstep + dual-path equality
 python scripts/run_harness.py live        # end-to-end run, window, rendering
+python scripts/run_harness.py settings    # persistence and the Default button
+python scripts/run_harness.py plateau     # parameter plateau scoring
 python scripts/run_harness.py inertness   # cross-ticker operand degeneracy
 python scripts/run_harness.py memory      # peak heap and throughput
-python scripts/run_harness.py all         # verify + live, the two gates
+python scripts/run_harness.py all         # the four gates
 ```
 
-`verify` and `live` gate any change to `signal-miner.html`. The other two are
-measurement tools: run them when a figure in the PRD needs re-establishing,
-not on every edit.
+`verify`, `live`, `settings` and `plateau` gate any change to
+`signal-miner.html`. The other two are measurement tools: run them when a
+figure in the PRD needs re-establishing, not on every edit.
 
 ## Use Edge, never Chrome
 
@@ -180,6 +182,74 @@ Get-CimInstance Win32_Process -Filter "Name='msedge.exe'" |
 
 Filter on `composer-harness` rather than killing `msedge.exe` wholesale, so the
 browser session you are actually using is left alone.
+
+## Trap 13: a second launch over a populated profile hangs
+
+`--disable-sync --disable-component-update`, in `_edge.py`'s `argv`. Without
+them the **second** Edge invocation of a two-phase harness hangs until the
+wall-clock timeout: no JavaScript error, no partial output, just
+`TimeoutExpired` after 900 seconds.
+
+What makes this one expensive is that **phase 1 always passes**. An empty
+profile has nothing to reconcile, so the first launch is clean and the second
+is not, which reads as a bug in whatever the page changed since the last green
+run. It was found while trying to ship an unrelated feature and was reproduced
+against an **unmodified** page and an unmodified hook, which is the only thing
+that ruled the feature out.
+
+Measured 2026-09-03: `settings` phase 2 hung in **2 of 3** baseline runs and
+passed **6 of 6** with the flags. Either flag alone was enough in testing; both
+are passed because the failure is intermittent and neither costs anything.
+
+The mechanism is trap 9 wearing a different hat. Edge schedules sync and
+component-update work at startup once a profile has state, and under
+`--virtual-time-budget` the tab never reaches the idle point that `--dump-dom`
+waits for.
+
+**If a harness ever hangs with no output, check this before reading a single
+line of page code.** The intermittency is the trap: a green run proves nothing.
+
+## Trap 12: a default-settings sample can be a sample of one
+
+`plateau` asserts across the rows on screen, and its first version reported
+100 rows of which **one** was a single signal. At the shipped pairing setting
+the top 100 by Calmar is 99 combined AND rows, so every single-row assertion
+was resting on one row and proving very little, while still printing a
+comforting `ok`. The driver now turns pairing off for the main pass and back on
+for the combined-row case, and asserts a **minimum sample size** rather than
+merely a non-zero one.
+
+The general lesson: when a driver asserts over "whatever is on screen", assert
+how much is on screen too. A shipped default that makes the interesting
+population rare is not a bug in the page and it will not announce itself.
+
+## What `plateau` proves
+
+The plateau columns are pure diagnosis. Nothing downstream reads them, so a
+wrong number has no second symptom and could sit there for months. The driver
+therefore **recomputes everything independently** rather than re-reading what
+the page decided:
+
+- every row on screen carries both plateau cells or neither, and a combined row
+  carries neither, by design;
+- each plateau endpoint really scores inside the band, and the step just past
+  it really does not, checked with the driver's own boolean pass and backtest
+  rather than with `plateauScore`;
+- the neighbourhood median reproduces exactly, over the same pool;
+- no neighbour violates the canonical `p1 < p2` rule `pushCmpSpecs` enforces on
+  same-ticker comparisons, so the ring never scores a spec the run itself would
+  refuse to build;
+- window neighbours come from the run's **active** grid. The driver runs at a
+  min period of 12 specifically so that 5, 7 and 10 are absent and this check
+  cannot pass by accident;
+- the ring is proved to **evaluate rather than look up**: it scores specs at
+  the extreme ends of a level grid, which never fire and therefore have a total
+  of exactly zero, and which the Pass 1 store consequently never kept.
+
+It also prints a plateau-width distribution. That is a measurement, not an
+assertion, and it is there because the roadmap entry for this item says to look
+at what real runs produce before deciding whether to re-rank on the
+neighbourhood or which band widths to mine.
 
 ## Writing a new harness
 
