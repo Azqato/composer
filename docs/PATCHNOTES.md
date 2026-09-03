@@ -5,6 +5,23 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.68.0] - 2026-09-02
+
+### Added
+- **zoop's Frontrunner gets the full four-section treatment.** Page 24 of 24 in the items 13/14/15 rollout. **The rollout is complete: every visible strategy now carries `tldr`, `assumptions`, `regimes` and `regime_note`.**
+
+### Notes
+- **The smallest tree in the rollout: 21 nodes, four conditions, five funds.** SPY is 93.3% of all capital deployed across 2,020 of 2,166 days, so stripped of its escapes this is a buy-and-hold index position. The four rungs fire on 145 days between them, 6.7% of the record.
+- **A reconstruction figure looked wrong and the investigation changed the page.** The modelled path returned +67.1% in 2024 against SPY's +25.6% while holding SPY on 95% of days, which is arithmetically implausible on its face. Checking the VXX series for split artifacts found none, so the excess was traced day by day instead. It is real and it is concentrated: removing the five best days takes the full-record path from +3,090.2% to +920.1%. Those five days are a leveraged fund or VXX held into a single violent reversal. The page now leads its caveat on that fragility rather than on the summary figures.
+- **This page does quote reconstructed returns**, unlike the last four. Turnover is one allocation change every 17.3 trading days, comfortably below the threshold in the rollout's rules, and the regime note states the basis and the five-best-days caveat together.
+- Every one of its five legs made money over the days it was held, but three of the four non-SPY samples are under 40 days, and the semiconductor rung fired on 5 days in more than eight years.
+- It has no defensive asset at all: no cash, no bond, no inverse fund. Through the 2022 bear market it was long SPY on 92% of days.
+- The page carries an explicit note distinguishing this symphony from the similarly named 2026 edition, which is a separate id and is hidden.
+- Corrected before shipping: a draft called it the smallest tree in the library. Two other strategies here have fewer conditional nodes, so the claim was removed.
+- All six checkers pass and the page renders clean in headless Edge.
+
+---
+
 ## [1.67.0] - 2026-09-02
 
 ### Added

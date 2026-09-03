@@ -4206,6 +4206,78 @@
       "concentration": "Concentration is total by construction. Every branch resolves to one asset, so the portfolio is always 100 percent in a single instrument, and the reachable universe is only five names: SOXL, TQQQ, SPXL, VXX and SPY. Turnover is correspondingly high, since the ladder is re-evaluated daily and any switch is a complete one.",
       "suitability": "Reasonable for someone who wants market exposure as the default and is willing to accept short, violent excursions into 3x funds and long volatility at the edges. It is not a strategy to size on its backtest, because that backtest contains no out-of-sample evidence yet."
     },
-    "author_note": "The source symphony is named zoop's Frontrunner (symphony ID zPBn8HkmTIQ5BEJdff0v). It is a distinct symphony from zoop's 2026 Frontrunner (4aI4kVT5cEc0XJpTLei3), which is already in this library under a similar name and a considerably more complex tree. The backtest covers {backtest_days} trading days from 2018-01-18, and the symphony's logic was last edited on 2026-09-01, so none of the record is out-of-sample."
+    "author_note": "The source symphony is named zoop's Frontrunner (symphony ID zPBn8HkmTIQ5BEJdff0v). It is a distinct symphony from zoop's 2026 Frontrunner (4aI4kVT5cEc0XJpTLei3), which is already in this library under a similar name and a considerably more complex tree. The backtest covers {backtest_days} trading days from 2018-01-18, and the symphony's logic was last edited on 2026-09-01, so none of the record is out-of-sample.",
+    "tldr": {
+      "thesis": "Twenty-one nodes, four conditions, five funds. Strip the escapes away and this is a buy-and-hold S&P 500 position: SPY is 93.3% of all capital deployed, across 2,020 of {backtest_days} days. The four rungs fire on 145 days between them, 6.7% of the record, and they are what the strategy is. Three of them buy a 3x fund when something is deeply oversold and the fourth buys VXX when consumer discretionary is overbought. The margin over simply holding the index rests on a very small number of days.",
+      "works_well_in": [
+        "Sharp oversold rebounds, which is what three of the four rungs are for. Across the COVID crash the reconstruction returned -12.8% against SPY's -33.7%, holding TQQQ on 17% of days and SPXL on 9%.",
+        "Volatility spikes that follow a strong run, which is what the fourth rung is for. Across the February 2018 spike it returned +6.7% against SPY's -10.1%, holding VXX on 22% of days.",
+        "Fast drawdowns that reverse. Through the 2025 spring drawdown it returned -9.5% against SPY's -18.8%, holding TQQQ on 15% of days.",
+        "Ordinary bull markets, because it is simply long the index. Through the 2023 AI bull it returned +38.5% against SPY's +26.7% and through 2024 +67.1% against +25.6%."
+      ],
+      "struggles_in": [
+        "Grinding declines with no oversold extreme, where the rungs buy leveraged funds into more downside. Through the Q4 2018 selloff it returned -21.2% against SPY's -19.2%, the one window in the record where it did worse than the index.",
+        "Sustained bear markets, because there is nowhere to hide. There is no cash position, no bond and no inverse fund. Through the 2022 bear market it returned -20.7% against SPY's -24.5% while holding SPY on 92% of days.",
+        "Any accounting for the fragility of its own edge. Removing the five best days from the modelled path takes it from +3,090.2% to +920.1% across the record.",
+        "Its own rarest signal. The semiconductor rung, an SMH 10-day RSI below 23, was true on 5 of {backtest_days} days in more than eight years. Whatever it is worth, the record cannot say."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**Holding the S&P 500 is the right default.** Unusually for this library, the fallback at the bottom of the tree is SPY rather than cash, bonds or a leveraged fund. That default is where 93.3% of the capital went.",
+        "**A deeply oversold reading is a buy, and the right size for it is 3x.** Three rungs test SMH below 23, QQQ below 28 and SPY below 28 on a 10-day RSI, and each answers with SOXL, TQQQ or SPXL respectively.",
+        "**An overbought consumer discretionary sector precedes a volatility spike.** The fourth rung tests XLY's 10-day RSI above 79 and buys VXX. This is the frontrunning the name refers to, and it is the only defensive move in the strategy.",
+        "**One indicator at one lookback is enough.** Every test in the tree is a 10-day RSI. There is no trend filter, no confirmation and no second timeframe anywhere."
+      ],
+      "structural": [
+        "**The edge lives in a handful of days.** The modelled path returns +3,090.2% across the record and +920.1% with only its five best days removed. Those five are SOXL on 9 April 2025, TQQQ on 13 March 2020, TQQQ on 26 December 2018, VXX on 18 December 2024 and SPXL on 10 March 2020. Each is a leveraged fund held into a single violent reversal.",
+        "**The rungs fire on 6.7% of days and carry the whole result.** The SPY default returned +88.7% compounded across the 2,020 days it was held, which is roughly the index. Everything above that came from 145 days in leveraged funds and VXX.",
+        "**Every leg made money over the days the rules named it**: VXX +147.1% across 73 days, TQQQ +232.2% across 38, SOXL +77.1% across 5, SPXL +16.3% across 22. That is a clean result and a thin one, since three of those four samples are under 40 days.",
+        "**There is no defensive asset.** No cash, no bond fund, no inverse fund. When nothing is oversold and nothing is overbought, the strategy is fully long the S&P 500, including through the whole of the 2022 bear market.",
+        "**Turnover is low**, at one allocation change every 17.3 trading days on 125 of {backtest_days} days, and it holds exactly one fund on 100% of days. That is what makes the modelled path worth quoting on this page at all.",
+        "**{max_drawdown_abs} is the fourth shallowest drawdown among the 24 strategies in this library** and {standard_deviation} annualized volatility the fourth lowest, which follows from being an index position most of the time. A {sharpe_ratio} Sharpe and a {calmar_ratio} Calmar both rank 12th of 24, and {annualized_rate_of_return} annualized ranks 18th. The worst single day in the record was {worst_day}.",
+        "**The record covers {backtest_days} trading days from 16 January 2018.** That window does contain the February 2018 spike, the Q4 2018 selloff, the COVID crash, the 2022 bear market and the 2025 drawdown, which is a better crisis set than most short records here. It contains no live period: the whole of it predates the strategy's addition to this library.",
+        "**Do not confuse this with the 2026 edition.** A separate symphony with a nearly identical name exists in this library under a different id. This page describes the one whose tree is above."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Sharp oversold rebound",
+        "expected": "Strong",
+        "why": "Three of the four rungs exist for this case, and they answer an extreme reading with a 3x fund, so a violent reversal is caught at full leverage.",
+        "example": "COVID crash: SPY -33.7%. The reconstruction returned -12.8%, holding TQQQ on 17% of days and SPXL on 9%."
+      },
+      {
+        "regime": "Volatility spike after a strong run",
+        "expected": "Strong",
+        "why": "The overbought consumer discretionary rung buys VXX ahead of the spike rather than during it, which is the only way this strategy is ever defensive.",
+        "example": "February 2018 spike: SPY -10.1%. The reconstruction returned +6.7%, holding VXX on 22% of days and TQQQ on 11%."
+      },
+      {
+        "regime": "Fast drawdown that reverses",
+        "expected": "Strong",
+        "why": "A quick decline reaches the oversold thresholds and the rebound is taken at 3x, which is where the largest single days in the record come from.",
+        "example": "2025 spring drawdown: SPY -18.8%. The reconstruction returned -9.5%, holding TQQQ on 15% of days and SOXL on 3%."
+      },
+      {
+        "regime": "Ordinary bull market",
+        "expected": "Strong",
+        "why": "It is long the index by default, so it participates fully, and the occasional leveraged or VXX day adds to that rather than interrupting it.",
+        "example": "2024 bull: SPY +25.6%. The reconstruction returned +67.1%, holding SPY on 95% of days and VXX on 4%."
+      },
+      {
+        "regime": "Sustained bear market",
+        "expected": "Mixed",
+        "why": "There is no defensive holding, so a long decline is spent almost entirely long the falling index. The rungs trim the loss without changing the position.",
+        "example": "2022 bear market: SPY -24.5%. The reconstruction returned -20.7% while holding SPY on 92% of days."
+      },
+      {
+        "regime": "Grinding selloff with no oversold extreme",
+        "expected": "Poor",
+        "why": "The oversold rungs fire partway down and buy leveraged funds into further decline, which is worse than simply holding the index.",
+        "example": "Q4 2018 selloff: SPY -19.2%. The reconstruction returned -21.2%, holding SPXL on 12% of days and SOXL on 5%."
+      }
+    ],
+    "regime_note": "**The example column compares a modelled path against SPY over the same window.** Each SPY figure is the move in the index between the first and last trading day of the window, computed from daily closes. Each reconstruction figure is the modelled result of evaluating this strategy's own symphony tree over those same closes: a reading of the rules rather than a backtest, with no fees, no slippage and no rebalance timing, quoted here to rank the regimes rather than as a return you could have earned. Turnover of one change every 17.3 trading days is low enough that the modelled path tracks something real, which is why it is quoted on this page and not on several others in this library. **Read it alongside one caveat.** The margin over the index is concentrated in very few days: removing the five best takes the full-record path from +3,090.2% to +920.1%, and the three leveraged legs were held for 5, 22 and 38 days respectively. A result that depends on being in a 3x fund on the right handful of days is more fragile than the summary figures suggest. Windows before 16 January 2018 were left out because they fall outside the record, which runs {backtest_days} trading days to 27 August 2026."
   }
 ]
