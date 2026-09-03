@@ -3570,7 +3570,7 @@
         "example": "Nov to Dec 2024, after the US election: GDXU -41.7% in 41 trading days."
       }
     ],
-    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each figure is the move in that ticker between the first and last trading day of the window, computed from the daily closes in `data/prices.json`. The regimes themselves were identified by reconstructing this strategy's state machine over those same prices, which is a reading of the logic rather than a backtest: it carries no fees and no slippage. It reproduces the pipeline's own turnover figure independently, changing asset every 4.2 trading days against the 60.7 annual rebalances Composer reports, which is the reason it is trusted this far and no further."
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each figure is the move in that ticker between the first and last trading day of the window, computed from daily closes. The regimes themselves were identified by reconstructing this strategy's state machine over those same prices, which is a reading of the logic rather than a backtest: it carries no fees and no slippage. It reproduces the pipeline's own turnover figure independently, changing asset every 4.2 trading days against the 60.7 annual rebalances Composer reports, which is the reason it is trusted this far and no further."
   },
   {
     "slug": "safe-sectors-or-bonds-original",

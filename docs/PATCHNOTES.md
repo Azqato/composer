@@ -5,6 +5,23 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.68.2] - 2026-09-02
+
+### Fixed
+- **`gold-miner-original` no longer names an internal repo file in reader-facing prose.** Its regime note said a figure was "computed from the daily closes in `data/prices.json`", which means nothing to a site visitor and was the only such leak across the 24 pages. It now reads "computed from daily closes", matching the other 23. This was the pilot page, written before the regime-note wording settled.
+
+### Notes
+- **Full audit of all 24 pages carried out, not just the ones checked at ship time.** Results:
+  - **Schema:** all 24 conform to the PRD shapes for `tldr`, `assumptions`, `regimes` and `regime_note`. No missing keys, no empty required arrays.
+  - **Ranking claims:** 66 metric-specific library-wide rank claims were re-derived from live metrics and compared against the prose. **Zero mismatches.** A looser sweep for any ordinal matching no true rank flagged four, all of which are within-strategy holdings rankings ("the second largest position at 23.0% of capital") rather than library rankings, so all four are correct.
+  - **Render:** all 24 render clean in headless Edge with all four sections present and no unresolved tokens.
+  - **Banned characters:** no em-dashes, en-dashes or bare double hyphens anywhere in the four sections.
+- **Two earlier beliefs corrected by this audit.**
+  - The note that backticks "survive into rendered text instead of becoming code formatting" is **wrong**. `mdInline()` in `js/app.js` converts them to `<code>`, and every one of the four sections renders through it. The render checker's backtick failure was a false positive caused by comparing raw JSON text against DOM text.
+  - The verbose `expected` values (`"Strong, and almost entirely untested"`, `"Poor. The worst case."`) were suspected of breaking the regime table's colour mapping. They do not: `regimeClass()` uses `startsWith` on the lowercased string, so trailing punctuation is harmless.
+
+---
+
 ## [1.68.1] - 2026-09-02
 
 ### Fixed
