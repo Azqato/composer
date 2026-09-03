@@ -5,6 +5,20 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.70.1] - 2026-09-02
+
+### Changed
+- **V1.20 item 11 specified and ruled, not yet built.** The roadmap entry now records what the signals data actually contains, three owner rulings that changed the spec, and where the work paused.
+
+### Notes
+- **Measuring first changed all three parts of the spec.** The 24 visible strategies carry 91 signal objects. The `x2` dedupe badge was dropped because there are zero within-strategy duplicates to dedupe. The plain table became a table with detail rows because the median description is 259 characters and 75 of 91 run over 200, which is the mobile overflow just fixed in v1.69.0. A fourth type, `Composition`, was added because 11 of 91 signals are asset-pool notes rather than conditions.
+- **The `indicator` column will be derived from the symphony tree, never from the prose.** A new scratchpad extractor walks each cached tree and reports every function and window it genuinely computes, split by condition versus sort key, and a drafted indicator is kept only if it appears in that strategy's own inventory. All 24 visible trees are cached.
+- **A long-standing artifact is explained.** The `relative-strength-index(None)` display that has appeared repeatedly in the tree printer is a second schema variant: a lookback is stored either as `<side>-window-days` or nested as `<side>-fn-params.window`. Reading only the first loses it. It was never a defect in any symphony.
+- **The cross-check found zero content defects across 91 signals.** Five appeared to name an indicator their tree does not contain; all five were the checker's own regex, four confusing moving-average-return with moving-average-price and one reading "200-day MaxDD" as a moving average.
+- Paused here at the owner's request. 91 drafts sit in the scratchpad; nothing is written to `data/strategies.json`.
+
+---
+
 ## [1.70.0] - 2026-09-02
 
 ### Changed

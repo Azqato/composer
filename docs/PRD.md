@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.70.0
+**Version:** 1.70.1
 **Status:** Active
 **Last Updated:** 2026-09-02
 
@@ -3652,11 +3652,41 @@ files already in the repo.
   140 files from the assets directory where a clean clone holds 91 tracked ones. wrangler may
   exclude the repository already, but if it does not, `/.git/` serves the full history and every
   stray file ever committed. One defensive line closes the question without testing the live site.
-- [ ] **11. Convert `signals` cards into a Signal Types table.** Add `type` (Threshold, Trend,
-  Selection) and `indicator` (RSI(10), Price(200), etc.) columns to the existing `name`, `tag`,
-  `description`. Deduplicate repeated signals with a `x2` badge, as the screenshot does. The 31
-  strategies carry 2 to 6 signals each, so this is a schema addition plus a pass over roughly 130
-  signal objects.
+- [ ] **11. Convert `signals` cards into a Signal Types table. Specified and ruled 2026-09-02, not
+  yet built.** Add `type` and `indicator` columns to the existing `name`, `tag`, `description`.
+
+  **Measured first, and the measurement changed the spec.** The visible strategies carry **91 signal
+  objects** across 24 strategies, 2 to 6 each, every one with the identical `{name, tag,
+  description}` shape. Three findings and the owner's rulings on them:
+
+  | Finding | Ruling |
+  | --- | --- |
+  | **The `x2` dedupe badge has nothing to dedupe.** Zero exact within-strategy duplicates across all 24. One name repeats *across* strategies ("SPY 200-Day MA Trend Gate"). | **Dropped.** The screenshot solved a problem this data does not have, and building it would mean inventing duplicates to justify it. |
+  | **A real table fights the descriptions.** Median description is **259 characters**, 75 of 91 over 200. A five-column table with a 259-char cell is the mobile overflow just fixed in v1.69.0. | **Table with detail rows.** Name, Type, Indicator, Tag on one row; description on a second full-width row beneath. Scannable on desktop, stacks on a phone. |
+  | **`Threshold / Trend / Selection` does not cover the data.** 11 of 91 are asset-pool or composition notes rather than conditions ("Long Pool: TARK/TECL/UPRO/TMF/YINN/EDC/SOXX"). | **Four types: add `Composition`.** Calling a static fund list a selection rule would be inaccurate. `indicator` renders as a dash where there is none, which is information. |
+
+  **The `indicator` column is derived from the symphony tree, never from the prose.** A hand-written
+  description is exactly the kind of thing that drifts, so `scratchpad/inventory.py` walks each
+  cached tree and reports every (function, window) pair it actually computes, split by whether it is
+  used in an `if` condition or as a `filter`/`select` sort key. A drafted indicator is kept only if
+  that exact label appears in its own strategy's inventory. All 24 visible trees are cached.
+
+  **Two schema variants store the same window, and reading only one is a live trap.** A comparison
+  node carries its lookback either as `<side>-window-days` **or** nested as
+  `<side>-fn-params.window`. Reading only the first is what produces the
+  `relative-strength-index(None)` artifact that has appeared repeatedly in the scratchpad tree
+  printer. It was never a defect in a symphony, and it is now handled.
+
+  **The cross-check found zero content defects.** Five signals appeared to name an indicator absent
+  from their tree; all five were the checker's own regex misreading, four confusing
+  `moving-average-return` with `moving-average-price` and one reading "200-day MaxDD" as a 200-day
+  moving average. The descriptions were right in every case.
+
+  **State at pause:** the inventory extractor and the constrained drafter are written and run, 91
+  drafts sit in `scratchpad/signal_draft.json`, and **66 of 91 have a tree-verified indicator with
+  25 legitimately having none.** Nothing is written to `data/strategies.json` yet. Remaining work is
+  a by-eye review of all 91 type/indicator assignments, then the schema write, the renderer, the CSS
+  and a mobile overflow re-check at 390px.
 - [x] **12. Link metric labels to the glossary (v1.30.0).** **The seven missing terms were written
   first and shipped in v1.27.8** (Sortino Ratio, Win Rate, Skewness, Kurtosis, Tail Ratio,
   Herfindahl Index, Annualized Turnover), taking the glossary from 20 terms to 27, because surfacing
