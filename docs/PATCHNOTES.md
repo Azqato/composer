@@ -5,6 +5,49 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.62.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 18 of 24: `sometimes-tqqq`.** TL;DR, Underlying Assumptions,
+  Market Regime table and regime note for Sometimes TQQQ (Original), matching the shape approved on
+  `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. 234 nodes, 45
+  conditions over 27 distinct expressions, eleven holdable funds and seven signal-only. Five
+  findings are stated on the page:
+
+  1. **The name understates it.** TQQQ was held on 1,921 of 3,747 days and is 51.3% of all capital
+     deployed, so "sometimes" is more than half the time.
+  2. **Forty-five conditions, twenty-seven distinct.** BND's 20-day RSI against SH's 60-day appears
+     four times; six other tests appear three times each, including a complete three-node pattern
+     copied verbatim into three separate branches.
+  3. **Several branches are decorative.** One condition decided zero days across the record and
+     three decided exactly one day each.
+  4. **GLD is the second largest position in a strategy about TQQQ**, at 15.6% of capital across 584
+     days, and every route to it runs through the same TQQQ-versus-STIP RSI comparison.
+  5. **PSQ and SPY are the only losing legs.** Nine of the eleven holdable funds made money over the
+     days the rules named them.
+
+- **It beats the three strategies that share its exact window, on every axis.** Holy Grail, TQQQ For
+  The Long Term and Mean Reversion Comparison to Python Code all run on the same 3,747 days. This
+  one reports 320.3% annualized at -45.5%, against 150.2% at -47.4%, 160.4% at -53.6% and 79.4% at
+  -81.7%. The page states that comparison and then states the reason to be careful with it: a tree
+  this size has enough degrees of freedom to fit its one window, and there is no second period in
+  the record to check it against.
+
+- **No reconstructed return is quoted.** Turnover is one allocation change every 3.7 trading days,
+  mostly between 3x funds.
+
+### Fixed
+- **A superlative dropped before shipping.** A draft called this the largest tree in the rollout at
+  234 nodes. Node counts were checked across the shipped pages: `soxx-group` is 2,643 and
+  `four-horsemen` 756, so the claim was removed rather than qualified.
+- **One `check_stat_drift` false positive reworded.** "a Calmar 6th" parses as a Calmar of 6; the
+  sentence was rephrased rather than the checker weakened.
+
+---
+
 ## [1.61.0] - 2026-09-02
 
 ### Added

@@ -3233,7 +3233,80 @@
       "hedge": "PSQ, SH, SQQQ and UVXY are all reachable, plus GLD and BIL. That is an unusually broad defensive set for a strategy in this tier.",
       "concentration": "The last recorded holdings show the strategy fully allocated to TQQQ. A backtest that compounds a small initial stake into an implausible figure is one that spent its later years fully invested in a single leveraged fund, and that concentration is inherent in the result rather than incidental to it."
     },
-    "author_note": "The symphony name in Composer is 'Sometimes TQQQ v2'. Authored by Guybogles (Discord: aly9923); last semantic update June 26, 2024. The backtest_days field ({backtest_days}) is estimated from the API's first_day and last_market_day fields, as the size field returned None for this symphony. The backtest begins approximately October 2011 when UVXY first became available. The author notes: 'Please feel free to change the 60d SPY RSI check as well as any VIX ticker to whatever you feel comfortable with.'"
+    "author_note": "The symphony name in Composer is 'Sometimes TQQQ v2'. Authored by Guybogles (Discord: aly9923); last semantic update June 26, 2024. The backtest_days field ({backtest_days}) is estimated from the API's first_day and last_market_day fields, as the size field returned None for this symphony. The backtest begins approximately October 2011 when UVXY first became available. The author notes: 'Please feel free to change the 60d SPY RSI check as well as any VIX ticker to whatever you feel comfortable with.'",
+    "tldr": {
+      "thesis": "234 nodes and 45 conditions, over eleven funds it can hold and seven more it only reads. The name understates what it does. It held TQQQ on 1,921 of {backtest_days} days, 51.3% of all capital deployed, so sometimes means more than half the time. The rest is an elaborate set of escapes into gold, cash, inverse funds and volatility. Three other strategies in this library run on this exact {backtest_days} day window, and it beats all three on return, on drawdown and on both risk-adjusted measures.",
+      "works_well_in": [
+        "Nasdaq uptrends, which is what the whole structure is arranged around. TQQQ compounded an enormous gain across the 1,921 days the rules named it. Through the 2023 AI bull the reconstruction held it on 48% of days while TQQQ rose 204.9%.",
+        "Recoveries off a crash low, where it goes fully leveraged early. Across the COVID recovery it held TQQQ on 89% of days while TQQQ rose 270.4%.",
+        "Sustained bear markets, because it can be short. SQQQ was held on 327 days and compounded +1,594.1%. Through the 2022 bear market the reconstruction held SQQQ on 39% of days while SQQQ rose 120.7% and TQQQ fell 78.8%.",
+        "Volatility spikes. UVXY was held on 148 days and compounded the highest rate of any leg here. Through the February 2018 spike the reconstruction sat in BIL on 56% of days and UVXY on 22% while UVXY rose 181.4%."
+      ],
+      "struggles_in": [
+        "Fast drawdowns that the logic reads as ordinary. Through the 2025 spring drawdown the reconstruction held TQQQ on 32% of days and TECL on 32% while those two fell 56.8% and 62.0% and SQQQ rose 103.6%.",
+        "Anything that punishes turnover. The allocation changed on 1,017 of {backtest_days} days, about once every 3.7 trading days, mostly between 3x leveraged funds.",
+        "Any market where the thresholds are slightly wrong. There are 45 conditions here with hand-set cutoffs at -10.5, 5.5, 81, 80, 65, 61, 32, 30, 3, -12, -20 and -33, and nothing in the design is robust to any of them being off.",
+        "Being understood. Twenty-seven distinct tests are spread across 45 nodes, several of the branches never decide anything, and no reader can hold the whole thing in mind at once."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**An oversold Nasdaq is a buy, and the right response is 3x technology.** The very first rung holds TECL whenever QQQ's 10-day RSI falls below 32, and it decided 171 days.",
+        "**An overbought market is a reason to own volatility.** Two rungs near the top hold UVXY on an extreme 10-day RSI in QQQ or SPY, and they decided 129 of the 148 days the strategy held it.",
+        "**Bond and credit momentum predicts equity direction.** Six of the seven signal-only tickers are bond or credit funds: AGG, BND, CORP, IEF, STIP and TLT. The tree repeatedly asks whether corporate bonds beat Treasury bills over 60 days, or whether BND's 20-day RSI beats SH's 60-day, and uses the answer to decide whether to hold a 3x Nasdaq fund.",
+        "**SPY's 200-day moving average separates two different strategies.** It decided 3,091 days, more than any other test here, and the halves on either side of it share almost no structure."
+      ],
+      "structural": [
+        "**It holds TQQQ more than half the time.** 51.3% of all capital deployed, across 1,921 of {backtest_days} days. Everything else in the tree is machinery for deciding when to be somewhere other than the default.",
+        "**Forty-five conditions, twenty-seven distinct.** One test, BND's 20-day RSI against SH's 60-day, appears four times. Six others appear three times each, including a complete three-node pattern copied verbatim into three separate branches.",
+        "**Several branches are decorative.** One condition decided zero days across the whole record and three others decided exactly one day each. A reader cannot tell which parts of this tree carry weight by looking at it.",
+        "**GLD is the second largest position in a strategy about TQQQ**, at 15.6% of all capital across 584 days. Every route to it runs through the same comparison of TQQQ's 25-day RSI against STIP's, which is one of the tests that appears three times.",
+        "**It beats the three strategies that share its exact window, on every axis.** Holy Grail, TQQQ For The Long Term and Mean Reversion Comparison to Python Code all run on the same {backtest_days} days. This one reports {annualized_rate_of_return} at {max_drawdown_abs}, against 150.2% at -47.4%, 160.4% at -53.6% and 79.4% at -81.7%. Its {sharpe_ratio} Sharpe ranks 4th of the 24 strategies here, and its {calmar_ratio} Calmar ranks 6th.",
+        "**That result rests on 45 hand-set thresholds and one window.** The comparison above is the strongest case for this design and also the reason to be careful with it: a tree this large has enough degrees of freedom to fit the period it was built on, and the record contains no second period to check it against.",
+        "**PSQ and SPY are the only losing legs**, at -6.0% across 77 days and -1.1% across 17. Nine of the eleven holdable funds made money over the days the rules named them.",
+        "**It is fully concentrated at all times**, holding exactly one fund on 100% of days, with no partial allocation anywhere despite eleven possible holdings.",
+        "**The record covers {backtest_days} trading days from 3 October 2011**, bounded by UVXY, which first traded that month. The 2008 crisis is absent. None of the figures on this page carries a commission, a spread or a slippage assumption."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Nasdaq uptrend",
+        "expected": "Strong",
+        "why": "TQQQ is the default holding and the structure is arranged to stay in it, so a rising Nasdaq is the case everything else defers to.",
+        "example": "2023 AI bull: TQQQ +204.9%, TECL +211.9%. The reconstruction held TQQQ on 48% of days."
+      },
+      {
+        "regime": "Recovery off a crash low",
+        "expected": "Strong",
+        "why": "The oversold rungs at the top of the tree put it into leveraged funds early, so it participates from near the bottom rather than waiting for a trend to confirm.",
+        "example": "COVID recovery: TQQQ +270.4%, and the reconstruction held it on 89% of days."
+      },
+      {
+        "regime": "Sustained bear market",
+        "expected": "Strong",
+        "why": "Below the 200-day moving average an entirely separate half of the tree takes over, and it can hold SQQQ, PSQ, gold or Treasury bills rather than defaulting long.",
+        "example": "2022 bear market: SQQQ +120.7%, TQQQ -78.8%. The reconstruction held SQQQ on 39% of days, TECL on 16%, TQQQ on 14% and BIL on 13%."
+      },
+      {
+        "regime": "Volatility spike",
+        "expected": "Strong",
+        "why": "Two overbought rungs sit above almost everything else and reach UVXY directly, so a spike that follows a strong run is caught early.",
+        "example": "February 2018 spike: UVXY +181.4%, TQQQ -28.6%. The reconstruction sat in BIL on 56% of days and UVXY on 22%."
+      },
+      {
+        "regime": "Fast drawdown from a calm reading",
+        "expected": "Poor",
+        "why": "A decline that does not trigger the overbought rungs, does not break the 200-day average and does not reach the oversold thresholds leaves the strategy in its leveraged default.",
+        "example": "2025 spring drawdown: TQQQ -56.8%, TECL -62.0%, SQQQ +103.6%. The reconstruction held TQQQ on 32% of days and TECL on 32%."
+      },
+      {
+        "regime": "A market unlike the fitted sample",
+        "expected": "Unknown",
+        "why": "Forty-five conditions with hand-set cutoffs, tuned against one {backtest_days} day window, and no second period in the record to test them against.",
+        "example": "One condition in the tree decided zero days and three decided one day each, which is what a structure larger than its evidence looks like."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which fund the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. No reconstructed return is quoted on this page. The allocation changes about once every 3.7 trading days, mostly between 3x leveraged funds, and a costless model of that path would say more about the absence of costs than about the strategy, so the regimes above are ranked from holdings and price moves alone. The reconstruction covers {backtest_days} trading days from 3 October 2011 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "triple-accelerator",
