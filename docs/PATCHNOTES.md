@@ -5,6 +5,38 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.63.0] - 2026-09-02
+
+### Added
+- **Items 13/14/15 rollout, page 19 of 24: `triple-accelerator`.** TL;DR, Underlying Assumptions,
+  Market Regime table and regime note for Triple Accelerator, matching the shape approved on
+  `gold-miner-original` in v1.43.0.
+
+### Notes
+- **The full tree was traversed before writing**, per the standing full-tree rule. 11 nodes, two
+  conditions, three funds. The page is built around a comparison the data made available:
+
+  1. **It is Mean Reversion Comparison to Python Code with the tests reordered.** Same three funds,
+     same two thresholds, windows three trading days apart, and both held UVXY on exactly the same
+     143 days. Here the overbought check sits above the trend gate; there it sits below.
+  2. **The bear branch is the real difference.** This one holds unlevered SPY below the 200-day
+     average, on 557 days and 14.9% of all capital. That one holds TQQQ, which is why its own gate
+     never changed a holding. Result: -61.7% drawdown against -81.7%, and a 1.24 Calmar against
+     0.97, at almost the same annualized return.
+  3. **The gate protects late, not early, and the page quantifies it.** In 2022 SPY did not close
+     below its 200-day average until 21 January, by which point TQQQ had fallen 33.8% from the start
+     of the year against SPY's 8.3%. That figure was computed rather than asserted.
+  4. **There is no defensive holding anywhere.** The safest thing this strategy can hold is the S&P
+     500 itself, which is why the 2022 window still costs the reconstruction 59.9% despite sitting
+     in SPY on 78% of days.
+
+- **Reconstructed returns are quoted here**, unlike the last several pages. Turnover is one
+  allocation change every 20.0 trading days in three funds, and the regime note states that as the
+  reason the modelled path is meaningful enough to cite. It also notes the cross-strategy comparison
+  uses the same engine on both.
+
+---
+
 ## [1.62.0] - 2026-09-02
 
 ### Added

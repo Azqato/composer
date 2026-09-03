@@ -3368,7 +3368,78 @@
       "hedge": "UVXY is the only non-equity instrument in a three-ticker universe, and its roll decay limits it to short holds.",
       "concentration": "Three instruments. When invested, this is a single leveraged Nasdaq position."
     },
-    "author_note": "Strategy authored by Inverteum Capital (blog.inverteum.com). The backtest begins approximately October 2011 coinciding with UVXY's inception date, covering roughly 14.8 years of market history including the 2015-2016 volatility spikes, the February 2018 VIX spike, the 2020 COVID crash and recovery, and the 2022 tech bear market. Last semantic update per Composer: 2026-07-29. Symphony ID: 0jPwZ5Lm2Y3xH24oEijB."
+    "author_note": "Strategy authored by Inverteum Capital (blog.inverteum.com). The backtest begins approximately October 2011 coinciding with UVXY's inception date, covering roughly 14.8 years of market history including the 2015-2016 volatility spikes, the February 2018 VIX spike, the 2020 COVID crash and recovery, and the 2022 tech bear market. Last semantic update per Composer: 2026-07-29. Symphony ID: 0jPwZ5Lm2Y3xH24oEijB.",
+    "tldr": {
+      "thesis": "Eleven nodes, two tests, three funds. If TQQQ's 10-day RSI is above 79 it holds UVXY; otherwise it holds TQQQ when SPY is above its 200-day moving average and plain SPY when it is not. What makes this page worth reading alongside another is that Mean Reversion Comparison to Python Code uses the same three funds, the same two thresholds and almost the same window, and differs only in the order of the tests and in what the bear branch holds. That one holds TQQQ below the average and this one holds SPY. The drawdowns are {max_drawdown_abs} here and -81.7% there.",
+      "works_well_in": [
+        "Long Nasdaq uptrends, which is the default. TQQQ is 81.3% of all capital deployed, and through 2012 to 2014 the reconstruction held it on 94% of days and gained 859.3% against SPY's 71.4%.",
+        "Melt-ups, where the trend gate stays on and nothing interrupts. Through the 2021 melt-up it held TQQQ on 97% of days and gained 147.4% against SPY's 30.5%.",
+        "Recoveries, once the average is reclaimed. Across the COVID recovery it gained 369.1% against SPY's 44.3%, holding TQQQ on 58% of days and SPY on 39%.",
+        "Short-term overbought spikes. UVXY was held on 143 days and compounded +1,493.3% across them, on 3.8% of all capital."
+      ],
+      "struggles_in": [
+        "The start of every decline, because a 200-day average is slow. In 2022 the gate did not turn off until 21 January, by which point TQQQ had already fallen 33.8% from the start of the year while SPY had fallen 8.3%.",
+        "Bear markets generally. Through the 2022 bear market the reconstruction lost 59.9% against SPY's 24.5%, even though it sat in unlevered SPY on 78% of days, because the leveraged days came first.",
+        "Sharp crashes. Across the COVID crash it lost 53.9% against SPY's 33.7%, and in the Q4 2018 selloff 43.3% against 19.2%.",
+        "Bear markets as a place to wait. The below-average branch holds SPY, not cash or bonds, so a long decline is spent fully invested in the index that is falling."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**The Nasdaq 100 rises over the long run and 3x leverage is the way to own it while it does.** TQQQ is the default holding on 81.3% of all capital deployed.",
+        "**SPY's 200-day moving average is a good enough signal to decide leverage.** The gate does not decide whether to be invested, only whether to be leveraged. Below the average the strategy is still fully long equities.",
+        "**A 10-day RSI above 79 on TQQQ marks a short-term top.** This threshold is shared with several other strategies in this library, and here it sits above the trend gate, so it fires regardless of the market regime.",
+        "**Long volatility is the right expression of an overbought reading.** UVXY decays structurally, so this only pays when the timing is right, and it was right often enough to compound +1,493.3% across 143 days."
+      ],
+      "structural": [
+        "**The test order is the whole difference between this and a near-identical strategy.** Here the overbought check sits above the trend gate; in Mean Reversion Comparison to Python Code it sits below. Both held UVXY on exactly the same 143 days, and both cover the same stretch of market history to within three trading days.",
+        "**The bear branch is what actually separates them.** This one holds SPY below the moving average, on 557 days and 14.9% of all capital deployed. That one holds TQQQ, which is why its own moving-average gate never changed a holding. The result is {max_drawdown_abs} against -81.7% and a {calmar_ratio} Calmar against 0.97, at almost the same annualized return.",
+        "**The gate protects late, not early.** A 200-day average cannot react to the first weeks of a decline, and those weeks are when a 3x fund does most of its damage. The 2022 example is the clearest: 33.8% of TQQQ was gone before the gate turned off.",
+        "**There is no cash, no bond and no defensive holding anywhere.** The three funds are a 3x Nasdaq fund, the S&P 500 and a volatility fund. The safest thing this strategy can hold is the index itself.",
+        "**{max_drawdown_abs} is the eighth deepest drawdown among the 24 strategies in this library**, on {standard_deviation} annualized volatility. A {sharpe_ratio} Sharpe and a {calmar_ratio} Calmar both rank 18th of 24, and the worst single day in the record was {worst_day}.",
+        "**Turnover is low**, at one allocation change every 20.0 trading days, and it holds exactly one fund on 100% of days. None of the figures on this page carries a commission, a spread or a slippage assumption.",
+        "**The record covers {backtest_days} trading days from 6 October 2011**, bounded by UVXY, which first traded that month. The 2008 crisis is absent, and so is any period in which a levered Nasdaq position was a losing decade-long bet."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Sustained Nasdaq uptrend",
+        "expected": "Strong",
+        "why": "The gate stays on, nothing interrupts, and the strategy is a 3x Nasdaq position for the duration.",
+        "example": "2012 to 2014: SPY +71.4%, TQQQ +442.6%. The reconstruction held TQQQ on 94% of days and gained 859.3%."
+      },
+      {
+        "regime": "Recovery after the average is reclaimed",
+        "expected": "Strong",
+        "why": "Once SPY is back above its 200-day average the strategy is fully leveraged again, and it holds the index rather than cash while it waits, so it does not miss the first leg either.",
+        "example": "COVID recovery: SPY +44.3%, TQQQ +270.4%. The reconstruction gained 369.1%, holding TQQQ on 58% of days and SPY on 39%."
+      },
+      {
+        "regime": "Short-term overbought spike",
+        "expected": "Strong",
+        "why": "The overbought test sits above everything else, so a UVXY signal is acted on whatever the trend gate says.",
+        "example": "Across the 143 days the rule named UVXY it compounded +1,493.3%, on 3.8% of all capital deployed."
+      },
+      {
+        "regime": "Slow decline that breaks the average early",
+        "expected": "Mixed",
+        "why": "The gate moves the position from a 3x fund to the plain index, which halves the damage but does not stop it. There is nowhere defensive to go.",
+        "example": "2015 to 2016 China and oil decline: SPY -12.2%, TQQQ -40.1%. The reconstruction held SPY on 63% of days and lost 16.2%."
+      },
+      {
+        "regime": "Fast crash",
+        "expected": "Poor",
+        "why": "A 200-day average cannot react inside a few weeks, and those weeks are when a 3x fund loses the most.",
+        "example": "COVID crash: SPY -33.7%, TQQQ -69.8%. The reconstruction lost 53.9% while holding SPY on 65% of days."
+      },
+      {
+        "regime": "Bear market",
+        "expected": "Poor",
+        "why": "The defensive holding is the S&P 500 itself, so a long decline is spent fully invested in a falling index, after a leveraged start.",
+        "example": "2022 bear market: SPY -24.5%, TQQQ -78.8%. The reconstruction lost 59.9% despite sitting in SPY on 78% of days, because the gate did not turn off until 21 January."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. Where a window quotes what the reconstruction gained or lost, that is the modelled path of those same holdings: a reading of the rules rather than a backtest, with no fees, no slippage and no rebalance timing, quoted to rank the regime rather than as a return you could have earned. Turnover of one change every 20.0 trading days is what makes that path meaningful enough to quote here. The comparison with Mean Reversion Comparison to Python Code uses the same engine on both strategies, so the two are measured the same way. The reconstruction covers {backtest_days} trading days from 6 October 2011 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "gold-miner-original",
