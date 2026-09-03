@@ -882,14 +882,22 @@ p { color: var(--color-secondary); }
   .grid-3 { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* `1fr` means `minmax(auto, 1fr)`, and that `auto` minimum is the item's
+   min-content width, so ONE stubborn child widens the track and every sibling
+   with it. That is V1.20 item 18: at 390px the detail page measured a 453px
+   scrollWidth against a 375px clientWidth. `.detail-main` already carried
+   `min-width: 0` and the bug survived, because on mobile `.grid-2` is a single
+   column and BOTH children share that track: the culprit was `.detail-sidebar`,
+   which had no such floor. Fixing the track rather than the item makes the
+   container immune to whichever child misbehaves next. */
 .grid-2 {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 40px;
 }
 
 @media (min-width: 1024px) {
-  .grid-2 { grid-template-columns: 2fr 1fr; }
+  .grid-2 { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
 }
 
 .grid-4 {

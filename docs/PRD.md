@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.68.3
+**Version:** 1.69.0
 **Status:** Active
 **Last Updated:** 2026-09-02
 
@@ -2446,7 +2446,7 @@ numbering schemes; they answer different questions.
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
-| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1 to 10, 12, 13, 14, 15, 17 and 19 shipped; **13, 14, 15 complete on all 24 visible strategies (v1.68.0)**; **items 10b, 11, 16 and 18 open** | v1.68.2 (partial) |
+| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1 to 10, 12, 13, 14, 15, 17 and 19 shipped; **13, 14, 15 complete on all 24 visible strategies (v1.68.0)**; **items 10b, 11 and 16 open** | v1.69.0 (partial) |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -3751,7 +3751,28 @@ files already in the repo.
   table. **This was a live correctness bug, not a cosmetic one:** it told visitors the worst month
   was -15% when that figure is a single day.
 
-- [ ] **18. Strategy detail pages scroll horizontally on a phone. Pre-existing, found during the
+- [x] **18. Strategy detail pages scroll horizontally on a phone. Fixed in v1.69.0.** The cause was
+  not what this entry assumed. `.detail-main` already carried `min-width: 0` and the bug survived
+  because **on mobile `.grid-2` is a single column and both children share that one track**, so the
+  floor was on the wrong element: `.detail-sidebar` had none, and its min-content widened the track
+  to 429px with `.detail-main` simply filling it. The fix is on the track rather than the item,
+  `grid-template-columns: minmax(0, 1fr)` and `minmax(0, 2fr) minmax(0, 1fr)` at the desktop
+  breakpoint, which makes the container immune to whichever child misbehaves next. Verified 0px
+  overflow at 320, 375, 390, 414, 768, 1024 and 1280px, and the regime table still scrolls inside
+  its own wrapper rather than being clipped.
+
+  **A site-wide sweep at 390px came with it and found one more live page overflowing**,
+  `signal-miner.html` by 65px: `.sl-selgroup` is a flex row of `white-space: nowrap` buttons given
+  `width: 100%` below 640px, with no `flex-wrap`. Fixed in the same release. Every other page was
+  already clean. `signal-lab.html` appeared in the first sweep only because it is a redirect stub
+  that forwards to the miner.
+
+  **Reproducing this needs an iframe, not a window size.** Headless Edge refuses to size its window
+  below roughly 477px, so `--window-size=390,844` silently measures a 477px viewport and the bug
+  does not appear. The harness (`measure_overflow.py`) embeds the page in a fixed-width iframe and
+  measures inside `contentDocument`, which reproduced the recorded 453 against 375 exactly.
+
+  **Original diagnosis, kept for the record. Pre-existing, found during the
   v1.28.0 work and measured as unchanged by it.** At a 390px viewport the document's `scrollWidth`
   is **453px against a `clientWidth` of 375px**, identical before and after that release, so the new
   sections neither cause nor worsen it. Localised: `.grid-2` computes to **327px wide while its

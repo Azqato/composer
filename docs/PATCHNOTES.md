@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.69.0] - 2026-09-02
+
+### Fixed
+- **Strategy detail pages no longer scroll sideways on a phone.** V1.20 item 18, open since v1.28.0. At a 390px viewport the page measured a 453px `scrollWidth` against a 375px `clientWidth`; it is now 0px of overflow at 320, 375, 390, 414, 768, 1024 and 1280px.
+- **`signal-miner.html` overflowed by 65px at 390px** and nobody had noticed. Found by the site-wide sweep that came with the item 18 work, fixed in the same release.
+
+### Notes
+- **The roadmap's diagnosis was wrong, which is why this sat open.** Item 18 blamed `.detail-main`, and `.detail-main` already carried `min-width: 0`. The real cause is that `1fr` means `minmax(auto, 1fr)` and that `auto` floor is the item's min-content width, so one stubborn child widens the shared track. On mobile `.grid-2` collapses to a single column and **both** children sit in that one track: the culprit was `.detail-sidebar`, which had no floor, with `.detail-main` merely filling the space it created. The fix is on the track rather than the item, `grid-template-columns: minmax(0, 1fr)` and `minmax(0, 2fr) minmax(0, 1fr)` at the 1024px breakpoint, which makes the container immune to whichever child misbehaves next.
+- **`.sl-selgroup` is a flex row of `white-space: nowrap` buttons** that is given `width: 100%` below 640px with no `flex-wrap`. The buttons stayed on one line and ran off the viewport. One `flex-wrap: wrap` fixes it.
+- **Reproducing this needs an iframe, not a window size.** Headless Edge refuses to size its window below roughly 477px, so `--window-size=390,844` silently measures a 477px viewport and the bug simply does not appear; `--headless=old` behaves identically. The harness embeds the page in a fixed-width iframe and measures inside `contentDocument`, which reproduced the recorded 453 against 375 exactly.
+- **The regime table still scrolls inside its own wrapper.** Checked specifically, because a `minmax(0, ...)` floor could have clipped it instead: the 560px table still extends past the 327px `.regime-wrap` and scrolls there, which is the intended behaviour.
+- Every other page on the site was already clean at 390px. `signal-lab.html` appeared in the first sweep only because it is a redirect stub that forwards to the miner.
+- All four gates and the three advisory checkers pass.
+
+---
+
 ## [1.68.3] - 2026-09-02
 
 ### Changed
