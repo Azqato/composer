@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.69.0
+**Version:** 1.70.0
 **Status:** Active
 **Last Updated:** 2026-09-02
 
@@ -2446,7 +2446,7 @@ numbering schemes; they answer different questions.
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
-| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1 to 10, 12, 13, 14, 15, 17 and 19 shipped; **13, 14, 15 complete on all 24 visible strategies (v1.68.0)**; **items 10b, 11 and 16 open** | v1.69.0 (partial) |
+| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1 to 10, 12, 13, 14, 15, 17 and 19 shipped; **13, 14, 15 complete on all 24 visible strategies (v1.68.0)**; **items 11 and 16 open** | v1.70.0 (partial) |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -3623,11 +3623,35 @@ files already in the repo.
   `try/except ValueError: continue` swallowed the claim in silence. **Every figure that ended a
   sentence was invisible to it.** A checker written to find silent failures was failing silently.
   The except clause is gone: if the pattern is ever wrong again it raises rather than under-reports.
-- [ ] **10b. Decide whether `check_risk_profiles.py` and `check_stat_drift.py` become deploy
-  gates.** Still open for the owner, and now covering both scripts. Prose is currently clean, so
-  a gate would cost nothing today and would stop the next figure from being typed in. Both catch
-  failures no existing gate can see: a mistyped category key renders as silently missing content,
-  and a stale figure renders as fact. Both pages still return 200 and still look correct.
+- [x] **10b. Which advisory checkers become deploy gates. Ruled by the owner 2026-09-02, shipped
+  in v1.70.0.** The question had widened past the two scripts it started with, so it was put as
+  three:
+
+  | Checker | Ruling |
+  | --- | --- |
+  | `check_asset_sizes.py` | **Gated.** Fifth step in `deploy.yml`. |
+  | `check_risk_profiles.py` | Advisory. Runs, reports, cannot block. |
+  | `check_stat_drift.py` | Advisory. Runs, reports, cannot block. |
+
+  **The one that gates is the one with a body count.** On 2026-09-01 a routine refresh pushed
+  `data/symphony_scores.json` 210 KB past Cloudflare's 25 MiB per-file limit, which rejects the
+  whole deployment, and roughly a day of work sat on `main` unpublished with no symptom but a red
+  build in a dashboard. `data/database.json` and its `.js` twin are at 76% of the limit and grow
+  weekly, so the same failure is queued rather than hypothetical. The other two guard failures that
+  are real but have never occurred, and one of them (`check_stat_drift`) now reports **0 checkable
+  claims** because the v1.44.0 to v1.68.0 rollout replaced every hardcoded figure in prose with a
+  token, which is the intended end state rather than a broken checker.
+
+  **State plainly what the gate cannot do.** `deploy.yml` publishes to GitHub Pages and is **not**
+  the live path. Cloudflare builds independently from the same push, so this gate cannot stop a bad
+  deploy from reaching production. What it converts is an opaque Cloudflare failure into a red check
+  naming the file and its size: the difference between noticing in minutes and noticing in a day.
+  A gate that actually blocked publication would have to live on Cloudflare's side.
+
+  **Folded in by the same ruling: `.git/` added to `.assetsignore`.** A build log reported reading
+  140 files from the assets directory where a clean clone holds 91 tracked ones. wrangler may
+  exclude the repository already, but if it does not, `/.git/` serves the full history and every
+  stray file ever committed. One defensive line closes the question without testing the live site.
 - [ ] **11. Convert `signals` cards into a Signal Types table.** Add `type` (Threshold, Trend,
   Selection) and `indicator` (RSI(10), Price(200), etc.) columns to the existing `name`, `tag`,
   `description`. Deduplicate repeated signals with a `x2` badge, as the screenshot does. The 31

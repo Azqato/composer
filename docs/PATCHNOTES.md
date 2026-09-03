@@ -5,6 +5,21 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.70.0] - 2026-09-02
+
+### Changed
+- **`check_asset_sizes.py` is now a deploy gate**, the fifth step in `.github/workflows/deploy.yml`. V1.20 item 10b, ruled by the owner. `check_risk_profiles.py` and `check_stat_drift.py` stay advisory under the same ruling: they run, they report, they cannot block.
+- **`.git/` added to `.assetsignore`**, defensively.
+
+### Notes
+- **The checker that gates is the one with a body count.** On 2026-09-01 a routine metrics refresh pushed `data/symphony_scores.json` 210 KB past Cloudflare's 25 MiB per-file limit, which rejects the entire deployment rather than the file, and roughly a day of work sat on `main` unpublished with no symptom but a red build. `data/database.json` and its `.js` twin are at 76% of the limit and grow weekly, so this is a queued failure, not a hypothetical one. The other two checkers guard failures that are real but have never happened.
+- **`check_stat_drift` reports 0 checkable claims, and that is correct.** The v1.44.0 to v1.68.0 rollout replaced every hardcoded performance figure in prose with a token, so there is nothing left for it to compare. Zero is the intended end state, not a broken checker. It stays in place to catch the next raw number somebody types back in.
+- **What the new gate cannot do, stated plainly.** `deploy.yml` publishes to GitHub Pages and is not the live path; Cloudflare builds independently from the same push. This gate cannot stop a bad deploy from reaching production. It converts an opaque Cloudflare failure into a red check naming the file and its size, which is the difference between noticing in minutes and noticing in a day. A gate that truly blocked publication would have to run on Cloudflare's side.
+- **The `git ls-files` walk is the right list, not a compromise.** Cloudflare builds from a clean clone, so an untracked local file never reaches it and a tracked one always does. An earlier note calling this a blind spot was wrong.
+- **On `.git/`:** a build log reported reading 140 files from the assets directory where a clean clone holds 91 tracked ones. wrangler may already exclude the repository; if it does not, `/.git/` serves the full history and every file ever committed. One line closes it either way, without polling the live site to find out.
+
+---
+
 ## [1.69.0] - 2026-09-02
 
 ### Fixed

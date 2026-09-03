@@ -22,10 +22,20 @@ twin are 19 MiB each and growing weekly, and they are the next candidates.
 Usage:
     python scripts/check_asset_sizes.py
 
-Exit code is non-zero if any served file is over the limit, so it can gate a
-deploy. NOT wired into any workflow: whether this becomes a fifth gate is an open
-ruling, the same one PRD item 10b holds for check_risk_profiles.py and
-check_stat_drift.py.
+Exit code is non-zero if any served file is over the limit. **Wired into
+.github/workflows/deploy.yml as the fifth gate** by owner ruling on PRD item 10b,
+2026-09-02; check_risk_profiles.py and check_stat_drift.py stay advisory under the
+same ruling.
+
+One honest limitation. That workflow deploys to GitHub Pages, which is not the
+live path: Cloudflare builds independently from the same push, so a failure here
+cannot actually stop a bad deploy. It converts an opaque Cloudflare failure into a
+red check naming the file and its size, which is the difference between noticing
+in minutes and noticing in a day.
+
+The walk uses `git ls-files`, which is the right list rather than a compromise:
+Cloudflare builds from a clean clone, so an untracked local file never reaches it
+and a tracked one always does.
 """
 
 import fnmatch

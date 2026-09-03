@@ -51,6 +51,19 @@ jobs:
       - name: Check the strategy extras join
         run: python3 scripts/check_strategy_extras.py
 
+      # Cloudflare rejects the ENTIRE deployment if any single file exceeds
+      # 25 MiB, and that is how the site silently stopped updating on
+      # 2026-09-01 (90f6dcf grew data/symphony_scores.json 210 KB past it).
+      # Read the limitation honestly: this workflow publishes to GitHub Pages
+      # and is NOT the live path, so failing here cannot stop the Cloudflare
+      # build, which runs independently on the same push. What it buys is a
+      # legible red X naming the offending file and its size, instead of an
+      # opaque failure in a dashboard nobody watches. Gated by owner ruling on
+      # PRD item 10b, 2026-09-02; check_risk_profiles.py and
+      # check_stat_drift.py stay advisory by the same ruling.
+      - name: Check served file sizes against Cloudflare's limit
+        run: python3 scripts/check_asset_sizes.py
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 

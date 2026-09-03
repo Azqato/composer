@@ -31,7 +31,14 @@ _wf-mockup.html
 _harness_*.html
 _harness_*_driver.js
 
-# Repo and tooling config
+# Repo and tooling config.
+#
+# `.git/` is listed defensively. wrangler may well exclude it already, but a
+# build log reported reading 140 files from the assets directory where a clean
+# clone holds 91 tracked ones, and the likeliest remainder is the repository
+# itself. If it were served, /.git/ would expose the full history and every
+# stray file ever committed. One line closes the question either way.
+.git/
 wrangler.jsonc
 .gitignore
 .assetsignore
