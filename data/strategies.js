@@ -4065,7 +4065,80 @@ window.STRATEGIES_DATA = [
       "hedge": "Defensive states are plentiful: UVXY and VIXY volatility hedges, SQQQ/TECS/SPXU/SOXS inverse sleeves, TMF/TMV on Treasuries, and the 'Safe Sectors or Bonds' rotation across BSV, TLT, LQD, VBF, XLP, UGE, XLV and XLU. The inverse and leveraged-bond legs are directional bets rather than pure ballast, but the safe-sector rotation is genuine defensive breadth.",
       "concentration": "Twenty instruments are reachable, and the equal-weighting spreads capital across many signals. In practice the portfolio still concentrates when the defensive rotation and a leveraged sleeve agree, the most recent holdings were dominated by utilities (XLU) alongside a TQQQ position."
     },
-    "author_note": "The source symphony is named Rain's Unified \"Best Signals\". Its internal group names credit the strategies it unifies, TQQQ FTLT, The Holy Grail, KMLM Fund Surfing, and 'A Better Buy the Dips Nasdaq by Garen Phillips | Safe Sectors Mod'. Backtest covers about 5.7 years ({backtest_days} trading days) and went out-of-sample on 2025-11-08; all metrics reflect that mostly in-sample window. Symphony ID: sEUgeRfSayPbBh8mJxSy."
+    "author_note": "The source symphony is named Rain's Unified \"Best Signals\". Its internal group names credit the strategies it unifies, TQQQ FTLT, The Holy Grail, KMLM Fund Surfing, and 'A Better Buy the Dips Nasdaq by Garen Phillips | Safe Sectors Mod'. Backtest covers about 5.7 years ({backtest_days} trading days) and went out-of-sample on 2025-11-08; all metrics reflect that mostly in-sample window. Symphony ID: sEUgeRfSayPbBh8mJxSy.",
+    "tldr": {
+      "thesis": "This is not one strategy, it is a weighted blend of several, and it names them. Inside the tree are groups labelled TQQQ FTLT, Holy Grail, KMLM Fund Surfing, Safe Sectors or Bonds and A Better Buy the Dips Nasdaq, each carrying its own weight, four of which have their own pages in this library. Because the sleeves run side by side, it holds more than one fund on 77.8% of days and frequently holds both TQQQ and SQQQ at once. A {sharpe_ratio} Sharpe and a {calmar_ratio} Calmar are both the highest of the 24 strategies here, and that result rests on a {backtest_days} day record beginning in December 2020.",
+      "works_well_in": [
+        "Nasdaq uptrends. TQQQ is 30.4% of all capital deployed and TECL 16.5%. Through the 2023 AI bull TQQQ rose 204.9% and TECL 211.9%, and the reconstruction held them on 32% and 15% of days.",
+        "Bear markets, because a sleeve of it is short. SQQQ was held on 354 days and compounded +892.2% across them. Through the 2022 bear market SQQQ rose 120.7% while TQQQ fell 78.8%, and the reconstruction held SQQQ on 36% of days and TQQQ on 21%.",
+        "Bull markets that leave semiconductors behind, which the leveraged single-sector strategies here struggle with. Through 2024 SOXL fell 1.8% while TQQQ rose 66.7% and TECL 47.5%, and the reconstruction held those two on 29% and 20% of days.",
+        "Choppy stretches where no single signal is right. Holding several sleeves at once is what produces {max_drawdown_abs}, the second shallowest drawdown in this library, at an annualized return that still ranks 5th."
+      ],
+      "struggles_in": [
+        "Anything the record has not seen. It begins 16 December 2020, so the COVID crash, the February 2018 spike and every earlier crisis fall outside it. The {backtest_days} day window is the fifth shortest here.",
+        "Fast drawdowns, where the sleeves cancel. Through the 2025 spring drawdown the reconstruction held TECL on 25% of days and SQQQ on 24% at the same time, while those two moved -62.0% and +103.6%.",
+        "Its volatility leg, which has not paid. UVXY compounded +30.8% across the 65 days it was held, against VIXY's +296.0% across its own 65, and the record contains no volatility spike on the scale the ladder at the top of the tree is built for.",
+        "Trading friction. The allocation changed on 983 of {backtest_days} days, about every 1.5 trading days, and a blend rebalances whenever any one of its sleeves moves."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**No single signal is trustworthy, but several together are.** This is the premise of the whole design. Rather than choosing between a 200-day trend filter, a bond momentum comparison and a managed-futures crossover, it weights all of them and holds the result.",
+        "**A 200-day moving average defines the top-level regime, twice over.** SPY against its 200-day average decided 993 days and TQQQ against its own decided 905, and each opens a near-identical half of the tree.",
+        "**Bond and credit momentum picks the equity sleeve.** AGG's 20-day RSI against SH's 60-day appears nine times and decided 744 days at its busiest site. Staples against SH, IEF against PSQ and HYG against SPY do similar work elsewhere.",
+        "**Managed futures are the conflict check.** A comparison of XLK's 10-day RSI against KMLM's appears ten times, in groups explicitly labelled Conflict Check, and is used to decide whether two sleeves agree before committing.",
+        "**An overbought reading anywhere means buy volatility.** The first ladder in the tree tests SPY, TECL, XLP, QQQ, VTV, XLF and XLY for a 10-day RSI above roughly 80 and routes to UVXY or VIXY on any of them."
+      ],
+      "structural": [
+        "**It is a blend, and the components are separately readable.** The named groups include TQQQ FTLT, Holy Grail, KMLM Fund Surfing and Safe Sectors or Bonds. The Holy Grail (Original), TQQQ For The Long Term (Original), Simon's KMLM Switcher (Original) and Safe Sectors or Bonds (Original) all have pages in this library, so the parts can be read against the whole.",
+        "**The blend outranks every one of its named components on both risk-adjusted measures, and the comparison is not like for like.** Its {sharpe_ratio} Sharpe and {calmar_ratio} Calmar are the highest of the 24 here, against Sharpe ratios of 1.77, 1.83, 2.90 and 1.25 for those four. But three of the four are measured over much longer records that include the COVID crash and this one is not, so part of the gap is a difference in windows rather than in design.",
+        "**Almost none of the tree is dead, which is unusual.** Of 84 conditions only 6 decided zero days, over 36 distinct expressions. All 20 holdable funds were held at least once. Several other strategies in this library carry large unreachable branches; this one does not.",
+        "**It holds one fund on only 22.2% of days.** The sleeves run in parallel, so on most days it holds several positions, and on some of those days the positions oppose each other. TQQQ and SQQQ were both held through parts of 2022 and 2025.",
+        "**Turnover is one allocation change every 1.5 trading days**, the effect of a weighted blend where any sleeve moving changes the whole allocation. None of the figures on this page carries a commission, a spread or a slippage assumption.",
+        "**The record is short and it starts after the crash.** {backtest_days} trading days from 16 December 2020, the fifth shortest here. It contains the 2022 bear market and the 2025 spring drawdown, and it excludes the COVID crash, the 2018 spike and everything before them. The worst single day in the record was {worst_day}.",
+        "**{max_drawdown_abs} is the second shallowest drawdown among the 24 strategies here**, on {standard_deviation} annualized volatility and {annualized_rate_of_return} annualized, which ranks 5th. The trailing year returned {trailing_one_year_return}.",
+        "**Duplication is heavy but purposeful.** The Conflict Check groups are copies of other sleeves, placed inside a sleeve so it can test whether its neighbour agrees. That is why the same comparison appears ten times, and it is a different thing from the copy-paste duplication seen elsewhere in this library."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Nasdaq uptrend",
+        "expected": "Strong",
+        "why": "The long sleeves dominate the weighting and the 200-day filters keep them switched on, so a rising Nasdaq is where most of the capital sits.",
+        "example": "2023 AI bull: TQQQ +204.9%, TECL +211.9%, SPY +26.7%. The reconstruction held TQQQ on 32% of days and TECL on 15%."
+      },
+      {
+        "regime": "Sustained bear market",
+        "expected": "Strong",
+        "why": "One sleeve goes short while the others go defensive, so the blend does not depend on any single filter turning off in time.",
+        "example": "2022 bear market: SQQQ +120.7%, TQQQ -78.8%, SPY -24.5%. The reconstruction held SQQQ on 36% of days, TQQQ on 21% and TECL on 17%."
+      },
+      {
+        "regime": "Bull market where semiconductors lag",
+        "expected": "Strong",
+        "why": "The leveraged exposure runs through TQQQ and TECL rather than a single sector fund, so a year that leaves semiconductors flat is one the blend still participates in.",
+        "example": "2024 bull: TQQQ +66.7%, TECL +47.5%, SOXL -1.8%. The reconstruction held TQQQ on 29% of days, TECL on 20% and TLT on 10%."
+      },
+      {
+        "regime": "Melt-up",
+        "expected": "Strong",
+        "why": "The overbought ladder at the top only diverts to volatility at extremes, so an ordinary strong run leaves the long sleeves intact.",
+        "example": "2021 melt-up: TQQQ +91.3%, TECL +124.1%, SPY +30.5%. The reconstruction held TQQQ on 32% of days and TECL on 20%."
+      },
+      {
+        "regime": "Fast drawdown",
+        "expected": "Mixed",
+        "why": "The sleeves disagree and end up on both sides at once. That caps the damage, which is the point of a blend, but it also cancels most of the gain.",
+        "example": "2025 spring drawdown: TECL -62.0%, SQQQ +103.6%, SPY -18.8%. The reconstruction held TECL on 25% of days and SQQQ on 24% at the same time."
+      },
+      {
+        "regime": "Severe crash",
+        "expected": "Unknown",
+        "why": "The record begins 16 December 2020, so nothing on the scale of the COVID crash or the February 2018 spike is inside it. The volatility ladder at the top of the tree is built for exactly that case and has never been tested by one.",
+        "example": "UVXY was held on 65 days and compounded +30.8% across them, on 4.5% of all capital deployed."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which funds the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. No reconstructed return is quoted on this page. The allocation changes about every 1.5 trading days, and a costless model of that path returns 1,478.1% across the 195 trading days of the 2022 bear market, which is a measure of the missing costs rather than of the strategy. The regimes above are ranked from holdings shares and price moves alone. Holdings shares here do not sum the way they do on a single-position strategy, because this one holds several funds on 77.8% of days. Every window in the table sits inside the strategy's own record, which runs {backtest_days} trading days from 16 December 2020 to 27 August 2026; earlier windows were left out because they fall outside it."
   },
   {
     "slug": "zoops-frontrunner",

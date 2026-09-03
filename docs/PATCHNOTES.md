@@ -5,6 +5,24 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.67.0] - 2026-09-02
+
+### Added
+- **Rain's Unified Best Signals (Original) gets the full four-section treatment.** Page 23 of 24 in the items 13/14/15 rollout. Written from a full read of the 945-line tree, a condition-by-condition reachability pass and a day-by-day reconstruction over the 1,430 day record.
+
+### Notes
+- **This one is a weighted blend that names its own components.** The tree contains groups labelled TQQQ FTLT, Holy Grail, KMLM Fund Surfing, Safe Sectors or Bonds and A Better Buy the Dips Nasdaq. Four of those correspond to strategies that already have pages here, so the page cross-references them and a reader can compare the parts against the whole.
+- **It holds the top Sharpe and top Calmar of the 24 visible strategies**, and the second shallowest drawdown. The page states the caveat in the same breath: the 1,430 day record starts 16 December 2020, which is the fifth shortest here and excludes the COVID crash and the February 2018 spike, while three of its four named components are measured over records that include them. The comparison is not like for like and the page says so.
+- **The structural contrast with v1.66.0 is worth noting.** Beta Ballers had 51 of 93 conditions dead and 5 funds never held. This one has 6 of 84 dead, 36 distinct expressions and every one of its 20 funds held at least once. Its heavy duplication is the Conflict Check pattern, where a sleeve embeds a copy of a neighbouring sleeve to test agreement, which is a different thing from copy-paste and is described as such.
+- **It holds one fund on only 22.2% of days**, so the regime note carries the same warning as v1.65.0 that holdings shares do not sum the way they do on a single-position page. It held TQQQ and SQQQ simultaneously through parts of 2022 and 2025.
+- **No reconstructed return is quoted.** Turnover is one change every 1.5 trading days, and the costless model returns 1,478.1% across the 2022 bear market.
+- Windows before 16 December 2020 were dropped from the regime table as outside the record.
+- Corrected before shipping: a draft claimed the 1.5 day turnover was the highest in the library. Turnover has only been measured on the pages written in this rollout, so the comparative was removed.
+- Encountered the known `relative-strength-index(None)` display artifact again in the scratchpad tree printer. As before, this reflects a filter storing its window under `sort-by-fn-params.window`, and is not a defect in the symphony.
+- All six checkers pass and the page renders clean in headless Edge. One page remains.
+
+---
+
 ## [1.66.0] - 2026-09-02
 
 ### Added
