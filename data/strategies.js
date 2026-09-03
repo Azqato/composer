@@ -3772,7 +3772,79 @@ window.STRATEGIES_DATA = [
       "concentration": "Below the top overbought gate the book is a 50/50 blend of two sleeves, and the defensive Pop tier splits across six slots, so it often holds several positions at once rather than one name. That said, in its aggressive states both sleeves can land in leveraged tech at the same time, concentrating risk heavily.",
       "hedge": "UVXY and the inverse ETFs are the defensive states, both directional volatility or short bets rather than ballast, so the defense is itself a leveraged position."
     },
-    "author_note": "Featured as the original of the widely forked TQQQ or Not family (source symphony name 'TQQQ or not/Pop'). Dozens of later Composer symphonies rebuild the same 'default to TQQQ, override on overbought, crash and regime signals' pattern. Symphony ID: g0J87gnk7SausotpUoCt."
+    "author_note": "Featured as the original of the widely forked TQQQ or Not family (source symphony name 'TQQQ or not/Pop'). Dozens of later Composer symphonies rebuild the same 'default to TQQQ, override on overbought, crash and regime signals' pattern. Symphony ID: g0J87gnk7SausotpUoCt.",
+    "tldr": {
+      "thesis": "314 nodes, 47 conditions and seven funds it can hold, and the answer to the question in the name is usually not. Treasury bills are 61.0% of all capital deployed; TQQQ is 33.4%. The structure is a mean-reversion engine bolted to a bond-signal filter, running two branches side by side, so it holds more than one position on 60% of days. It also contains a complete short side, SQQQ and SOXS, that the record never once reaches.",
+      "works_well_in": [
+        "Nasdaq uptrends with pullbacks to buy. TQQQ compounded an enormous gain across the 2,141 days the rules named it. Through 2012 to 2014 the reconstruction held TQQQ on 37% of days while TQQQ rose 442.6%.",
+        "Volatility spikes. UVXY was held on 190 days and is the fastest-compounding leg here. Across the COVID crash the reconstruction held UVXY on 13% of days while UVXY rose 552.3%, and through the February 2018 spike on 17% of days while UVXY rose 181.4%.",
+        "Sustained bear markets, by being absent from them. Through the 2022 bear market TQQQ fell 78.8% while the reconstruction sat in BIL on 76% of days.",
+        "Semiconductor washouts, narrowly. SOXL was held on 151 days, reached only through oversold rungs, and compounded +1,565.0% across them."
+      ],
+      "struggles_in": [
+        "Fast drawdowns that begin from an oversold reading, because the mean-reversion rungs buy into them. Through the 2025 spring drawdown the reconstruction held TQQQ on 33% of days and SOXL on 3% while TQQQ fell 56.8%.",
+        "Bull markets that never pull back, since the entries it depends on need a dip to fire. Through 2024 TQQQ rose 66.7% while the reconstruction sat in BIL on 70% of days.",
+        "Anything that would call for the short side, which does not exist in practice. SQQQ and SOXS are in the universe and were never held.",
+        "Turnover. The allocation changed on 1,104 of {backtest_days} days, about once every 3.3 trading days, across 3x leveraged funds and a bill fund."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**An oversold leveraged fund is a buy and an overbought one is a top.** Nearly every rung in the tree is one of those two readings, applied to TQQQ, SPXL, SOXL, QQQ or SMH at lookbacks of 10, 20 and 30 days.",
+        "**Bond momentum tells you whether to own stocks.** A comparison of BND's RSI against SPY's decides whether the strategy holds TQQQ or Treasury bills, and it appears six times in the tree. A second pair, IEF's 200-day RSI against TLT's, appears four times.",
+        "**A 10-day drawdown in TMF says something about equities.** Two rungs read the recent drawdown of a 3x long-Treasury fund and route to bills when it exceeds 7%. That test decided 1,144 days, more than any other except the SPY trend readings.",
+        "**Being in cash is an acceptable default.** Unlike most strategies in this library, the fallback here is Treasury bills rather than an equity position, and the record spends most of its life there."
+      ],
+      "structural": [
+        "**The entire short side is unreachable, and the reason is structural.** SQQQ and SOXS are the only inverse funds in the universe and neither was ever held. The six rungs that lead to them sit inside a group entered only when VIXM's 10-day RSI is above 70, and the first thing that group asks is whether QQQ or SMH is overbought. A sustained volatility spike and an overbought Nasdaq do not occur together. The VIXM gate opened on 131 days; inside it those six rungs fired on none.",
+        "**Two further rungs are shadowed by one above them.** A 10-day RSI above 80 on TQQQ reaches UVXY in two places, but the very top of the tree already catches anything above 79, so both decided zero days. Eight of the 47 conditions here decided nothing at all.",
+        "**It answers its own question with no.** BIL is 61.0% of all capital deployed across 3,436 days. TQQQ is 33.4% across 2,141. The remaining three funds share 5.6% between them.",
+        "**Forty-seven conditions over thirty distinct expressions.** BND's 20-day RSI against SPY's appears six times, SPY's 60-day RSI against 50 four times, and IEF's 200-day RSI against TLT's four times. A complete four-node subtree, labelled Double Pop Bot, is copied verbatim into five places.",
+        "**It runs two branches at once.** Unlike most strategies here it holds more than one position on 60% of days: two on 2,064 days, three on 122 and four on 10.",
+        "**The shallow drawdown is bought with time in cash.** {max_drawdown_abs} is the fifth shallowest among the 24 strategies in this library and {standard_deviation} annualized volatility the fifth lowest, which is what holding Treasury bills most of the time produces. A {sharpe_ratio} Sharpe ranks 9th of 24 and a {calmar_ratio} Calmar ranks 8th.",
+        "**The group name advertises a different backtest than the record.** The top-level group is labelled Popped Waves, 3 May 2017, 141% and 19%. The record on file covers {backtest_days} trading days from 2 February 2012 and reports {annualized_rate_of_return} at {max_drawdown_abs}.",
+        "**The record covers {backtest_days} trading days from 2 February 2012.** The 2008 crisis is absent. None of the figures on this page carries a commission, a spread or a slippage assumption, and the worst single day in the record was {worst_day}."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Nasdaq uptrend with pullbacks",
+        "expected": "Strong",
+        "why": "The mean-reversion rungs need a dip to buy, and an uptrend that keeps offering them is the case the whole structure is built for.",
+        "example": "2012 to 2014: TQQQ +442.6%, and the reconstruction held TQQQ on 37% of days and BIL on 57%."
+      },
+      {
+        "regime": "Volatility spike",
+        "expected": "Strong",
+        "why": "The very first test in the tree reaches UVXY on an overbought TQQQ, so a spike that follows a strong run is caught before anything else runs.",
+        "example": "COVID crash: UVXY +552.3%, TQQQ -69.8%. The reconstruction held UVXY on 13% of days and BIL on 49%."
+      },
+      {
+        "regime": "Sustained bear market",
+        "expected": "Strong",
+        "why": "The bond-signal filters route to Treasury bills and keep it there, so a long decline is one the strategy mostly sits out.",
+        "example": "2022 bear market: TQQQ -78.8%, and the reconstruction sat in BIL on 76% of days and held TQQQ on 20%."
+      },
+      {
+        "regime": "Semiconductor washout",
+        "expected": "Mixed",
+        "why": "SOXL is reachable only through oversold rungs, so it is bought at extremes and held briefly. It worked over the days it was named, but 151 days is a thin base.",
+        "example": "SOXL was held on 151 of {backtest_days} days and compounded +1,565.0% across them, on 0.9% of all capital deployed."
+      },
+      {
+        "regime": "Bull market with no pullbacks",
+        "expected": "Poor",
+        "why": "Entries depend on oversold readings, so a market that rises without dipping leaves the strategy in Treasury bills watching it.",
+        "example": "2024: TQQQ +66.7%, while the reconstruction sat in BIL on 70% of days and held TQQQ on 26%."
+      },
+      {
+        "regime": "Fast drawdown from an oversold reading",
+        "expected": "Poor",
+        "why": "The mean-reversion rungs buy a beaten-down leveraged fund, and a decline that keeps going is bought into repeatedly.",
+        "example": "2025 spring drawdown: TQQQ -56.8%, SOXL -73.7%. The reconstruction held TQQQ on 33% of days and SOXL on 3%."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which funds the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. No reconstructed return is quoted on this page. The allocation changes about once every 3.3 trading days across 3x leveraged funds, and a costless model of that path would say more about the absence of costs than about the strategy, so the regimes above are ranked from holdings and price moves alone. Holdings shares here do not sum the way they do on a single-position strategy, because this one holds two or more funds on 60% of days. The reconstruction covers {backtest_days} trading days from 2 February 2012 to 27 August 2026, matching the backtest window on record."
   },
   {
     "slug": "beta-ballers-original",

@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.65.0] - 2026-09-02
+
+### Added
+- **TQQQ or Not (Original) gets the full four-section treatment.** Page 21 of 24 in the items 13/14/15 rollout. TL;DR, assumptions, regime table and regime note, written from a full read of the 314-node tree and a day-by-day reconstruction over the 3,663 day record.
+
+### Notes
+- **The whole short side is dead code.** SQQQ and SOXS are the only inverse funds in the universe and neither was ever held. The six rungs that reach them sit inside a group entered only when VIXM's 10-day RSI is above 70, and the first thing that group asks is whether QQQ or SMH is overbought. Those two states do not co-occur. The VIXM gate opened on 131 days and the six rungs fired on none of them. Two further rungs reaching UVXY on a TQQQ 10-day RSI above 80 are shadowed by a top-level rung that catches anything above 79, so they also decided zero days. Eight of the 47 conditions decided nothing at all.
+- **It answers its own question with no.** BIL is 61.0% of all capital deployed across 3,436 days; TQQQ is 33.4% across 2,141. UVXY, SOXL and SPXL share the remaining 5.6%.
+- **It holds more than one fund on 60% of days**, which is unusual in this library: two positions on 2,064 days, three on 122 and four on 10. The regime note says so, because holdings shares do not sum the way they do on a single-position page.
+- **No reconstructed return is quoted.** Turnover is one allocation change every 3.3 trading days across 3x leveraged funds, so the regimes are ranked from holdings shares and ticker moves alone.
+- Forty-seven conditions over thirty distinct expressions. `rsi(BND,20) > rsi(SPY,20)` appears six times, `rsi(SPY,60) > 50` four times, `rsi(IEF,200) < rsi(TLT,200)` four times, and a four-node Double Pop Bot subtree is copied verbatim into five places.
+- Every library-wide ranking claim was checked against `data/strategies.json` before shipping: Sharpe 9th of 24, Calmar 8th, drawdown 5th shallowest, volatility 5th lowest.
+- All six checkers pass and the page renders clean in headless Edge. Three pages remain.
+
+---
+
 ## [1.64.0] - 2026-09-02
 
 ### Added
