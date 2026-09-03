@@ -1065,6 +1065,135 @@ p { color: var(--color-secondary); }
 }
 
 /* ---- Signals list ---- */
+/* ---- Signal Types table (V1.20 item 11) ----
+   A table with detail rows, not a five-column table. The median signal
+   description is 259 characters and 75 of the 91 run over 200, so a real prose
+   column would recreate the phone overflow fixed in v1.69.0. Instead the four
+   scannable fields share one row and the description gets a full-width row
+   under it.
+
+   `table-layout: fixed` matters here rather than being a preference: without
+   it a long signal name sets the column's min-content width and drags the
+   table past its container, which is the same mechanism as the .grid-2 bug.
+   Below 640px the whole thing becomes a stack, so it never needs to scroll
+   sideways at all. */
+.signal-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.signal-table th {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-secondary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.signal-table th:nth-child(1) { width: 44%; }
+.signal-table th:nth-child(2) { width: 13%; }
+.signal-table th:nth-child(3) { width: 25%; }
+.signal-table th:nth-child(4) { width: 18%; }
+
+.signal-table td {
+  padding: 10px 10px 4px;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.signal-row .signal-name {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.signal-detail td {
+  padding: 0 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-secondary);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.signal-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Threshold and Trend are the two large families (45 and 23 of 91) and read as
+   the neutral default. Selection and Composition are the ones a reader is
+   scanning for, so they carry the accent. */
+.type-threshold   { background: var(--color-surface-raised); color: var(--color-secondary); }
+.type-trend       { background: var(--color-surface-raised); color: var(--color-secondary); }
+.type-selection   { background: rgba(77, 159, 255, 0.14);  color: var(--color-blue); }
+.type-composition { background: rgba(167, 139, 250, 0.14); color: var(--color-purple); }
+
+code.signal-ind {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  padding: 2px 6px;
+  margin: 0 3px 3px 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-secondary);
+}
+
+/* An absent value states itself. Same reasoning as the item 10 risk categories:
+   a blank cell reads as missing data, and "none" is a fact about the signal. */
+.signal-none {
+  color: var(--color-disabled);
+  font-style: italic;
+  font-size: 0.75rem;
+}
+
+/* Below 640px the table stops being a table. Four columns of chips beside a
+   44% name column cannot be read on a phone, and forcing them would need a
+   horizontal scroll. Each signal becomes a labelled stack instead. */
+@media (max-width: 640px) {
+  .signal-table,
+  .signal-table tbody,
+  .signal-table tr,
+  .signal-table td { display: block; width: auto; }
+
+  .signal-table thead { display: none; }
+
+  .signal-row {
+    padding-top: 14px;
+  }
+
+  .signal-row .signal-name {
+    font-size: 0.875rem;
+    padding: 0 0 6px;
+  }
+
+  .signal-table td { padding: 2px 0; }
+
+  /* The header row is gone, so each value has to name itself. */
+  .signal-row td:not(.signal-name)::before {
+    content: attr(data-label) ": ";
+    color: var(--color-disabled);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-right: 4px;
+  }
+
+  .signal-detail td { padding: 8px 0 14px; }
+}
+
+/* Pre-item-11 card form. Nothing renders it today, kept only because the
+   hidden strategies would fall back to it if the table were reverted. */
 .signal-card {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);

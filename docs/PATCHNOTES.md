@@ -5,6 +5,27 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.71.0] - 2026-09-03
+
+### Added
+- **Signal Types table on every strategy page.** V1.20 item 11. The 91 signals across the 24 visible strategies now carry a `type` and an `indicator` alongside name, tag and description, so a reader can scan what a strategy actually measures instead of reading five paragraphs to find out.
+- **`scripts/check_signal_types.py`**, an advisory schema checker for the new fields.
+
+### Fixed
+- Two typography slips in signal prose, an en-dash and an arrow glyph. The v1.68.2 sweep audited the four narrative sections and never covered these fields.
+
+### Notes
+- **The `indicator` column states what the symphony computes, not what the prose says it computes.** A new extractor walks each cached symphony tree and reports every function and window it genuinely uses, split by `if` condition versus sort key. **All 119 indicator labels across the 91 signals were verified present in their own strategy's tree** before being written.
+- **Four types, not the three the roadmap proposed.** 11 of the 91 signals describe a holdings set rather than a condition, and filing those under `Selection` would call a static fund list a selection rule. The split came out `Threshold` 45, `Trend` 23, `Selection` 14, `Composition` 9.
+- **The automated drafter got roughly a third of the types wrong**, which is why all 91 were read by hand. It matched the word "basket" in a description and filed live conditions under `Composition`. Machine drafting set the floor, not the answer.
+- **A table with detail rows rather than a plain table.** The median signal description is 259 characters and 75 of 91 run over 200, so a real prose column would have recreated the phone overflow fixed in v1.69.0. The four scannable fields share one row, the description gets a full-width row beneath, and below 640px the table becomes a labelled stack.
+- **A long-standing artifact is explained.** The `relative-strength-index(None)` that had shown up in tree printers for weeks is a second schema variant: a lookback lives in either `<side>-window-days` or nested in `<side>-fn-params.window`. Reading only the first loses it. No symphony was ever wrong.
+- **The tree cross-check found zero content defects across 91 signals.** Five looked like they named an indicator their tree does not contain; all five were the checker's own regex, four confusing moving-average-return with moving-average-price and one reading "200-day MaxDD" as a moving average.
+- **Verification.** All 24 pages rendered in headless Edge with every one of the 91 rows compared against the data, field by field. A hidden strategy was rendered too, confirming the pre-item-11 shape degrades to "not categorised" and "none" rather than to blank cells. 0px overflow at 375, 390, 768 and 1280px. All four gates and the four advisory checkers pass.
+- **V1.20 item 16 is now the only open item in the milestone.**
+
+---
+
 ## [1.70.1] - 2026-09-02
 
 ### Changed

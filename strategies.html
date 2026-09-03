@@ -217,17 +217,36 @@
           </section>`
         : '';
 
+      // Item 11. A table with detail rows rather than a plain table: the median
+      // signal description is 259 characters and 75 of 91 run over 200, so a
+      // real fifth column would reintroduce exactly the phone overflow fixed in
+      // v1.69.0. The scannable fields sit on one row and the prose gets its own
+      // full-width row beneath, which collapses to a stack below 640px.
+      //
+      // `type` and `indicator` are absent on the hidden strategies, which still
+      // carry the pre-item-11 shape. Both degrade to a dash rather than to an
+      // empty cell, on the same reasoning as the item 10 categories: a stated
+      // absence is information, a blank is ambiguous.
       const signals = s.signals && s.signals.length
         ? `<section class="mb-10">
             <h2 style="color:var(--color-primary);margin-bottom:16px">Signals &amp; Logic</h2>
-            ${s.signals.map(sig => `
-              <div class="signal-card">
-                <div class="signal-header">
-                  <span class="signal-name">${sig.name}</span>
-                  ${renderTag(sig.tag)}
-                </div>
-                <p class="signal-desc">${sig.description}</p>
-              </div>`).join('')}
+            <table class="signal-table">
+              <thead>
+                <tr><th>Signal</th><th>Type</th><th>Indicator</th><th>Tag</th></tr>
+              </thead>
+              <tbody>
+                ${s.signals.map(sig => `
+                  <tr class="signal-row">
+                    <td class="signal-name" data-label="Signal">${sig.name}</td>
+                    <td data-label="Type">${signalType(sig.type)}</td>
+                    <td data-label="Indicator">${signalIndicator(sig.indicator)}</td>
+                    <td data-label="Tag">${renderTag(sig.tag)}</td>
+                  </tr>
+                  <tr class="signal-detail">
+                    <td colspan="4">${mdInline(sig.description)}</td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
           </section>`
         : '';
 
@@ -394,6 +413,26 @@
       // set of adjectives, so it is never dropped for space: the table scrolls inside
       // its own wrapper instead. The verdict colour is read off the first word of the
       // authored string, so the author writes a judgement and not a code.
+      // Four types, not the three the roadmap proposed. 11 of the 91 signals
+      // describe a holdings set rather than a condition ("Long Pool: TARK/TECL/
+      // UPRO/..."), and filing those under Selection would call a static fund
+      // list a selection rule.
+      function signalType(v) {
+        const t = String(v || '').trim();
+        if (!t) return '<span class="signal-none">not categorised</span>';
+        return `<span class="signal-type type-${t.toLowerCase()}">${t}</span>`;
+      }
+
+      // Every label here was verified against the strategy's own symphony tree
+      // before it was written, so this renders a fact about the tree rather
+      // than a restatement of the prose beside it. An empty list is the honest
+      // answer for a Composition row: there is no indicator to name.
+      function signalIndicator(v) {
+        const list = Array.isArray(v) ? v.filter(Boolean) : (v ? [v] : []);
+        if (!list.length) return '<span class="signal-none">none</span>';
+        return list.map(i => `<code class="signal-ind">${i}</code>`).join(' ');
+      }
+
       function regimeClass(v) {
         const w = String(v || '').trim().toLowerCase();
         if (w.startsWith('strong') || w.startsWith('good')) return 'good';

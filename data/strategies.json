@@ -976,26 +976,46 @@
       {
         "name": "Extreme Multi-ETF RSI Waterfall",
         "tag": "rsi",
-        "description": "10-period RSI thresholds of 14–22 across LABU, YINN, UDOW, FAS, TNA, URTY, KORU, NAIL, and others, the tightest RSI entry gates in the library."
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
+        "description": "10-period RSI thresholds of 14 to 22 across LABU, YINN, UDOW, FAS, TNA, URTY, KORU, NAIL, and others, the tightest RSI entry gates in the library."
       },
       {
         "name": "SOXL Multi-Window Crash Detection",
         "tag": "momentum",
+        "type": "Threshold",
+        "indicator": [
+          "Return(1)",
+          "Return(2)",
+          "Return(5)"
+        ],
         "description": "1-day (<-31%), 2-day (<-37%), and 5-day (<-57%) cumulative return checks on SOXL trigger semiconductor entries at catastrophic crash levels."
       },
       {
         "name": "QQQ Trend Gate",
         "tag": "momentum",
+        "type": "Threshold",
+        "indicator": [
+          "MA return(10)"
+        ],
         "description": "QQQ 10-day moving-average return < -2.4% triggers SOXL as a broad Nasdaq deterioration entry."
       },
       {
         "name": "UVXY Extreme Fear Signal",
         "tag": "vix-tiers",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "UVXY RSI(10) > 88: far above the library standard of 65, triggers SOXL as a contrarian panic-buy at extreme volatility spikes."
       },
       {
         "name": "Diversified 3x Leveraged Basket",
         "tag": "leveraged-etfs",
+        "type": "Composition",
+        "indicator": [],
         "description": "SOXL, LABU, YINN, UDOW, FAS, TNA, URTY, KORU, NAIL, nine or more 3x leveraged ETFs across sectors and geographies, each caught at their own extreme RSI bottom."
       }
     ],
@@ -1121,21 +1141,37 @@
       {
         "name": "TQQQ 200-Day MA Trend Gate",
         "tag": "200d-ma",
+        "type": "Trend",
+        "indicator": [
+          "MA(200)"
+        ],
         "description": "Primary regime filter: TQQQ's own price vs. its 200d MA. Above = bull mode (RSI-guarded TQQQ). Below = bear mode (dip-buying and defensive logic). Distinct from strategies using SPY as the trend reference."
       },
       {
         "name": "TQQQ RSI(10) Overbought Guard",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "In bull mode: TQQQ RSI(10) > 79 -> rotate to UVXY. Prevents holding a massively extended leveraged position. The 79 threshold is tighter than the 80 commonly used, catching overbought conditions slightly earlier."
       },
       {
         "name": "Bear Dip-Buy: TECL & SOXL",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "In bear mode: TQQQ RSI(10) < 31 -> buy TECL (3x Technology). SOXL RSI(10) < 30 -> buy SOXL (3x Semiconductors). Sequential checks catch tech and semiconductor capitulation events."
       },
       {
         "name": "Bear Momentum Filter: SQQQ vs BSV",
         "tag": "momentum",
+        "type": "Selection",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "When in bear mode and no dip-buy triggers: RSI(10) filter between SQQQ and BSV. Selects the higher-RSI asset, either pressing the short-QQQ trade or rotating to short-term bonds for capital preservation."
       }
     ],
@@ -1261,26 +1297,47 @@
       {
         "name": "SPY 200-Day MA Trend Gate",
         "tag": "200d-ma",
+        "type": "Trend",
+        "indicator": [
+          "MA(200)"
+        ],
         "description": "Primary regime filter using the S&P 500 (not TQQQ) as the trend reference. SPY above 200d MA = bull mode (hold TQQQ). Below = bear mode. Key difference from Holy Grail: SPY 200d is a slower, more stable signal than TQQQ's own 200d MA."
       },
       {
         "name": "Dual Overbought Guard: TQQQ + SPXL RSI",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Two-layer overbought detection: TQQQ RSI(10) > 79 OR SPXL RSI(10) > 80 -> rotate to UVXY. Checking both the QQQ and SPY leveraged proxies adds redundancy and catches different overbought conditions."
       },
       {
         "name": "Bear Dip-Buy: TECL & UPRO",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Bear mode: TQQQ RSI(10) < 31 -> TECL (3x Tech dip-buy). SPY RSI(10) < 30 -> UPRO (3x SPY dip-buy). Two distinct dip-buy catches across tech and broad market, using different RSI reference tickers."
       },
       {
         "name": "Bear RSI Filter: SQQQ vs TLT",
         "tag": "momentum",
+        "type": "Selection",
+        "indicator": [
+          "RSI(10)",
+          "MA(20)"
+        ],
         "description": "When in bear mode below TQQQ 20d MA: RSI(10) filter between SQQQ and TLT. Selects the stronger momentum asset, either the inverse-QQQ short trade or long-duration treasury bonds as a safe haven."
       },
       {
         "name": "SQQQ Oversold Re-Entry",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Unusual signal: SQQQ RSI(10) < 31 -> buy SQQQ. Fires when the 3x inverse ETF has itself become oversold (meaning the market bounced hard enough to crush the short). Re-enters the short position at a more favorable level after mean-reversion."
       }
     ],
@@ -1406,21 +1463,33 @@
       {
         "name": "IEI vs SPHB RSI(7) Regime Gate",
         "tag": "rsi",
+        "type": "Trend",
+        "indicator": [
+          "RSI(7)"
+        ],
         "description": "Single regime signal: IEI (intermediate bonds) RSI(7) vs SPHB (high-beta equities) RSI(7). IEI stronger -> risk-off -> buy worst-performing long leveraged ETF. SPHB stronger -> risk-on -> buy worst-performing inverse ETF. Unique in the library for using relative RSI of two non-target assets."
       },
       {
         "name": "Bottom-1 Mean-Reversion Sort",
         "tag": "momentum",
+        "type": "Selection",
+        "indicator": [
+          "MA return(4)"
+        ],
         "description": "Within each pool, selects the single asset with the lowest 4-day moving average of returns, the most beaten-up recent performer. Pure mean-reversion signal expecting a bounce from maximum distress."
       },
       {
         "name": "Long Pool: TARK/TECL/UPRO/TMF/YINN/EDC/SOXX",
         "tag": "leveraged-etfs",
+        "type": "Composition",
+        "indicator": [],
         "description": "Active in risk-off regime: 7 leveraged long ETFs spanning US tech (TARK 2x ARKK, TECL 3x tech, UPRO 3x SPY), bonds (TMF 3x LT), and international (YINN 3x China, EDC 3x EM), plus SOXX (semis)."
       },
       {
         "name": "Bear Pool: SARK/PSQ/TMV/DRV/TYO",
         "tag": "leveraged-etfs",
+        "type": "Composition",
+        "indicator": [],
         "description": "Active in risk-on regime: 5 inverse and short ETFs. SARK (inverse ARKK), PSQ (1x inverse QQQ), TMV (3x inverse LT bonds), DRV (3x inverse real estate), TYO (3x inverse 7-10yr treasury)."
       }
     ],
@@ -1547,26 +1616,49 @@
       {
         "name": "SPY EMA(8) vs SMA(200) Trend Gate",
         "tag": "200d-ma",
+        "type": "Trend",
+        "indicator": [
+          "EMA(8)",
+          "MA(200)"
+        ],
         "description": "Primary regime filter: SPY 8-day EMA vs 200-day SMA. More responsive than a simple price vs. SMA(200) check, the short EMA smooths recent price action. Bull above, bear below."
       },
       {
         "name": "Dual SPY Overbought Guard",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)",
+          "RSI(60)"
+        ],
         "description": "In bull mode: SPY RSI(10) > 80 -> UVXY (extreme overbought). SPY RSI(60) > 60 -> best of [TMF, UUP, VIXY, XLP, SPLV] by 15d return (elevated medium-term momentum). Two-tier defense from short and medium time-frame overbought signals."
       },
       {
         "name": "SMH MACD Signal (EMA 12/26)",
         "tag": "momentum",
+        "type": "Trend",
+        "indicator": [
+          "EMA(12)",
+          "EMA(26)"
+        ],
         "description": "SMH EMA(12) vs EMA(26): a MACD crossover applied to the semiconductor ETF. Bearish cross triggers partial hedging (SHY/SMH split or SOXL dip-buy). Bullish cross enables individual stock selection mode."
       },
       {
         "name": "Top-3 Semiconductor Stock Selection",
         "tag": "momentum",
+        "type": "Selection",
+        "indicator": [
+          "MA return(90)"
+        ],
         "description": "Most aggressive mode: selects top 3 of 19 semiconductor stocks (NVDA, TSM, AVGO, ASML, TXN, QCOM, AMD, INTC, ADI, AMAT, MU, LRCX, SNPS, KLAC, NXPI, MRVL, MCHP, ON, STM) by 90-day moving average return. Equal-weights the three winners."
       },
       {
         "name": "SOXL Dip-Buy / SOXS Short",
         "tag": "leveraged-etfs",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Leveraged extremes: SMH RSI(10) < 31 -> SOXL (3x semi long) for dip-buying in bear regime. SMH RSI(10) > 70 in bear mode -> SOXS (3x semi short) for pressing an overbought semi rebound within an overall downtrend."
       }
     ],
@@ -1696,31 +1788,58 @@
       {
         "name": "SPY 200-Day MA Primary Regime Gate",
         "tag": "200d-ma",
+        "type": "Trend",
+        "indicator": [
+          "MA(200)"
+        ],
         "description": "Primary gate across the dominant components: SPY above 200d MA = bull mode (momentum ETF selection + defensive basket). Below = bear mode (dip-buy cascade + deep bear routing). Multiple components run this gate in parallel."
       },
       {
         "name": "Dual UVXY Guard: QQQ + SPY RSI",
         "tag": "vix-tiers",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)",
+          "RSI(60)"
+        ],
         "description": "Most aggressive UVXY trigger in the library: QQQ RSI(10) > 81 OR SPY RSI(10) > 80 -> UVXY. Uses QQQ (not TQQQ) for the first check. Plus SPY RSI(60) > 60 -> defensive basket. Three-tier overbought system."
       },
       {
         "name": "Bull Momentum Filter: Top 3 of 5 Leveraged ETFs",
         "tag": "momentum",
+        "type": "Selection",
+        "indicator": [
+          "MA return(21)"
+        ],
         "description": "Primary bull-mode allocation: selects top 3 of [TQQQ, SOXL, TECL, UDOW, UPRO] by 21-day moving average of returns. Concentrates in the strongest recent performers across QQQ, semis, tech, Dow30, and S&P500 3x ETFs. Also holds SVXY for volatility premium."
       },
       {
         "name": "TQQQ 20-Day MA Component",
         "tag": "200d-ma",
+        "type": "Trend",
+        "indicator": [
+          "MA(20)"
+        ],
         "description": "Parallel component using TQQQ 20d MA (not SPY 200d) as its gate. Adds shorter-term regime sensitivity. Holds TQQQ above the MA; shifts to TECL/SOXL dip-buy or TLT/PSQ/BSV RSI filter below it."
       },
       {
         "name": "Bear Dip-Buy Cascade: TECL, SOXL, UPRO",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Three-tier bear-mode dip-buying: TQQQ RSI(10) < 31 -> TECL; SMH RSI(10) < 30 -> SOXL; SPY RSI(10) < 30 -> UPRO. Sequential checks covering tech, semiconductors, and broad market capitulation."
       },
       {
         "name": "Deep Bear Protocol: QQQ 252-Day Return",
         "tag": "momentum",
+        "type": "Threshold",
+        "indicator": [
+          "Return(252)",
+          "MA(20)",
+          "Return(60)"
+        ],
         "description": "Activates when QQQ 252-day cumulative return < -20% (confirmed major bear). Routes through QQQ 20d MA position, QQQ 60d loss thresholds, and TLT vs SQQQ RSI comparison to select from SPY, QQQ, TQQQ, SQQQ, PSQ. Also detects bear-market rallies via QQQ 10d return > +5.5%."
       }
     ],
@@ -1849,21 +1968,41 @@
       {
         "name": "UVXY RSI(30d) Volatility Gate",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(30)"
+        ],
         "description": "Primary regime gate: RSI(UVXY,30d) > 63. UVXY's 30-day RSI measures sustained volatility elevation, not just daily spikes. Above 63 activates high-volatility mode where single-day magnitude triggers become relevant. Below 63 routes to the baseline 30-20-10 Double Pop checks."
       },
       {
         "name": "30-20-10 Double Pop RSI Cascade",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(30)",
+          "RSI(20)",
+          "RSI(10)"
+        ],
         "description": "Multi-timeframe RSI cascade on SMH: RSI(30d) > 70 OR RSI(20d) > 75 OR RSI(10d) > 80 -> SOXS (fade the pop). RSI(10d) < 30 -> SOXL (buy the oversold). Three separate RSI windows create a tiered mean-reversion signal, longer windows trigger at lower thresholds."
       },
       {
         "name": "Daily Magnitude Gates (SMH CumRet 1d)",
         "tag": "momentum",
+        "type": "Threshold",
+        "indicator": [
+          "Return(1)"
+        ],
         "description": "In high-volatility mode, the strategy grades single-day SMH moves: < -7% -> immediate SOXL (capitulation). -5.5% to -7% -> 50% SOXL + 50% Double Pop. -3% to -5.5% -> same split. > +5.5% -> SOXS (fade the rip). +4.5% to +5.5% -> 50% SOXS + Double Pop. Tiered responses match position size to move severity."
       },
       {
         "name": "SOXL FTLT Fallback (SVXY + TQQQ Momentum)",
         "tag": "momentum",
+        "type": "Selection",
+        "indicator": [
+          "Return(5)",
+          "RSI(60)",
+          "Drawdown(10)"
+        ],
         "description": "When no pop signal fires: CumRet(SVXY,5d) > 0 and RSI(TQQQ,60d) > 50 classify the environment as bull or bear. Bull -> BSV/SOXL momentum filter. Bear (MaxDD(SPY,10d) > 6) -> SOXL/BSV bear selector. Functions as the strategy's long-term momentum baseline when short-term signals are quiet."
       }
     ],
@@ -1991,21 +2130,40 @@
       {
         "name": "MaxDD(SOXL,60d) >= 50 Primary Gate",
         "tag": "momentum",
+        "type": "Threshold",
+        "indicator": [
+          "Drawdown(60)"
+        ],
         "description": "Outer regime gate: has SOXL lost 50%+ at any point in the last 60 trading days? Yes -> major-drawdown branch (references TQQQ volatility). No -> normal-regime branch (references SOXL RSI and vol directly). Unusual for using the instrument's own drawdown as its primary signal."
       },
       {
         "name": "Standard Deviation of Returns Gates",
         "tag": "momentum",
+        "type": "Threshold",
+        "indicator": [
+          "Volatility(14)",
+          "Volatility(100)",
+          "Volatility(30)"
+        ],
         "description": "Multiple StdDev conditions: StdDev(TQQQ,14d) <= 18, StdDev(TQQQ,100d) <= 3.8, StdDev(TQQQ,30d) >= 5.8, StdDev(SOXL,105d) <= 4.92, StdDev(SOXL,30d) >= 5.41. Volatility-of-volatility is used as a regime signal, the only strategy in this library to do so extensively."
       },
       {
         "name": "RL-Optimized RSI Thresholds",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(32)",
+          "RSI(30)"
+        ],
         "description": "RSI thresholds with machine-learning precision: RSI(SOXL,32d) <= 62.1995, RSI(SOXL,30d) >= 57.49, RSI(TQQQ,30d) >= 50. The 32-day RSI window (not 30 or 14) and the 62.1995 threshold are characteristic of reinforcement-learning optimization rather than human design."
       },
       {
         "name": "Inverse ETF Basket: TMV, SQQQ, SPXS",
         "tag": "leveraged-etfs",
+        "type": "Selection",
+        "indicator": [
+          "Return(3)"
+        ],
         "description": "Bear-mode short basket: picks the bottom 2 by 3-day cumulative return from [TMV, SQQQ, SPXS]. TMV (3x inverse long-duration bonds), SQQQ (3x inverse QQQ), SPXS (3x inverse S&P500). Activates when TQQQ 30-day trend is negative or TQQQ 200-day MaxDD exceeds 65%."
       }
     ],
@@ -2131,21 +2289,41 @@
       {
         "name": "SOXX 5-Day Momentum Extremes",
         "tag": "momentum",
+        "type": "Threshold",
+        "indicator": [
+          "Return(5)",
+          "Return(1)"
+        ],
         "description": "Primary mean-reversion gate: CumRet(SOXX,5d) > 5 (strong week) or CumRet(SOXX,5d) < -5 (weak week). Within each extreme, the 1-day return determines direction: down-day during a strong week = dip-buy (SOXL); up-day during a strong week = fade the rally (SOXS). Mirrors in the bearish case."
       },
       {
         "name": "NVDA RSI(8d) and RSI(3d) Extremes",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(8)",
+          "RSI(3)"
+        ],
         "description": "In normal regime: RSI(NVDA,8d) > 90 -> SOXS (extreme 8-day overbought in NVDA). RSI(NVDA,3d) < 15 -> SOXL (3-day extreme oversold). Thresholds are far tighter than the 79-80 / 30-31 used by most strategies, 90 and 15 fire only in true extremes."
       },
       {
         "name": "AMD RSI(8d) and RSI(3d) Extremes",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(8)",
+          "RSI(3)"
+        ],
         "description": "Parallel to NVDA: RSI(AMD,8d) > 90 -> SOXS. RSI(AMD,3d) < 15 -> SOXL. Using AMD as a separate co-equal component to NVDA means each chip leader independently signals overbought/oversold, firing either condition is enough to trigger the positioning."
       },
       {
         "name": "SOXX EMA(10d) vs EMA(200d) Cross",
         "tag": "momentum",
+        "type": "Trend",
+        "indicator": [
+          "EMA(10)",
+          "EMA(200)"
+        ],
         "description": "When no RSI extreme fires: EMA(SOXX,10d) > EMA(SOXX,200d) (sector trending up) -> momentum filter picking the top 90-day-return name from [SOXX, NVDA, AMD, XLE, ENPH]. 10d EMA below 200d EMA (downtrend) -> defensive rotation to the top two 90-day-return names from [SPY, DBC, XLE]. A conventional trend gate: uptrend routes to chips, downtrend to broad/commodities."
       }
     ],
@@ -2268,16 +2446,29 @@
       {
         "name": "SPY RSI(6d) >= 90: UVXY Overbought Hedge",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(6)"
+        ],
         "description": "When SPY's 6-day RSI reaches 90+, 100% of portfolio goes to UVXY (leveraged long VIX futures). The 6-day window and 90 threshold create an extremely selective trigger, firing only during sustained near-vertical SPY rallies, not routine momentum. Much more extreme than the 79-80 thresholds used by most strategies in this library."
       },
       {
         "name": "SPY RSI(6d) <= 28: Leveraged Attack",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(6)",
+          "MA return(5)"
+        ],
         "description": "When SPY's 6-day RSI hits 28 or below (extreme oversold), buys the single worst 5-day performer from [TQQQ, LABU, SPXL], a mean-reversion bounce bet rather than a momentum pick. LABU (3x biotech) is an unusual choice rarely seen in other strategies here, adding biotech exposure as a potential recovery leader alongside QQQ (TQQQ) and S&P500 (SPXL) leveraged ETFs."
       },
       {
         "name": "Mega-Cap Stock Momentum Filter",
         "tag": "momentum",
+        "type": "Selection",
+        "indicator": [
+          "MA return(5)"
+        ],
         "description": "Default regime: momentum filter over [WMT, MSTR, AMZN, KO, BRK/B, AAPL, TSLA]. Selects the top recent performer. Unique in combining defensive value (WMT, KO, BRK/B), mega-cap tech growth (AMZN, AAPL, TSLA), and a Bitcoin proxy (MSTR). No sector concentration, each name represents a different macro theme."
       }
     ],
@@ -2402,11 +2593,19 @@
       {
         "name": "SPY Moving Average Trend Gate",
         "tag": "200d-ma",
+        "type": "Trend",
+        "indicator": [
+          "MA(200)"
+        ],
         "description": "Primary regime filter: SPY current price vs its moving average. Above = bull mode (TQQQ with UVXY hedge). Below = bear mode (TQQQ default with SPY as the overbought defensive). The simplest form of trend-following regime detection, with no secondary trend filters or duration requirements."
       },
       {
         "name": "TQQQ RSI(10d) > 79 Overbought Signal",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Shared by bull AND bear mode: RSI(TQQQ,10d) > 79 -> UVXY (bull) or SPY (bear). The same threshold triggers different responses depending on regime. Bull-mode RSI fires into UVXY for active hedging; bear-mode RSI fires into SPY as a passive defensive downgrade rather than a volatility bet."
       }
     ],
@@ -2529,11 +2728,19 @@
       {
         "name": "VIXM RSI(40d) > 69 Black Swan Gate",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(40)"
+        ],
         "description": "RSI(VIXM,40d) > 69 -> HOLD VIXM. Uses the ProShares VIX Mid-Term Futures ETF (not UVXY/VXX) and a 40-day window, producing a slow-burning signal that only triggers after weeks of sustained volatility elevation. Designed to capture multi-week panic periods rather than single-day spikes."
       },
       {
         "name": "Multi-Sector Momentum Rotator",
         "tag": "momentum",
+        "type": "Selection",
+        "indicator": [
+          "MA return(90)"
+        ],
         "description": "Default mode: Filter top-1 of [SOXX, NVDA, AMD, SPY, DBC, XLE, ENPH] by recent return. Spans semiconductors (SOXX, NVDA, AMD), broad market (SPY), commodities (DBC), energy (XLE), and clean energy (ENPH). No leveraged ETFs in the rotation pool, concentrates in the strongest non-leveraged asset."
       }
     ],
@@ -2661,26 +2868,44 @@
       {
         "name": "11-Ticker RSI Overbought Gate",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "RSI(10) above 75-80 on any of 11 tickers (QQQE, VTV, VOX, TECL, VOOG, VOOV, XLP, TQQQ, XLY, FAS, SPY) routes 100% to UVXY. The widest overbought screen in this library, any single trigger is sufficient to go defensive regardless of other market conditions."
       },
       {
         "name": "4-ETF Dip-Buy Cascade",
         "tag": "leveraged-etfs",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Sequential RSI(10) < 30 checks on TQQQ, SOXL, and SPXL; RSI(10) < 25 on LABU. Catches extreme 3x ETF capitulation events in tech, semiconductors, broad market, and biotech, each independently checked in order of priority. The TQQQ trigger buys TECL; the other three buy the ETF they measure."
       },
       {
         "name": "XLK vs. KMLM Momentum Switch",
         "tag": "managed-futures",
-        "description": "Core signal: XLK RSI(10) > KMLM RSI(10) → bottom-2 by RSI from {TECL, SOXL, SVIX} (equal weight). KMLM RSI(10) > XLK RSI(10) → top-1 by RSI from {SQQQ, TLT}. Uses managed futures momentum as a macro regime detector, when futures outperform tech, the strategy pivots to defensive positions."
+        "type": "Trend",
+        "indicator": [
+          "RSI(10)"
+        ],
+        "description": "Core signal: XLK RSI(10) > KMLM RSI(10) -> bottom-2 by RSI from {TECL, SOXL, SVIX} (equal weight). KMLM RSI(10) > XLK RSI(10) -> top-1 by RSI from {SQQQ, TLT}. Uses managed futures momentum as a macro regime detector, when futures outperform tech, the strategy pivots to defensive positions."
       },
       {
         "name": "SVIX Volatility Premium Position",
         "tag": "vix-tiers",
+        "type": "Composition",
+        "indicator": [],
         "description": "SVIX (-1x Short VIX Futures ETF) enters the candidate pool alongside TECL and SOXL when XLK leads KMLM. In calm contango environments SVIX collects VIX roll yield; its negative RSI during volatility spikes makes it a frequent bottom-2 selection, adding a volatility-selling dimension to the leveraged-long rotation."
       },
       {
         "name": "SQQQ Defensive Inversion",
         "tag": "inverse-etfs",
+        "type": "Selection",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "When KMLM momentum dominates XLK, SQQQ (3x inverse QQQ) is the aggressive defensive option, selected over TLT when SQQQ's RSI(10) is higher. Positions the strategy to profit from Nasdaq decline during managed-futures-dominant regimes."
       }
     ],
@@ -2806,21 +3031,37 @@
       {
         "name": "BND vs. SPHB Relative RSI(10)",
         "tag": "mean-reversion",
+        "type": "Trend",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Primary regime signal: BND RSI(10) > SPHB RSI(10) (bonds outperforming high-beta) defaults to SOXL (contrarian long). SPHB RSI(10) > BND RSI(10) (risk-on) defaults to SHV (cash). Inverts the conventional risk-on/risk-off response: aggressive when the market is defensive, defensive when the market is aggressive."
       },
       {
         "name": "UVXY RSI Tiers (74 and 84)",
         "tag": "vix-tiers",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Within the bond-leading regime: UVXY RSI(10) above 84 (extreme panic) buys SOXL unconditionally. Between 74 and 84 (elevated) buys SOXL only if SOXL RSI(10) is below 30, else holds SHV. Below 74 (calm) holds SOXL by default. Two-tier VIX filter calibrates the contrarian long trade by volatility severity."
       },
       {
         "name": "SOXX RSI(10) > 80 Overbought Guard",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "In the bond-leading regime: if SOXX (semiconductor sector ETF) RSI(10) exceeds 80, exit to SHV regardless of other signals. Prevents buying SOXL into a semiconductor blow-off top even when the broader market is rotating defensively."
       },
       {
         "name": "SOXL RSI(10) < 30 Dip-Buy Override",
         "tag": "leveraged-etfs",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Applied in both regimes: SOXL RSI(10) below 30 triggers a SOXL dip-buy even in the risk-on branch (which normally defaults to SHV). Catches extreme semiconductor capitulation events that override the conservative risk-on default."
       }
     ],
@@ -2945,16 +3186,26 @@
       {
         "name": "SPY 200-Day MA Trend Gate",
         "tag": "200d-ma",
+        "type": "Trend",
+        "indicator": [
+          "MA(200)"
+        ],
         "description": "Primary regime filter: SPY current price vs. SMA(200). Above 200d MA = bull mode (hold SPY). Below = bear mode (XLP default with QQQ RSI override). The most common trend gate in this library, here used in its simplest possible form."
       },
       {
         "name": "QQQ RSI(10) < 30 Tech Dip-Buy",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Bear mode only: QQQ 10-day RSI below 30 triggers a rotation from XLP to XLK (1x technology ETF). Catches tech capitulation in bear markets as a contrarian entry. Uses unleveraged XLK rather than TQQQ or TECL, appropriate for a conservative educational baseline and the 1999 start date."
       },
       {
         "name": "XLP Defensive Default",
         "tag": "mean-reversion",
+        "type": "Composition",
+        "indicator": [],
         "description": "When SPY is below its 200d MA and QQQ is not oversold, the strategy holds XLP (consumer staples). Defensive rotation away from growth exposure during downtrends, used as the safety parking position between dip-buy entries."
       }
     ],
@@ -3077,11 +3328,19 @@
       {
         "name": "QQQ RSI(10) <= 30 Oversold Dip-Buy",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Primary entry signal: QQQ 10-day RSI at or below 30 triggers a full rotation to unleveraged QQQ. Fires only during sustained sharp Nasdaq declines. The <= 30 threshold (not just < 30) means RSI exactly at 30 also triggers, a slightly wider gate than many comparable strategies use."
       },
       {
         "name": "XLP vs. VBF Lower-RSI Rotation",
         "tag": "mean-reversion",
+        "type": "Selection",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Default regime: compares RSI(10) of XLP (consumer staples) and VBF (Invesco Bond Fund) and holds whichever has the lower reading. Always rotates to the more beaten-up defensive asset. A contrarian micro-rotation between two conservative positions, continuously chasing the underperformer within the defensive pair."
       }
     ],
@@ -3208,21 +3467,38 @@
       {
         "name": "QQQ and SPY RSI(10) Dip-Buy Gates",
         "tag": "mean-reversion",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Two unconditional priority gates: QQQ RSI(10) < 32 rotates to TECL (3x tech sector dip-buy, slightly above the classic 30 for early entry). SPY RSI(10) < 30 rotates to UPRO (3x S&P500 broad-market dip-buy). Both fire before any regime analysis, overriding the SPY 200d MA gate and sub-strategy routing."
       },
       {
         "name": "UVXY Overbought Exits",
         "tag": "vix-tiers",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "QQQ RSI(10) > 81 or SPY RSI(10) > 80 triggers a rotation to UVXY (1.5x long VIX futures). Converts overbought RSI extremes into volatility-long positions, hedging against sudden reversals at market peaks. Applied in the bull market path after the dip-buy gates."
       },
       {
         "name": "SPY 200d MA Bull and Bear Gate",
         "tag": "200d-ma",
+        "type": "Trend",
+        "indicator": [
+          "MA(200)"
+        ],
         "description": "Primary trend gate: SPY above its simple moving average routes to bull sub-strategies (Choppy Market, Bull 1, Bull 2). Below routes to bear sub-strategies (Bear 1, Bear 2). Applied after the RSI priority gates; the five named sub-strategies only activate once this gate resolves."
       },
       {
         "name": "Bond vs. Equity Momentum Router",
         "tag": "momentum",
+        "type": "Trend",
+        "indicator": [
+          "RSI(10)",
+          "Return(60)"
+        ],
         "description": "Multiple bond vs. equity momentum comparisons determine TQQQ exposure across sub-strategies: TLT RSI vs. PSQ RSI (routes Bull 1 vs. Bull 2), 60-day BND vs. BIL cumulative returns (confirms bond health supports TQQQ), IEF RSI vs. PSQ RSI (bear context), BND RSI vs. SH RSI. Strong bond momentum relative to inverse-equity signals supports TQQQ; weak bond momentum routes to PSQ, SQQQ, GLD, or BIL."
       }
     ],
@@ -3347,16 +3623,26 @@
       {
         "name": "TQQQ RSI(10) Overbought Gate",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Top-level check: if TQQQ's 10-day RSI exceeds 79, the strategy immediately rotates to UVXY. This gate fires before the SPY 200d MA gate, meaning the UVXY hedge can activate even in a bull market when leveraged tech is technically stretched."
       },
       {
         "name": "SPY 200d MA Bull/Bear Gate",
         "tag": "200d-ma",
+        "type": "Trend",
+        "indicator": [
+          "MA(200)"
+        ],
         "description": "Secondary check (runs only when TQQQ RSI is not overbought): SPY current price vs. its 200-day moving average routes between TQQQ (above MA, confirmed uptrend) and SPY (below MA, downtrend capital preservation)."
       },
       {
         "name": "UVXY Overbought Hedge",
         "tag": "vix-tiers",
+        "type": "Composition",
+        "indicator": [],
         "description": "UVXY (leveraged long VIX futures) is held exclusively when the TQQQ RSI(10) > 79 gate fires. Unlike strategies that hold UVXY in bear markets, Triple Accelerator deploys UVXY as a mean-reversion play targeting volatility spikes off technically overbought peaks."
       }
     ],
@@ -3481,16 +3767,31 @@
       {
         "name": "GDXU RSI(10) Overbought and Oversold Gates",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Top-level priority checks on GDXU's 10-day RSI. Above 79 routes immediately to GDXD (fade overbought miners). Below 30 routes immediately to GDXU (buy oversold miners). Both gates fire before any momentum comparisons."
       },
       {
         "name": "QQQ 90d vs. 70d Momentum Router",
         "tag": "momentum",
+        "type": "Trend",
+        "indicator": [
+          "Return(90)",
+          "Return(70)"
+        ],
         "description": "When RSI is between extremes, compares QQQ's 90-day and 70-day cumulative returns to gauge trend duration. A stronger 90-day reading signals a sustained trend and routes to a GDXU vs. GLD sub-check; a weaker 90-day reading routes to a TLT vs. QQQ comparison."
       },
       {
         "name": "GDXU Window Momentum and TLT vs. QQQ Check",
         "tag": "momentum",
+        "type": "Trend",
+        "indicator": [
+          "Return(70)",
+          "Return(75)",
+          "Return(95)"
+        ],
         "description": "Two second-level comparisons that finalize the GDXU/GLD/GDXD decision. In the sustained-trend path: GDXU 70d vs. 75d return picks between holding GDXU (lagging recent window) or GLD (leading recent window). In the weakening-trend path: TLT 95d vs. QQQ 35d picks between GDXD (bonds losing to equities) or GLD (bonds winning, flight to safety)."
       }
     ],
@@ -3611,11 +3912,17 @@
       {
         "name": "Lowest RSI(10) Defensive Selection",
         "tag": "rsi",
+        "type": "Selection",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Ranks all seven candidate funds by 10-day RSI each day and holds the single lowest one. RSI is used as a relative beaten-down gauge rather than an absolute threshold, so the portfolio always rotates toward the most oversold defensive asset."
       },
       {
         "name": "Staples vs. Bond/Muni Rotation",
         "tag": "mean-reversion",
+        "type": "Composition",
+        "indicator": [],
         "description": "The candidate pool pairs consumer staples (XLP) with six income and municipal bond funds (BKT, VBF, NAN, MMU, PMM, EVN). Rotating among low-beta assets expresses a short-horizon mean-reversion view while keeping the strategy defensive at all times."
       }
     ],
@@ -3744,21 +4051,42 @@
       {
         "name": "TQQQ RSI(10) Overbought Fade",
         "tag": "rsi",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "The primary override: TQQQ RSI(10) above 79 rotates out of leveraged tech into UVXY, treating a fast overbought reading as a pullback setup rather than trend continuation."
       },
       {
         "name": "Six-Day Crash and One-Day Pop Check",
         "tag": "mean-reversion",
+        "type": "Threshold",
+        "indicator": [
+          "Return(6)",
+          "Return(1)",
+          "Drawdown(10)"
+        ],
         "description": "In the first sleeve, when TQQQ's six-day cumulative return falls below -12% a pop branch captures a sharp one-day rebound (single-day gain above 5.5%) in UVXY, otherwise a small mean-reversion check holds TQQQ while it is very oversold or TMF's drawdown is contained, and drops to cash (BIL) if not."
       },
       {
         "name": "Cross-Asset Bond vs. Equity Regime Filter",
         "tag": "momentum",
+        "type": "Trend",
+        "indicator": [
+          "RSI(10)",
+          "RSI(60)"
+        ],
         "description": "Both sleeves defer to relative RSI comparisons (BND vs SPY, IEF vs TLT) plus a 60-day SPY RSI trend to judge whether bonds or equities lead, keeping each sleeve in TQQQ only when bonds are not clearly leading and sitting in cash (BIL) otherwise."
       },
       {
         "name": "VIXM Volatility Gate and Pop-Bot Tiers",
         "tag": "vix-tiers",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)",
+          "RSI(20)",
+          "RSI(30)"
+        ],
         "description": "A VIXM 10-day RSI above 70 switches the second sleeve into a defensive tiered '321 Pop' version, running 10, 20 and 30-day RSI tiers on QQQ and SMH that short (SQQQ, SOXS) when overbought and buy leverage (TQQQ, SOXL) when oversold; separately, 10-day max-drawdown reads on QQQ and TMF push the first sleeve to cash."
       }
     ],
@@ -3887,21 +4215,42 @@
       {
         "name": "BIL vs. IEF RSI Switch",
         "tag": "rsi",
+        "type": "Trend",
+        "indicator": [
+          "RSI(7)"
+        ],
         "description": "A 7-day RSI comparison of BIL (cash) against IEF (treasuries) is both the top-level switch and the single most-repeated condition in the tree (15 uses). At the top it gates a tiny branch; deeper in the tree it is the recurring offense-versus-defense toggle that picks between leveraged and defensive baskets."
       },
       {
         "name": "TLT Interest-Rate Regime",
         "tag": "200d-ma",
+        "type": "Trend",
+        "indicator": [
+          "MA(200)",
+          "Return(20)"
+        ],
         "description": "The large sub-tree that holds most of the logic is driven by rates: TLT against its 200-day moving average, and the sign of TLT's 20-day return, split it into rising-rate baskets (favoring 3x short treasuries, TMV) and falling-rate baskets (favoring 3x long treasuries, TMF)."
       },
       {
         "name": "Mean-Reversion and Momentum Rotations",
         "tag": "mean-reversion",
+        "type": "Selection",
+        "indicator": [
+          "MA return",
+          "RSI",
+          "Return(5)"
+        ],
         "description": "74 filter steps rank small pools by 5 to 22-day moving-average return, cumulative return or RSI and take a single name. 46 of the 74 pick the weakest performer (buy-the-dip mean reversion) and 28 pick the strongest (momentum), so the engine leans contrarian rather than trend-chasing."
       },
       {
         "name": "TQQQ Overbought/Crash Gates and UVXY Tiers",
         "tag": "vix-tiers",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(11)",
+          "RSI(10)",
+          "Return(6)"
+        ],
         "description": "Tactical overlays layered across the tree: TQQQ RSI(11) above 77 flips to UVXY (8 uses) and RSI(10) below 30 forces a dip-buy, a six-day TQQQ crash beyond -10% with a one-day pop above 5.5% buys UVXY, and UVXY's own 10-day RSI tiers at 74 and 84 gate volatility exposure."
       }
     ],
@@ -4032,26 +4381,48 @@
       {
         "name": "KMLM Fund Surfing (XLK vs KMLM RSI)",
         "tag": "managed-futures",
+        "type": "Trend",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "The core regime switch, reused across the ensemble: XLK RSI(10) > KMLM RSI(10) (tech momentum beating managed futures) commits to a TQQQ-led leveraged sleeve with TECL and SOXL. When KMLM leads, the module rotates to the defensive basket or shorts via SQQQ and a {SQQQ, TECS, SOXS} sleeve."
       },
       {
         "name": "VIX Overbought Frontrunner",
         "tag": "vix-tiers",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "A ladder of RSI(10) ceilings across SPY (>80), TECL (>79), XLP (>77.5), QQQ (>79) and QQQE (>79). Any breach steps the whole portfolio into UVXY at the most extreme readings or VIXY at milder ones, front-running froth before the core logic runs."
       },
       {
         "name": "Dual 200-Day MA Regime (SPY + TQQQ)",
         "tag": "200d-ma",
+        "type": "Trend",
+        "indicator": [
+          "MA(200)"
+        ],
         "description": "The unified core equal-weights two sub-strategies, one gated on SPY's 200-day MA and one on TQQQ's 200-day MA, each with fresh-crossover Bull Cross and Bear Cross momentum baskets. Running both references diversifies the trend signal across the broad market and leveraged Nasdaq."
       },
       {
         "name": "Safe Sectors or Bonds Rotation",
         "tag": "mean-reversion",
+        "type": "Selection",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "The recurring defensive leaf: a filter that buys the single lowest-RSI(10) name from {BSV, TLT, LQD, VBF, XLP, UGE, XLV, XLU}. A mean-reversion rotation across bonds and low-volatility sectors that absorbs capital whenever the leveraged sleeves stand down; utilities (XLU) was its most recent pick."
       },
       {
         "name": "Bond and Staples Momentum Gates",
         "tag": "momentum",
+        "type": "Trend",
+        "indicator": [
+          "Return(10)",
+          "Return(60)",
+          "MA return(15)"
+        ],
         "description": "Relative-strength gates decide whether the leveraged sleeves engage: 20-day AGG vs 60-day SH, 10-day IEF vs 20-day PSQ, 20-day XLP vs 20-day SH, 15-day AGG vs TQQQ/QQQ, and HYG vs SPY. Strong bond or staples momentum routes to defense; weak bond momentum clears the way for TQQQ-led sleeves."
       }
     ],
@@ -4179,21 +4550,33 @@
       {
         "name": "Oversold Leveraged Ladder",
         "tag": "mean-reversion",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "Three ordered dip-buys on 10-day RSI, each with its own threshold and its own 3x fund: SMH below 23 buys SOXL, then QQQ below 28 buys TQQQ, then SPY below 28 buys SPXL. Order and threshold together mean the narrowest, most volatile index is checked first and has to be the most beaten down to qualify."
       },
       {
         "name": "Twelve-Name Overbought Frontrunner",
         "tag": "vix-tiers",
+        "type": "Threshold",
+        "indicator": [
+          "RSI(10)"
+        ],
         "description": "A single RSI(10) ceiling of 79 tested against SMH, QQQ, SPY, TQQQ, TECL, QQQE, VOOG, VOOV, VTV, FAS, XLP and XLY as an 'any' condition. One breach anywhere buys VXX. This is the strategy's namesake move: it goes long volatility on froth rather than waiting for the decline to confirm."
       },
       {
         "name": "SPY as the Default Holding",
         "tag": "rsi",
+        "type": "Composition",
+        "indicator": [],
         "description": "With no RSI extreme in either direction the strategy holds SPY unlevered. This is where it spends most of its time, so the baseline return is the market's and the leveraged and volatility legs act as occasional overlays rather than as the core position."
       },
       {
         "name": "Single-Instrument Daily Rotation",
         "tag": "leveraged-etfs",
+        "type": "Composition",
+        "indicator": [],
         "description": "Every branch of the tree ends in one asset and the symphony rebalances daily, so the portfolio is always fully concentrated in a single instrument and can move from SPY to a 3x fund to VXX on consecutive days. There is no partial sizing and no blending anywhere in the tree."
       }
     ],

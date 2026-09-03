@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.70.1
+**Version:** 1.71.0
 **Status:** Active
-**Last Updated:** 2026-09-02
+**Last Updated:** 2026-09-03
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -2446,7 +2446,7 @@ numbering schemes; they answer different questions.
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
-| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1 to 10, 12, 13, 14, 15, 17 and 19 shipped; **13, 14, 15 complete on all 24 visible strategies (v1.68.0)**; **items 11 and 16 open** | v1.70.0 (partial) |
+| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1 to 15, 17, 18 and 19 shipped; **13, 14, 15 complete on all 24 visible strategies (v1.68.0)**; **item 16 is the only one open** | v1.71.0 (partial) |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -3652,41 +3652,56 @@ files already in the repo.
   140 files from the assets directory where a clean clone holds 91 tracked ones. wrangler may
   exclude the repository already, but if it does not, `/.git/` serves the full history and every
   stray file ever committed. One defensive line closes the question without testing the live site.
-- [ ] **11. Convert `signals` cards into a Signal Types table. Specified and ruled 2026-09-02, not
-  yet built.** Add `type` and `indicator` columns to the existing `name`, `tag`, `description`.
+- [x] **11. Signal Types table (v1.71.0).** The 91 signals on the 24 visible strategies now carry
+  `type` and `indicator` alongside `name`, `tag` and `description`, rendered as a table.
 
-  **Measured first, and the measurement changed the spec.** The visible strategies carry **91 signal
-  objects** across 24 strategies, 2 to 6 each, every one with the identical `{name, tag,
-  description}` shape. Three findings and the owner's rulings on them:
+  **Measuring first changed all three parts of the spec**, and the owner ruled on each 2026-09-02:
 
   | Finding | Ruling |
   | --- | --- |
-  | **The `x2` dedupe badge has nothing to dedupe.** Zero exact within-strategy duplicates across all 24. One name repeats *across* strategies ("SPY 200-Day MA Trend Gate"). | **Dropped.** The screenshot solved a problem this data does not have, and building it would mean inventing duplicates to justify it. |
-  | **A real table fights the descriptions.** Median description is **259 characters**, 75 of 91 over 200. A five-column table with a 259-char cell is the mobile overflow just fixed in v1.69.0. | **Table with detail rows.** Name, Type, Indicator, Tag on one row; description on a second full-width row beneath. Scannable on desktop, stacks on a phone. |
-  | **`Threshold / Trend / Selection` does not cover the data.** 11 of 91 are asset-pool or composition notes rather than conditions ("Long Pool: TARK/TECL/UPRO/TMF/YINN/EDC/SOXX"). | **Four types: add `Composition`.** Calling a static fund list a selection rule would be inaccurate. `indicator` renders as a dash where there is none, which is information. |
+  | **The `x2` dedupe badge had nothing to dedupe.** Zero exact within-strategy duplicates across all 24. One name repeats *across* strategies ("SPY 200-Day MA Trend Gate"). | **Dropped.** Building it would have meant inventing duplicates to justify it. |
+  | **A real table fights the descriptions.** Median description is **259 characters**, 75 of 91 over 200. A fifth prose column recreates the phone overflow fixed in v1.69.0. | **Table with detail rows.** The four scannable fields share one row, the description gets a full-width row beneath, and below 640px the whole table becomes a labelled stack. |
+  | **`Threshold / Trend / Selection` did not cover the data.** 11 of 91 describe a holdings set rather than a condition. | **Four types**, adding `Composition`. |
 
-  **The `indicator` column is derived from the symphony tree, never from the prose.** A hand-written
-  description is exactly the kind of thing that drifts, so `scratchpad/inventory.py` walks each
-  cached tree and reports every (function, window) pair it actually computes, split by whether it is
-  used in an `if` condition or as a `filter`/`select` sort key. A drafted indicator is kept only if
-  that exact label appears in its own strategy's inventory. All 24 visible trees are cached.
+  **The four types, as applied:**
+
+  | Type | Count | Meaning |
+  | --- | --- | --- |
+  | `Threshold` | 45 | An indicator against a fixed number (`RSI(10) > 79`). |
+  | `Trend` | 23 | An asset against its own moving average, or one asset's reading against another's. |
+  | `Selection` | 14 | Rank a pool, take the top or bottom N. |
+  | `Composition` | 9 | Describes the holdings set or structure, not a condition. |
+
+  **`indicator` is derived from the symphony tree, never from the prose.**
+  `scratchpad/inventory.py` walks each cached tree and reports every (function, window) pair it
+  actually computes, split by `if` condition versus `filter` sort key. **All 119 indicator labels
+  across the 91 signals were verified present in their own strategy's tree.** A label is capped at
+  three per signal and a bare family name (`RSI`, `MA return`) is used where one signal spans so
+  many windows that naming them all would be noise.
+
+  **The automated drafter got roughly a third of the types wrong**, which is the reason all 91 were
+  read by hand. It matched the word "basket" in a description and filed a live condition under
+  `Composition`. Machine drafting set the floor here; it did not set the answer.
 
   **Two schema variants store the same window, and reading only one is a live trap.** A comparison
   node carries its lookback either as `<side>-window-days` **or** nested as
-  `<side>-fn-params.window`. Reading only the first is what produces the
-  `relative-strength-index(None)` artifact that has appeared repeatedly in the scratchpad tree
-  printer. It was never a defect in a symphony, and it is now handled.
+  `<side>-fn-params.window`. Reading only the first is the cause of the `relative-strength-index(None)`
+  artifact that had appeared in scratchpad tree printers for weeks. It was never a defect in any
+  symphony.
 
-  **The cross-check found zero content defects.** Five signals appeared to name an indicator absent
-  from their tree; all five were the checker's own regex misreading, four confusing
+  **The cross-check found zero content defects across 91 signals.** Five appeared to name an
+  indicator absent from their tree; all five were the checker's own regex, four confusing
   `moving-average-return` with `moving-average-price` and one reading "200-day MaxDD" as a 200-day
-  moving average. The descriptions were right in every case.
+  moving average. It did find two typography slips in signal prose, an en-dash and a `->` written as
+  an arrow glyph, both fixed. The v1.68.2 sweep had not covered these fields.
 
-  **State at pause:** the inventory extractor and the constrained drafter are written and run, 91
-  drafts sit in `scratchpad/signal_draft.json`, and **66 of 91 have a tree-verified indicator with
-  25 legitimately having none.** Nothing is written to `data/strategies.json` yet. Remaining work is
-  a by-eye review of all 91 type/indicator assignments, then the schema write, the renderer, the CSS
-  and a mobile overflow re-check at 390px.
+  **Verification.** All 24 pages rendered in headless Edge and every one of the 91 rows compared
+  against the data: name, type, indicator chips, detail row and header count. A hidden strategy was
+  rendered too, to confirm the pre-item-11 shape degrades to "not categorised" and "none" rather
+  than to blanks. 0px overflow at 375, 390, 768 and 1280px on the content-heaviest pages.
+  `scripts/check_signal_types.py` guards the schema going forward and is **advisory**, per the item
+  10b ruling.
+
 - [x] **12. Link metric labels to the glossary (v1.30.0).** **The seven missing terms were written
   first and shipped in v1.27.8** (Sortino Ratio, Win Rate, Skewness, Kurtosis, Tail Ratio,
   Herfindahl Index, Annualized Turnover), taking the glossary from 20 terms to 27, because surfacing
