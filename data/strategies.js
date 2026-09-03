@@ -3915,7 +3915,79 @@ window.STRATEGIES_DATA = [
       "concentration": "Despite touching 30-plus tickers, the strategy holds only one or a few sleeves at a time via its bottom-1 and top-1 selection steps, so daily concentration is high.",
       "hedge": "Defensive states include 3x inverse ETFs, TMF, GLD, AGG, SHY and BIL, a genuine mix, but the inverse and 3x-bond options are directional leveraged bets rather than pure ballast."
     },
-    "author_note": "The original Beta Baller + TCCC collaborative build (source symphony version V3.0.2, backtest dated 1 December 2019), featured as the original of roughly 200 forked variants that share the Beta Baller name. The source symphony credits a group of community authors (Deez, BrianE, HinnomTX, DereckN, Garen, DJKeyhole, comrade). Its marketing name advertises a much higher no-fee return; the metrics shown here are Composer's standard backtest with slippage and fees applied. Symphony ID: mlgAKFuUIPZiCT0aV7ho."
+    "author_note": "The original Beta Baller + TCCC collaborative build (source symphony version V3.0.2, backtest dated 1 December 2019), featured as the original of roughly 200 forked variants that share the Beta Baller name. The source symphony credits a group of community authors (Deez, BrianE, HinnomTX, DereckN, Garen, DJKeyhole, comrade). Its marketing name advertises a much higher no-fee return; the metrics shown here are Composer's standard backtest with slippage and fees applied. Symphony ID: mlgAKFuUIPZiCT0aV7ho.",
+    "tldr": {
+      "thesis": "The most extreme strategy in this library at both ends. {annualized_rate_of_return} annualized is the highest of the 24 here and {standard_deviation} annualized volatility is also the highest, over a {backtest_days} day record that is the sixth shortest. It can hold 33 funds, nearly all of them 3x leveraged, and it switches between them about every 2.3 trading days. It has also returned {trailing_one_year_return} over the trailing year, the worst of any strategy here. Of its 93 conditions, 51 decided nothing at all.",
+      "works_well_in": [
+        "Semiconductor uptrends, which is what it is really built around. SOXL is 27.8% of all capital deployed across 472 days and compounded an enormous gain across them. Through the 2023 AI bull SOXL rose 237.8% and the reconstruction held it on 26% of days.",
+        "Leveraged melt-ups. Through the 2021 melt-up SOXL rose 121.9% and UPRO 107.1%, and the reconstruction held SOXL on 57% of days and UPRO on 11%.",
+        "Volatility spikes. UVXY was held on 78 days and compounded +3,905.7% across them. Across the COVID crash UVXY rose 552.3% and the reconstruction held it on 30% of days alongside SOXL on 35%.",
+        "Recoveries off a low, where it goes straight back into 3x semiconductors. Across the COVID recovery SOXL rose 185.1% and the reconstruction held it on 59% of days."
+      ],
+      "struggles_in": [
+        "The last twelve months. {trailing_one_year_return} is the worst trailing year of the 24 strategies here, against the highest annualized figure in the same list.",
+        "Bull markets that leave semiconductors behind. Through 2024 SPY rose 25.6% while SOXL fell 1.8% and TMF fell 34.6%, and those two were the reconstruction's largest holdings in that window at 24% and 25% of days.",
+        "Fast drawdowns. Through the 2025 spring drawdown SOXL fell 73.7% and TECL 62.0%, and the reconstruction held those two on 26% and 24% of days.",
+        "Its own bearish side. The four inverse funds it actually held all lost money across the days the rules named them, SOXS worst at -71.9% over 147 days, and SOXS is the fourth largest position in the strategy."
+      ]
+    },
+    "assumptions": {
+      "market": [
+        "**Bond momentum is the master switch.** The root test compares BIL's 7-day RSI against IEF's, and it decided 267 days on its own. When it is true the strategy is in SOXL 89.1% of the time; when false, the other 92 conditions divide the remaining days between 27 funds.",
+        "**More leverage is the answer to almost every reading.** Twenty-one of the 33 holdable funds are leveraged or inverse, and there is no meaningful cash position anywhere: BIL was held on 11 days out of {backtest_days}.",
+        "**Short lookbacks measure everything.** RSI at 6, 7, 10, 11 and 13 days, cumulative return over 1, 2, 3 and 6 days, moving-average return over 5 and 20. The two slow readings, a 210-day exponential average against a 360-day average, sit deep in the tree rather than at the top.",
+        "**Commodity volatility says something about equities.** Two branches compare DBC's 20-day return volatility against SPY's, or test DBC's own volatility against a fixed level, and use the answer to choose between a basket of 3x bull funds and a basket of 3x bear funds."
+      ],
+      "structural": [
+        "**Fifty-one of the 93 conditions decided zero days.** More than half the tree is unreachable in practice, and reading it gives no indication of which half.",
+        "**The root test is written into the tree fifteen times, and fourteen of those copies are dead by construction.** BIL's 7-day RSI against IEF's is the first thing the strategy asks. Any day on which it is true is resolved at the top, so every deeper copy of the same test can only ever see days on which it is false. All fourteen followed zero days.",
+        "**Ninety-three conditions over twenty-one distinct expressions.** Beyond the root test, an exponential-average comparison, a SPXU against UPRO return comparison and a TQQQ overbought test each appear eight times, and five more expressions appear six times each.",
+        "**Five of the 33 holdable funds were never held**: MVV, PUI, QLD, SPXL and SPXU. Two of those, SPXL and SPXU, are the 3x long and 3x short S&P funds.",
+        "**The bearish legs lost money.** SOXS compounded -71.9% across 147 days held, and SPXS, TECS and SQQQ each lost a little across their own days. SOXS alone is 8.6% of all capital deployed.",
+        "**Turnover is one allocation change every 2.3 trading days**, on 754 of {backtest_days} days, in a universe that is almost entirely 3x leveraged funds. None of the figures on this page carries a commission, a spread or a slippage assumption, and that omission matters more here than on any other page in this library.",
+        "**The name advertises a backtest the record does not show.** The top-level group is labelled with an AR of 8,962.9% and a drawdown of 32.3%, dated 1 December 2019. The record on file starts twelve days earlier and reports {annualized_rate_of_return} annualized with a drawdown of {max_drawdown_abs}.",
+        "**The record covers {backtest_days} trading days from 20 November 2019**, the sixth shortest here, and it contains one bear market. {max_drawdown_abs} is the fourth deepest drawdown among the 24 strategies in this library and the worst single day in the record was {worst_day}. A {sharpe_ratio} Sharpe and a {calmar_ratio} Calmar both rank 5th, which is what an enormous return divided by an enormous risk produces."
+      ]
+    },
+    "regimes": [
+      {
+        "regime": "Semiconductor uptrend",
+        "expected": "Strong",
+        "why": "SOXL is where the root test sends it and where more than a quarter of all capital went. A rising semiconductor sector is the case the whole structure resolves toward.",
+        "example": "2023 AI bull: SOXL +237.8%, TECL +211.9%, SPY +26.7%. The reconstruction held SOXL on 26% of days and TMF on 17%."
+      },
+      {
+        "regime": "Leveraged melt-up",
+        "expected": "Strong",
+        "why": "With bonds leading bills and no overbought reading to interrupt, the strategy is a 3x position for weeks at a time.",
+        "example": "2021 melt-up: SOXL +121.9%, UPRO +107.1%, SPY +30.5%. The reconstruction held SOXL on 57% of days and UPRO on 11%."
+      },
+      {
+        "regime": "Volatility spike",
+        "expected": "Strong",
+        "why": "An overbought SPY reading sits second in the tree and routes straight to a volatility fund, so a spike that follows a strong run is caught before anything else runs.",
+        "example": "COVID crash: UVXY +552.3%, SOXL -78.6%, SPY -33.7%. The reconstruction held UVXY on 30% of days and SOXL on 35%."
+      },
+      {
+        "regime": "Rising rates",
+        "expected": "Mixed",
+        "why": "It can hold TMV, the 3x short Treasury fund, and it did. But it also held TMF, the 3x long, and SOXL through the same stretch, so the rate call was one position among several going the other way.",
+        "example": "2022 bear market: TMV +140.7%, TMF -68.8%, SOXL -89.8%. The reconstruction spread its days across SOXL 19%, SOXS 16%, TMV 16% and EWZ 8%."
+      },
+      {
+        "regime": "Bull market where semiconductors lag",
+        "expected": "Poor",
+        "why": "The structure funnels toward 3x semiconductors and long Treasuries, so a year in which the index rises while both of those fall is one it has no route through.",
+        "example": "2024 bull: SPY +25.6%, SOXL -1.8%, TMF -34.6%. Those two were the reconstruction's largest holdings, on 24% and 25% of days."
+      },
+      {
+        "regime": "Fast drawdown",
+        "expected": "Poor",
+        "why": "Short lookbacks re-enter leveraged funds inside a decline, and the inverse funds it switches to have lost money over the days it has held them.",
+        "example": "2025 spring drawdown: SOXL -73.7%, TECL -62.0%, SOXS +171.8%. The reconstruction held TMF on 29% of days, SOXL on 26%, TECL on 24% and SOXS on 18%."
+      }
+    ],
+    "regime_note": "**The example column is what the holdings did, not what the strategy returned.** Each ticker figure is the move in that fund between the first and last trading day of the window, computed from daily closes, and each holdings share comes from evaluating this strategy's own symphony tree over those same closes. That evaluation is a reading of the rules rather than a backtest: it answers only which fund the rules would name on a given day, and it carries no fees, no slippage and no rebalance timing. **No reconstructed return is quoted here, and on this page the reason is stark.** The modelled path returns 21,195.5% across the 195 trading days of the 2022 bear market and 959.6% across the 23 days of the COVID crash. Those are not results; they are what a costless model produces when it is allowed to switch between 3x leveraged funds every 2.3 trading days with perfect timing and no spread. The regimes above are ranked from holdings shares and price moves alone. Every window in the table sits inside the strategy's own record, which runs {backtest_days} trading days from 20 November 2019 to 27 August 2026."
   },
   {
     "slug": "rains-unified-best-signals",

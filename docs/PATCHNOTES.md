@@ -5,6 +5,25 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.66.0] - 2026-09-02
+
+### Added
+- **Beta Ballers (Original) gets the full four-section treatment.** Page 22 of 24 in the items 13/14/15 rollout. Written from a full read of the 606-line tree, a condition-by-condition reachability pass and a day-by-day reconstruction over the 1,700 day record.
+
+### Notes
+- **First use of the `{trailing_one_year_return}` token in page prose.** It renders as a signed percentage, so the surrounding sentence has to be phrased to accept a leading minus.
+- **This strategy is the extreme of the library at both ends.** Highest annualized return of the 24, highest annualized volatility of the 24, fourth deepest drawdown, and the worst trailing one-year return of the 24 at -42.3%. The page leads on that pairing rather than on the return alone.
+- **Fifty-one of the 93 conditions decided zero days.** The root test, BIL's 7-day RSI against IEF's, is written into the tree fifteen times; fourteen of those copies are dead by construction, because any day on which the test is true is already resolved at the top of the tree. Ninety-three conditions resolve to twenty-one distinct expressions.
+- Five of the 33 holdable funds were never held: MVV, PUI, QLD, SPXL and SPXU.
+- **The bearish legs lost money.** All four inverse funds the strategy actually held lost value across the days the rules named them, SOXS worst at -71.9% over 147 days, which is 8.6% of all capital deployed.
+- **The group name advertises an AR of 8,962.9% and a 32.3% drawdown.** The record on file reports 721.0% annualized and a 78.3% drawdown over a window starting twelve days before the date in the name.
+- **No reconstructed return is quoted**, and this page states the reason concretely: the costless model returns 21,195.5% across the 195 days of the 2022 bear market and 959.6% across the 23 days of the COVID crash. Turnover is one change every 2.3 trading days across a universe that is mostly 3x funds.
+- Windows before 20 November 2019 were dropped from the regime table because they fall outside the strategy's own record, even though the engine can evaluate the tree over them.
+- Corrected before shipping: an initial draft said 28 of the 33 funds are leveraged or inverse; the defensible count is 21.
+- All six checkers pass and the page renders clean in headless Edge. Two pages remain.
+
+---
+
 ## [1.65.0] - 2026-09-02
 
 ### Added
