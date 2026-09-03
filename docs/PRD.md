@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.71.0
+**Version:** 1.72.0
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -2446,7 +2446,7 @@ numbering schemes; they answer different questions.
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
-| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1 to 15, 17, 18 and 19 shipped; **13, 14, 15 complete on all 24 visible strategies (v1.68.0)**; **item 16 is the only one open** | v1.71.0 (partial) |
+| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | **Complete.** All 19 items shipped; 13, 14, 15 complete on all 24 visible strategies (v1.68.0); item 16 stores the daily series and the features it unblocks are tracked in Section 14 C3 | v1.72.0 |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -3799,13 +3799,42 @@ files already in the repo.
 
 **Tier 4: needs data the pipeline sees but does not keep.**
 
-- [ ] **16. Store per-strategy daily returns during refresh.** The refresh pipeline already receives
-  a daily return series from `/backtest` and discards it. Keeping it unlocks worst month, VaR and
-  CVaR, time in market, the year-jackknife and outlier-removal tests specified in Section 14's C3,
-  and would let item 15's regime table be **computed rather than written**, which is the only way
-  that section scales past a curated 31. **Cost is storage and refresh time, not compute:** C3's own
-  note is that re-scoring an existing series is microseconds. Size the storage before committing,
-  since 31 strategies at roughly 3,700 days each is manageable and 6,668 database rows is not.
+- [x] **16. Per-strategy daily returns are stored during refresh (v1.72.0).** `data/daily_returns.json`
+  and its `.js` twin hold a day-aligned return series for each of the 24 visible strategies, written
+  by `scripts/update_metrics.py` on every run.
+
+  **Sized before committing, as this entry required.** One live backtest was measured four ways.
+  The series arrives as `dvm_capital`, a day-indexed portfolio value map the pipeline had been
+  reading straight past. Stored as a day array plus returns at six decimal places it costs about
+  35 KB per strategy and **1.24 MB for all 24**, against a 25 MiB per-file ceiling. The same storage
+  for the 6,668 community database rows would be 233 MB, so this entry's warning stands and the
+  scope stays strategies-only. **Owner ruling 2026-09-03: visible 24 only, and storage now, derived
+  features later.**
+
+  **Six decimal places, chosen by measurement.** Against the unrounded series, recomputed Sharpe
+  moves by 7.7e-7 and annualized return by 1.5e-6, while the file is 20% smaller than at 8dp.
+
+  **Three conventions were pinned against the API rather than assumed:**
+
+  | Question | Answer | Cost of getting it wrong |
+  | --- | --- | --- |
+  | How is a year measured? | `(n + 1) / 252`, not calendar days | 4.8e-3 on annualized return |
+  | What does `size` count? | Returns, so `n + 1` daily values | An off-by-one on every series |
+  | Are trading days contiguous? | No, so the day array is stored explicitly | Silent date drift across holidays |
+
+  **The backfill cost zero extra API calls, now and forever.** Rather than a one-off script, the
+  staleness skip in `update_strategies()` was widened: fresh metrics alone no longer license a skip
+  if a visible strategy has no stored series. Anything added later backfills itself on the next run.
+
+  **`scripts/check_daily_returns.py` recomputes four metrics from each stored series and compares
+  them against the published figures.** Across all 24 the observed worst deviations were max
+  drawdown 4.1e-6, volatility 6.5e-4, Sharpe 2.4e-3 and annualized return 1.2e-3, and the series
+  length matches `backtest_days` exactly on every one. The residual is convention, not error. Both
+  new checkers are **advisory**, per the item 10b ruling.
+
+  **What this unblocks, none of it built yet:** worst month, VaR and CVaR, time in market, the
+  year-jackknife and outlier-removal tests in Section 14's C3, and computing item 15's regime tables
+  rather than writing them, which is the only way that section scales past a curated 24.
 
 **Fixes, independent of the above.**
 

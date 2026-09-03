@@ -2,6 +2,7 @@
 """
 update_metrics.py: Fetch fresh data from the Composer API and update:
   - data/strategies.json + data/strategies.js  (backtest metrics for all strategies)
+  - data/daily_returns.json + .js               (daily return series, visible strategies)
   - data/symphony_scores.json                   (full logic trees for all symphonies)
 
 Symphony scores are stored for AI analysis and future reference only.
@@ -29,6 +30,8 @@ BASE_DIR        = Path(__file__).resolve().parent.parent
 STRATEGIES_JSON = BASE_DIR / "data" / "strategies.json"
 STRATEGIES_JS   = BASE_DIR / "data" / "strategies.js"
 SCORES_JSON     = BASE_DIR / "data" / "symphony_scores.json"
+DAILY_JSON      = BASE_DIR / "data" / "daily_returns.json"
+DAILY_JS        = BASE_DIR / "data" / "daily_returns.js"
 
 # ---- Backtest parameters ----
 BACKTEST_PARAMS = {
@@ -43,6 +46,22 @@ API_BASE = "https://api.composer.trade"
 
 STALE_AFTER_DAYS = 7
 API_CALL_DELAY_SECONDS = 2
+
+# V1.20 item 16. The backtest response carries a full daily portfolio-value
+# series in `dvm_capital` that this script used to read straight past. Keeping
+# it as daily returns is what makes worst month, VaR, CVaR, time in market and
+# the year-jackknife computable rather than unavailable.
+#
+# Six decimal places, decided by measurement rather than taste: against the full
+# unrounded series, recomputed Sharpe moves by 7.7e-7 and annualized return by
+# 1.5e-6, while the file is 20% smaller than at 8dp. Lossless for every use this
+# data has.
+DAILY_RETURN_DIGITS = 6
+
+# Visible strategies only, by owner ruling 2026-09-03. 24 of the 36, roughly
+# 35 KB each, so about 0.9 MB. The same storage for the 6,668 community database
+# rows would be 233 MB, which is why this is scoped to strategies and stays so.
+DAILY_RETURNS_VISIBLE_ONLY = True
 
 # Fields in the API stats object that map 1:1 to our schema
 DIRECT_FIELDS = [
@@ -83,20 +102,99 @@ def post(url, body):
         return json.loads(resp.read().decode("utf-8"))
 
 
+# ---- Daily return series (V1.20 item 16) ----
+
+def extract_daily_returns(result, symphony_id):
+    """Turn the backtest's `dvm_capital` map into aligned day and return arrays.
+
+    `dvm_capital` is keyed by symphony id, then by epoch day (days since
+    1970-01-01) holding the portfolio value on that day. Those are trading days,
+    so they are NOT contiguous: the gaps are weekends and market holidays.
+    Storing an explicit day array rather than a start date plus a stride is what
+    keeps that honest, and it costs about 20 KB per strategy.
+
+    `days[i]` is the day `returns[i]` was earned on, so the two arrays are the
+    same length and the first point in the series has no return, as it should
+    not: there is nothing before it to measure against.
+    """
+    capital = (result.get("dvm_capital") or {}).get(symphony_id)
+    if capital is None:
+        # One entry is unambiguous even under a key we did not expect; more
+        # than one is not, so refuse rather than guess.
+        values = list((result.get("dvm_capital") or {}).values())
+        if len(values) != 1:
+            raise ValueError("dvm_capital has %d series, expected 1" % len(values))
+        capital = values[0]
+
+    order = sorted(int(k) for k in capital)
+    if len(order) < 2:
+        raise ValueError("series has %d points, need at least 2" % len(order))
+
+    days, returns = [], []
+    prev = capital[str(order[0])]
+    for day in order[1:]:
+        value = capital[str(day)]
+        if prev == 0:
+            raise ValueError("zero portfolio value before day %d" % day)
+        days.append(day)
+        returns.append(round(value / prev - 1, DAILY_RETURN_DIGITS))
+        prev = value
+    return days, returns
+
+
+def load_daily_returns():
+    if DAILY_JSON.exists():
+        return json.loads(DAILY_JSON.read_text(encoding="utf-8"))
+    return {"generated": None, "series": {}}
+
+
+def write_daily_returns(daily):
+    """Write the series file and its .js twin.
+
+    Written compactly, with no indent. Indenting an array of 90,000 numbers puts
+    each on its own line and multiplies the file roughly fivefold for a
+    readability nobody benefits from: nothing reads this by eye.
+    """
+    daily["generated"] = date.today().isoformat()
+    body = json.dumps(daily, ensure_ascii=False, separators=(",", ":"))
+    DAILY_JSON.write_text(body + "\n", encoding="utf-8")
+    print(f"Wrote {DAILY_JSON.name} ({len(body) / 1e6:.2f} MB, "
+          f"{len(daily['series'])} strategies)")
+
+    comment = (
+        "// Daily return series - loaded as a script tag so the site works with file:// protocol.\n"
+        "// To update: run scripts/update_metrics.py\n"
+    )
+    DAILY_JS.write_text(comment + f"window.DAILY_RETURNS_DATA = {body};\n",
+                        encoding="utf-8")
+    print(f"Wrote {DAILY_JS.name}")
+
+
 # ---- Backtest metrics ----
 
 def update_strategies():
     strategies = json.loads(STRATEGIES_JSON.read_text(encoding="utf-8"))
+    daily = load_daily_returns()
     today = date.today().isoformat()
     stale_cutoff = date.today() - timedelta(days=STALE_AFTER_DAYS)
     failed = []
+    series_failed = []
     calls_made = 0
 
     for s in strategies:
         sym_id = s["symphony_id"]
 
+        # Fresh metrics are no longer a reason to skip on their own: a visible
+        # strategy with no stored daily series still has to be fetched once.
+        # Folding that into the existing staleness check is what makes the item
+        # 16 backfill cost zero extra API calls, now and for anything added
+        # later. `wants_series` is False for hidden strategies, so those skip on
+        # freshness exactly as before.
+        wants_series = not (DAILY_RETURNS_VISIBLE_ONLY and s.get("hidden"))
+        has_series = s["slug"] in daily["series"]
         last_updated = s.get("last_updated")
-        if last_updated and date.fromisoformat(last_updated) > stale_cutoff:
+        fresh = last_updated and date.fromisoformat(last_updated) > stale_cutoff
+        if fresh and (has_series or not wants_series):
             continue
 
         if calls_made > 0:
@@ -123,6 +221,20 @@ def update_strategies():
 
             s["last_updated"] = today
 
+            if wants_series:
+                # A failure here must not throw away the metrics just fetched,
+                # and must not leave a strategy silently without a series.
+                try:
+                    days, returns = extract_daily_returns(result, sym_id)
+                    daily["series"][s["slug"]] = {
+                        "symphony_id": sym_id,
+                        "days": days,
+                        "returns": returns,
+                        "last_updated": today,
+                    }
+                except Exception as exc:
+                    series_failed.append(f"{s['name']}: {exc}")
+
             print(
                 f"ARR {stats['annualized_rate_of_return']:+.1%}  "
                 f"DD -{stats['max_drawdown']:.1%}  "
@@ -141,7 +253,21 @@ def update_strategies():
         for name in failed:
             print(f"  - {name}")
 
-    return strategies
+    if series_failed:
+        print(f"\nWARNING: {len(series_failed)} daily series failed "
+              f"(metrics for these were still updated):")
+        for note in series_failed:
+            print(f"  - {note}")
+
+    # A strategy that was deleted or newly hidden should not keep its series
+    # forever: the file would quietly diverge from what the site shows.
+    wanted = {s["slug"] for s in strategies
+              if not (DAILY_RETURNS_VISIBLE_ONLY and s.get("hidden"))}
+    for slug in [k for k in daily["series"] if k not in wanted]:
+        del daily["series"][slug]
+        print(f"  dropped stale series: {slug}")
+
+    return strategies, daily
 
 
 def write_strategies_json(strategies):
@@ -208,9 +334,10 @@ def write_scores_json(scores):
 
 if __name__ == "__main__":
     print("── Backtest metrics ──────────────────────────")
-    strategies = update_strategies()
+    strategies, daily = update_strategies()
     write_strategies_json(strategies)
     write_strategies_js(strategies)
+    write_daily_returns(daily)
 
     print("\n── Symphony logic trees ──────────────────────")
     scores = update_scores(strategies)

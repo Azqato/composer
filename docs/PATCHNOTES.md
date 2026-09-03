@@ -5,6 +5,29 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.72.0] - 2026-09-03
+
+### Added
+- **Per-strategy daily return series are now stored.** V1.20 item 16, the last open item in that milestone. `data/daily_returns.json` and its `.js` twin hold a day-aligned return series for each of the 24 visible strategies, written by `scripts/update_metrics.py` on every refresh. **V1.20 is complete.**
+- **`scripts/check_daily_returns.py`**, which recomputes four metrics from each stored series and compares them against the published figures.
+- **`scripts/check_rank_claims.py`**, which re-derives every library-wide comparative claim in authored prose from the live metrics.
+
+### Fixed
+- **Two false claims on strategy pages**, both found by the new rank checker. `gold-miner-original` called its volatility the highest in the library when Beta Ballers had been higher for some time, and `safe-sectors-or-bonds-original` called its record the longest when two other 1999-start strategies run slightly longer.
+
+### Notes
+- **Sized before it was built, as the roadmap entry demanded.** The series arrives as `dvm_capital`, a day-indexed portfolio value map the pipeline had been reading straight past. Stored as a day array plus returns at six decimal places it costs about 35 KB per strategy and 1.24 MB for all 24. The same storage for the 6,668 community database rows would be 233 MB, which is why this is scoped to strategies and stays so.
+- **Six decimal places, chosen by measurement.** Against the unrounded series, recomputed Sharpe moves by 7.7e-7 and annualized return by 1.5e-6, while the file is 20% smaller than at 8dp.
+- **Three conventions were pinned against the API instead of assumed:** a year is `(n + 1) / 252`, not calendar days, and using calendar days is a 4.8e-3 error on annualized return; the API's `size` counts returns, so `n` returns come from `n + 1` daily values; and trading days are not contiguous, so the day array is stored explicitly rather than inferred from a start date and a stride.
+- **The backfill cost zero extra API calls, and always will.** Rather than a throwaway script, the staleness skip was widened: fresh metrics alone no longer license a skip when a visible strategy has no stored series. Anything added later backfills itself on the next ordinary run.
+- **The stored series reproduces the published metrics.** Across all 24 the worst deviations were max drawdown 4.1e-6, volatility 6.5e-4, Sharpe 2.4e-3 and annualized return 1.2e-3, and the series length matches `backtest_days` exactly on every one. The residual is convention, not error.
+- **The rank checker exists because a metrics refresh can falsify a sentence on a page nobody touched.** A comparative claim is a fact about all 24 strategies at once, and nothing else in the repo could see it: `check_stat_drift.py` only compares figures a page quotes about itself. The Gold Miner error had survived the full 24-page audit in v1.68.2 because that audit covered the four narrative sections and the claim sits in `risk_profile.leverage`.
+- **The first two drafts of that checker were wrong in an instructive way.** Walking each sentence and pairing metric markers with rank markers invented claims: "the worst single day in the record" was read as a claim about record length, and one "both" leaked onto every later rank in its sentence. It was rewritten as five explicit templates with a proximity requirement, trading recall for precision, because a checker that invents failures trains you to ignore it. It was then validated by corrupting three real claims and confirming each was caught.
+- **This unblocks, and none of it is built yet:** worst month, VaR and CVaR, time in market, the year-jackknife and outlier-removal tests, and computing the regime tables rather than writing them.
+- All four gates and the six advisory checkers pass.
+
+---
+
 ## [1.71.0] - 2026-09-03
 
 ### Added
