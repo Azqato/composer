@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.68.0
+**Version:** 1.68.1
 **Status:** Active
 **Last Updated:** 2026-09-02
 
@@ -2446,7 +2446,7 @@ numbering schemes; they answer different questions.
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
 | V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
-| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1, 2, 3, 4, 5, 7, 8, 9, 12, 17 shipped; 13, 14, 15 piloted on 1 of 31 and **blocked on the item 19 structure sign-off**; 4 open | v1.33.0 (partial) |
+| V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | In progress. Items 1, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 15, 17, 19 shipped; **13, 14, 15 complete on all 24 visible strategies (v1.68.0)**; items 6, 11, 16, 18 open | v1.68.0 (partial) |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
@@ -3085,16 +3085,15 @@ instant and works offline.
 v1.28.0**, item 17 in v1.27.8, and **items 2, 3, 8 and 12 in v1.30.0**, which is steps 1, 2 and 3 of
 the sequencing below complete. **Step 4 (items 6 then 9) is next.**
 
-**Items 13, 14 and 15 were then piloted on a single strategy (v1.29.0 to v1.29.3), out of sequence,
-at the owner's request.** `gold-miner-original` carries all three; the other 30 carry none, and every
-section is guarded so they render unchanged. This is the roadmap's own instruction applied at its
-narrowest: write one strategy fully and look at it before committing to 31.
+**Items 13, 14 and 15 were piloted on a single strategy (v1.29.0 to v1.29.3), out of sequence, at
+the owner's request**, and are now **complete on all 24 visible strategies (v1.43.0 to v1.68.0,
+2026-09-02)**. `gold-miner-original` was the pilot; the item 19 gate was cleared when the layout was
+approved in v1.43.0, and the remaining 23 pages were then written one per commit. The 12 hidden zoop
+2026 editions are out of scope by design and carry the unlisted banner instead.
 
-> **BLOCKED: the pilot is a rough draft and the structure is not approved.** The owner's verdict on
-> reviewing it was that it needs more organisational refinement, and **item 19 is now a hard gate:
-> no strategy beyond `gold-miner-original` gets this content until the structure is explicitly
-> signed off.** Two section moves already came out of the first review (v1.29.1, v1.29.3), which is
-> the gate earning its place before it has even been formally run.
+**The pilot-first instruction earned its place.** Two section moves came out of the first review
+(v1.29.1, v1.29.3) before the structure was approved, which is exactly the rework that writing 24
+pages against an unreviewed shape would have multiplied.
 
 **What going out of order actually costs.** The sequencing put items 10 and 11 before Tier 3 because
 they are schema changes and rewriting fresh prose is waste. That risk is **smaller than it looks for
@@ -3479,7 +3478,7 @@ files already in the repo.
 
 **Tier 2: restructuring content that already exists.**
 
-- [x] **10. Split `risk_profile` into named categories. Complete: all 31 strategies carry the
+- [x] **10. Split `risk_profile` into named categories. Complete: all 36 strategies carry the
   object shape as of v1.36.0.** Piloted on `four-horsemen` in v1.35.0, signed off, then the
   remaining 30 rewritten.
 
@@ -3686,9 +3685,14 @@ files already in the repo.
      defensible once and it is the whole argument for item 16.
 
   **Sign-off is recorded here with a date when it happens**, so a later reader can tell an approved
-  structure from one that was never reviewed
+  structure from one that was never reviewed.
 
-- [~] **13. TL;DR card. Piloted on `gold-miner-original` (v1.29.0), 1 of 31. Blocked on item 19.** Core Thesis callout
+  **Signed off 2026-09-02 in v1.43.0.** The approval was of the whole page layout, not the three
+  sections alone: the canonical section order moved into `docs/DESIGN.md` under **Strategy Page
+  Section Order**, `isLayoutPilot` and every pre-pilot branch were deleted, and items 13, 14 and 15
+  were then rolled out to the remaining 23 visible strategies across v1.44.0 to v1.68.0.
+
+- [x] **13. TL;DR card. Complete: all 24 visible strategies, v1.43.0 to v1.68.0.** Core Thesis callout
   with a green rule, above opposed **Works well in** / **Struggles in** columns.
 
   **The format did what it was chosen to do.** Writing the Struggles-in column for this strategy
@@ -3696,8 +3700,8 @@ files already in the repo.
   to 21 August, GDXU fell 23.5% **and** GDXD fell 81.9%, so both leveraged legs lost at once and
   only GLD was up. Nothing on the existing page said that, and the prose sections had not been
   written in a shape that would have surfaced it.
-- [~] **14. Underlying Assumptions. Piloted on `gold-miner-original` (v1.29.0), 1 of 31. Blocked on
-  item 19.** Two columns: market and macro beliefs against technical and structural ones. Four and five items
+- [x] **14. Underlying Assumptions. Complete: all 24 visible strategies, v1.43.0 to v1.68.0.**
+  Two columns: market and macro beliefs against technical and structural ones. Four and five items
   respectively for the pilot.
 
   **The split is the content.** A belief about the world fails differently from a belief about the
@@ -3705,8 +3709,8 @@ files already in the repo.
   the sharpest single line on the page: the strategy is named and described by its RSI gates, and a
   reconstruction of the logic over real prices shows **those gates fired on 10.6% of days**, with
   the momentum branches making the other 89.4% of the decisions.
-- [~] **15. Market Regime Analysis table. Piloted on `gold-miner-original` (v1.29.0), 1 of 31.
-  Blocked on item 19.** Six regimes across regime, expected, why and example period. The example column was not dropped
+- [x] **15. Market Regime Analysis table. Complete: all 24 visible strategies, v1.43.0 to
+  v1.68.0.** Six regimes across regime, expected, why and example period. The example column was not dropped
   for space: the table scrolls inside its own `overflow-x` wrapper instead, per the rule the v1.12.0
   mobile audit set.
 

@@ -5,6 +5,24 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.68.1] - 2026-09-02
+
+### Fixed
+- **UVXY is described as 1.5x, not 2x.** Two strings in `sometimes-tqqq` still called it "UVXY (2x long VIX)". UVXY has been 1.5x long VIX futures since February 2018, so the descriptor was wrong on a live page. The same outdated wording had already been corrected in `holy-grail`, `four-horsemen` and `simons-kmlm-switcher`; these were the last two occurrences in the repo.
+
+### Changed
+- **`docs/PRD.md` now reflects the state of V1.20 items 13, 14 and 15.** The roadmap still described them as piloted on one strategy and **blocked on the item 19 sign-off**, which stopped being true at v1.43.0. Corrected in four places:
+  - The V1.20 milestone row said "piloted on 1 of 31 and blocked"; it now records 13, 14 and 15 complete on all 24 visible strategies and lists items 6, 11, 16 and 18 as the open ones.
+  - The V1.20 status block's **BLOCKED** callout is replaced by the completion record. The note about the pilot-first instruction earning its place is kept, because two section moves did come out of the first review.
+  - Items 13, 14 and 15 move from `[~]` to `[x]`.
+  - **Item 19's sign-off is now recorded with its date**, which that section explicitly requires and which never happened when the approval landed in v1.43.0.
+- Item 10's completion line said "all 31 strategies"; the library has been 36 for some time.
+
+### Notes
+- **`check_stat_drift` reporting zero checkable claims is the intended end state, not a broken checker.** Prose figures were replaced by tokens such as `{sharpe_ratio}`, so there are no hardcoded statistics left to drift. Verified by reading the checker and confirming its prose fields and regexes are intact. The 37 outstanding zoop findings recorded earlier are gone for the same reason.
+
+---
+
 ## [1.68.0] - 2026-09-02
 
 ### Added
