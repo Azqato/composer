@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.73.1
+**Version:** 1.73.2
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -2444,7 +2444,7 @@ numbering schemes; they answer different questions.
 | V1.15 | Full-scale refresh: every entry through at least one real API attempt | Complete; now maintained weekly | v1.11.23 |
 | V1.16 | Performance fix: columnar summary export, page weight | Complete, built ahead of slot | v1.11.0 |
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
-| V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25, not started | Not started |
+| V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25; data source and two scoring rules decided 2026-09-03; model shape still open | Not started |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
 | V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | **Complete.** All 19 items shipped; 13, 14, 15 complete on all 24 visible strategies (v1.68.0); item 16 stores the daily series and the features it unblocks are tracked in Section 14 C3 | v1.72.0 |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
@@ -3005,23 +3005,156 @@ Concentration/Fragility groups (six metrics, 170 points) to be the least mission
 redundant with Max Drawdown and Standard Deviation. **That is the obvious place to cut**, and it is
 already documented above with reasons, so the simplification does not need to be re-derived.
 
+#### Design session 2026-09-03: what was decided, and the finding that reframes this a second time
+
+Three decisions are taken and one is deliberately parked. Everything in this subsection was measured
+against the live pool of **6,681 eligible rows** rather than reasoned about, by
+`scripts/analyze_leaderboard.py`, which mirrors `database.html`'s engine exactly (clamp constant,
+average-rank ties, fixed denominator, tier cuts), so every number here is a number the site would
+show. It is manual-only and read-only, and it exists so these figures can be re-derived rather than
+trusted, and re-run once the model shape is settled. Figures below are its 2026-09-03 output; the
+pool drifts by a row or two a day as the weekly refresh lands.
+
+**Decided: out-of-sample statistics come from the API, windowed, not from a trailing-window proxy.**
+The section above proposed inferring an out-of-sample return from whichever trailing window happens
+to fit inside the OOS period. That was the right idea given what was known on 2026-08-25 and it is
+now superseded, because **the Composer backtest endpoint accepts a date range and requires no key.**
+
+- `scripts/refresh_full_database.py` has always posted to
+  `api.composer.trade/api/v0.1/symphonies/{id}/backtest` with **no auth header at all**. What it
+  never did was pass a date range.
+- **`start_date` and `end_date` are honoured.** Passing `start_date` equal to the symphony's
+  `oos_date` returns all 27 stats computed on out-of-sample days only: a genuine OOS annualized
+  return, max drawdown, standard deviation, Sharpe, Sortino, Calmar and cumulative return, over the
+  symphony's actual untouched period. Verified live on three symphonies of differing OOS length,
+  **no nulls in any of the 27 fields**, roughly one second per call, and the start date snaps
+  forward to the next trading day on its own.
+
+  | Symphony | OOS span | Trading days | OOS return | SPY, same span | Excess |
+  |---|---|---|---|---|---|
+  | zoop's 2026 Frontrunner | 2026-03-16 to 2026-09-03 | 119 | +17.79% | +15.87% | +1.92pp |
+  | `xvgru5wD...` | 2023-03-17 to 2026-09-03 | 869 | +137.52% | +106.00% | +31.52pp |
+  | `U9QE6NXD...` | 2025-09-29 to 2026-09-03 | 234 | +17.97% | +17.15% | +0.82pp |
+
+**Decided: the benchmark is already in the repo, so it costs nothing.** The section above records
+that "SPY appears nowhere in the dataset" and treats storing a benchmark as a real scope addition.
+That is true of `database_summary.json` only. **`data/prices.json` carries SPY daily closes from
+2010-01-04**, refreshed every Saturday by `.github/workflows/refresh-prices.yml` for the Signal
+Miner, and the site already ships it. No new API, no new field, no new cadence. One alignment rule
+falls out of this: the API runs through today while `prices.json` ends on the Saturday refresh, so
+the OOS request must pass **`end_date` equal to the last date in `prices.json`** and land both sides
+on the same day.
+
+**Decided (owner, 2026-09-03): rows under a year of OOS time are percentiled within their duration
+group,** rather than annualised or excluded. A symphony with 120 untouched days is ranked against
+others with roughly 120, not against one with 900. This makes no annualisation claim and needs no
+arithmetic anyone can dispute, and it preserves the percentile logic the rest of the model already
+uses. The alternative measured badly: annualising the excess triples the apparent severity of the
+short-window group, from a median of -2.35pp to **-9.91pp**, purely from compounding noise.
+
+**Decided (owner, 2026-09-03): a 365-day OOS floor gates S+ and S.** Spacer's proposal, adopted
+as an **eligibility rule rather than a weighting change**, so it needs no change to the point table
+and cannot break the fixed denominator. It cuts about 22% of the pool out of the top two tiers;
+those rows can still reach A. With true OOS statistics rather than a trailing proxy, the floor is
+now about statistical confidence rather than data availability, which is a better thing for it to
+be about.
+
+**Parked: the model shape.** The owner asked for time to digest the six-metric proposal. Note that
+the proposal needs reworking regardless, because with true OOS statistics the out-of-sample pillar
+can carry its own return, drawdown and duration rather than a single excess number, which is a
+different and better shape than the one put forward.
+
+##### The delivery mechanism: a separate workflow, scoped to a derived candidate set
+
+**The constraint is time, not money.** `.github/workflows/refresh-full-database.yml` already runs
+4.5 to 5 hours against GitHub's 6-hour job ceiling, with a 340-minute step cap and deliberate
+checkpoint-and-resume handling because it runs that close to the edge. A second API call per row
+roughly doubles it and does not fit. Three ways out were costed; **the owner chose the first two
+together (2026-09-03)**:
+
+1. **A separate weekly workflow** writing `data/oos.json` and its `.js` twin, keyed by symphony id,
+   on a different day from the full refresh. The existing job is not touched.
+2. **Scoped to a candidate set** rather than the whole pool, which is what makes the separate job
+   short instead of merely parallel.
+3. Rejected: cutting the 2-second throttle. Calls take about one second, so the throttle is a
+   politeness margin rather than a measured limit, and establishing otherwise means deliberately
+   probing someone else's rate limiter.
+
+**The candidate set is derived from the pillar's own weight, not chosen.** This is the part that
+makes scoping safe rather than arbitrary. A row with no OOS data scores **zero** on the OOS pillar,
+which is not a new mechanism: it is the rule the model already publishes for missing data anywhere,
+that the denominator never shrinks so an incomplete strategy can never outscore a complete one by
+having fewer things to fail. Because a missing pillar scores zero and a present one scores at least
+zero, **fetching OOS data can only raise a row's score, never lower it.** So a row whose in-sample
+score sits more than the pillar's full weight below the current cutoff for rank *D* mathematically
+cannot enter the top *D* even with a perfect OOS record, and there is no reason to spend a call on
+it. Measured against the live pool:
+
+| Protect the top | OOS pillar worth | Score cutoff | Candidates | Share of pool |
+|---|---|---|---|---|
+| 100 | 150 | 668.6 | 1,512 | 22.6% |
+| 100 | 250 | 568.6 | 2,590 | 38.8% |
+| 250 | 250 | 542.6 | 2,878 | **43.1%** |
+| 500 | 250 | 509.8 | 3,226 | 48.3% |
+
+At a quarter of the scale for the OOS pillar and the top 250 protected, that is 2,878 calls, roughly
+**1.6 hours** at the existing 2-second throttle. Comfortable inside a single job with room for the
+pool to grow. The exact figures will move once the model shape is settled, but the *rule* for
+setting them does not.
+
+**What this design does and does not claim.** The leaderboard becomes a two-stage screen: a cheap
+in-sample pass over the whole pool narrows the field, and an expensive out-of-sample pass confirms
+or demotes. This is the same shape the Signal Miner roadmap uses for plateau scoring and
+walk-forward (V2.2 items A and B), and it has the same property, worth stating plainly rather than
+discovering: **the out-of-sample stage can demote a row but cannot promote one from nowhere.** A
+symphony with mediocre in-sample statistics and a spectacular out-of-sample record will not be
+found. The derived cutoff bounds that blindness exactly rather than hand-waving at it: nothing
+outside the candidate set could have reached the protected ranks anyway.
+
+##### The failure mode this must be gated against
+
+**`start` and `end` are silently ignored.** Only `start_date` and `end_date` are honoured; the
+shorter names return the full backtest with a 200 and no warning of any kind. A refresh script that
+used the wrong key would appear to work perfectly and would quietly publish **in-sample numbers
+labelled out-of-sample**, which is the worst outcome this whole item could produce, since it would
+make the leaderboard look validated precisely where it is not.
+
+The gate is cheap: the response carries `first_day` as an epoch day number, so
+**assert that it equals the requested start date and discard the row otherwise.** That converts a
+silent catastrophe into a loud, per-row failure. It belongs in the refresh script itself rather than
+in a deploy gate, because by deploy time the wrong numbers are indistinguishable from right ones.
+
 #### Open questions to settle before building
 
-1. Is the target OOS *return*, OOS *return against SPY*, or both? The public complaint was explicitly
-   the benchmark version.
-2. Does SPY (or another benchmark) get stored in the dataset? Nothing benchmarks anything today.
-3. Floor, dynamic scaling, or both, and if scaling, which of the two denominator-preserving routes.
+1. ~~Is the target OOS *return*, OOS *return against SPY*, or both?~~ **Overtaken by the API
+   finding above.** With a windowed backtest the question is no longer which single number to
+   derive, but which of the 27 out-of-sample statistics the OOS pillar spends its weight on. That
+   is part of the parked model-shape decision.
+2. ~~Does SPY (or another benchmark) get stored in the dataset?~~ **Settled 2026-09-03: it already
+   is,** in `data/prices.json`, refreshed weekly for the Signal Miner.
+3. ~~Floor, dynamic scaling, or both~~ **Settled 2026-09-03: the floor, at 365 days, gating S+ and
+   S.** Dynamic scaling is not being built; percentile-within-duration-group achieves the same end
+   without a per-row denominator.
 4. Does the metric count come down in the same pass, or a later one? Doing both at once makes it
-   impossible to attribute a rank change to either.
+   impossible to attribute a rank change to either. **Still open, and now cheaper to resolve:** the
+   validation script below can score the intermediate models and attribute each rank change to the
+   stage that caused it, so one shipping pass does not have to mean one analytical step.
 5. **How is the change validated?** V1.17 set a good precedent worth repeating: score candidate
    models against the live pool in a throwaway Python script mirroring `database.html` exactly,
    review the output as a spreadsheet, and only then touch the site. The specific symphony Spacer
    named should be one of the named test cases, the way two of the owner's own symphonies were at
    V1.17.
 
-- [ ] Decide questions 1 to 4 above
-- [ ] Add an OOS-valid trailing return, using windows that already fit inside the OOS period
-- [ ] Decide on and, if adopted, add a stored benchmark
+- [x] Decide questions 1 to 3 above (2026-09-03); question 4 remains open
+- [x] ~~Add an OOS-valid trailing return~~ superseded: fetch true OOS statistics from the API with
+  `start_date` = `oos_date`
+- [x] Decide on and, if adopted, add a stored benchmark: SPY, already present in `data/prices.json`
+- [ ] **Decide the model shape** (parked at the owner's request, 2026-09-03). Everything below
+  depends on it, because the pillar weight sets the candidate-set cutoff
+- [ ] `scripts/refresh_oos.py`, writing `data/oos.json` and its `.js` twin, with the `first_day`
+  assertion, checkpointing and resume behaviour mirroring `refresh_full_database.py`
+- [ ] `.github/workflows/refresh-oos.yml`, weekly, on a different day from the full refresh
+- [ ] Rework the scoring model in `database.html`, the breakdown modal and the Methodology modal
 - [ ] Re-validate against the live pool before shipping, including the symphony named publicly
 
 ### V1.19: K1 Lookup

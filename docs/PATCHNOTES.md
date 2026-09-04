@@ -5,6 +5,44 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.73.2] - 2026-09-03
+
+Documentation only, no site change.
+
+### Docs
+
+- **V1.18, Leaderboard Scoring Revision II: three decisions taken and one finding
+  that supersedes the original plan.** The Composer backtest endpoint accepts
+  `start_date` and `end_date` and needs no API key, so a symphony can be
+  backtested over its out-of-sample period alone and return all 27 statistics
+  computed on untouched days only. That replaces the trailing-window proxy the
+  item was specified around. SPY, which the spec recorded as absent from the
+  dataset, is already in `data/prices.json` and refreshed weekly, so the
+  benchmark costs nothing.
+- Decided: rows with under a year of out-of-sample history are percentiled
+  within their duration group rather than annualised; a 365-day out-of-sample
+  floor gates the S+ and S tiers; and the data arrives via a separate weekly
+  workflow scoped to a candidate set rather than the whole pool. The model shape
+  is parked at the owner's request.
+- Recorded the candidate-set sizing rule, which is derived from the scoring
+  pillar's own weight rather than chosen: a row further below the cutoff than
+  the pillar is worth cannot reach the protected ranks however good its
+  out-of-sample record, so it needs no API call. About 43% of the pool, roughly
+  1.6 hours, against a full refresh that already runs 4.5 to 5 hours into a
+  6-hour ceiling.
+- Recorded the failure mode this must be gated against: `start` and `end` are
+  silently ignored by the API, so a refresh using the wrong key name would
+  publish in-sample numbers labelled out-of-sample with a 200 and no warning.
+  The response's `first_day` must be asserted against the requested start.
+
+### Added
+
+- `scripts/analyze_leaderboard.py`, manual-only and read-only. Every figure in
+  the V1.18 section comes from it, so they can be re-derived rather than
+  trusted. It mirrors `database.html`'s scoring engine exactly and reports OOS
+  duration, out-of-sample performance against SPY, metric redundancy, drop-one
+  rank sensitivity, and candidate-set sizing.
+
 ## [1.73.1] - 2026-09-03
 
 ### Fixed
