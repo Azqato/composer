@@ -5,6 +5,43 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.73.1] - 2026-09-03
+
+### Fixed
+
+- **Signal Miner: the two plateau columns were empty on the default view.** They
+  scored single signals only, and with signal pairing at its shipped default the
+  top 100 by Calmar is 99 combined AND rows and one single, so a visitor who
+  changed nothing saw a column of dashes. Combined rows are now scored: each
+  condition's parameters are perturbed on its own while the other condition is
+  held exactly as it is, the AND is rebuilt, and the row is re-backtested. The
+  product of the two parameter grids is still not searched, so the cost stays
+  linear in the number of axes rather than quadratic.
+- The cell for a combined row names the condition it is quoting (`1: 12d to 14d`),
+  since a bare range across two different signals says nothing about which one it
+  constrains. The tooltip lists every axis of both conditions and states plainly
+  that they were perturbed one at a time.
+- The tooltip on an unscored cell no longer says plateau is for single signals
+  only. It now names the two cases that remain: a ranking metric that is not a
+  finite number, and a restored snapshot rather than a live run.
+
+### Changed
+
+- `scripts/run_harness.py plateau` runs two passes. The first has pairing off, for
+  a deep sample of single rows; the second turns it back on **at the shipped
+  default** and asserts that zero plateau cells render empty. The second pass is
+  the regression test for the bug above. A new check also asserts that a row
+  perturbed by zero steps reproduces the metric the results table already holds
+  for it, which is what makes every neighbour comparison meaningful.
+
+### Notes
+
+- The measurement this feature exists to produce now covers combined rows, and
+  they are the more interesting half: **22 of 25 hold at exactly one setting and
+  nowhere adjacent**, against 18 of 100 for singles. Quoting the tightest of up to
+  six axes accounts for part of that, but not all of it. See `docs/PRD.md` V2.2
+  item A.
+
 ## [1.73.0] - 2026-09-03
 
 ### Added

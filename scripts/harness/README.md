@@ -223,6 +223,19 @@ The general lesson: when a driver asserts over "whatever is on screen", assert
 how much is on screen too. A shipped default that makes the interesting
 population rare is not a bug in the page and it will not announce itself.
 
+**And there is a second half to this trap that cost a shipped bug.** The same
+sentence, "100 rows, 1 single, 99 combined", was read as a statement about the
+*test* when it was equally a statement about the *product*: the feature scored
+singles only, so on the default view it rendered a wall of dashes. Turning
+pairing off in the driver made the test honest and made the product bug
+invisible at the same time.
+
+So a driver that changes a setting to get a better sample owes a second pass at
+the **shipped default**, asserting what a visitor who touches nothing actually
+sees. `plateau` now does exactly that, and the assertion is one line: zero empty
+cells. Adjusting settings for a good sample is right; adjusting settings and
+never looking back at the default is how a feature ships invisible.
+
 ## What `plateau` proves
 
 The plateau columns are pure diagnosis. Nothing downstream reads them, so a
@@ -230,11 +243,17 @@ wrong number has no second symptom and could sit there for months. The driver
 therefore **recomputes everything independently** rather than re-reading what
 the page decided:
 
-- every row on screen carries both plateau cells or neither, and a combined row
-  carries neither, by design;
+- **every row on screen is scored at the shipped pairing default, combined AND
+  rows included, and no cell renders empty.** This is a regression test with a
+  history: see trap 12;
+- a row perturbed by **zero** steps reproduces the metric the results table
+  already holds for it. If that drifts, every neighbour around it is being
+  compared against a different backtest than the row itself;
 - each plateau endpoint really scores inside the band, and the step just past
   it really does not, checked with the driver's own boolean pass and backtest
-  rather than with `plateauScore`;
+  rather than with `plateauScore`. For a combined row the driver rebuilds the
+  other condition's boolean array itself and re-ANDs, so it is not borrowing the
+  page's idea of what the partner is either;
 - the neighbourhood median reproduces exactly, over the same pool;
 - no neighbour violates the canonical `p1 < p2` rule `pushCmpSpecs` enforces on
   same-ticker comparisons, so the ring never scores a spec the run itself would

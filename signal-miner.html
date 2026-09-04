@@ -1794,9 +1794,21 @@
     //     neighbourhood there is measured in GRID POSITIONS, never in days.
     //     One step from 5 is 7; one step from 200 is 252.
     //
-    // Scope, said out loud rather than implied: singles only. A combined AND
-    // row has two specs and therefore a product of two lattices, with no honest
-    // one-dimensional plateau to quote; those rows report nothing at all.
+    // Combined AND rows are scored too, and the first cut's decision not to was
+    // wrong in a way worth recording. The roadmap entry called them out of
+    // scope for a first version, on the reasoning that two conditions give a
+    // product of two lattices with no honest one-dimensional plateau to quote.
+    // True as far as it goes, and irrelevant: with pairing at its shipped
+    // default the top 100 by Calmar is essentially ALL combined rows, so
+    // singles-only rendered a wall of dashes on the view a visitor gets without
+    // touching anything. A feature invisible by default is not a feature.
+    //
+    // The product of two lattices is not searched. Each condition's parameters
+    // are perturbed INDEPENDENTLY while the other condition is held exactly as
+    // it is, the AND is rebuilt, and the row is re-backtested. That is the same
+    // one-axis-at-a-time move already used for the two windows of a comparison
+    // family, so the cost stays linear in the number of axes: about 24
+    // backtests for the widest combined row against 12 for a single.
     const PLATEAU_LVL_RADIUS = 4;   // level steps evaluated each side
     const PLATEAU_WIN_RADIUS = 2;   // window grid positions evaluated each side
     const PLATEAU_MED_LVL = 2;      // level steps inside the neighbourhood median
@@ -1814,13 +1826,17 @@
     // Score one perturbed spec. Returns the metric bundle, or null if the spec
     // is not evaluable (an indicator the run never cached, say). A null here is
     // a hole and is counted as one; it is never read as a zero.
-    function plateauScore(spec, target) {
+    // `andWith`, when present, is the other condition of a combined row, held
+    // fixed. Perturbing one condition and re-ANDing is what keeps a combined
+    // row's neighbourhood one-dimensional per axis instead of a product.
+    function plateauScore(spec, target, andWith) {
       try {
         const [L, R] = leftRight(spec, sigCache.cache);
         if (!L) return null;
         if (typeof R !== 'number' && !R) return null;
         if (!plateauBuf || plateauBuf.length !== N) plateauBuf = new Uint8Array(N);
         const arr = boolInto(L, R, spec.dir === 'GT', plateauBuf);
+        if (andWith) for (let i = 0; i < N; i++) arr[i] &= andWith[i];
         return backtest(arr, sigCache.targetLret[target], sigCache.win.s0, sigCache.win.len);
       } catch (e) { return null; }
     }
@@ -1831,7 +1847,7 @@
     // hole: in the lattice, but not scorable). Keeping those three apart is
     // what lets the UI say "one-sided at the bracket edge" instead of quietly
     // reporting a shorter plateau.
-    function plateauAxis(move, target, metric, radius) {
+    function plateauAxis(move, target, metric, radius, andWith) {
       const vals = new Array(2 * radius + 1).fill(null);
       const beyond = { lo: true, hi: true };
       let holes = 0;
@@ -1845,7 +1861,7 @@
             beyond[side] = false;
             break;
           }
-          const m = plateauScore(sp, target);
+          const m = plateauScore(sp, target, andWith);
           const v = m ? m[metric] : NaN;
           if (v !== v) { holes++; continue; }
           vals[off + radius] = { v, spec: sp };
@@ -1961,10 +1977,43 @@
       return 'ends at a neighbour that drops out of band';
     }
 
+    // The AND of every condition EXCEPT `skip`, which is the partner array a
+    // perturbation of condition `skip` gets recombined with. Built once per row
+    // and thrown away with it.
+    function plateauPartner(specs, skip) {
+      let acc = null;
+      for (let j = 0; j < specs.length; j++) {
+        if (j === skip) continue;
+        const a = evalSpec(specs[j], sigCache.cache);
+        if (!acc) acc = a;
+        else for (let k = 0; k < N; k++) acc[k] &= a[k];
+      }
+      return acc;
+    }
+
+    // Every axis one condition contributes: its level if it has one, and one
+    // per window slot it owns.
+    function plateauAxesOf(spec, target, metric, andWith) {
+      const f = FAM[spec.f], out = [];
+      const lvl = levelMover(spec);
+      if (lvl) out.push({ id: 'level', grid: lvl.grid, at: lvl.at, spec,
+                          ax: plateauAxis(lvl.move, target, metric, PLATEAU_LVL_RADIUS, andWith),
+                          med: PLATEAU_MED_LVL });
+      for (const slot of (f.kind === 'cmp' ? ['p1', 'p2'] : ['p1'])) {
+        const mv = windowMover(spec, slot);
+        if (!mv) continue;
+        out.push({ id: slot, spec,
+                   ax: plateauAxis(mv, target, metric, PLATEAU_WIN_RADIUS, andWith),
+                   med: PLATEAU_MED_WIN });
+      }
+      return out;
+    }
+
     // Everything above, assembled into what one table row needs.
     function plateauFor(r, metric) {
       if (!sigCache || restored) return null;
-      if (!r.single || !r.spec) return null;
+      const specs = r.single ? (r.spec ? [r.spec] : []) : (r.specs || []);
+      if (!specs.length) return null;
       const self = r[metric];
       if (self == null || self !== self) return null;
 
@@ -1972,7 +2021,6 @@
       const hit = plateauCache.get(key);
       if (hit !== undefined) return hit;
 
-      const spec = r.spec, f = FAM[spec.f];
       // 20% WORSE, not 80% of the stored number. On a metric that can be
       // negative (Max DD always is, Calmar sometimes) multiplying by 0.8 moves
       // toward zero, which is an IMPROVEMENT, and the band would then admit
@@ -1981,16 +2029,12 @@
       const floor = self - PLATEAU_DROP * Math.abs(self);
 
       const axes = [];
-      const lvl = levelMover(spec);
-      if (lvl) axes.push({ id: 'level', grid: lvl.grid, at: lvl.at,
-                           ax: plateauAxis(lvl.move, r.target, metric, PLATEAU_LVL_RADIUS),
-                           med: PLATEAU_MED_LVL });
-      const slots = f.kind === 'cmp' ? ['p1', 'p2'] : ['p1'];
-      for (const slot of slots) {
-        const mv = windowMover(spec, slot);
-        if (!mv) continue;
-        axes.push({ id: slot, ax: plateauAxis(mv, r.target, metric, PLATEAU_WIN_RADIUS),
-                    med: PLATEAU_MED_WIN });
+      for (let i = 0; i < specs.length; i++) {
+        const partner = specs.length > 1 ? plateauPartner(specs, i) : null;
+        for (const a of plateauAxesOf(specs[i], r.target, metric, partner)) {
+          a.cond = i;
+          axes.push(a);
+        }
       }
       if (!axes.length) { plateauCache.set(key, null); return null; }
 
@@ -2003,33 +2047,39 @@
       }
 
       // Text for one axis, in the units that axis actually has.
-      const W = sigCache.W;
+      const W = sigCache.W, multi = specs.length > 1;
       for (const a of axes) {
+        const f = FAM[a.spec.f];
+        a.span = a.walk.lo + a.walk.hi;
+        const where = multi ? 'condition ' + (a.cond + 1) + ' ' : '';
         if (a.id === 'level') {
           const lo = a.grid[a.at - a.walk.lo], hi = a.grid[a.at + a.walk.hi];
-          a.span = a.walk.lo + a.walk.hi;
           a.text = a.span ? levelText(f.a, lo) + ' to ' + levelText(f.a, hi)
-                          : 'only ' + levelText(f.a, spec.level);
-          a.name = 'level';
+                          : 'only ' + levelText(f.a, a.spec.level);
+          a.name = where + 'level';
         } else {
-          const base = a.id === 'p2' ? spec.p2 : spec.p1;
+          const base = a.id === 'p2' ? a.spec.p2 : a.spec.p1;
           const at = W.indexOf(base);
-          a.span = a.walk.lo + a.walk.hi;
           a.text = a.span ? W[at - a.walk.lo] + 'd to ' + W[at + a.walk.hi] + 'd'
                           : 'only ' + base + 'd';
-          a.name = f.kind === 'cmp' ? (a.id === 'p1' ? 'first window' : 'second window')
-                                    : 'window';
+          a.name = where + (f.kind === 'cmp'
+            ? (a.id === 'p1' ? 'first window' : 'second window') : 'window');
         }
       }
 
-      // The cell quotes ONE axis. Level when there is one, because it is the
-      // axis a reader can act on directly. For a two-window comparison it is
-      // the TIGHTER of the two, since that is the constraint that actually
-      // binds; the other is one hover away rather than hidden.
+      // The cell quotes ONE axis, because a table cell that lists four is a
+      // cell nobody reads. For a single threshold row that is the level, which
+      // is the axis a reader can act on directly. Everywhere else it is the
+      // TIGHTEST axis, since that is the constraint that actually binds: a row
+      // is only as robust as its most fragile parameter. The rest are one hover
+      // away rather than hidden.
       let primary = axes[0];
-      if (!lvl && axes.length > 1) primary = axes[0].span <= axes[1].span ? axes[0] : axes[1];
+      if (!(specs.length === 1 && axes[0].id === 'level')) {
+        for (const a of axes) if (a.span < primary.span) primary = a;
+      }
       let text = primary.text;
       if (primary.walk.stop.lo === 'ring' || primary.walk.stop.hi === 'ring') text += '+';
+      if (multi) text = (primary.cond + 1) + ': ' + text;
 
       const detail = axes.map(a =>
         a.name + ': ' + a.text + ' (' + a.walk.lo + ' step' + (a.walk.lo === 1 ? '' : 's') +
@@ -2042,7 +2092,10 @@
         steps: primary.span,
         holes: holes,
         title: 'Plateau on the ranking metric, within ' + (PLATEAU_DROP * 100) +
-               '% of this row.\n' + detail +
+               '% of this row. The cell quotes the tightest axis; every axis is listed here.\n' +
+               detail +
+               (multi ? '\nEach condition is perturbed on its own, with the other held ' +
+                        'exactly as it is, so these are not a search over both at once.' : '') +
                (holes ? '\n' + holes + ' neighbour' + (holes === 1 ? '' : 's') +
                         ' could not be scored and ' + (holes === 1 ? 'was' : 'were') +
                         ' treated as breaks, not as zeros.' : '') +
@@ -2199,7 +2252,7 @@
         if (c.key === '_nbhd' || c.key === '_plateau') {
           const tip = c.key === '_nbhd'
             ? `Median ${plateauMetricLabel()} across this row and its immediate neighbours on the parameter grid. A row far above its own neighbourhood is a spike, not a setting.`
-            : `The range of settings either side of this row that stay within ${PLATEAU_DROP * 100}% of it. Hover a cell for the detail. Single signals only.`;
+            : `The range of settings either side of this row that stay within ${PLATEAU_DROP * 100}% of it. Hover a cell for the detail: the cell quotes the tightest axis, the tooltip lists them all.`;
           return `<th class="nosort" title="${escapeHtml(tip)}">${label}</th>`;
         }
         const sorted = c.key === sortKey ? ' sorted' + (sortAsc ? ' asc' : '') : '';
@@ -2223,7 +2276,7 @@
               // Computed once per row and read twice: plateauFor memoises, so
               // the second column costs a map lookup, not a second ring.
               const pl = plateauFor(r, metric);
-              if (!pl) return '<td class="plat"><span style="color:var(--color-disabled)" title="Plateau is scored for single signals only: a combined row sits on two parameter grids at once and has no single range to quote.">-</span></td>';
+              if (!pl) return '<td class="plat"><span style="color:var(--color-disabled)" title="No plateau for this row: either the ranking metric is not a finite number here, or this is a restored snapshot rather than a live run.">-</span></td>';
               const body = c.key === '_nbhd' ? fmtVal(pl.med, metricFmt)
                                              : escapeHtml(pl.text);
               return `<td class="plat" title="${escapeHtml(pl.title)}">${body}</td>`;
