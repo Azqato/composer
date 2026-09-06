@@ -18,6 +18,16 @@ on:
 permissions:
   contents: write
 
+# refresh_oos.py holds no lock. Two concurrent runs each keep their own copy of
+# the store in memory and rewrite the whole file at every checkpoint, so the
+# slower one silently discards the faster one's rows. Observed locally on
+# 2026-09-06 with two processes going at once. A manual dispatch landing on top
+# of the scheduled Wednesday run is exactly that situation, so the second one
+# waits rather than racing.
+concurrency:
+  group: refresh-oos
+  cancel-in-progress: false
+
 jobs:
   refresh-oos:
     runs-on: ubuntu-latest
