@@ -5,6 +5,56 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.74.0] - 2026-09-06
+
+### Added
+
+- **Two scoring models on the Leaderboard, switchable, both permanent (V1.18).**
+  The new **Simplified** model scores five metrics out of 100 points and spends
+  35 of them on a single figure a backtest cannot flatter: how the strategy
+  actually performed against SPY over the period since its logic was last
+  edited. The existing 20-metric, 1,000-point model is still there in full, now
+  labelled **Advanced**, with every weight unchanged. Simplified is the default.
+- **Out-of-sample records are ranked within duration groups** (90 to 364 days,
+  365 to 729, 730 and over), so a strategy with four untouched months is judged
+  against others with four untouched months rather than against one with three
+  untouched years. Nothing is annualized: annualizing a short excess return
+  mostly compounds noise, and measuring it that way tripled the apparent
+  severity of the short group.
+- **S+ and S now require at least 365 days out of sample** under the Simplified
+  model. A strategy below that floor is capped at A however well it scores. This
+  is an eligibility rule, not a weighting change, so it cannot disturb the fixed
+  denominator, and it does not move anyone's rank.
+- **A "Model diff" view** listing the strategies the two models most disagree
+  about. Two models that agreed everywhere would not be worth carrying two of.
+- **`scripts/refresh_oos.py` and `.github/workflows/refresh-oos.yml`**, a weekly
+  Sunday-evening job that backtests each candidate strategy over its
+  out-of-sample period alone and writes `data/oos.json` and its `.js` twin. It is scoped to a
+  candidate set derived from the scoring pillar's own weight rather than chosen:
+  a row further below the cutoff than the pillar is worth cannot reach the
+  protected ranks however good its out-of-sample record, so it needs no call.
+  The script asserts the returned window matches the requested one, because the
+  API silently ignores `start` and `end` (only `start_date` and `end_date` are
+  honoured) and would otherwise publish in-sample numbers labelled
+  out-of-sample.
+
+### Changed
+
+- The score breakdown and Methodology modals are model-aware, and the breakdown
+  now says explicitly when a row is capped at A by the out-of-sample floor.
+  Previously a strong score that did not reach S was unexplained.
+- `scripts/analyze_leaderboard.py` mirrors both models, including the peer-group
+  percentiling and the tier floor.
+
+### Notes
+
+- The Screener's Rank, Score and Tier columns, its tier filter, and the strategy
+  pages all read the **Simplified** model and only that one. The toggle is a
+  Leaderboard view, not a site-wide mode: a strategy's rank means one thing
+  wherever it is quoted.
+
+---
+
 ## [1.73.3] - 2026-09-06
 
 No visible site change. This is the data pipeline half of V1.18, shipped ahead
