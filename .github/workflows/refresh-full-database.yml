@@ -2,8 +2,17 @@ name: Refresh Full Database
 
 on:
   schedule:
-    # 01:07 UTC Sunday (~6:07pm PDT / 9:07pm EDT Saturday). Offset 7 minutes
-    # past the hour to avoid GitHub's on-the-hour scheduling congestion.
+    # This job is the MIDDLE link in the weekly chain
+    #   prices (Fri) -> full database (Sat) -> out-of-sample (Sun)
+    # which runs in that order because each stage reads what the one before it
+    # wrote. refresh-oos.yml derives its candidate set from the in-sample scores
+    # this job refreshes, so it is scheduled after this one finishes. Moving any
+    # of the three means checking the other two.
+    #
+    # 01:07 UTC Sunday (~6:07pm PDT / 9:07pm EDT Saturday). Unchanged on
+    # 2026-09-06 when the other two moved: this slot already sat in the right
+    # place. Offset 7 minutes past the hour to avoid GitHub's on-the-hour
+    # scheduling congestion.
     #
     # NOTE: STALE_AFTER_DAYS in refresh_full_database.py is 7, matching this
     # weekly cadence exactly - unlike update-metrics.yml's daily run (a

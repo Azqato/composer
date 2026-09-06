@@ -2,27 +2,31 @@ name: Refresh Out-of-Sample Stats
 
 on:
   schedule:
-    # 03:07 UTC Saturday, which is Friday 8:07pm Pacific in summer and 7:07pm
-    # in winter. GitHub cron is UTC only and does not follow daylight saving, so
+    # This job is the LAST link in the weekly chain
+    #   prices (Fri) -> full database (Sat) -> out-of-sample (Sun)
+    # which runs in that order because each stage reads what the one before it
+    # wrote. Moving any of the three means checking the other two.
+    #
+    # 03:07 UTC Monday, which is Sunday 8:07pm Pacific in summer and 7:07pm in
+    # winter. GitHub cron is UTC only and does not follow daylight saving, so
     # the local time moves by an hour twice a year; nothing here cares.
     # Owner's choice, 2026-09-06. Offset 7 minutes past the hour for the same
     # reason as every other job here, the on-the-hour slot is GitHub's most
     # congested.
     #
-    # Still a different DAY from refresh-full-database.yml (Sunday 01:07 UTC)
-    # rather than a different hour, which is the part that matters: that job
-    # runs 4.5 to 5 hours against GitHub's 6-hour ceiling, and two long API jobs
-    # on the same day against the same host is a queue nobody asked for. This
-    # one finishes around 05:50 UTC Saturday, roughly 19 hours clear of it.
+    # Why last, specifically. Two inputs, and this slot is downstream of both:
+    #   - The candidate set is derived from in-sample scores, so it should be
+    #     derived from the freshest ones. Saturday's full refresh finishes
+    #     around 06:07 UTC Sunday, about 21 hours before this starts.
+    #   - The out-of-sample window ends on the last date in data/prices.json, so
+    #     that file wants to be current too. Friday's price refresh puts Friday's
+    #     close in it, two days before this reads it.
     #
-    # It now runs BEFORE the full refresh rather than after, so the candidate
-    # set is derived from in-sample scores up to six days old. That is fine and
-    # was checked rather than assumed: the cutoff carries a 300-point margin
-    # below the protected ranks, and week-to-week score movement is nowhere near
-    # that. The cost is freshness of the window end, not correctness of the
-    # selection: data/prices.json is refreshed Monday, so the out-of-sample
-    # window ends on the Friday close about a week before each run.
-    - cron: '7 3 * * 6'
+    # Also a different DAY from refresh-full-database.yml rather than a
+    # different hour, which matters on its own: that job runs 4.5 to 5 hours
+    # against GitHub's 6-hour ceiling, and two long API jobs on the same day
+    # against the same host is a queue nobody asked for.
+    - cron: '7 3 * * 1'
   workflow_dispatch:
 
 permissions:

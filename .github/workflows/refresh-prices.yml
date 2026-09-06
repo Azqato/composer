@@ -2,18 +2,24 @@ name: Refresh Signal Miner Prices
 
 on:
   schedule:
-    # 02:07 UTC Monday, which is Sunday 7:07pm Pacific in summer and 6:07pm in
+    # This job is the FIRST link in the weekly chain
+    #   prices (Fri) -> full database (Sat) -> out-of-sample (Sun)
+    # which runs in that order because each stage reads what the one before it
+    # wrote. Moving any of the three means checking the other two.
+    #
+    # 02:07 UTC Saturday, which is Friday 7:07pm Pacific in summer and 6:07pm in
     # winter. GitHub cron is UTC only and does not follow daylight saving, so
     # the local time moves by an hour twice a year. Owner's choice, 2026-09-06;
-    # was Saturday 08:07 UTC. Signal Miner is a research tool over multi-year
-    # history, so weekly is plenty, and a Sunday evening run is still safely
-    # inside the closed market. Offset 7 minutes past the hour, same rationale
-    # as refresh-rsi.yml - on-the-hour (:00) is GitHub Actions' most congested
-    # slot and can be delayed for hours or dropped entirely on public repos.
+    # was Saturday 08:07 UTC.
     #
-    # This lands about 20 hours after refresh-full-database.yml starts (Sunday
-    # 01:07 UTC, 4.5 to 5 hours long), so the two do not overlap.
-    - cron: '7 2 * * 1'
+    # Friday evening is the best slot available for this: the Friday close lands
+    # at 1pm Pacific, so the file picks it up the same day rather than waiting a
+    # night, and everything downstream is that much fresher. Signal Miner is a
+    # research tool over multi-year history, so weekly is plenty. Offset 7
+    # minutes past the hour, same rationale as refresh-rsi.yml - on-the-hour
+    # (:00) is GitHub Actions' most congested slot and can be delayed for hours
+    # or dropped entirely on public repos.
+    - cron: '7 2 * * 6'
   workflow_dispatch:
 
 permissions:
