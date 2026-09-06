@@ -2010,6 +2010,44 @@ footer {
   font-weight: 500;
 }
 
+/* Leaderboard scoring-model toggle (V1.18). A segmented pair rather than two
+   loose buttons, so it reads as one control with one of two states rather than
+   as two things that could both be off. */
+.model-toggle {
+  display: inline-flex;
+  margin-left: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.model-toggle-btn {
+  padding: 5px 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: transparent;
+  color: var(--color-secondary);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.model-toggle-btn + .model-toggle-btn {
+  border-left: 1px solid var(--color-border);
+}
+
+.model-toggle-btn:hover {
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+.model-toggle-btn.is-active {
+  background: var(--color-surface-raised);
+  color: var(--color-primary);
+}
+
 .db-search-input {
   background: var(--color-surface-raised);
   border: 1px solid var(--color-border);

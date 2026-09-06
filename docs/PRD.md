@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.73.3
+**Version:** 1.74.0
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -2475,7 +2475,7 @@ numbering schemes; they answer different questions.
 | V1.15 | Full-scale refresh: every entry through at least one real API attempt | Complete; now maintained weekly | v1.11.23 |
 | V1.16 | Performance fix: columnar summary export, page weight | Complete, built ahead of slot | v1.11.0 |
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
-| V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Specified 2026-08-25; data source and two scoring rules decided 2026-09-03; model shape still open | Not started |
+| V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Model settled and built 2026-09-06 as two permanent models behind a toggle; ships when the first full OOS fetch lands | In progress |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
 | V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | **Complete.** All 19 items shipped; 13, 14, 15 complete on all 24 visible strategies (v1.68.0); item 16 stores the daily series and the features it unblocks are tracked in Section 14 C3 | v1.72.0 |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
@@ -3156,6 +3156,54 @@ The gate is cheap: the response carries `first_day` as an epoch day number, so
 silent catastrophe into a loud, per-row failure. It belongs in the refresh script itself rather than
 in a deploy gate, because by deploy time the wrong numbers are indistinguishable from right ones.
 
+#### Shipped shape, 2026-09-06: two models, both permanent
+
+The model shape parked on 2026-09-03 was settled by the owner on 2026-09-06, and it settled in a way
+the spec did not anticipate: **not one revised model, but two, side by side, permanently.**
+
+**Owner decision: both models stay indefinitely, with no transition label on either.** The Leaderboard
+carries a toggle. Simplified is the default and the canonical one; Advanced is the existing 20-metric
+1,000-point model, unchanged in every weight. Neither is framed as superseding the other, and there is
+no "beta", "new" or "legacy" badge anywhere, because the owner has not decided whether either will be
+retired and a label would announce a decision that has not been taken.
+
+**The Simplified model.** Five metrics, 100 points.
+
+| Pillar | Points | Metrics |
+|---|---|---|
+| Out of sample | 35 | Excess return over SPY, 35 |
+| Return | 25 | Annualized Rate of Return, 25 |
+| Risk | 25 | Max Drawdown 15, Standard Deviation 10 |
+| Track record | 15 | Backtest Days, 15 |
+
+Everything else in the engine is untouched: the same 0.14 clamp, the same average-rank tie handling,
+the same fixed denominator so missing data scores a hard zero, the same rank-based tier cuts.
+
+**Duration is not scored.** It decides eligibility and grouping only. This was a deliberate reversal
+of the draft: the 2026-08-25 spec treats OOS days as a metric worth 25 points in the Advanced model,
+and repeating that in a model whose whole argument is out-of-sample evidence would pay twice for the
+same fact. So the Simplified model spends nothing on duration and instead uses it twice as a rule:
+rows are percentiled **within** duration groups (90-364, 365-729, 730+), and S+ and S require 365 days.
+
+**Rejected on measurement, not taste: splitting the OOS pillar 15 excess / 10 OOS max drawdown.**
+That was the draft-1 proposal and it was wrong. Measured correlation between out-of-sample max
+drawdown and in-sample max drawdown is **+0.901**, which is precisely the double-counting this
+revision exists to remove. All 35 points go to excess return.
+
+**The 90-day measurement floor.** `MIN_OOS_DAYS` in `scripts/refresh_oos.py` was raised from 30 to 90
+on 2026-09-06. A four-week record is too thin to hang 35 of 100 points on, it was the noisiest
+duration group by a distance, and such rows cannot clear the 365-day tier floor in any case. They
+score zero on the pillar, which is what the model already does with missing data everywhere else.
+
+**What the toggle does not do.** It is a Leaderboard view, not a site mode. The Screener's Rank, Score
+and Tier columns, its "or better" tier filter, and the strategy pages all read the **Simplified** model
+and only that one, so a symphony's rank means one thing wherever it is quoted. Both models are scored
+up front on the same pool in `recomputeGlobalRanking`, so switching is a re-render, never a re-score.
+
+**A disagreement view ships with it.** A "Model diff" button lists the strategies whose ranks move
+most between the two models, restricted to rows reaching the top 500 of either. Two models that agreed
+everywhere would not be worth carrying two of, and this is the view that says what the second one buys.
+
 #### Open questions to settle before building
 
 1. ~~Is the target OOS *return*, OOS *return against SPY*, or both?~~ **Overtaken by the API
@@ -3185,9 +3233,18 @@ in a deploy gate, because by deploy time the wrong numbers are indistinguishable
   depends on it, because the pillar weight sets the candidate-set cutoff
 - [ ] `scripts/refresh_oos.py`, writing `data/oos.json` and its `.js` twin, with the `first_day`
   assertion, checkpointing and resume behaviour mirroring `refresh_full_database.py`
-- [ ] `.github/workflows/refresh-oos.yml`, weekly, on a different day from the full refresh
-- [ ] Rework the scoring model in `database.html`, the breakdown modal and the Methodology modal
+- [x] `.github/workflows/refresh-oos.yml`, weekly, Monday 03:07 UTC (Sunday 8:07pm Pacific), the
+  last link in the prices/full-database/out-of-sample chain so both of its inputs are fresh when it
+  runs. See "The weekly data pipeline" in Section 4
+- [x] Rework the scoring model in `database.html`: two models behind a toggle, model-aware breakdown
+  and Methodology modals, and a Model diff view (2026-09-06)
+- [ ] Ship: this waits on the first complete run of `scripts/refresh_oos.py`. Publishing the
+  Simplified model against a partial `data/oos.json` would rank the pool on a pillar almost nobody
+  has data for, which is worse than not shipping it
 - [ ] Re-validate against the live pool before shipping, including the symphony named publicly
+- [ ] Settle the tie question with full data. Measured against a 3% partial fetch, 31 rows in the top
+  100 shared a rounded score. The prediction is that a fully populated 35-point excess metric breaks
+  most of them; if it does not, a published tie-break rule is needed
 
 ### V1.19: K1 Lookup
 

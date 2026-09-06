@@ -110,6 +110,7 @@
   <script src="data/strategies.js"></script>
   <script src="data/glossary.js"></script>
   <script src="data/database_summary.js"></script>
+  <script src="data/oos.js"></script>
   <script src="js/app.js"></script>
   <script>
     (function () {
@@ -940,7 +941,7 @@
             // Un-refreshed rows are in the Screener pool but not the ranking.
             if (!r) return '<td class="db-col-narrow" title="Not yet scored: awaiting a full metric refresh">&ndash;</td>';
             if (col.key === '_rank') return `<td class="db-col-narrow">${r.rank.toLocaleString()}</td>`;
-            if (col.key === '_score') return `<td class="db-col-narrow" title="${r.score.toLocaleString()} of ${TOTAL_POSSIBLE} possible points">${r.score.toLocaleString()}</td>`;
+            if (col.key === '_score') return `<td class="db-col-narrow" title="${r.score.toLocaleString()} of ${CANONICAL_MODEL.total} possible points on the ${CANONICAL_MODEL.label} model">${r.score.toLocaleString()}</td>`;
             const tierClass = TIER_LABEL_CLASS[r.tier] || 'f';
             return `<td class="db-col-narrow"><span class="tier-badge tier-${tierClass}">${r.tier}</span></td>`;
           }
@@ -1079,7 +1080,7 @@
     function scoreClamp(x, lo, hi) { return x < lo ? lo : (x > hi ? hi : x); }
     function pointsFromPct(p, cap) { return scoreClamp(cap * (p - CLAMP_Q) / (1 - 2 * CLAMP_Q), 0, cap); }
 
-    const SCORE_METRICS = [
+    const ADVANCED_METRICS = [
       { key: 'arr', cap: 99, higher: true, get: e => e.annualized_rate_of_return },
       { key: 'max_dd', cap: 98, higher: true, get: e => e.max_drawdown },
       { key: 'backtest', cap: 97, higher: true, get: e => e.backtest_days },
@@ -1101,7 +1102,49 @@
       { key: 't2w', cap: 11, higher: true, get: e => e.trailing_two_week_return },
       { key: 'kurtosis', cap: 10, higher: false, get: e => e.kurtosis },
     ];
-    const TOTAL_POSSIBLE = SCORE_METRICS.reduce((s, m) => s + m.cap, 0); // 1,000
+
+    // ---- Out-of-sample record (V1.18) ----
+    // data/oos.js carries one true out-of-sample backtest per candidate row,
+    // fetched by scripts/refresh_oos.py with start_date set to the symphony's
+    // last logic edit. Rows outside the candidate set have no entry here and
+    // score a hard zero on the pillar, which is the same rule the model already
+    // applies to missing data everywhere else. See docs/PRD.md V1.18.
+    const OOS_SERIES = (window.OOS_DATA && window.OOS_DATA.series) || {};
+    // A row needs a year of untouched history to reach S+ or S. This is an
+    // eligibility rule, not a weighting change, so it cannot disturb the fixed
+    // denominator. Rows below it can still reach A.
+    const OOS_TIER_FLOOR_DAYS = 365;
+    function oosRowFor(e) { return OOS_SERIES[e.symphony_id] || null; }
+    function oosExcessValue(e) {
+      const r = oosRowFor(e);
+      return r && typeof r.excess_return === 'number' ? r.excess_return : null;
+    }
+    // Short records are ranked against other short records, never against a
+    // row with three untouched years. This makes no annualisation claim, which
+    // is the whole point: annualising a 120-day excess triples its apparent
+    // severity out of compounding noise alone.
+    function oosDurationGroup(e) {
+      const r = oosRowFor(e);
+      const d = r && r.oos_calendar_days;
+      if (typeof d !== 'number') return null;
+      return d >= 730 ? '730+' : (d >= 365 ? '365-729' : '90-364');
+    }
+    function meetsOosTierFloor(e) {
+      const d = oosDaysValue(e);
+      return typeof d === 'number' && d >= OOS_TIER_FLOOR_DAYS;
+    }
+
+    // The Simplified model: five metrics, 100 points, and a third of the weight
+    // on the one number none of the others can fake, the out-of-sample return
+    // against SPY. Canonical: the Screener's Rank/Score/Tier columns and the
+    // strategy pages read this model, not the Advanced one.
+    const SIMPLIFIED_METRICS = [
+      { key: 'oos_excess', cap: 35, higher: true, get: oosExcessValue, group: oosDurationGroup },
+      { key: 'arr', cap: 25, higher: true, get: e => e.annualized_rate_of_return },
+      { key: 'backtest', cap: 15, higher: true, get: e => e.backtest_days },
+      { key: 'max_dd', cap: 15, higher: true, get: e => e.max_drawdown },
+      { key: 'std_dev', cap: 10, higher: false, get: e => e.standard_deviation },
+    ];
     const TIER_CUTS = [['S+', 0.0025], ['S', 0.10], ['A', 0.20], ['B', 0.50], ['C', 0.75]]; // F = the rest
     const TIER_LABEL_CLASS = { 'S+': 'sp', S: 's', A: 'a', B: 'b', C: 'c', F: 'f' };
     // Best-to-worst ordinal for each tier, used by the Screener's Tier column
@@ -1117,12 +1160,31 @@
     // Category grouping + human labels, for the per-row score breakdown modal
     // and the Methodology modal. Mirrors the locked model in docs/PRD.md
     // Section 14, V1.17, keep both in sync if the model ever changes.
-    const SCORE_CATEGORIES = [
+    const ADVANCED_CATEGORIES = [
       { label: 'Return', keys: ['arr', 't1y', 'median', 't3m', 't1m', 't2w'] },
       { label: 'Risk-Adjusted / Downside Risk', keys: ['max_dd', 'calmar', 'sharpe', 'sortino', 'win_rate', 'std_dev'] },
       { label: 'Shape & Concentration', keys: ['top1day', 'skew', 'top5pct', 'tail_ratio', 'top10pct', 'kurtosis'] },
       { label: 'Longevity', keys: ['backtest', 'oos'] },
     ];
+    const SIMPLIFIED_CATEGORIES = [
+      { label: 'Out of sample', keys: ['oos_excess'] },
+      { label: 'Return', keys: ['arr'] },
+      { label: 'Risk', keys: ['max_dd', 'std_dev'] },
+      { label: 'Track record', keys: ['backtest'] },
+    ];
+
+    // Both models are permanent. Neither is a migration step towards the other,
+    // and there is no transition label on either, per owner decision 2026-09-06:
+    // they stay side by side until one is deliberately retired.
+    const SCORING_MODELS = {
+      simplified: { id: 'simplified', label: 'Simplified', metrics: SIMPLIFIED_METRICS, categories: SIMPLIFIED_CATEGORIES, tierFloor: true },
+      advanced: { id: 'advanced', label: 'Advanced', metrics: ADVANCED_METRICS, categories: ADVANCED_CATEGORIES, tierFloor: false },
+    };
+    Object.keys(SCORING_MODELS).forEach(id => {
+      SCORING_MODELS[id].total = SCORING_MODELS[id].metrics.reduce((s, m) => s + m.cap, 0);
+    });
+    const CANONICAL_MODEL = SCORING_MODELS.simplified;
+    let activeModelId = 'simplified';
     const METRIC_LABELS = {
       arr: 'Annualized Rate of Return', median: 'Median Period Return',
       t1y: '1-Year Trailing Return', t3m: '3-Month Trailing Return',
@@ -1132,42 +1194,57 @@
       skew: 'Skewness', tail_ratio: 'Tail Ratio', kurtosis: 'Kurtosis',
       top1day: 'Top 1-Day Contribution', top5pct: 'Top 5% Contribution', top10pct: 'Top 10% Contribution',
       backtest: 'Backtest Days', oos: 'OOS Days',
+      oos_excess: 'Out-of-sample return vs SPY',
     };
-    function metricCap(key) { return SCORE_METRICS.find(m => m.key === key).cap; }
+    function metricCap(model, key) {
+      const m = model.metrics.find(x => x.key === key);
+      return m ? m.cap : 0;
+    }
 
     // entries: the eligible pool (has been refreshed, i.e. sharpe_ratio present)
-    function computeScores(entries) {
+    function computeScores(entries, model) {
       const ptsByIdx = entries.map(() => ({}));
 
-      SCORE_METRICS.forEach(m => {
-        const vals = [];
+      model.metrics.forEach(m => {
+        // A metric carrying a group function is percentiled inside its peer
+        // group rather than across the whole pool, and a row whose group comes
+        // back null is left out of the ranking entirely (it scores the same
+        // hard zero as missing data). Metrics without one land in a single
+        // bucket, which is the pre-V1.18 behaviour unchanged.
+        const groups = new Map();
         entries.forEach((e, i) => {
           const v = m.get(e);
-          if (typeof v === 'number') vals.push({ i, v });
+          if (typeof v !== 'number') return;
+          const g = m.group ? m.group(e) : '';
+          if (g === null || g === undefined) return;
+          if (!groups.has(g)) groups.set(g, []);
+          groups.get(g).push({ i, v });
         });
-        const n = vals.length;
-        if (!n) return;
-        vals.sort((a, b) => a.v - b.v);
-        let i = 0;
-        while (i < n) {
-          let j = i;
-          while (j + 1 < n && vals[j + 1].v === vals[i].v) j++; // average-rank ties
-          let perc = n > 1 ? ((i + j) / 2) / (n - 1) : 0.5;
-          if (!m.higher) perc = 1 - perc;
-          const p = pointsFromPct(perc, m.cap);
-          for (let k = i; k <= j; k++) ptsByIdx[vals[k].i][m.key] = p;
-          i = j + 1;
-        }
+        groups.forEach(vals => {
+          const n = vals.length;
+          if (!n) return;
+          vals.sort((a, b) => a.v - b.v);
+          let i = 0;
+          while (i < n) {
+            let j = i;
+            while (j + 1 < n && vals[j + 1].v === vals[i].v) j++; // average-rank ties
+            let perc = n > 1 ? ((i + j) / 2) / (n - 1) : 0.5;
+            if (!m.higher) perc = 1 - perc;
+            const p = pointsFromPct(perc, m.cap);
+            for (let k = i; k <= j; k++) ptsByIdx[vals[k].i][m.key] = p;
+            i = j + 1;
+          }
+        });
       });
 
       return entries.map((e, i) => {
         const pts = ptsByIdx[i];
-        const total = SCORE_METRICS.reduce((s, m) => s + (pts[m.key] || 0), 0);
+        const total = model.metrics.reduce((s, m) => s + (pts[m.key] || 0), 0);
         return { entry: e, score: Math.round(total * 10) / 10, fieldsPresent: Object.keys(pts).length, parts: pts };
       });
     }
 
-    function computeTiers(scored) {
+    function computeTiers(scored, model) {
       const ranked = scored.slice().sort((a, b) => b.score - a.score);
       const n = ranked.length;
       const cuts = TIER_CUTS.map(c => Math.max(1, Math.round(c[1] * n)));
@@ -1183,10 +1260,19 @@
         while (ci < cuts.length && i >= cuts[ci]) ci++;
         r.tier = ci < TIER_CUTS.length ? TIER_CUTS[ci][0] : 'F';
       });
+      // The OOS floor demotes rather than reorders: rank is untouched, only the
+      // top two tier labels are withheld from rows without a year of untouched
+      // history. Applied after the cuts so it can never move a cut.
+      if (model && model.tierFloor) {
+        ranked.forEach(r => {
+          if ((r.tier === 'S+' || r.tier === 'S') && !meetsOosTierFloor(r.entry)) r.tier = 'A';
+        });
+      }
       return ranked; // already sorted by score descending
     }
 
     let leaderboardRanked = []; // [{ entry, score, tier, fieldsPresent, parts }], sorted by score desc
+    const modelRanked = { simplified: [], advanced: [] }; // every model, scored on the same pool
     let leaderboardFiltered = [];
     let leaderboardPage = 1;
     let leaderboardNameQuery = '';
@@ -1210,9 +1296,18 @@
     function recomputeGlobalRanking() {
       const refreshed = dbEntries.filter(e => typeof e.sharpe_ratio === 'number');
       const eligible = applyFlagMode(refreshed, 'default');
-      leaderboardRanked = computeTiers(computeScores(eligible));
+      // Both models are scored on the same pool up front, so the toggle is a
+      // re-render rather than a re-score and the two can be compared row for
+      // row without either one shifting underneath the other.
+      Object.keys(SCORING_MODELS).forEach(id => {
+        modelRanked[id] = computeTiers(computeScores(eligible, SCORING_MODELS[id]), SCORING_MODELS[id]);
+      });
+      leaderboardRanked = modelRanked[activeModelId];
+      // Exported to the Screener and the strategy pages from the CANONICAL
+      // model only. The toggle is a Leaderboard view, not a site-wide mode: a
+      // symphony's rank has to mean one thing everywhere it is quoted.
       rankBySymphonyId = new Map();
-      leaderboardRanked.forEach((r, i) => {
+      modelRanked[CANONICAL_MODEL.id].forEach((r, i) => {
         rankBySymphonyId.set(r.entry.symphony_id, { rank: i + 1, score: r.score, tier: r.tier });
       });
     }
@@ -1322,39 +1417,109 @@
     // within it; "no data" is distinguished from "scored zero" (bottom of
     // the pack still earned a real score of 0, missing data never entered
     // the ranking at all for that metric).
-    function scoreBreakdownHtml(r) {
+    function scoreBreakdownHtml(r, model) {
       const e = r.entry;
       const name = e.name || e.symphony_id;
-      let html = `<p class="text-secondary">${escapeHtml(name)} scored <strong style="color:var(--color-primary)">${fmtScoreValue(r.score)} / ${TOTAL_POSSIBLE}</strong>, tier <strong style="color:var(--color-primary)">${r.tier}</strong>.</p>`;
+      let html = `<p class="text-secondary">${escapeHtml(name)} scored <strong style="color:var(--color-primary)">${fmtScoreValue(r.score)} / ${model.total}</strong> on the <strong style="color:var(--color-primary)">${model.label}</strong> model, tier <strong style="color:var(--color-primary)">${r.tier}</strong>.</p>`;
 
-      SCORE_CATEGORIES.forEach(cat => {
-        const catCap = cat.keys.reduce((s, k) => s + metricCap(k), 0);
+      // Why a row that scores well is not in S+ or S is otherwise invisible, so
+      // the floor states itself here rather than leaving the reader to guess.
+      if (model.tierFloor && !meetsOosTierFloor(e)) {
+        const d = oosDaysValue(e);
+        html += `<p class="text-secondary">Capped at A: S+ and S need at least ${OOS_TIER_FLOOR_DAYS} days since the last logic edit, and this one has ${d === null ? 'no recorded edit date' : d.toLocaleString() + '.'}</p>`;
+      }
+
+      model.categories.forEach(cat => {
+        const catCap = cat.keys.reduce((s, k) => s + metricCap(model, k), 0);
         const catEarned = cat.keys.reduce((s, k) => s + (r.parts[k] || 0), 0);
         html += `<h3>${cat.label} <span class="text-secondary" style="font-weight:400">(${fmtScoreValue(catEarned)} / ${catCap})</span></h3>`;
         cat.keys.forEach(k => {
           const hasData = r.parts[k] !== undefined;
           const cls = hasData ? '' : 'no-data';
-          const valueText = hasData ? `${fmtScoreValue(r.parts[k])} / ${metricCap(k)}` : `No data / ${metricCap(k)}`;
+          const valueText = hasData ? `${fmtScoreValue(r.parts[k])} / ${metricCap(model, k)}` : `No data / ${metricCap(model, k)}`;
           html += `<div class="score-row ${cls}"><span class="score-row-label">${METRIC_LABELS[k]}</span><span class="score-row-value">${valueText}</span></div>`;
         });
       });
       return html;
     }
 
-    function methodologyHtml() {
-      let html = `
-        <p>Every strategy is scored on ${SCORE_METRICS.length} metrics grouped into ${SCORE_CATEGORIES.length} categories, ${TOTAL_POSSIBLE} points total. Each metric is scored by <strong>percentile rank</strong> among strategies with usable data, not its raw value, so a strategy is judged against its peers, not an arbitrary fixed scale. Metric weights aren't split evenly, they're set by how directly each one serves the goal of finding strategies with strong returns, long track records, and relatively low risk: Annualized Return, Max Drawdown, and Backtest Days carry the most weight; second-order shape statistics like Kurtosis carry the least.</p>
-        <p>Only the top ~14% of a metric earns full marks, and the bottom ~14% earns zero, with a straight ramp in between. Missing data scores a hard zero for that one metric, the ${TOTAL_POSSIBLE}-point denominator never shrinks, so an incomplete strategy can never outscore a complete one just by having fewer things to fail.</p>
-        <p>Tiers are assigned by <strong>rank</strong>, not raw score: S+ = top 0.25% of scored strategies, S = next 9.75% (top 0.25-10%), A = next 10% (10-20%), B = next 30% (20-50%), C = next 25% (50-75%), F = bottom 25%.</p>
-      `;
-      SCORE_CATEGORIES.forEach(cat => {
-        const catCap = cat.keys.reduce((s, k) => s + metricCap(k), 0);
+    function methodologyHtml(model) {
+      const other = SCORING_MODELS[model.id === 'simplified' ? 'advanced' : 'simplified'];
+      let html = `<p>The Leaderboard carries <strong>two scoring models</strong>, and the toggle above the table switches between them. Both are permanent, and both rank the same pool of strategies. You are reading the <strong style="color:var(--color-primary)">${model.label}</strong> model; the other is <strong>${other.label}</strong>.</p>`;
+
+      if (model.id === 'simplified') {
+        html += `
+          <p><strong>Simplified</strong> scores ${model.metrics.length} metrics out of ${model.total} points and spends 35 of them, more than any other single figure, on the one number a backtest cannot flatter: how the strategy actually did against SPY over the period since its logic was last edited. Everything before that edit is a curve fitted with hindsight; everything after it is a record.</p>
+          <p>Out-of-sample records are ranked <strong>within duration groups</strong> (90 to 364 days, 365 to 729, and 730 or more), so a strategy with four untouched months is judged against others with four untouched months rather than against one with three untouched years. Nothing is annualized, because annualizing a short excess return mostly compounds noise.</p>
+          <p>A strategy with no out-of-sample record scores a hard zero on that pillar. The ${model.total}-point denominator never shrinks, so an incomplete strategy can never outscore a complete one just by having fewer things to fail.</p>
+          <p>Tiers are assigned by <strong>rank</strong>, not raw score: S+ = top 0.25% of scored strategies, S = next 9.75%, A = next 10%, B = next 30%, C = next 25%, F = bottom 25%. <strong>S+ and S additionally require at least ${OOS_TIER_FLOOR_DAYS} days out of sample</strong>; a strategy under that floor is capped at A however well it scores, because there is not yet enough untouched history to call it proven.</p>
+        `;
+      } else {
+        html += `
+          <p><strong>Advanced</strong> scores ${model.metrics.length} metrics grouped into ${model.categories.length} categories, ${model.total} points total. It is the wider view: where Simplified asks whether a strategy has actually worked since it stopped being edited, Advanced measures the full shape of the backtest, including distribution statistics that no single return figure captures.</p>
+          <p>Metric weights aren't split evenly, they're set by how directly each one serves the goal of finding strategies with strong returns, long track records, and relatively low risk: Annualized Return, Max Drawdown, and Backtest Days carry the most weight; second-order shape statistics like Kurtosis carry the least.</p>
+          <p>Missing data scores a hard zero for that one metric, the ${model.total}-point denominator never shrinks, so an incomplete strategy can never outscore a complete one just by having fewer things to fail.</p>
+          <p>Tiers are assigned by <strong>rank</strong>, not raw score: S+ = top 0.25% of scored strategies, S = next 9.75% (top 0.25-10%), A = next 10% (10-20%), B = next 30% (20-50%), C = next 25% (50-75%), F = bottom 25%. Advanced applies no out-of-sample floor.</p>
+        `;
+      }
+
+      html += `<p>Every metric is scored by <strong>percentile rank</strong> among strategies with usable data, not by its raw value, so a strategy is judged against its peers rather than an arbitrary fixed scale. Only the top ~14% of a metric earns full marks and the bottom ~14% earns zero, with a straight ramp in between.</p>`;
+
+      model.categories.forEach(cat => {
+        const catCap = cat.keys.reduce((s, k) => s + metricCap(model, k), 0);
         html += `<h3>${cat.label} <span class="text-secondary" style="font-weight:400">(${catCap} pts)</span></h3>`;
         cat.keys.forEach(k => {
-          html += `<div class="score-row"><span class="score-row-label">${METRIC_LABELS[k]}</span><span class="score-row-value">${metricCap(k)} pts</span></div>`;
+          html += `<div class="score-row"><span class="score-row-label">${METRIC_LABELS[k]}</span><span class="score-row-value">${metricCap(model, k)} pts</span></div>`;
         });
       });
-      html += `<p style="margin-top:16px">See the <strong style="color:var(--color-primary)">Metrics</strong> tab (next to Screener) for a plain-English explanation of what each metric measures.</p>`;
+      html += `<p style="margin-top:16px">The <strong style="color:var(--color-primary)">${other.label}</strong> model is used elsewhere on the site only where it says so: the Screener's Rank, Score and Tier columns and the strategy pages always quote <strong>${CANONICAL_MODEL.label}</strong>, so a strategy's rank means one thing wherever it appears.</p>`;
+      html += `<p>See the <strong style="color:var(--color-primary)">Metrics</strong> tab (next to Screener) for a plain-English explanation of what each metric measures.</p>`;
+      return html;
+    }
+
+    // Where the two models disagree, and by how much. Two models that agreed
+    // everywhere would not be worth carrying two of, so this is the view that
+    // says what the second one is actually buying. Restricted to rows that
+    // place well in at least one model, because a move from rank 5,900 to
+    // 6,100 is noise and would otherwise fill the whole list.
+    function modelDiffHtml() {
+      const a = SCORING_MODELS.simplified, b = SCORING_MODELS.advanced;
+      const rankIn = m => {
+        const map = new Map();
+        modelRanked[m.id].forEach((r, i) => map.set(r.entry.symphony_id, { rank: i + 1, tier: r.tier, score: r.score }));
+        return map;
+      };
+      const ra = rankIn(a), rb = rankIn(b);
+      const RELEVANT = 500;
+      const rows = [];
+      modelRanked[a.id].forEach(r => {
+        const id = r.entry.symphony_id;
+        const x = ra.get(id), y = rb.get(id);
+        if (!x || !y) return;
+        if (Math.min(x.rank, y.rank) > RELEVANT) return;
+        rows.push({ e: r.entry, a: x, b: y, move: y.rank - x.rank });
+      });
+      if (!rows.length) return '<p class="text-secondary">Nothing to compare yet.</p>';
+
+      const fmtRow = d => {
+        const name = d.e.name || d.e.symphony_id;
+        const short = name.length > 40 ? name.slice(0, 40) + '\u2026' : name;
+        const url = encodeURI(d.e.symphony_url || '#');
+        return `<div class="score-row"><span class="score-row-label"><a href="${url}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(name)}">${escapeHtml(short)}</a></span><span class="score-row-value">${a.label} #${d.a.rank.toLocaleString()} ${d.a.tier} &nbsp;&rarr;&nbsp; ${b.label} #${d.b.rank.toLocaleString()} ${d.b.tier}</span></div>`;
+      };
+
+      const agree = rows.filter(d => Math.abs(d.move) <= 50).length;
+      let html = `<p class="text-secondary">Comparing every strategy that reaches the top ${RELEVANT.toLocaleString()} of either model: <strong>${rows.length.toLocaleString()}</strong> rows, of which <strong>${agree.toLocaleString()}</strong> land within 50 places of each other. The rest are where the two models genuinely disagree, and each one is worth a look rather than a verdict: a strategy the Simplified model likes has an out-of-sample record behind it, and a strategy only the Advanced model likes has a well-shaped backtest and not much else yet.</p>`;
+
+      const worse = rows.slice().sort((p, q) => q.move - p.move).slice(0, 15);
+      html += `<h3>${a.label} rates these far higher</h3>`;
+      html += `<p class="text-secondary">Their out-of-sample record carries them past strategies with prettier backtest statistics.</p>`;
+      worse.forEach(d => { html += fmtRow(d); });
+
+      const better = rows.slice().sort((p, q) => p.move - q.move).slice(0, 15);
+      html += `<h3>${b.label} rates these far higher</h3>`;
+      html += `<p class="text-secondary">Strong on the wider factor set, but thin or negative since their logic was last edited. Treat a large gap here as a question, not a disqualification.</p>`;
+      better.forEach(d => { html += fmtRow(d); });
       return html;
     }
 
@@ -1369,6 +1534,7 @@
     });
 
     function renderLeaderboardPage() {
+      const model = SCORING_MODELS[activeModelId];
       const totalPages = Math.max(1, Math.ceil(leaderboardFiltered.length / PAGE_SIZE));
       leaderboardPage = Math.min(Math.max(1, leaderboardPage), totalPages);
       const start = (leaderboardPage - 1) * PAGE_SIZE;
@@ -1385,7 +1551,7 @@
           <tr>
             <td class="db-col-narrow">${(rankOffset + i + 1).toLocaleString()}</td>
             <td><span class="tier-badge tier-${tierClass}">${r.tier}</span></td>
-            <td><button class="score-link" data-rank="${rankOffset + i}" title="Click for score breakdown">${r.score.toLocaleString()} / ${TOTAL_POSSIBLE}</button></td>
+            <td><button class="score-link" data-rank="${rankOffset + i}" title="Click for score breakdown">${r.score.toLocaleString()} / ${model.total}</button></td>
             <td><a href="${url}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(fullName)}">${escapeHtml(shortName)}</a></td>
             <td class="${colorClass(e.annualized_rate_of_return)}">${formatMetric(e.annualized_rate_of_return, formatPct)}</td>
             <td class="${colorClass(e.sharpe_ratio)}">${formatMetric(e.sharpe_ratio, formatRatio)}</td>
@@ -1409,8 +1575,12 @@
               <span aria-hidden="true">&#9776;</span> ${filterLabel}
             </button>
             <button class="btn btn-outline btn-sm" id="methodology-btn-leaderboard" style="margin-left:8px">Methodology</button>
+            <button class="btn btn-outline btn-sm" id="modeldiff-btn-leaderboard" style="margin-left:8px">Model diff</button>
+            <span class="model-toggle" role="group" aria-label="Scoring model">
+              ${Object.keys(SCORING_MODELS).map(id => `<button type="button" class="model-toggle-btn${id === activeModelId ? ' is-active' : ''}" data-model="${id}" aria-pressed="${id === activeModelId}">${SCORING_MODELS[id].label}</button>`).join('')}
+            </span>
           </div>
-          <span class="text-secondary" style="font-size:0.8125rem">Scored out of ${TOTAL_POSSIBLE}; ${notRefreshedCount.toLocaleString()} not yet refreshed and any flagged rows excluded from ranking</span>
+          <span class="text-secondary" style="font-size:0.8125rem">${model.label} model, scored out of ${model.total}; ${notRefreshedCount.toLocaleString()} not yet refreshed and any flagged rows excluded from ranking</span>
         </div>
         <div id="filter-panel-leaderboard" class="filter-panel" hidden></div>
         <div class="db-table-wrap">
@@ -1447,12 +1617,32 @@
       document.querySelectorAll('#leaderboard-content .score-link').forEach(btn => {
         btn.addEventListener('click', () => {
           const r = leaderboardFiltered[Number(btn.dataset.rank)];
-          if (r) openModal('Score Breakdown', scoreBreakdownHtml(r));
+          if (r) openModal('Score Breakdown', scoreBreakdownHtml(r, model));
         });
       });
 
       document.getElementById('methodology-btn-leaderboard').addEventListener('click', () => {
-        openModal('Leaderboard Methodology', methodologyHtml());
+        openModal('Leaderboard Methodology', methodologyHtml(model));
+      });
+
+      document.getElementById('modeldiff-btn-leaderboard').addEventListener('click', () => {
+        openModal('Where the two models disagree', modelDiffHtml());
+      });
+
+      // Switching models is a re-render, not a re-score: both rankings were
+      // built in recomputeGlobalRanking. The filter and the search box carry
+      // over, and the page resets to 1 because rank 40 in one model is not
+      // rank 40 in the other.
+      document.querySelectorAll('#leaderboard-content .model-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.model;
+          if (!SCORING_MODELS[id] || id === activeModelId) return;
+          activeModelId = id;
+          leaderboardRanked = modelRanked[id];
+          recomputeLeaderboard();
+          leaderboardPage = 1;
+          renderLeaderboardPage();
+        });
       });
 
       const leaderboardSearchInput = document.getElementById('search-leaderboard');
