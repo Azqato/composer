@@ -6,9 +6,10 @@ numbers can be re-derived rather than trusted, and so the same measurements can
 be re-run once the model shape is settled.
 
 It mirrors database.html's scoring engine exactly: the same clamp constant, the
-same average-rank tie handling, the same fixed 1,000-point denominator, the same
-tier cuts. If that engine changes, SCORE_METRICS and CLAMP_Q here must change
-with it or the output silently describes a model the site no longer runs.
+same average-rank tie handling, the same fixed denominators, the same tier cuts,
+and since V1.18 both shipped models rather than one. If that engine changes,
+ADVANCED_METRICS, SIMPLIFIED_METRICS and CLAMP_Q here must change with it or the
+output silently describes a model the site no longer runs.
 
 Read-only. It touches no API and writes no file.
 
@@ -23,11 +24,12 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 SUMMARY = BASE_DIR / "data" / "database_summary.json"
 PRICES = BASE_DIR / "data" / "prices.json"
+OOS = BASE_DIR / "data" / "oos.json"
 
 # Mirrors database.html. CLAMP_Q 0.14 means only the top ~14% of a metric earns
 # full marks and the bottom ~14% earns zero, with a straight ramp between.
 CLAMP_Q = 0.14
-SCORE_METRICS = [
+ADVANCED_METRICS = [
     ("arr", 99, True, "annualized_rate_of_return"),
     ("max_dd", 98, True, "max_drawdown"),
     ("backtest", 97, True, "backtest_days"),
@@ -49,6 +51,30 @@ SCORE_METRICS = [
     ("t2w", 11, True, "trailing_two_week_return"),
     ("kurtosis", 10, False, "kurtosis"),
 ]
+
+# The Simplified model (V1.18). Five metrics, 100 points, 35 of them on the one
+# figure a backtest cannot flatter. The fifth element is the peer-group function:
+# a metric that carries one is percentiled inside its group rather than across
+# the pool, and a row whose group is None is left out of the ranking entirely.
+OOS_SERIES = json.loads(OOS.read_text(encoding="utf-8"))["series"] if OOS.exists() else {}
+OOS_TIER_FLOOR_DAYS = 365
+
+
+def oos_group(e):
+    r = OOS_SERIES.get(e.get("symphony_id"))
+    d = r and r.get("oos_calendar_days")
+    if not isinstance(d, (int, float)):
+        return None
+    return "730+" if d >= 730 else ("365-729" if d >= 365 else "90-364")
+
+
+SIMPLIFIED_METRICS = [
+    ("oos_excess", 35, True, "@oos_excess", oos_group),
+    ("arr", 25, True, "annualized_rate_of_return"),
+    ("backtest", 15, True, "backtest_days"),
+    ("max_dd", 15, True, "max_drawdown"),
+    ("std_dev", 10, False, "standard_deviation"),
+]
 TIER_CUTS = [("S+", 0.0025), ("S", 0.10), ("A", 0.20), ("B", 0.50), ("C", 0.75)]
 
 # The trailing windows, longest first, with the calendar days of OOS history a
@@ -60,6 +86,9 @@ WINDOWS = [
     ("1m", "trailing_one_month_return", 30, 21),
     ("2w", "trailing_two_week_return", 14, 10),
 ]
+
+TIER_CUTS_ORDER = {label: i for i, (label, _q) in enumerate(TIER_CUTS)}
+TIER_CUTS_ORDER["F"] = len(TIER_CUTS)
 
 TODAY = dt.date.today()
 
@@ -91,6 +120,10 @@ def eligible(entries):
 def value_of(e, field):
     if field == "@oos_days":
         return oos_days(e)
+    if field == "@oos_excess":
+        r = OOS_SERIES.get(e.get("symphony_id"))
+        v = r and r.get("excess_return")
+        return v if isinstance(v, (int, float)) else None
     v = e.get(field)
     return v if isinstance(v, (int, float)) else None
 
@@ -104,27 +137,66 @@ def score_pool(pool, metrics):
     does, so a run of identical values all score the same rather than being
     ordered arbitrarily by input position."""
     parts = [{} for _ in pool]
-    for key, cap, higher, field in metrics:
-        vals = [(i, value_of(e, field)) for i, e in enumerate(pool)]
-        vals = [(i, v) for i, v in vals if v is not None]
-        n = len(vals)
-        if not n:
-            continue
-        vals.sort(key=lambda t: t[1])
-        i = 0
-        while i < n:
-            j = i
-            while j + 1 < n and vals[j + 1][1] == vals[i][1]:
-                j += 1
-            pct = ((i + j) / 2.0) / (n - 1) if n > 1 else 0.5
-            if not higher:
-                pct = 1 - pct
-            p = points(pct, cap)
-            for k in range(i, j + 1):
-                parts[vals[k][0]][key] = p
-            i = j + 1
+    for m in metrics:
+        key, cap, higher, field = m[0], m[1], m[2], m[3]
+        group_fn = m[4] if len(m) > 4 else None
+        buckets = {}
+        for i, e in enumerate(pool):
+            v = value_of(e, field)
+            if v is None:
+                continue
+            g = group_fn(e) if group_fn else ""
+            if g is None:
+                continue
+            buckets.setdefault(g, []).append((i, v))
+        for vals in buckets.values():
+            n = len(vals)
+            if not n:
+                continue
+            vals.sort(key=lambda t: t[1])
+            i = 0
+            while i < n:
+                j = i
+                while j + 1 < n and vals[j + 1][1] == vals[i][1]:
+                    j += 1
+                pct = ((i + j) / 2.0) / (n - 1) if n > 1 else 0.5
+                if not higher:
+                    pct = 1 - pct
+                p = points(pct, cap)
+                for k in range(i, j + 1):
+                    parts[vals[k][0]][key] = p
+                i = j + 1
     scores = [round(sum(p.values()) * 10) / 10.0 for p in parts]
     return scores, parts
+
+
+def tiers_for(pool, scores, floor=False):
+    """Tier label per pool index, mirroring computeTiers in database.html: cuts
+    by rank with ties rounding up, then the out-of-sample floor demoting S+ and
+    S to A without touching rank."""
+    order = sorted(range(len(pool)), key=lambda i: -scores[i])
+    n = len(order)
+    cuts = [max(1, round(q * n)) for _label, q in TIER_CUTS]
+    for k in range(len(cuts)):
+        j = min(cuts[k], n) - 1
+        boundary = scores[order[j]]
+        while j + 1 < n and scores[order[j + 1]] == boundary:
+            j += 1
+        cuts[k] = j + 1
+        if k > 0 and cuts[k] < cuts[k - 1]:
+            cuts[k] = cuts[k - 1]
+    out = {}
+    ci = 0
+    for r, i in enumerate(order):
+        while ci < len(cuts) and r >= cuts[ci]:
+            ci += 1
+        t = TIER_CUTS[ci][0] if ci < len(TIER_CUTS) else "F"
+        if floor and t in ("S+", "S"):
+            d = oos_days(pool[i])
+            if d is None or d < OOS_TIER_FLOOR_DAYS:
+                t = "A"
+        out[i] = t
+    return order, out
 
 
 def quantile(sorted_xs, q):
@@ -166,8 +238,8 @@ def section(title):
 
 def main():
     pool = eligible(load_entries())
-    scores, _parts = score_pool(pool, SCORE_METRICS)
-    total = sum(m[1] for m in SCORE_METRICS)
+    scores, _parts = score_pool(pool, ADVANCED_METRICS)
+    total = sum(m[1] for m in ADVANCED_METRICS)
     order = sorted(range(len(pool)), key=lambda i: -scores[i])
     ranked = sorted(scores, reverse=True)
     print("eligible pool: %d rows, scored out of %d, as of %s"
@@ -220,8 +292,8 @@ def main():
     # ---- redundancy: are we paying for the same ordering more than once ----
     section("Most redundant metric pairs (Spearman)")
     cols = {key: [value_of(e, field) for e in pool]
-            for key, _cap, _hi, field in SCORE_METRICS}
-    keys = [m[0] for m in SCORE_METRICS]
+            for key, _cap, _hi, field in ADVANCED_METRICS}
+    keys = [m[0] for m in ADVANCED_METRICS]
     pairs = []
     for a in range(len(keys)):
         for b in range(a + 1, len(keys)):
@@ -239,8 +311,8 @@ def main():
     base_rank = {j: r for r, j in enumerate(order)}
     top500 = order[:500]
     rows = []
-    for key, cap, _hi, _field in SCORE_METRICS:
-        s2, _ = score_pool(pool, [m for m in SCORE_METRICS if m[0] != key])
+    for key, cap, _hi, _field in ADVANCED_METRICS:
+        s2, _ = score_pool(pool, [m for m in ADVANCED_METRICS if m[0] != key])
         o2 = sorted(range(len(pool)), key=lambda i: -s2[i])
         r2 = {j: r for r, j in enumerate(o2)}
         move = sum(abs(r2[j] - base_rank[j]) for j in top500) / len(top500)
@@ -263,6 +335,66 @@ def main():
             c = sum(1 for x in scores if x >= cut)
             print("  %-16d %-10d %9.1f %11d %7.1f%%"
                   % (depth, weight, cut, c, 100.0 * c / len(pool)))
+
+    # ---- the Simplified model as shipped (V1.18) ----
+    section("Simplified model (V1.18): coverage, ties, tiers, and disagreement")
+    if not OOS_SERIES:
+        print("  data/oos.json is missing or empty, skipping")
+    else:
+        s_scores, s_parts = score_pool(pool, SIMPLIFIED_METRICS)
+        s_order, s_tier = tiers_for(pool, s_scores, floor=True)
+        a_order, a_tier = tiers_for(pool, scores, floor=False)
+        s_total = sum(m[1] for m in SIMPLIFIED_METRICS)
+
+        have = sum(1 for e in pool if e.get("symphony_id") in OOS_SERIES)
+        print("  out-of-sample rows: %d of %d in the pool (%.1f%%), scored out of %d"
+              % (have, len(pool), 100.0 * have / len(pool), s_total))
+        groups = Counter(oos_group(e) for e in pool)
+        for g in ("90-364", "365-729", "730+", None):
+            print("    group %-8s %5d" % (g if g else "none", groups.get(g, 0)))
+
+        # The open question from the design session: does a five-metric model
+        # leave the top of the table full of shared scores?
+        top100 = [s_scores[i] for i in s_order[:100]]
+        dupes = sum(c - 1 for c in Counter(top100).values() if c > 1)
+        print("  ties in the top 100: %d rows share a rounded score with another"
+              % dupes)
+        top500 = [s_scores[i] for i in s_order[:500]]
+        print("  ties in the top 500: %d"
+              % sum(c - 1 for c in Counter(top500).values() if c > 1))
+
+        # What the 365-day floor actually costs.
+        blocked = sum(1 for r, i in enumerate(s_order[:max(1, round(0.10 * len(pool)))])
+                      if s_tier[i] == "A")
+        print("  demoted to A by the %d-day floor, inside the top 10%%: %d"
+              % (OOS_TIER_FLOOR_DAYS, blocked))
+        print("  tier counts: %s"
+              % ", ".join("%s %d" % (t, c) for t, c in
+                          sorted(Counter(s_tier.values()).items(),
+                                 key=lambda kv: TIER_CUTS_ORDER.get(kv[0], 9))))
+
+        # How much are the two models actually saying differently?
+        s_rank = {i: r for r, i in enumerate(s_order)}
+        a_rank = {i: r for r, i in enumerate(a_order)}
+        rel = [i for i in range(len(pool))
+               if min(s_rank[i], a_rank[i]) < 500]
+        agree = sum(1 for i in rel if abs(a_rank[i] - s_rank[i]) <= 50)
+        print("  top-500 union: %d rows, %d within 50 places of each other (%.0f%%)"
+              % (len(rel), agree, 100.0 * agree / max(1, len(rel))))
+        print("  rank correlation over the whole pool: %+.3f"
+              % spearman([s_scores[i] for i in range(len(pool))],
+                         [scores[i] for i in range(len(pool))]))
+
+        section("Simplified top 20")
+        for r, i in enumerate(s_order[:20]):
+            e = pool[i]
+            row = OOS_SERIES.get(e.get("symphony_id")) or {}
+            ex = row.get("excess_return")
+            print("  %-3d %-6.1f %-3s %5sd %9s  %s"
+                  % (r + 1, s_scores[i], s_tier[i],
+                     row.get("oos_calendar_days", "-"),
+                     ("%+.1fpp" % (100 * ex)) if isinstance(ex, float) else "no data",
+                     (e.get("name") or "")[:44]))
 
     # ---- the rows anyone will actually look at ----
     section("Current top 20")

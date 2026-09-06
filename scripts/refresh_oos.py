@@ -41,8 +41,13 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+# ADVANCED_METRICS, not the Simplified set: the candidate cutoff has to be
+# derived from the IN-SAMPLE model, because the out-of-sample pillar is the
+# thing this script is about to go and fetch. Scoring the candidate set on a
+# model that already reads data/oos.json would make the selection depend on
+# whatever the last run happened to cover.
 from analyze_leaderboard import (  # noqa: E402  (path set above)
-    SCORE_METRICS, eligible, load_entries, oos_days, score_pool,
+    ADVANCED_METRICS, eligible, load_entries, oos_days, score_pool,
 )
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -79,11 +84,14 @@ CHECKPOINT_EVERY = 10
 PROTECT_TOP = 250
 PILLAR_WEIGHT = 300
 
-# Below this there is no out-of-sample record worth measuring: a handful of days
-# produces statistics that are noise dressed as evidence, and such a row cannot
-# clear the 365-day tier floor anyway. It scores zero, which is what the model
-# already does with missing data everywhere else.
-MIN_OOS_DAYS = 30
+# Below this there is no out-of-sample record worth measuring. Raised from 30 to
+# 90 on 2026-09-06 when the model shape settled: the Simplified model puts 35 of
+# its 100 points on a single out-of-sample number, and a four-week record is too
+# thin a thing to hang that much on. It was also the noisiest duration group by a
+# distance. Those rows score zero on the pillar, which is what the model already
+# does with missing data everywhere else, and they cannot clear the 365-day tier
+# floor in any case.
+MIN_OOS_DAYS = 90
 
 # Fields kept from the API's 27. Deliberately wider than any single candidate
 # model needs, so settling the model shape does not mean refetching 3,000 rows.
@@ -174,7 +182,7 @@ def check_window(result, want_start, want_end):
 def select_candidates(pool):
     """The rows worth spending a call on, best first so a run cut short has
     still covered the top of the board."""
-    scores, _parts = score_pool(pool, SCORE_METRICS)
+    scores, _parts = score_pool(pool, ADVANCED_METRICS)
     ranked = sorted(scores, reverse=True)
     cutoff = ranked[min(PROTECT_TOP, len(ranked)) - 1] - PILLAR_WEIGHT
     picked = [(scores[i], e) for i, e in enumerate(pool)

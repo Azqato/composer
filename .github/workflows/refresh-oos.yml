@@ -1,0 +1,54 @@
+name: Refresh Out-of-Sample Stats
+
+on:
+  schedule:
+    # 03:07 UTC Wednesday. Deliberately a different day from
+    # refresh-full-database.yml (Sunday) rather than a different hour: that job
+    # runs 4.5 to 5 hours against GitHub's 6-hour ceiling, and two long API jobs
+    # on the same day against the same host is a queue nobody asked for. Offset
+    # 7 minutes past the hour for the same reason as every other job here, the
+    # on-the-hour slot is GitHub's most congested.
+    #
+    # Wednesday also puts this AFTER Sunday's full refresh, which is the order
+    # that matters: the candidate set is derived from in-sample scores, so it
+    # should be derived from the freshest ones.
+    - cron: '7 3 * * 3'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-oos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # Same per-step cap and continue-on-error shape as the full refresh, and
+      # for the same reason: refresh_oos.py checkpoints every 10 rows and
+      # resumes from what is already on disk, so a cancelled step commits its
+      # progress instead of throwing it away. The candidate set is roughly 3,200
+      # calls at the 2-second throttle, about 1.8 hours, so the cap is slack
+      # rather than a real constraint. It exists for the week the pool grows.
+      - name: Run refresh_oos.py
+        timeout-minutes: 300
+        continue-on-error: true
+        run: python scripts/refresh_oos.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/oos.json data/oos.js
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: refresh out-of-sample stats"
+            git push
+          fi
