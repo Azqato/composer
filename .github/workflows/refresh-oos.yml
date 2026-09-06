@@ -2,17 +2,27 @@ name: Refresh Out-of-Sample Stats
 
 on:
   schedule:
-    # 03:07 UTC Wednesday. Deliberately a different day from
-    # refresh-full-database.yml (Sunday) rather than a different hour: that job
-    # runs 4.5 to 5 hours against GitHub's 6-hour ceiling, and two long API jobs
-    # on the same day against the same host is a queue nobody asked for. Offset
-    # 7 minutes past the hour for the same reason as every other job here, the
-    # on-the-hour slot is GitHub's most congested.
+    # 03:07 UTC Saturday, which is Friday 8:07pm Pacific in summer and 7:07pm
+    # in winter. GitHub cron is UTC only and does not follow daylight saving, so
+    # the local time moves by an hour twice a year; nothing here cares.
+    # Owner's choice, 2026-09-06. Offset 7 minutes past the hour for the same
+    # reason as every other job here, the on-the-hour slot is GitHub's most
+    # congested.
     #
-    # Wednesday also puts this AFTER Sunday's full refresh, which is the order
-    # that matters: the candidate set is derived from in-sample scores, so it
-    # should be derived from the freshest ones.
-    - cron: '7 3 * * 3'
+    # Still a different DAY from refresh-full-database.yml (Sunday 01:07 UTC)
+    # rather than a different hour, which is the part that matters: that job
+    # runs 4.5 to 5 hours against GitHub's 6-hour ceiling, and two long API jobs
+    # on the same day against the same host is a queue nobody asked for. This
+    # one finishes around 05:50 UTC Saturday, roughly 19 hours clear of it.
+    #
+    # It now runs BEFORE the full refresh rather than after, so the candidate
+    # set is derived from in-sample scores up to six days old. That is fine and
+    # was checked rather than assumed: the cutoff carries a 300-point margin
+    # below the protected ranks, and week-to-week score movement is nowhere near
+    # that. The cost is freshness of the window end, not correctness of the
+    # selection: data/prices.json is refreshed Monday, so the out-of-sample
+    # window ends on the Friday close about a week before each run.
+    - cron: '7 3 * * 6'
   workflow_dispatch:
 
 permissions:
