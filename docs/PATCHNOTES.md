@@ -5,6 +5,72 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.73.3] - 2026-09-06
+
+No visible site change. This is the data pipeline half of V1.18, shipped ahead
+of the leaderboard that consumes it.
+
+### Added
+
+- **`scripts/refresh_oos.py` and `.github/workflows/refresh-oos.yml`.** The
+  script backtests each candidate strategy over its out-of-sample period alone,
+  passing `start_date` set to the symphony's last logic edit, and writes
+  `data/oos.json` and its `.js` twin. The candidate set is derived from the
+  scoring pillar's own weight rather than chosen: a row further below the rank
+  cutoff than the pillar is worth cannot reach the protected ranks however good
+  its out-of-sample record, so it needs no call. That is 3,232 of 6,681 eligible
+  rows, roughly 2.7 hours at the existing 2-second throttle.
+- **A window assertion in the refresh script.** The Composer backtest endpoint
+  honours `start_date` and `end_date` but **silently ignores `start` and
+  `end`**, returning the full backtest with a 200 and no warning. A script using
+  the wrong key would appear to work and would publish in-sample numbers
+  labelled out-of-sample, which is the worst thing this feature could produce.
+  The response carries `first_day` and `last_market_day`, so the script checks
+  the window it got against the window it asked for and discards the row
+  otherwise.
+- The 497 rows fetched so far are committed, so the job resumes rather than
+  restarting. It checkpoints every 10 rows and reads what is on disk at startup.
+
+### Changed
+
+- **The three weekly jobs now run in dependency order on three consecutive
+  evenings:** prices Friday 7:07pm Pacific, full database Saturday 6:07pm,
+  out-of-sample Sunday 8:07pm. Each stage reads what the one before it wrote,
+  and the previous arrangement had that backwards.
+  - Prices moved from Saturday 08:07 UTC to Saturday 02:07 UTC. The Friday close
+    lands at 1pm Pacific, so a Friday evening run picks it up the same day
+    instead of waiting a night.
+  - Out-of-sample settled at Monday 03:07 UTC. It is downstream of both inputs
+    there: the full refresh finishes about 21 hours earlier, and `prices.json`
+    carries Friday's close two days before it is read. That measurement window
+    lagged about a week under the arrangement briefly tried earlier the same
+    day, and now lags two days.
+  - The full database refresh is unchanged at Sunday 01:07 UTC; that slot
+    already sat in the right place. Every one of the three workflow files now
+    names its own position in the chain, so the next person to move one has a
+    reason to check the other two.
+  - No two jobs overlap, which matters because two of them are long API jobs
+    against the same unauthenticated host. GitHub cron is UTC only, so all three
+    drift an hour earlier in Pacific terms each winter, which nothing depends on.
+- `scripts/analyze_leaderboard.py` mirrors both scoring models, including
+  peer-group percentiling and the tier floor. Its `SCORE_METRICS` is now
+  `ADVANCED_METRICS`.
+
+### Fixed
+
+- **`refresh_oos.py` would have died at module load on its first scheduled run.**
+  The analyser rename above broke its import, and no gate catches it because
+  nothing in CI imports that script. Found by resuming the fetch by hand, which
+  is the only reason it was not discovered by a silent Sunday failure.
+- **Concurrent runs of `refresh_oos.py` silently discarded each other's rows.**
+  The script holds the whole store in memory and rewrites the file at every
+  checkpoint, so two processes going at once leave only one's work behind, and
+  the row count goes backwards. Observed locally with two running. The workflow
+  now declares a `concurrency` group so a manual dispatch queues behind the
+  scheduled run instead of racing it.
+
+---
+
 ## [1.73.2] - 2026-09-03
 
 Documentation only, no site change.

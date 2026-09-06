@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.73.2
+**Version:** 1.73.3
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -870,6 +870,37 @@ git push origin main
 **symphony_scores.json is for AI analysis only**: it is not served to the website. It contains the full EDN logic tree for each symphony, used to explain strategy logic in future conversations.
 
 ---
+
+### The weekly data pipeline, and why it runs in this order
+
+Three scheduled jobs feed each other, and since 2026-09-06 they run on three consecutive evenings in
+dependency order. Each stage reads what the one before it wrote, so **moving any of the three means
+checking the other two.** Each workflow file names its own position in the chain for exactly that
+reason.
+
+| Order | Workflow | Cron (UTC) | Pacific | Runtime | Writes | Read by |
+|---|---|---|---|---|---|---|
+| 1 | `refresh-prices.yml` | `7 2 * * 6` Sat 02:07 | Fri 7:07pm | ~90s | `data/prices.json` | Signal Miner, `refresh-oos.py` |
+| 2 | `refresh-full-database.yml` | `7 1 * * 0` Sun 01:07 | Sat 6:07pm | 4.5-5 h | `database_summary.json` | the site, `refresh_oos.py` |
+| 3 | `refresh-oos.yml` | `7 3 * * 1` Mon 03:07 | Sun 8:07pm | ~2.7 h | `data/oos.json` | the Leaderboard |
+
+**Why prices go first.** The Friday close lands at 1pm Pacific, so a Friday evening run picks it up
+the same day rather than waiting a night. Everything downstream is that much fresher.
+
+**Why out-of-sample goes last.** It has two inputs and this slot is downstream of both. Its candidate
+set is derived from the in-sample scores the full refresh writes, and its measurement window ends on
+the last date in `prices.json`. Under the schedule it briefly held on 2026-09-06 (OOS on Friday) that
+window lagged about a week; in this order it lags two days.
+
+**No two jobs overlap**, which matters because two of them are long API jobs against the same
+unauthenticated host at the same 2-second throttle. Prices is short; the full refresh runs 01:07 to
+about 06:07 UTC Sunday; out-of-sample runs 03:07 to about 05:50 UTC Monday. GitHub cron is UTC only
+and does not follow daylight saving, so all three drift an hour earlier in Pacific terms each winter.
+Nothing in the chain depends on the local hour.
+
+**A caveat that applies to all three:** GitHub's scheduler is best-effort on public repositories.
+Runs are frequently late and can be dropped entirely. Every job here checkpoints and resumes, so a
+missed run costs freshness rather than data.
 
 ### Updating the Full Database (Script, Automated)
 
@@ -1825,7 +1856,7 @@ database is ever inferred from a ticker symbol or a fund's name.
 
 **Partial-history tickers.** Seven funds list after the 2018 start and so carry `null` for their early rows: ETHA (24% coverage), IBIT (30%), SVIX (51%), KMLM, GDXU, GDXD (66% each) and DBMF (84%). They are kept deliberately, but any signal built on them is fit to a shorter sample, and the default Min Time in Market floor of 15% is still too low to screen that out. `signal-miner.html` marks anything below 90% coverage with a dashed chip border and a "limited history" tooltip.
 
-**Refresh cadence:** `refresh_prices.py` runs weekly via `.github/workflows/refresh-prices.yml` (cron `7 8 * * 6`, i.e. 08:07 UTC every Saturday, while markets are closed; plus `workflow_dispatch` for manual runs). Weekly is deliberate: Signal Miner is a research tool over multi-year history, so a slightly stale end date barely affects any signal's metrics. The script takes ~80s to fetch all 72 tickers (a 1s delay between calls dominates); the full Action runs in ~75-90s. If the workflow is ever disabled, the tool keeps working on the last committed snapshot. The page surfaces the `refreshed_at` date in the hero and footer meta so staleness is always visible.
+**Refresh cadence:** `refresh_prices.py` runs weekly via `.github/workflows/refresh-prices.yml` (cron `7 2 * * 6`, i.e. 02:07 UTC Saturday, which is **Friday 7:07pm Pacific**, after the Friday close and while markets are closed; plus `workflow_dispatch` for manual runs). Moved there from 08:07 UTC Saturday on 2026-09-06 so it leads the weekly pipeline chain rather than trailing it, see "The weekly data pipeline" in Section 4. Weekly is deliberate: Signal Miner is a research tool over multi-year history, so a slightly stale end date barely affects any signal's metrics. The script takes ~80s to fetch all 72 tickers (a 1s delay between calls dominates); the full Action runs in ~75-90s. If the workflow is ever disabled, the tool keeps working on the last committed snapshot. The page surfaces the `refreshed_at` date in the hero and footer meta so staleness is always visible.
 
 ### Signal Miner Runtime Behavior
 
@@ -3039,11 +3070,12 @@ now superseded, because **the Composer backtest endpoint accepts a date range an
 **Decided: the benchmark is already in the repo, so it costs nothing.** The section above records
 that "SPY appears nowhere in the dataset" and treats storing a benchmark as a real scope addition.
 That is true of `database_summary.json` only. **`data/prices.json` carries SPY daily closes from
-2010-01-04**, refreshed every Saturday by `.github/workflows/refresh-prices.yml` for the Signal
+2010-01-04**, refreshed weekly by `.github/workflows/refresh-prices.yml` for the Signal
 Miner, and the site already ships it. No new API, no new field, no new cadence. One alignment rule
-falls out of this: the API runs through today while `prices.json` ends on the Saturday refresh, so
-the OOS request must pass **`end_date` equal to the last date in `prices.json`** and land both sides
-on the same day.
+falls out of this: the API runs through today while `prices.json` ends at the last price refresh,
+so the OOS request must pass **`end_date` equal to the last date in `prices.json`** and land both
+sides on the same day. (The price job moved to Friday evening on 2026-09-06 so that this lag is two
+days rather than a week; see "The weekly data pipeline" in Section 4.)
 
 **Decided (owner, 2026-09-03): rows under a year of OOS time are percentiled within their duration
 group,** rather than annualised or excluded. A symphony with 120 untouched days is ranked against
