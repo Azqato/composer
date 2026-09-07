@@ -166,7 +166,9 @@ def score_pool(pool, metrics):
                 for k in range(i, j + 1):
                     parts[vals[k][0]][key] = p
                 i = j + 1
-    scores = [round(sum(p.values()) * 10) / 10.0 for p in parts]
+    # Unrounded, matching database.html: the page ranks on the full precision
+    # and rounds only for display. Rounding before the sort invents ties.
+    scores = [sum(p.values()) for p in parts]
     return scores, parts
 
 

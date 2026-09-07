@@ -46,8 +46,32 @@ Format: `[VERSION] - YYYY-MM-DD`
 - `scripts/analyze_leaderboard.py` mirrors both models, including the peer-group
   percentiling and the tier floor.
 
+### Fixed
+
+- **The Leaderboard was sorting on the score it displays rather than the score
+  it computes**, and the rounding to one decimal was manufacturing ties that the
+  model never produced. Ranking on the full precision drops shared scores in the
+  top 100 from 59 to 14, and in the top 500 from 396 to 101, without changing a
+  single weight, cut or rule. This was pre-existing and applies to both models.
+  Every one of the 14 remaining ties is a near-duplicate strategy re-uploaded
+  under a different name, carrying identical statistics and deserving an
+  identical score, so no tie-break rule ships. A leaderboard that sorts on a
+  rounded number invents ties it then has to explain.
+
 ### Notes
 
+- The first full out-of-sample run covered **3,175 of 6,676 eligible strategies**
+  (616 with 90 to 364 days of untouched history, 905 with 365 to 729, 1,654 with
+  730 or more). The rest score zero on that pillar by design: they sit further
+  below the cutoff than the pillar is worth, so no amount of out-of-sample
+  performance could lift them into the ranks anyone reads. 94 candidates, about
+  2.9%, returned nothing and are retried on the next weekly run.
+- **The two models agree broadly and disagree almost entirely at the top**, which
+  is what makes carrying both worthwhile. Rank correlation across the pool is
+  +0.816, but of the 845 strategies reaching either model's top 500, only 51 land
+  within 50 places of each other. The Advanced model's number one has 180 days
+  out of sample; the Simplified model's has 619 days and a +104pp record against
+  SPY.
 - The Screener's Rank, Score and Tier columns, its tier filter, and the strategy
   pages all read the **Simplified** model and only that one. The toggle is a
   Leaderboard view, not a site-wide mode: a strategy's rank means one thing

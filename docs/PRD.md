@@ -3204,6 +3204,55 @@ up front on the same pool in `recomputeGlobalRanking`, so switching is a re-rend
 most between the two models, restricted to rows reaching the top 500 of either. Two models that agreed
 everywhere would not be worth carrying two of, and this is the view that says what the second one buys.
 
+#### The tie question, answered by measurement 2026-09-07
+
+The design session predicted that a five-metric model would leave the top of the table full of shared
+scores, and that the 35-point excess metric would break most of them. **Both halves of that were
+wrong, and the real cause was somewhere else entirely.**
+
+Against the full 3,175-row dataset, 59 of the top 100 shared a score. But the page was sorting on the
+score it *displays*, rounded to one decimal, rather than the score it *computes*. Ranking on the
+unrounded total instead drops that to **14 of the top 100**, with no change to any weight, cut or
+rule:
+
+| | top 20 | top 100 | top 500 |
+|---|---|---|---|
+| Ties when sorting on the rounded score | 8 | 59 | 396 |
+| Ties when sorting on the real score | 2 | **14** | 101 |
+
+**And the residual ties should not be broken.** Every one of the 14 is a near-duplicate: the same
+strategy re-uploaded under a different name, so it carries identical statistics and earns an
+identical score. "Copy of Hedged Sector Rotator w/cs" and "JM465 - Copy of Copy of Hedged Sector
+Rotator", "DeETF FTLT | 2013-01-09" and "TESTPORT #179: DeETF FTLT | 2013-01-09". Ordering those
+against each other would be arbitrary noise presented as a judgement.
+
+**So no published tie-break rule ships**, which is the outcome to prefer: a rule that fires only on
+copies of the same strategy would add a paragraph of methodology to explain a distinction that does
+not exist. The lesson worth keeping is more general than this item, and is the reason it is recorded
+here rather than in a commit message alone: **a leaderboard that sorts on a rounded number is
+inventing ties it then has to explain.** Round for display, rank on what you computed.
+
+The remaining duplicate-detection question, that these copies are not caught by the `duplicate` flag
+because they are separate `symphony_id`s with different names, is a pre-existing dedupe concern and
+is deliberately out of scope here.
+
+#### What the first full run actually measured
+
+| | |
+|---|---|
+| Rows with an out-of-sample record | 3,175 of 6,676 eligible (47.6%) |
+| By duration group | 616 at 90-364 days, 905 at 365-729, 1,654 at 730+ |
+| Candidates that returned nothing | 94 of 3,267, about 2.9%, retried on the next run |
+| Demoted to A by the 365-day floor, inside the top 10% | 112 |
+| Tier counts | S+ 16, S 540, A 779, B 2,003, C 1,669, F 1,669 |
+| Rank correlation between the two models | +0.816 across the pool |
+| Of the 845 rows reaching either model's top 500 | only 51, 6%, land within 50 places of each other |
+
+That last row is the one that justifies carrying two models rather than one. The two agree broadly
+across the whole pool and disagree almost completely at the top, which is exactly where anyone
+actually looks. The Advanced model's number one has 180 days out of sample; the Simplified model's
+has 619 days and a +104pp record against SPY.
+
 #### Open questions to settle before building
 
 1. ~~Is the target OOS *return*, OOS *return against SPY*, or both?~~ **Overtaken by the API
@@ -3238,13 +3287,10 @@ everywhere would not be worth carrying two of, and this is the view that says wh
   runs. See "The weekly data pipeline" in Section 4
 - [x] Rework the scoring model in `database.html`: two models behind a toggle, model-aware breakdown
   and Methodology modals, and a Model diff view (2026-09-06)
-- [ ] Ship: this waits on the first complete run of `scripts/refresh_oos.py`. Publishing the
-  Simplified model against a partial `data/oos.json` would rank the pool on a pillar almost nobody
-  has data for, which is worse than not shipping it
-- [ ] Re-validate against the live pool before shipping, including the symphony named publicly
-- [ ] Settle the tie question with full data. Measured against a 3% partial fetch, 31 rows in the top
-  100 shared a rounded score. The prediction is that a fully populated 35-point excess metric breaks
-  most of them; if it does not, a published tie-break rule is needed
+- [x] Ship: the first complete run landed 2026-09-07 01:02 UTC, 3,175 rows
+- [x] Re-validate against the live pool before shipping (2026-09-07)
+- [x] Settle the tie question with full data (2026-09-07). See below: the prediction was wrong, the
+  cause was rounding rather than the model, and no tie-break rule is needed
 
 ### V1.19: K1 Lookup
 

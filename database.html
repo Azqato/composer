@@ -1237,21 +1237,28 @@
         });
       });
 
+      // `raw` orders the board, `score` is what the board shows. Rounding to
+      // one decimal before sorting was manufacturing ties that the model had
+      // not actually produced: measured on the full pool, 59 of the top 100
+      // shared a rounded score and only 14 shared a real one. Those 14 are all
+      // near-duplicate strategies, the same logic re-uploaded under a different
+      // name, which genuinely deserve the same score, so no tie-break rule is
+      // needed once the false ties are gone. See docs/PRD.md V1.18.
       return entries.map((e, i) => {
         const pts = ptsByIdx[i];
         const total = model.metrics.reduce((s, m) => s + (pts[m.key] || 0), 0);
-        return { entry: e, score: Math.round(total * 10) / 10, fieldsPresent: Object.keys(pts).length, parts: pts };
+        return { entry: e, raw: total, score: Math.round(total * 10) / 10, fieldsPresent: Object.keys(pts).length, parts: pts };
       });
     }
 
     function computeTiers(scored, model) {
-      const ranked = scored.slice().sort((a, b) => b.score - a.score);
+      const ranked = scored.slice().sort((a, b) => b.raw - a.raw);
       const n = ranked.length;
       const cuts = TIER_CUTS.map(c => Math.max(1, Math.round(c[1] * n)));
       for (let k = 0; k < cuts.length; k++) {
         let j = Math.min(cuts[k], n) - 1;
-        const boundary = ranked[j].score;
-        while (j + 1 < n && ranked[j + 1].score === boundary) j++; // ties round up
+        const boundary = ranked[j].raw;
+        while (j + 1 < n && ranked[j + 1].raw === boundary) j++; // ties round up
         cuts[k] = j + 1;
         if (k > 0 && cuts[k] < cuts[k - 1]) cuts[k] = cuts[k - 1];
       }
