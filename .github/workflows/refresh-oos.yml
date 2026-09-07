@@ -65,11 +65,20 @@ jobs:
         continue-on-error: true
         run: python scripts/refresh_oos.py
 
+      # overfit.json is derived from database.json and oos.json together, so it
+      # is rebuilt in both jobs that write either one. Skipping it here would
+      # leave the Overfit Check page reporting last week's population figures
+      # against this week's database, with nothing to catch the mismatch: it is
+      # a derived file with no deploy gate, unlike strategy_extras above.
+      - name: Rebuild overfit.json/.js
+        if: always()
+        run: python scripts/build_overfit.py
+
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/oos.json data/oos.js
+          git add data/oos.json data/oos.js data/overfit.json data/overfit.js
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else

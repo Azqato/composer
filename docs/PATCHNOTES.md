@@ -5,6 +5,77 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.75.0] - 2026-09-06
+
+**Overfit Check**, a new page at `/overfit.html`. Paste a symphony and find out
+how much of its backtest survived after its author stopped editing it. V2.4
+Tier 1; Tiers 2 and 3 remain specified and unbuilt.
+
+### Added
+
+- **The population finding, which the page leads with and which is true before
+  anyone pastes anything.** Across **5,228 symphonies** whose logic has gone at
+  least a year untouched, the median one was backtested at **+48.9%** a year and
+  actually returned **+16.1%** over the last twelve months. **20.5% delivered
+  the backtested return**, 37.2% delivered at least half, 76.4% at least made
+  money.
+- **The same question asked a second, stricter way, reported beside the first.**
+  The 3,175 true out-of-sample backtests from v1.74.0 re-run each symphony over
+  its untouched window alone, so nothing in the window was available to fit to.
+  Measured that way **only 4.0% keep their backtest**. Each cohort has a flaw
+  the other does not: the trailing figure's window overlaps the year it
+  measures, and the out-of-sample cohort was selected by in-sample score, so it
+  is roughly the stronger half of the database rather than all of it. The page
+  reports both and says which is which.
+- **The disagreement between them is the finding.** The stronger half of the
+  database promised more than twice as much, +101.2% a year against +48.9%, and
+  kept far less of it, 4.0% against 20.5%. A better-looking backtest is not
+  merely no better afterwards: it gives up more of what it showed you. It does
+  still end up ahead in absolute terms, +22.5% against +16.1%, which the page
+  states as the other half of the sentence.
+- **A lookup for any single symphony**, by URL or bare ID, using the converter's
+  ID extraction. It reports the backtested return, days since the last logic
+  edit, what actually happened, how much of the backtest that kept, the true
+  out-of-sample re-run where one exists, and the turnover quintile. **Nothing
+  pasted leaves the browser**: the lookup runs against data already downloaded
+  with the page. A symphony edited too recently to judge gets a refusal and a
+  date, not a weaker verdict dressed up as one.
+- **The turnover table.** Sorted into quintiles, the slowest-trading fifth is
+  the only cohort that keeps its backtest (-0.0 points). The fastest-trading
+  fifth promised +149.5% a year and delivered +6.2%, a gap of **-136.1 points**.
+  This replicated almost exactly against fresh data and a different cohort
+  definition than when it was first measured.
+- `scripts/build_overfit.py` and `data/overfit.json` / `.js`. Rebuilt by both
+  weekly jobs that write either of its two inputs, since it is a derived file
+  with no deploy gate to catch it going stale.
+- `/overfit` in the nav's Tools menu, the footer, and the homepage Explore grid,
+  which goes from nine cards to ten.
+
+### Notes
+
+- **No score out of 100**, deliberately. A composite invites the exact
+  optimisation the page exists to detect, and its weights would be
+  unfalsifiable.
+- **Turnover is an association, not a cause**, and the page says so. It could be
+  curve fitting or it could be slippage. Worth noting that the backtests here
+  already include modelled slippage and both fee types, so this is not the
+  trivial case of a backtest ignoring trading costs; real slippage exceeding the
+  model remains a live explanation and this data cannot separate the two.
+- **Return concentration is not used as a flag**, despite being on every curated
+  strategy page. Over 80% of symphonies get more than their entire return from
+  their best 5% of days, so as a flag it fires on four in five, and its
+  correlation with out-of-sample failure is near zero with an unstable sign.
+- **Backtest length, the tell everyone reaches for first, separates far less
+  cleanly than turnover.** The four shortest fifths all give up between 40 and
+  55 points and barely differ from each other. Only the longest fifth, ten years
+  and up, keeps its backtest, and it does that by promising +19.7% a year
+  instead of +62.9%.
+- The page states plainly that it rates overfitting using measures chosen by the
+  same people who chose which measures to keep, which is a version of the
+  problem it reports.
+
+---
+
 ## [1.74.0] - 2026-09-06
 
 ### Added

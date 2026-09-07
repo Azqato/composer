@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="How much of a Composer.trade backtest survives once its author stops editing it. Measured across thousands of symphonies, with a lookup for any one of them.">
+  <title>Overfit Check: Does the Backtest Survive: Composer Atlas</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .of-panel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .of-panel h2 { color: var(--color-primary); font-size: 1rem; font-weight: 600; margin: 0 0 12px; }
+    .of-panel h3 { color: var(--color-primary); font-size: 0.875rem; font-weight: 600; margin: 20px 0 8px; }
+    .of-note { font-size: 0.8125rem; color: var(--color-secondary); line-height: 1.7; margin-top: 14px; }
+    .of-note code { font-size: 0.75rem; }
+
+    /* The headline number. One figure, stated once, with its own caveat under it. */
+    .of-lede { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+    .of-lede .n { font-family: var(--font-mono); font-size: 3rem; line-height: 1; font-weight: 600; color: var(--color-pink); }
+    .of-lede .lbl { font-size: 1rem; color: var(--color-secondary); max-width: 30ch; }
+
+    table.of-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    table.of-table th, table.of-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--color-border); }
+    table.of-table th { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-disabled); font-weight: 600; }
+    table.of-table td.n, table.of-table th.n { text-align: right; font-family: var(--font-mono); }
+    table.of-table td.n { color: var(--color-primary); }
+    table.of-table tr.hi td { background: var(--color-surface-raised); }
+    table.of-table tr.hi td:first-child { font-weight: 600; }
+    .of-scroll { overflow-x: auto; }
+
+    .of-cols { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 720px) { .of-cols { grid-template-columns: 1fr 1fr; } }
+    .of-col { border: 1px solid var(--color-border); border-radius: 10px; padding: 16px; }
+    .of-col h3 { margin-top: 0; }
+    .of-col .tag { display: inline-block; font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; padding: 2px 8px; border-radius: 999px; margin-bottom: 10px; }
+    .of-col .tag.unbiased { background: var(--color-surface-raised); color: var(--color-green); border: 1px solid var(--color-border); }
+    .of-col .tag.biased { background: var(--color-surface-raised); color: var(--color-yellow); border: 1px solid var(--color-border); }
+
+    #of-in {
+      width: 100%; min-height: 74px; resize: vertical; box-sizing: border-box;
+      background: var(--color-bg); color: var(--color-primary);
+      border: 1px solid var(--color-border); border-radius: 8px; padding: 12px 14px;
+      font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.6;
+    }
+    #of-in:focus { outline: 2px solid var(--color-blue); outline-offset: -1px; }
+    .of-label { display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-primary); margin-bottom: 8px; }
+    .of-hint { font-size: 0.8125rem; color: var(--color-secondary); margin-bottom: 12px; line-height: 1.6; }
+    .of-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+    .of-msg { margin-top: 14px; font-size: 0.875rem; line-height: 1.6; }
+    .of-msg.err { color: var(--color-pink); }
+    .of-msg.info { color: var(--color-secondary); }
+
+    .of-name { font-size: 1rem; color: var(--color-primary); margin-bottom: 4px; }
+    .of-name .sub { color: var(--color-disabled); font-size: 0.75rem; display: block; margin-top: 4px; font-family: var(--font-mono); }
+    .of-row { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--color-border); font-size: 0.875rem; }
+    .of-row:last-child { border-bottom: none; }
+    .of-row .k { color: var(--color-secondary); }
+    .of-row .v { font-family: var(--font-mono); color: var(--color-primary); text-align: right; }
+    .of-row .v.pos { color: var(--color-green); }
+    .of-row .v.neg { color: var(--color-pink); }
+    .of-row .v.none { color: var(--color-disabled); }
+    .of-verdict { font-size: 0.9375rem; line-height: 1.7; color: var(--color-primary); margin: 0 0 14px; }
+    .of-quote { border-left: 2px solid var(--color-border); padding-left: 14px; color: var(--color-secondary); font-size: 0.875rem; line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="nav-root"></nav>
+
+  <div class="page">
+    <div class="container py-12">
+      <div id="breadcrumb-root"></div>
+
+      <div style="max-width:680px;margin-bottom:28px">
+        <h1 style="color:var(--color-primary);margin-bottom:8px">Overfit Check</h1>
+        <p style="color:var(--color-secondary);font-size:1.0625rem;line-height:1.6">
+          Overfitting is not a strategy looking strange. It is a strategy fitted to noise, and the
+          only real test is whether it keeps working on days nobody could tune it against. This site
+          records when every symphony's logic was last edited, so that test can actually be run.
+        </p>
+      </div>
+
+      <!-- Tier 1, part one: the population result, which is true before anyone pastes anything -->
+      <div class="of-panel">
+        <div class="of-lede">
+          <span class="n" id="of-lede-n">-</span>
+          <span class="lbl" id="of-lede-lbl">of symphonies still deliver their backtested annual return once the author stops editing</span>
+        </div>
+        <p class="of-note" id="of-lede-sub"></p>
+      </div>
+
+      <div class="of-panel">
+        <h2>Two ways of asking, and they disagree</h2>
+        <p class="of-note" style="margin-top:0">
+          The same question measured twice, because each measurement has a flaw the other does not.
+          Read them together rather than picking one.
+        </p>
+        <div class="of-cols" id="of-cohorts"></div>
+        <p class="of-note" id="of-cohort-note"></p>
+      </div>
+
+      <!-- Tier 1, part two: the lookup -->
+      <div class="of-panel">
+        <label class="of-label" for="of-in">Check one symphony</label>
+        <p class="of-hint">
+          A symphony URL like <code>https://app.composer.trade/symphony/4aI4kVT5cEc0XJpTLei3/details</code>,
+          or a bare ID. Nothing you paste leaves your browser: the lookup runs against data already
+          downloaded with this page.
+        </p>
+        <textarea id="of-in" spellcheck="false" placeholder="Paste a symphony URL or ID..."></textarea>
+        <div class="of-actions">
+          <button id="of-btn" class="btn btn-green">Check it</button>
+          <button id="of-example" class="btn btn-outline">Load example</button>
+          <button id="of-clear" class="btn btn-outline">Clear</button>
+        </div>
+        <div id="of-msg" class="of-msg"></div>
+      </div>
+
+      <div id="of-out" style="display:none"></div>
+
+      <div class="of-panel">
+        <h2>Turnover is what predicts a backtest not surviving</h2>
+        <p class="of-note" style="margin-top:0">
+          Every stored field was tested against what actually happened next, holding backtested
+          return roughly constant so the comparison is not just regression to the mean. Turnover won,
+          and nothing else came close. Nobody reaches for turnover when asked about overfitting.
+        </p>
+        <div class="of-scroll"><table class="of-table" id="of-turnover"></table></div>
+        <p class="of-note" id="of-turnover-note"></p>
+      </div>
+
+      <div class="of-panel">
+        <h2>What this cannot see</h2>
+        <div class="of-quote">
+          <ul style="margin:0;padding-left:18px">
+            <li><strong>This is out of sample with respect to editing, not a clean holdout.</strong>
+              It catches the author who kept adjusting until the curve looked right, which is how a
+              Composer symphony usually becomes overfit. It does not catch one fitted in a single
+              pass and never touched again.</li>
+            <li><strong>Turnover is an association, not a cause.</strong> High turnover could mean
+              curve fitting, or it could just mean trading costs and slippage eating the return.
+              Both stories predict the table above. The backtests here are already net of modelled
+              slippage and fees, so this is not simply a backtest ignoring costs, but real-world
+              slippage can still run ahead of the model, and this data cannot separate the two.</li>
+            <li><strong>Return concentration is not used here, deliberately.</strong> The share of
+              return coming from a strategy's best few days is a true and useful thing to know, and
+              it is on every curated strategy page. It does not predict out-of-sample failure: its
+              correlation is near zero and its sign is unstable. Over 80% of all symphonies get more
+              than their entire return from their best 5% of days, so as a flag it fires on four
+              strategies in five and tells you nothing.</li>
+            <li><strong>No score out of 100.</strong> A single composite number invites the exact
+              optimisation this page exists to detect, and its weights would be unfalsifiable.</li>
+            <li><strong>This page rates overfitting using measures chosen by the same people who
+              chose which measures to keep.</strong> That is a version of the problem it reports.
+              Saying so is cheap, so it is said.</li>
+          </ul>
+        </div>
+        <p class="of-note" id="of-meta"></p>
+      </div>
+
+    </div>
+  </div>
+
+  <footer id="footer-root"></footer>
+
+  <script src="js/app.js"></script>
+  <script src="data/overfit.js"></script>
+  <script>
+    (function () {
+      renderBreadcrumb('breadcrumb-root', [
+        { label: 'Home', href: u('/') },
+        { label: 'Overfit Check' },
+      ]);
+
+      var D = window.OVERFIT_DATA;
+      // Exercises every branch: over a year untouched, has a true out-of-sample
+      // re-run, and has a turnover figure. Its two measures also disagree, which
+      // is the point of showing both.
+      var EXAMPLE_ID = 'MmQbpf2U5TMQFmr9Nt2e';
+
+      function esc(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+      function pct(v, digits) {
+        if (typeof v !== 'number') return null;
+        return (v >= 0 ? '+' : '') + (100 * v).toFixed(digits === undefined ? 1 : digits) + '%';
+      }
+      function pts(v) {
+        if (typeof v !== 'number') return null;
+        return (v >= 0 ? '+' : '') + (100 * v).toFixed(1) + ' pts';
+      }
+      function n(v) { return typeof v === 'number' ? v.toLocaleString() : '-'; }
+
+      if (!D) {
+        document.getElementById('of-msg').className = 'of-msg err';
+        document.getElementById('of-msg').textContent =
+          'The data file did not load, so nothing on this page can be shown.';
+        return;
+      }
+
+      // ---- the population result ----
+      var T = D.cohorts.trailing, O = D.cohorts.true_oos;
+      document.getElementById('of-lede-n').textContent = T.delivered_full + '%';
+      document.getElementById('of-lede-sub').innerHTML =
+        'Across <strong>' + n(T.n) + '</strong> symphonies whose logic has gone at least a year ' +
+        'untouched, the median one was backtested at <strong>' + pct(T.median_backtest, 1) +
+        '</strong> a year and actually returned <strong>' + pct(T.median_actual, 1) + '</strong> ' +
+        'over the last twelve months. Roughly a third of what the backtest promised. ' +
+        n(T.delivered_half) + '% delivered at least half, and ' + n(T.positive) +
+        '% at least made money.';
+
+      var cohorts = [
+        {
+          tag: 'unbiased', tagLabel: 'Whole database',
+          title: 'Backtest against the last twelve months',
+          c: T,
+          why: 'Every symphony left alone for a year, weak ones included, so the figure describes ' +
+               'the database as it is. The flaw: the backtest window still overlaps the year being ' +
+               'measured, so this understates the gap.',
+          extra: ''
+        },
+        {
+          tag: 'biased', tagLabel: 'Stronger half only',
+          title: 'Backtest against a true out-of-sample re-run',
+          c: O,
+          why: 'Each of these was re-backtested over its untouched period alone, so the window ' +
+               'contains nothing the author could have fitted to. The flaw: these rows were picked ' +
+               'by backtest score for the Leaderboard, so they are roughly the stronger half of the ' +
+               'database and this is not a statement about all of it.',
+          extra: 'Median untouched window: ' + n(O.median_days) + ' days. ' +
+                 n(O.beat_spy) + '% beat SPY over that window.'
+        }
+      ];
+      document.getElementById('of-cohorts').innerHTML = cohorts.map(function (x) {
+        var c = x.c;
+        return '<div class="of-col">' +
+          '<span class="tag ' + x.tag + '">' + esc(x.tagLabel) + '</span>' +
+          '<h3>' + esc(x.title) + '</h3>' +
+          '<div class="of-row"><span class="k">Symphonies</span><span class="v">' + n(c.n) + '</span></div>' +
+          '<div class="of-row"><span class="k">Median backtested return</span><span class="v">' + pct(c.median_backtest) + '</span></div>' +
+          '<div class="of-row"><span class="k">Median actual return</span><span class="v">' + pct(c.median_actual) + '</span></div>' +
+          '<div class="of-row"><span class="k">Delivered their backtest</span><span class="v ' + (c.delivered_full >= 50 ? 'pos' : 'neg') + '">' + c.delivered_full + '%</span></div>' +
+          '<div class="of-row"><span class="k">Delivered at least half</span><span class="v">' + c.delivered_half + '%</span></div>' +
+          '<div class="of-row"><span class="k">Merely positive</span><span class="v">' + c.positive + '%</span></div>' +
+          '<p class="of-note">' + esc(x.why) + (x.extra ? ' ' + esc(x.extra) : '') + '</p>' +
+          '</div>';
+      }).join('');
+
+      document.getElementById('of-cohort-note').innerHTML =
+        '<strong>The disagreement is the finding.</strong> Measured properly out of sample, only ' +
+        O.delivered_full + '% keep their backtest rather than ' + T.delivered_full + '%. And note ' +
+        'which cohort that is: the stronger half of the database promised ' +
+        pct(O.median_backtest, 0) + ' a year against ' + pct(T.median_backtest, 0) +
+        ' for everyone, and kept a far smaller share of it. Strategies that look better in a ' +
+        'backtest are not merely no better afterwards, they give up more of what they showed you. ' +
+        'They do still end up ahead in absolute terms, at ' + pct(O.median_actual, 1) +
+        ' against ' + pct(T.median_actual, 1) + ', which is the honest other half of that sentence.';
+
+      // ---- turnover ----
+      var Q = D.turnover;
+      var rows = Q.quintiles.map(function (q, i) {
+        return '<tr data-q="' + i + '"><td>' + (i + 1) + '</td>' +
+          '<td class="n">' + q.lo.toFixed(1) + ' to ' + q.hi.toFixed(1) + '</td>' +
+          '<td class="n">' + n(q.n) + '</td>' +
+          '<td class="n">' + pct(q.median_backtest) + '</td>' +
+          '<td class="n">' + pct(q.median_actual) + '</td>' +
+          '<td class="n">' + pts(q.median_gap) + '</td></tr>';
+      }).join('');
+      document.getElementById('of-turnover').innerHTML =
+        '<thead><tr><th>Quintile</th><th class="n">Annualized turnover</th><th class="n">n</th>' +
+        '<th class="n">Median backtest</th><th class="n">Median actual</th><th class="n">Gap</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody>';
+
+      var q1 = Q.quintiles[0], q5 = Q.quintiles[Q.quintiles.length - 1];
+      document.getElementById('of-turnover-note').innerHTML =
+        '<strong>The slowest-trading fifth is the only cohort that kept its backtest</strong> (' +
+        pts(q1.median_gap) + '). The fastest-trading fifth promised ' + pct(q5.median_backtest, 1) +
+        ' a year and delivered ' + pct(q5.median_actual, 1) + ', a gap of ' + pts(q5.median_gap) +
+        '. Backtest length, the tell everyone reaches for first, separates far less cleanly. Sorted the same way, the four shortest fifths all give up between 40 and 55 points and barely differ from each other. Only the very longest, ten years and up, keeps its backtest, and it manages that by promising +19.7% a year instead of +62.9%.';
+
+      document.getElementById('of-meta').innerHTML =
+        'Measured across ' + n(D.pool) + ' usable database rows on ' + esc(D.reference_date) +
+        '. A symphony counts as untouched once its logic has gone ' + n(D.min_oos_days) +
+        ' days without an edit. Refreshed weekly with the database.';
+
+      // ---- the lookup ----
+      var idx = D.index, pos = null;
+      function lookup(id) {
+        if (!pos) {
+          pos = {};
+          for (var i = 0; i < idx.ids.length; i++) pos[idx.ids[i]] = i;
+        }
+        var i = pos[id];
+        if (i === undefined) return null;
+        return {
+          id: id,
+          name: idx.names[i],
+          arr: idx.backtest_arr[i],
+          t1y: idx.trailing_year[i],
+          days: idx.oos_days[i],
+          turnover: idx.turnover[i],
+          oosArr: idx.true_oos_arr[i],
+          oosExcess: idx.true_oos_excess[i],
+          oosDays: idx.true_oos_days[i]
+        };
+      }
+
+      function extractId(s) {
+        var m = String(s).match(/symphony\/([A-Za-z0-9_-]+)/);
+        if (m) return m[1];
+        s = String(s).trim();
+        if (/^[A-Za-z0-9_-]{12,}$/.test(s)) return s;
+        return null;
+      }
+
+      function quintileOf(t) {
+        if (typeof t !== 'number') return null;
+        var b = Q.bounds, i = 0;
+        while (i < b.length && t > b[i]) i++;
+        return i; // 0-based
+      }
+
+      function row(k, v, cls) {
+        return '<div class="of-row"><span class="k">' + esc(k) + '</span><span class="v ' +
+          (cls || '') + '">' + (v === null || v === undefined ? 'no data' : esc(v)) + '</span></div>';
+      }
+
+      function setMsg(html, cls) {
+        var el = document.getElementById('of-msg');
+        el.className = 'of-msg ' + (cls || '');
+        el.innerHTML = html;
+      }
+
+      function render(r) {
+        var out = document.getElementById('of-out');
+        var verdict, html = '';
+
+        // Rank the symphony's own outcome against the population, in words, without
+        // inventing a score. Every branch names what it could not see.
+        var kept = (typeof r.t1y === 'number' && typeof r.arr === 'number')
+          ? r.t1y - r.arr : null;
+        var oosKept = (typeof r.oosArr === 'number' && typeof r.arr === 'number')
+          ? r.oosArr - r.arr : null;
+
+        if (typeof r.days !== 'number') {
+          verdict = 'This symphony has no recorded date for its last logic edit, so the only ' +
+            'test on this page cannot be run against it.';
+        } else if (r.days < D.min_oos_days) {
+          verdict = 'Its logic was edited <strong>' + n(r.days) + ' days ago</strong>, less than ' +
+            'the year this test needs. There is no verdict here yet, and that is the honest ' +
+            'answer rather than a weaker one dressed up. Come back after ' +
+            n(D.min_oos_days - r.days) + ' more days.';
+        } else if (kept === null) {
+          verdict = 'Its logic has gone <strong>' + n(r.days) + ' days</strong> untouched, but ' +
+            'the return figures needed for the comparison are missing.';
+        } else if (kept >= 0) {
+          verdict = 'It has gone <strong>' + n(r.days) + ' days</strong> without a logic edit and ' +
+            '<strong>kept its backtest</strong> over the last twelve months, which puts it in the ' +
+            T.delivered_full + '% that manage it.';
+        } else if (r.t1y >= 0.5 * r.arr) {
+          verdict = 'It has gone <strong>' + n(r.days) + ' days</strong> without a logic edit and ' +
+            'delivered <strong>more than half</strong> of its backtested return, which is better ' +
+            'than roughly ' + (100 - T.delivered_half).toFixed(0) + '% of the database managed.';
+        } else if (r.t1y > 0) {
+          verdict = 'It has gone <strong>' + n(r.days) + ' days</strong> without a logic edit and ' +
+            'is <strong>still profitable</strong>, but well short of its backtest. That is the ' +
+            'single most common outcome in this database.';
+        } else {
+          verdict = 'It has gone <strong>' + n(r.days) + ' days</strong> without a logic edit and ' +
+            'has <strong>lost money</strong> since, against a backtest of ' + pct(r.arr) + '.';
+        }
+
+        html += '<div class="of-panel">' +
+          '<p class="of-verdict">' + verdict + '</p>' +
+          '<div class="of-name">' + esc(r.name || 'Unnamed symphony') +
+            '<span class="sub">' + esc(r.id) + '</span></div>' +
+          row('Backtested annual return', pct(r.arr)) +
+          row('Days since the last logic edit', n(r.days)) +
+          row('Actual return, last twelve months', pct(r.t1y),
+              typeof r.t1y === 'number' ? (r.t1y >= 0 ? 'pos' : 'neg') : 'none') +
+          row('Kept from the backtest', pts(kept),
+              typeof kept === 'number' ? (kept >= 0 ? 'pos' : 'neg') : 'none') +
+          '</div>';
+
+        // The true out-of-sample re-run, when this symphony has one.
+        html += '<div class="of-panel"><h2>Measured over its untouched window only</h2>';
+        if (typeof r.oosArr === 'number') {
+          html += '<p class="of-note" style="margin-top:0">A fresh backtest starting the day after ' +
+            'its last logic edit, so nothing in this window was available to fit to.</p>' +
+            row('Untouched window', n(r.oosDays) + ' days') +
+            row('Annualized return over that window', pct(r.oosArr),
+                r.oosArr >= 0 ? 'pos' : 'neg') +
+            row('Kept from the backtest', pts(oosKept),
+                typeof oosKept === 'number' ? (oosKept >= 0 ? 'pos' : 'neg') : 'none') +
+            row('Against SPY over the same window', pct(r.oosExcess),
+                typeof r.oosExcess === 'number' ? (r.oosExcess >= 0 ? 'pos' : 'neg') : 'none');
+        } else {
+          html += '<p class="of-note" style="margin-top:0">' +
+            'No out-of-sample re-run exists for this symphony. Those are computed weekly for the ' +
+            'strategies that could reach the top of the Leaderboard, which is roughly the stronger ' +
+            'half of the database, so an absence here is not a judgement about it.</p>';
+        }
+        html += '</div>';
+
+        // Turnover placement.
+        html += '<div class="of-panel"><h2>Turnover</h2>';
+        var qi = quintileOf(r.turnover);
+        if (qi === null) {
+          html += '<p class="of-note" style="margin-top:0">No turnover figure is stored for this ' +
+            'symphony, so it cannot be placed against the table below.</p>';
+        } else {
+          var q = Q.quintiles[qi];
+          html += row('Annualized turnover', r.turnover.toFixed(1)) +
+            row('Quintile', 'Q' + (qi + 1) + ' of 5') +
+            row('That quintile typically keeps', pts(q.median_gap),
+                q.median_gap >= 0 ? 'pos' : 'neg') +
+            '<p class="of-note">' +
+            (qi === 0
+              ? 'The slowest-trading fifth, and the only cohort that typically keeps its backtest.'
+              : (qi === Q.quintiles.length - 1
+                 ? 'The fastest-trading fifth, which typically gives up ' + pts(q.median_gap) +
+                   ' against its backtest. That is an association rather than a cause: it could be ' +
+                   'curve fitting or it could be trading costs, and this data cannot tell you which.'
+                 : 'Mid-range turnover. The cohorts either side of this one behave differently ' +
+                   'enough that the placement is worth knowing, but it is a tendency, not a ruling ' +
+                   'on this strategy.')) +
+            '</p>';
+        }
+        html += '</div>';
+
+        out.innerHTML = html;
+        out.style.display = '';
+        var tb = document.getElementById('of-turnover').getElementsByTagName('tbody')[0];
+        for (var i = 0; i < tb.rows.length; i++) tb.rows[i].className = (i === qi ? 'hi' : '');
+      }
+
+      function check() {
+        var raw = document.getElementById('of-in').value;
+        document.getElementById('of-out').style.display = 'none';
+        if (!raw.trim()) { setMsg('Paste a symphony URL or ID first.', 'err'); return; }
+        var id = extractId(raw);
+        if (!id) { setMsg('Could not find a symphony ID in that input.', 'err'); return; }
+        var r = lookup(id);
+        if (!r) {
+          setMsg('<code>' + esc(id) + '</code> is not in this database, so there is nothing to ' +
+                 'compare it against. This check works by looking up what a symphony actually did ' +
+                 'after its author stopped editing it, which needs a recorded history. You can ' +
+                 '<a href="' + u('/database.html') + '">search the database</a> for it, or read ' +
+                 'the population results above, which hold regardless.', 'info');
+          return;
+        }
+        setMsg('', '');
+        render(r);
+      }
+
+      document.getElementById('of-btn').addEventListener('click', check);
+      document.getElementById('of-example').addEventListener('click', function () {
+        document.getElementById('of-in').value =
+          'https://app.composer.trade/symphony/' + EXAMPLE_ID + '/details';
+        check();
+      });
+      document.getElementById('of-clear').addEventListener('click', function () {
+        document.getElementById('of-in').value = '';
+        document.getElementById('of-out').style.display = 'none';
+        setMsg('', '');
+        var tb = document.getElementById('of-turnover').getElementsByTagName('tbody')[0];
+        for (var i = 0; i < tb.rows.length; i++) tb.rows[i].className = '';
+      });
+      document.getElementById('of-in').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); check(); }
+      });
+    })();
+  </script>
+</body>
+</html>

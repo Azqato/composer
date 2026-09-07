@@ -194,6 +194,7 @@ function renderNav() {
       { href: u('/converter.html'), label: 'Converter' },
       { href: u('/nodes.html'), label: 'Nodes' },
       { href: u('/k1.html'), label: 'K1 Lookup' },
+      { href: u('/overfit.html'), label: 'Overfit Check' },
     ] },
     { href: u('/glossary.html'), label: 'Glossary' },
     { href: 'https://azqato.com/invests', label: 'Azqato Invests', external: true },
@@ -314,6 +315,7 @@ function renderFooter() {
       <a href="${u('/converter.html')}">Converter</a>
       <a href="${u('/nodes.html')}">Nodes</a>
       <a href="${u('/k1.html')}">K1 Lookup</a>
+      <a href="${u('/overfit.html')}">Overfit Check</a>
       <a href="${u('/etf-cloner.html')}">ETF Cloner</a>
       <a href="${u('/about.html')}">About</a>
       <a href="https://azqato.com/support.html" target="_blank" rel="noopener noreferrer">Support</a>

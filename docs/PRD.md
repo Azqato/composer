@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.74.0
+**Version:** 1.75.0
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -2482,7 +2482,7 @@ numbering schemes; they answer different questions.
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
 | V2.3 | Community signals: external submission form, curator notes, related strategies | Backlog, lowest priority | Not started |
-| V2.4 | Overfit Check: paste a symphony, test it against the definition of overfitting using the 5,095 symphonies whose logic has gone a year unedited | Requested and specified 2026-08-28, respecified the same day after the owner rejected peer ranking, then **sequenced late at the owner's request**. Not started | Not started |
+| V2.4 | Overfit Check: paste a symphony, test it against the definition of overfitting using the 5,228 symphonies whose logic has gone a year unedited | Requested and specified 2026-08-28, respecified the same day after the owner rejected peer ranking, then **sequenced late at the owner's request**. **Tier 1 shipped 2026-09-06 as v1.75.0**; Tiers 2 and 3 remain as specified | **Tier 1 Complete**, Tiers 2-3 not started |
 | V3.0 | Formerly Monetization Expansion | **Removed entirely, 2026-08-15.** Not deferred | n/a |
 | V4.0 | Signal discovery and robustness tooling, five candidate external forks | Ideation only. No work to begin until V2.x is well underway | Not started |
 
@@ -4748,9 +4748,11 @@ designed in a way that implies the full database will eventually get the same tr
 
 ### V2.4: Overfit Check
 
-**Status:** Requested by the owner 2026-08-28. Specified here, **not started**. The research below is
-done and no code exists. **This spec was rewritten the same day** after the owner rejected its first
-framing; see "What changed and why" at the end, because the rejected version is instructive.
+**Status:** Requested by the owner 2026-08-28. **Tier 1 shipped 2026-09-06 as v1.75.0**, at
+`overfit.html`; see "Shipped shape, 2026-09-06" below for what was built, what the owner decided,
+and which of this spec's numbers the build corrected. **Tiers 2 and 3 are not started** and their
+prerequisites below still stand. **This spec was rewritten 2026-08-28** after the owner rejected its
+first framing; see "What changed and why" at the end, because the rejected version is instructive.
 
 **The ask:** paste a symphony, find out whether it is overfit. Signal overfitness, return
 concentration in the best days, and whatever else the research supports.
@@ -4951,7 +4953,9 @@ V1.20 item 16 and the V4.0 architecture decision.
   committing the error it reports.
 - **Every result names what it could not see.**
 - **`/overfit` needs the nav, the footer and an Explore card** per Section 10's three registration
-  points, taking the grid to eight cards and changing the "Seven ways..." subhead.
+  points. Written when the grid had seven cards; on shipping it took the grid from nine to **ten**
+  and changed the subhead from "Nine ways..." to "Ten ways...". The count in a spec goes stale, the
+  three registration points do not.
 
 #### Sequencing
 
@@ -4963,17 +4967,97 @@ V1.20 item 16 and the V4.0 architecture decision.
    against out-of-sample outcomes the way turnover was tested here, and keep only what survives.
 4. **Tier 3 last**, and only after the V4.0 architecture question is settled.
 
+#### Shipped shape, 2026-09-06: Tier 1
+
+Built as specified, at `overfit.html`, off a new derived file. Three owner decisions shaped it,
+taken 2026-09-07: **Tier 1 only**, **lead with the population finding**, and **report both
+out-of-sample cohorts side by side**.
+
+**Why there are two population cohorts rather than the one this spec assumed.** V1.18 landed 3,175
+true out-of-sample backtests in `data/oos.json` between this spec being written and it being built,
+and they measure the same question better per row while being worse as a population. Both are
+reported, because each one's flaw is the other's strength:
+
+| | Trailing cohort | True out-of-sample cohort |
+|---|---|---|
+| What it compares | backtested ARR against the actual last twelve months | backtested ARR against a re-backtest of the untouched window alone |
+| n | 5,228 | 3,175 |
+| Median backtested return | +48.9% | +101.2% |
+| Median actual return | +16.1% | +22.5% |
+| Delivered the full backtest | **20.5%** | **4.0%** |
+| Delivered at least half | 37.2% | 25.3% |
+| Merely positive | 76.4% | 87.6% |
+| Beat SPY | not measured | 53.3% |
+| The flaw | the backtest window overlaps the year being measured, so it understates the gap | selected by in-sample score for the Leaderboard, so it is roughly the stronger half of the database |
+
+**The disagreement is the finding, and it runs the way you would not guess.** The stronger half of
+the database promised more than twice as much (+101.2% against +48.9%) and kept far less of it (4.0%
+against 20.5%). A better-looking backtest is not merely no better afterwards: it gives up more of
+what it showed you. The honest other half of that sentence, which the page also states, is that the
+same cohort still ends up ahead in absolute terms, +22.5% against +16.1%.
+
+**The turnover result replicated almost exactly** against fresh data, a year of drift and a
+different cohort definition. Quintile bounds [13.9, 29.1, 45.5, 69.2]; median gaps -0.0, -19.1,
+-36.2, -59.0, **-136.1** points; median backtested return climbing +17.1% to +149.5% across the
+quintiles while median actual return *falls* +16.5% to +6.2%. A finding that survives being
+re-measured on different data is worth more than one that was merely striking the first time.
+
+**A claim this spec implies, corrected by measurement.** Backtest length is the tell everyone
+reaches for first, and it separates far less cleanly than turnover. Sorted into quintiles the same
+way, the four shortest fifths give up -55.0, -48.4, -40.4 and -46.3 points: not monotonic and barely
+distinguishable. Only the longest fifth, ten years and up, keeps its backtest, and it manages that
+by promising +19.7% a year rather than +62.9%. **Turnover is doing real work that backtest length is
+not**, which is the whole reason the page leads on it.
+
+**`data/overfit.json` and its `.js` twin, from `scripts/build_overfit.py`.** `database_summary.js`
+is 4MB and lacks `annualized_turnover` and `total_costs` entirely; `database.js` is 19MB. Neither is
+loadable on a tool page. The derived file carries the two cohorts, the turnover table, and a
+**columnar** per-symphony index (parallel arrays, not 6,678 object keys) at 701KB, 289KB gzipped.
+**Names cost more than every other column combined** (194KB gzipped without them) and are carried
+anyway: without a name the result is a wall of numbers about an opaque 20-character id, and the
+reader cannot tell whether what they pasted resolved to what they meant. The <500KB page-weight
+target is homepage-only, which this page is not.
+
+**It is rebuilt in both jobs that write either of its inputs**, `refresh-full-database.yml` and
+`refresh-oos.yml`. It is a derived file with **no deploy gate**, unlike `strategy_extras.json`,
+so a skipped rebuild would leave the page reporting last week's population against this week's
+database with nothing to catch it.
+
+**Verification is a throwaway headless-Edge driver, not a new harness.** `scripts/harness/` is
+signal-miner shaped: it splices a hook past that page's IIFE tail to reach bindings no other page
+has. This page is drivable entirely through the DOM, so it needed none of that. 24 assertions, all
+passing: the population section renders with no interaction, the full lookup path, an id absent from
+the database, input with no id in it, the clear button, and a symphony edited too recently to judge.
+**One of them caught a real bug in the driver rather than the page**, which is worth recording:
+asserting "no literal null reaches the reader" against `document.body.textContent` fails on the
+page's own `<script>` source, because `textContent` includes it. The assertion now walks visible
+text nodes only.
+
+**A near miss worth recording.** The first demo symphony chosen had 174 days since its last logic
+edit, so the example button landed on the "not enough untouched history to judge" branch and
+demonstrated nothing. The example is now one that exercises every branch and whose two measures
+disagree. **A demo input has to be chosen against the code paths, not picked for being recognisable.**
+
 #### Open questions
 
-- **Does it accept a symphony absent from the database?** Tier 2 says yes, Tier 1 says no. Probably
-  yes with a visible statement of what is missing, but it decides whether the empty state is an
-  error or a normal result, so it should be settled before layout.
-- **Should the page lead with the population table rather than the pasted symphony?** The 22.2%
-  figure may be the most useful thing on it regardless of what anyone pastes.
-- **Can turnover be separated from trading costs?** Until it is, the tool reports an association and
-  should say so.
-- **What does the page say about itself?** It rates overfitting using measures chosen by the same
-  author who chose which to keep, which is a version of the problem it reports. Saying so is cheap.
+Three of these four were settled by building Tier 1. Kept with their answers rather than deleted,
+because the reasoning is what a later tier will need.
+
+- **Does it accept a symphony absent from the database?** **Settled: yes, as a normal result, not an
+  error.** The shipped page names what it could not do and why the population findings above still
+  hold, and points at the Database search. It cannot yet say anything Tier 2 would say, because
+  Tier 2 does not exist; when it does, this is the branch it slots into.
+- **Should the page lead with the population table rather than the pasted symphony?** **Settled:
+  yes, by owner decision 2026-09-07.** It is the one finding that is true before anyone types
+  anything, and it survives the reader pasting a symphony the database has never seen.
+- **Can turnover be separated from trading costs?** **Sharpened, not settled.** `total_costs` is
+  reported by the same backtest that produced `annualized_rate_of_return`, and
+  `refresh_full_database.py` requests it with slippage and both fee flags on, so **the in-sample
+  figure is already net of modelled costs**. The turnover result is therefore not the trivial "the
+  backtest ignored trading costs". What it cannot rule out is real slippage exceeding the model on
+  a high-turnover strategy. The page reports an association and says which two stories fit it.
+- **What does the page say about itself?** **Settled: it says it, in the caveats block**, in the
+  same words this spec used. Saying so is cheap, so it is said.
 
 ---
 
