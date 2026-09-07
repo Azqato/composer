@@ -5,6 +5,37 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.76.3] - 2026-09-07
+
+### Documentation
+
+- **PRD Section 27, Social Sharing Tags: no drifting numbers in a sharing tag.**
+  A count that a scheduled job can change does not go in an `og:title` or an
+  `og:description`. Sharing tags are hand-written into static HTML with no build
+  step, so nothing on this site would ever correct one: the weekly jobs rewrite
+  `data/*.json` and cannot see a `<meta>` tag. Nothing fails, no gate catches it,
+  and the tag keeps rendering a confident, increasingly wrong figure in the one
+  place nobody opens. Fixed constants of the design ("0 to 100", "10-day RSI")
+  are allowed, because only a product decision changes those.
+- **Recorded as a formalisation of a call this project already made twice**,
+  rather than as a new rule: Section 24 rows 7 and 8 both resolved a stale count
+  by deleting it instead of correcting it, on the grounds that a corrected number
+  goes stale again.
+- **Three live discrepancies logged as Section 24 rows 26 to 28**, all found while
+  specifying the tags and none of them previously visible to any gate:
+  `database.html` advertises "6,500+" against 6,816 actual rows; `strategies.html`
+  claims to list **all** Composer.trade strategies when it lists 24 curated ones
+  and the Database holds thousands; and `overfit.html` describes a page two
+  versions behind, with no mention of the Overfit Score it now leads with.
+
+### Notes
+
+- No page markup changed. The site still carries **zero** Open Graph and Twitter
+  Card tags, and Section 27 records that status honestly as policy-not-yet-shipped
+  rather than describing tags that do not exist.
+
+---
+
 ## [1.76.2] - 2026-09-07
 
 ### Documentation

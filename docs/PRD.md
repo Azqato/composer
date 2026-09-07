@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.76.2
+**Version:** 1.76.3
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -41,6 +41,7 @@ This is the single authoritative reference for Composer Atlas. It consolidates p
 24. [Documentation Versus Reality](#24-documentation-versus-reality)
 25. [Risks and Open Questions](#25-risks-and-open-questions)
 26. [Press Release](#26-press-release)
+27. [Social Sharing Tags](#27-social-sharing-tags)
 
 ---
 
@@ -6796,6 +6797,9 @@ evidence, usually a patch note recording the change as deliberate.
 | 10 | Section 10 directory tree: `glossary.json # 8 glossary concept entries` | **20 entries** | **The code** | Corrected. Section 12's own canonical table already said 20, so the document disagreed with itself |
 | 11 | Section 10 directory tree: `prices.json (37 tickers from 2018)` | **72 tickers, from 2010-01-01**, 4,184 trading days | **The code** | Two separate changes landed (v1.18.0 expanded the universe, v1.20.1 extended the history) and this line tracked neither |
 | 12 | DESIGN.md: `--color-disabled` is `#444444` | `css/main.css` has **`#c0c0c0`** | **The code** | PATCHNOTES v1.5.4 records the change as a deliberate legibility fix. Doc went stale on 2026-08-15 and stayed that way for two months. Secondary issue flagged: the token's name now reads backwards |
+| 26 | `database.html` `<meta name="description">`: "the full 6,500+ symphony database" | **6,816 rows** in `data/database_summary.json` | **The code** | Written once and never revisited. Nothing reads a `<meta>` tag, so no job, gate or test could have caught it; the only reader is a search engine and a link preview. The direct case for Section 27 |
+| 27 | `strategies.html` `<meta name="description">`: "Browse **all** Composer.trade strategies" | **24 visible curated strategies.** "All" is `database.html`, which holds thousands | **The code** | Not a stale number but a stale scope: the sentence was true when the curated set was the whole site and became wrong when the Database shipped. Worse than row 26, because a reader who believes it concludes the site has 24 strategies in total |
+| 28 | `overfit.html` `<meta name="description">` describes the page as measuring what survives a backtest, with no mention of a score | The page has led with a **0 to 100 Overfit Score** since v1.76.0 | **The code** | The description is not false, it is two versions behind. Shows the second failure mode for hand-written head tags: they go stale on a feature change, not only on a data refresh, and nothing in the deploy path looks at them |
 | 13 | DESIGN.md breakpoints list four `min-width` queries | A **`max-width: 640px`** query also exists | **The code** | Added |
 | 14 | DESIGN.md documents the shared component set | **Six shared components were undocumented**, plus three tool pages' entire inline stylesheets | **The code** | All six now documented; the three inline sheets are named and scoped in a new DESIGN.md Section 8 |
 | 15 | Section 15: HTTPS "GitHub Pages enforces HTTPS", Tenet 4 "runs on GitHub Pages" | Canonical host is **Cloudflare Pages** (`composeratlas.com`); GitHub Pages is a mirror | **The code** | Both statements were written before the Cloudflare move and are still true of the mirror, just no longer the whole picture |
@@ -7208,3 +7212,68 @@ the first.
 **It cannot claim the north star.** The release says the site explains strategies; it cannot say
 visitors understood them, because the site deliberately cannot observe that. That gap is real and
 permanent, and Section 20 says so rather than papering over it.
+
+
+---
+
+## 27. Social Sharing Tags
+
+**Status: policy only. No page carries these tags yet.** Measured 2026-09-07, the site has zero
+Open Graph and zero Twitter Card tags across all 15 HTML files. A link pasted into a chat client
+today renders from whatever that client can scrape on its own, usually the `<title>` tag and
+`<meta name="description">`. That is a fallback, not a design. Recorded here as a discrepancy in
+Section 24 rather than as a shipped feature.
+
+### No drifting numbers in a social sharing tag
+
+**A count that changes on its own does not go in an `og:title` or an `og:description`.** Neither
+does anything else that goes stale without a person editing it: dataset sizes, row counts, item
+totals, "as of" dates, current leaders, or a figure quoted from a file that a weekly job rewrites.
+Prefer a phrase that stays true across a refresh, such as "thousands of symphonies", "every ticker
+in the universe", or naming the thing rather than counting it.
+
+**The reason is that nothing on this site would ever correct them.** Sharing tags are hand-written
+into static HTML. There is no build step, no template, and no server rendering a value at request
+time. The weekly jobs rewrite `data/*.json`, and a number typed into a `<meta>` tag is invisible to
+every one of them, so it holds whatever it held on the day it was written, indefinitely and
+silently. Nothing fails. No gate catches it. The tag keeps rendering a confident, specific,
+increasingly wrong figure.
+
+**This is not hypothetical, it is the state the site is in.** `database.html` has advertised
+"6,500+" since it was written; the database held **6,816 rows** when this section was added. That
+number has been visibly wrong in a search result for some time and nobody saw it, because the one
+place a stale count is hardest to notice is a `<head>` nobody opens. The same trap was waiting in
+three more descriptions had they been written with counts in them: the glossary's concept total,
+the K-1 lookup's covered-fund total, and the featured-strategy count, all of which are read from
+files that change.
+
+**A precise number is the most attractive thing to put in a description and the most expensive.**
+Specificity is exactly what makes a card worth clicking, so the pull toward writing one is real.
+The trade is that a card is the first thing a stranger sees, and a wrong number there is worse
+than a vague one: a reader who arrives and counts something different has been given a reason to
+distrust everything else on the page, and this site's entire value is being believed about
+numbers. **A description that undersells slightly and stays true forever beats one that is exactly
+right for a month.**
+
+**Where a number genuinely is the point, put it on the page, not in the tag.** The page reads it
+from the data file at load, so it is always current. `overfit.html` does exactly this: every figure
+in its copy is rendered from `data/overfit.json` rather than typed into the HTML, which is why its
+population findings cannot go stale. The sharing tag can describe what the page measures without
+quoting what it currently measures.
+
+**The one class of number that is allowed is a fixed constant of the design**, not a measurement.
+"Scored 0 to 100" is safe because the scale is definitional and changing it would be a product
+decision with its own patch note. "10-day RSI" is safe for the same reason. The test is whether a
+scheduled job could change the value while nobody is looking. If it could, it stays out.
+
+**This rule is not new, it is a pattern the project already followed.** Section 24 row 8 records
+a heading that read "All 24 Composer Atlas strategies" against a table of 31, and the resolution
+was to delete the count rather than update it, on the stated grounds that a corrected number
+"will go stale again". Row 7 reaches the same conclusion from the other direction, having watched
+flag counts move between the audit measuring them and the document being committed. Section 27
+takes that call, already made twice inside this document, and states it as the standing rule for
+the one surface where nobody would ever see the drift.
+
+**Checked by:** nothing automatically. A count in prose cannot be distinguished from a constant by
+a script, so this rule is enforced by review at the point a tag is written or edited. Section 23
+records it as a thing to check before editing a page head.
