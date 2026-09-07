@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.76.1
+**Version:** 1.76.2
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -882,14 +882,16 @@ reason.
 |---|---|---|---|---|---|---|
 | 1 | `refresh-prices.yml` | `7 2 * * 6` Sat 02:07 | Fri 7:07pm | ~90s | `data/prices.json` | Signal Miner, `refresh-oos.py` |
 | 2 | `refresh-full-database.yml` | `7 1 * * 0` Sun 01:07 | Sat 6:07pm | 4.5-5 h | `database_summary.json` | the site, `refresh_oos.py` |
-| 3 | `refresh-oos.yml` | `7 3 * * 1` Mon 03:07 | Sun 8:07pm | ~2.7 h | `data/oos.json` | the Leaderboard |
+| 3 | `refresh-oos.yml` | `7 3 * * 1` Mon 03:07 | Sun 8:07pm | ~2.7 h | `data/oos.json` | the Leaderboard, `build_overfit.py` |
 
 **Why prices go first.** The Friday close lands at 1pm Pacific, so a Friday evening run picks it up
 the same day rather than waiting a night. Everything downstream is that much fresher.
 
 **Why out-of-sample goes last.** It has two inputs and this slot is downstream of both. Its candidate
 set is derived from the in-sample scores the full refresh writes, and its measurement window ends on
-the last date in `prices.json`. Under the schedule it briefly held on 2026-09-06 (OOS on Friday) that
+the last date in `prices.json`. **A third input was added in v1.76.0 and it is deliberately not a
+scheduling constraint:** `data/strategies.json` exempts curated symphonies from the score cutoff, and
+it is a hand-edited file with no job writing it, so it is current whenever the job runs. Under the schedule it briefly held on 2026-09-06 (OOS on Friday) that
 window lagged about a week; in this order it lags two days.
 
 **No two jobs overlap**, which matters because two of them are long API jobs against the same

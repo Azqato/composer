@@ -5,6 +5,26 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.76.2] - 2026-09-07
+
+### Documentation
+
+- **The Overfit Score is now recorded in the design system** (`docs/DESIGN.md`,
+  bumped to 1.19). It is the first graded component on the site where **low is
+  good**, which is why its band label is always rendered beside the number
+  rather than letting color carry the meaning alone. Two details that look like
+  oversights are load-bearing and are written down as such: `overflow: visible`
+  on the bar exists so the par marker can stand taller than the track and read
+  as a reference line rather than part of the fill, and `background:
+  currentColor` on the fill means the bar can never disagree with its band.
+- **The weekly pipeline table listed `data/oos.json` as read only by the
+  Leaderboard.** The Overfit Check has consumed it since v1.75.0. The
+  `refresh_oos.py` candidate set also gained a third input in v1.76.0,
+  `data/strategies.json`, and the entry notes why that one is not a scheduling
+  constraint: it is hand-edited, with no job writing it.
+
+---
+
 ## [1.76.1] - 2026-09-07
 
 ### Changed

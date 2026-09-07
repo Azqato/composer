@@ -1,8 +1,8 @@
 # Composer Atlas: Design System
 
-**Version:** 1.18
+**Version:** 1.19
 **Status:** Active
-**Last Updated:** 2026-08-28
+**Last Updated:** 2026-09-07
 
 All values in this document are derived from `css/main.css` and `js/app.js`: the source files are the
 ground truth. Where this document and the CSS disagree, the CSS wins and the disagreement is marked
@@ -652,6 +652,46 @@ stale label on the code side, not a second palette). These are **literal hex val
 standard token palette**, a deliberate exception. The user specified a green (oversold, "buy the dip") → red (overbought) gradient for this page rather than the site's usual green-good/pink-bad convention (`--color-green`/`--color-pink`), so the colors are hardcoded rather than aliased to tokens that carry a different semantic elsewhere on the site. Both extreme tiers are bold; the three inner tiers are not. The user's original inner-tier values (`#890000` / `#008900`) were too low-contrast against the dark table background (`--color-surface` `#141414`) to read at all; brightened to `#e04545` / `#2fb92f` while keeping the bright `#ff0000`/`#00ff00` extremes unchanged.
 
 **Selector specificity note:** these rules must be scoped as `.db-table td.rsi-x`, not a bare `.rsi-x` class. `.db-table td` (class+type, specificity 0,1,1) otherwise wins over a bare single-class selector (0,1,0) regardless of source order, which silently prevented any of these colors from rendering until this was caught and fixed.
+
+---
+
+### Overfit Score (overfit.html, V2.4 Tier 1, v1.76.0)
+
+```css
+.of-score { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.of-score .num { font-family: var(--font-mono); font-size: 3.5rem; line-height: 1; font-weight: 600; }
+.of-score .of-band { font-size: 1.125rem; font-weight: 600; margin-bottom: 4px; }
+.of-score .of-par { font-size: 0.8125rem; color: var(--color-secondary); }
+.of-s0, .of-s1 { color: var(--color-green); }
+.of-s2 { color: var(--color-yellow); }
+.of-s3, .of-s4 { color: var(--color-pink); }
+.of-bar { position: relative; height: 8px; border-radius: 4px; background: var(--color-surface-raised);
+          border: 1px solid var(--color-border); margin: 14px 0 6px; overflow: visible; }
+.of-bar .fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 4px; background: currentColor; }
+.of-bar .par { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--color-primary); }
+.of-bar-key { display: flex; justify-content: space-between; font-size: 0.6875rem; color: var(--color-disabled); }
+```
+
+Five bands over a 0 to 100 scale, **low is good**, which is the reverse of every other graded
+component on the site: 0 to 25 "Held its backtest", 25 to 50 "Mild decay", 50 to 75 "Substantial
+decay", 75 to 95 "Severe decay", 95 and up "Did not survive". Because the direction is inverted, the
+band label is always rendered beside the number rather than leaving the color to carry the meaning
+on its own. Only three hues are used across five bands, unlike Tier Badge's six: the two green bands
+and the two pink bands are separated by their labels, not by opacity, since a reader distinguishing
+"severe" from "terminal" by shade is a distinction the underlying measurement cannot support.
+
+**`.fill` uses `background: currentColor`**, so the bar inherits whichever band color is set on its
+parent and the two can never disagree. Adding a band means adding one `.of-sN` rule and nothing else.
+
+**`overflow: visible` on `.of-bar` is load-bearing, not an oversight.** The `.par` marker is
+deliberately taller than the bar (`top: -4px; bottom: -4px`) so it reads as a reference line laid
+across the track rather than a segment of the fill. Clipping it would make par look like part of the
+score, which is the exact misreading the whole design avoids: par is context printed beside a golf
+score, never a term inside it. See PRD.md V2.4, "The fitted-era split and the Overfit Score".
+
+**Rounding is a claim at the ends of this scale.** 0 asserts a strategy kept its whole fitted rate
+and 100 asserts it kept none, so `scoreText()` renders a decimal within half a point of either end.
+A 99.7 printed as "100" would state the stronger claim.
 
 ---
 
