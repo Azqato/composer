@@ -5,6 +5,53 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.76.0] - 2026-09-07
+
+### Changed
+
+- **The Overfit Check now compares the fitted era, not the full backtest, and reports a
+  graded Overfit Score rather than a verdict.** Composer's backtest runs through
+  today, so on a symphony untouched for four years it *already contains those four
+  years inside it*: the page had been comparing a window against a window that
+  includes it. The fitted era is now divided back out exactly, with no new API
+  calls, and the score is `100 x (1 - delivered / fitted)` clamped to 0 and 100.
+  0 means it kept the whole rate its author was looking at, 100 means it kept none.
+  Across 3,236 scored strategies the median is 79.1.
+- **Par is printed beside every score and marked on the bar.** How much a backtest
+  gives up is itself tied to how big it was (rank correlation -0.556), so a 95 is
+  damning against a par of 60 and unremarkable against a par of 97. The score
+  itself contains no population data at all; par is the only place the population
+  enters, and it is kept deliberately outside the number.
+- **Each result now shows three windows side by side** and says plainly that the
+  full backtest already contains the untouched period, which is why it is the
+  wrong thing to compare against.
+- **Curated strategies always get an out-of-sample re-run.** `refresh_oos.py`
+  picked candidates by Leaderboard score, which is the right question for ranking
+  and the wrong one here: 11 of the 24 visible curated strategies had no re-run,
+  seven with over a year of untouched history unused. Coverage rises to 21 of 24
+  for about a dozen extra calls a week.
+
+### Added
+
+- **A ceiling finding on the page.** Across the 2,221 strategies fitted over five
+  years or more, a bigger backtest really does predict a better future, up to
+  about +239% a year. Past that it inverts: the top decile, fitted at +551% a
+  year, went on to deliver +10.3%, less than the bottom decile's +12.5%.
+
+### Fixed
+
+- **The twelve-month divergence note was lost on scored symphonies.** It had been
+  written inside one verdict branch and applies to all of them. It now sits after
+  the branches and fires wherever a re-run exists.
+- **A hoisting bug that killed the whole lookup.** `var SD` was declared below the
+  line that read it, so the page threw during initialisation and pasting a
+  symphony did nothing, with no visible sign of trouble on the static content
+  above. Caught by the render harness, now at 53 assertions.
+- **Scores within half a point of either end no longer round to it.** 0 and 100
+  are claims, so a 99.7 renders as 99.7 rather than printing the stronger one.
+
+---
+
 ## [1.75.1] - 2026-09-07
 
 ### Fixed

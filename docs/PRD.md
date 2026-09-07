@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.75.1
+**Version:** 1.76.0
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -2482,7 +2482,7 @@ numbering schemes; they answer different questions.
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
 | V2.3 | Community signals: external submission form, curator notes, related strategies | Backlog, lowest priority | Not started |
-| V2.4 | Overfit Check: paste a symphony, test it against the definition of overfitting using the 5,228 symphonies whose logic has gone a year unedited | Requested and specified 2026-08-28, respecified the same day after the owner rejected peer ranking, then **sequenced late at the owner's request**. **Tier 1 shipped 2026-09-06 as v1.75.0**; Tiers 2 and 3 remain as specified | **Tier 1 Complete**, Tiers 2-3 not started |
+| V2.4 | Overfit Check: paste a symphony, test it against the definition of overfitting using the 5,228 symphonies whose logic has gone a year unedited | Requested and specified 2026-08-28, respecified the same day after the owner rejected peer ranking, then **sequenced late at the owner's request**. **Tier 1 shipped 2026-09-06 as v1.75.0**, then substantially corrected in **v1.76.0** (fitted-era split, graded Overfit Score, the ceiling finding); Tiers 2 and 3 remain as specified | **Tier 1 Complete**, Tiers 2-3 not started |
 | V3.0 | Formerly Monetization Expansion | **Removed entirely, 2026-08-15.** Not deferred | n/a |
 | V4.0 | Signal discovery and robustness tooling, five candidate external forks | Ideation only. No work to begin until V2.x is well underway | Not started |
 
@@ -4776,7 +4776,7 @@ The measurements are recorded in full at the end of this section precisely so th
 later does not mean starting over.
 
 **What it would be:** a new page, `overfit.html`, in the family of `/converter`, `/nodes` and
-`/signal-miner`. Not a score, not a pass or fail, for reasons the measurements below force.
+`/signal-miner`. Not a pass or fail, for reasons the measurements below force. **This spec originally said "not a score" as well; v1.76.0 revises that** to a single unweighted ratio shown beside par, at the owner's request and without conceding the thing the constraint protected. See "The fitted-era split and the Overfit Score" below.
 
 ---
 
@@ -5070,6 +5070,112 @@ this one.
 was being displayed directly beneath an annualized return under similarly-shaped labels. SPY's
 cumulative return is now shown alongside it so the comparison is between two figures of the same
 kind.
+
+#### The fitted-era split and the Overfit Score, 2026-09-07
+
+**This is the largest correction the page has taken, and it came from the owner.** Two things were
+wrong with the shipped Tier 1 and they were connected.
+
+**1. The comparison compared a period against a superset of itself.** Composer's backtest runs
+through today. So `annualized_rate_of_return` on a symphony untouched for four years *already
+contains those four years inside it*. Setting it beside the out-of-sample re-run was not a
+promise-versus-delivery test at all: it was a window against a window that includes it, which biases
+the gap toward zero by exactly the amount the untouched era went well.
+
+**The fix needs no new API calls, because the arithmetic is exact.** The full window is the fitted
+era chained onto the untouched era, so the fitted era can be divided back out:
+
+```
+(1 + cum_full) = (1 + cum_fitted) x (1 + cum_oos)
+years          = ln(1 + cumulative_return) / ln(1 + annualized_rate_of_return)
+fitted_arr     = ((1 + cum_full) / (1 + cum_oos)) ** (1 / (years_full - years_oos)) - 1
+```
+
+Verified to **3.55e-15 log points** and resolvable on **3,236 of 3,257** re-run rows; the remainder
+have a fitted era under six months, which will not annualize honestly and is left unscored rather
+than estimated. **`backtest_days` must not be used to get the window length: it is in TRADING days**
+(1,704 of them is 6.77 calendar years), so it would need an assumed conversion factor where the
+logarithm needs none.
+
+**2. The owner's correction on what "overfit" means.** The design had drifted toward judging the
+untouched era on its own terms, made money or not, beat SPY or not. The owner:
+
+> the point of it being overfit is keeping up with what the backtest was expected to do over time. no?
+
+**Right, and the drift was a real error.** "Made money, beat SPY" answers *is this a good strategy*.
+A strategy backtested at +500% a year that goes on to deliver +15% a year is overfit whether or not
+it made money, and one backtested at +12% that delivers +11% is not overfit even if SPY beat it. The
+question is retention of its own promise.
+
+**The Overfit Score.** `100 x (1 - delivered / fitted)`, clamped to 0 and 100, where both terms are
+annualized rates over their own eras. 0 means it kept the whole rate its author was looking at, 100
+means it kept none of it.
+
+**Why this does not violate the "no score out of 100" constraint.** That constraint is recorded
+above with its reason attached: *a single composite number invites the exact optimisation this page
+exists to detect, and its weights would be unfalsifiable*. **The objection is to unfalsifiable
+weights, not to a number.** This score has no weights. It is one measured ratio between two printed
+quantities, so any reader can recover it, and there is nothing in it to tune. The owner asked for a
+graded result rather than a binary on 2026-09-07 and this is the shape that grants it without
+granting the thing the constraint was protecting against.
+
+**Distribution across the 3,236 scored strategies:** p10 28.6, p25 58.2, p50 **79.1**, p75 94.9,
+p90 100. 4.0% score 0 and 12.6% score 100.
+
+**Par, and why the score is never shown alone.** Retention is itself strongly tied to how large the
+backtest was: rank correlation between fitted rate and score is **-0.556**. Mean reversion
+guarantees a gap after an extreme backtest whether or not anything was overfit, so a raw 95 is
+damning against a par of 60 and unremarkable against a par of 97. The page therefore prints **par**,
+the median score among neighbours in fitted rate, beside the number and as a marker on the bar.
+
+**Par is deliberately kept outside the score, and that placement is the whole design.** The score
+contains **no population data at all**, which is what keeps it a measurement of the pasted symphony
+against its own promise, exactly as the owner framed it and consistent with the peer-ranking framing
+they rejected 2026-08-28. Par is context printed next to a golf score, not a term inside it. Par is
+a **nonparametric sliding median** over a 200-strategy window sampled at 24 points, interpolated
+linearly between them and held **flat outside their range rather than extrapolated**: fitting a
+curve would put a functional-form assumption underneath the one number the page asks readers to
+trust, and an extrapolated par would be an invention at exactly the end of the scale where readers
+care most.
+
+**An empirical-null residual was built, tested and rejected as the headline.** Scoring each strategy
+against what its cohort actually delivered produces a number that is **+0.928 rank-correlated with
+annualized excess return over SPY**, with 80 to 83% tail overlap. It is largely a restatement of
+beating the market, and it puts the population back inside the number. Rejected on both counts. The
+same +0.93 relationship holds for the shipped score and **is stated in the page's own caveats**,
+because a reader is entitled to know the score is not a fundamentally new signal; what it adds is
+that it answers the question actually asked rather than a proxy for it, and it separates the two
+exactly where the promise was largest.
+
+**Rounding at the ends is a claim, not a formatting choice.** 0 and 100 assert "kept everything" and
+"kept nothing". A 99.7 rounded to "100" would print the stronger claim, so scores inside half a
+point of either end render with a decimal instead.
+
+**The ceiling: a bigger backtest predicts a better future, up to a point, and then it inverts.**
+Restricted to the 2,221 strategies with five or more fitted years so a short noisy window cannot
+drive it, median untouched return rises with fitted rate up to about **+239% a year** (peaking at
+**+40.3%** delivered) and then collapses. **The top decile, fitted at +551% a year, went on to
+deliver +10.3%, which is less than the bottom decile's +12.5% off a fitted +21.9%.** The turning
+point is reported as approximate, because it comes from ranking within this same database rather
+than from a threshold anyone should tune to.
+
+**Curated strategies are now exempt from the out-of-sample candidate cutoff.** `refresh_oos.py`
+selected candidates by Leaderboard score, which asks whether a row could plausibly reach the top of
+the board. That is the right question for ranking and the wrong one for the Overfit Check: a curated
+strategy gets a hand-written page whatever it scores, and a missing re-run is most conspicuous
+there. Measured 2026-09-07, **11 of the 24 visible curated strategies had no re-run for exactly this
+reason**, seven of them with over a year of untouched history sitting unused. The exemption raises
+candidates from 3,257 to 3,285, roughly a dozen extra API calls a week, and raises visible curated
+coverage to 21 of 24.
+
+**A hoisting bug was caught by the render harness and would otherwise have shipped.** The score
+block declared `var SD` below the meta line that already read `SD.n`. `var` hoists the declaration
+but not the assignment, so the page threw partway through initialisation: the methodology line
+rendered blank and **the entire paste-a-symphony lookup was dead**. Nothing about the static page
+above it looked wrong. The driver now stands at **53 assertions**, and the ones added here assert
+claims rather than presence, per the lesson from the period-confusion bug: that the top ceiling
+decile really does deliver less than the bottom one, that the verdict compares the fitted era rather
+than the full backtest, and that a 99.7 does not print as 100.
 
 #### Open questions
 

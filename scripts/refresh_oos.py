@@ -33,6 +33,7 @@ Usage:
     python scripts/refresh_oos.py --force    # refetch even rows already current
 """
 import datetime as dt
+import io
 import json
 import sys
 import time
@@ -52,6 +53,7 @@ from analyze_leaderboard import (  # noqa: E402  (path set above)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 PRICES = BASE_DIR / "data" / "prices.json"
+STRATEGIES = BASE_DIR / "data" / "strategies.json"
 JSON_PATH = BASE_DIR / "data" / "oos.json"
 JS_PATH = BASE_DIR / "data" / "oos.js"
 
@@ -179,14 +181,33 @@ def check_window(result, want_start, want_end):
     return None
 
 
+def curated_ids():
+    """Every symphony with a hand-written page on the site.
+
+    These are exempt from the score cutoff below. The cutoff asks whether a row
+    could plausibly reach the top of the Leaderboard, which is the right
+    question for ranking and the wrong one for the Overfit Check: a curated
+    strategy gets written about whatever it scores, and its page is where a
+    missing out-of-sample record is most conspicuous. Measured 2026-09-08, 11 of
+    the 24 visible curated strategies had no re-run for exactly this reason,
+    seven of them with over a year of untouched history sitting unused. The
+    exemption costs about a dozen extra calls a week."""
+    try:
+        rows = json.loads(io.open(STRATEGIES, encoding="utf-8").read())
+    except (OSError, ValueError):
+        return set()
+    return {r["symphony_id"] for r in rows if r.get("symphony_id")}
+
+
 def select_candidates(pool):
     """The rows worth spending a call on, best first so a run cut short has
     still covered the top of the board."""
     scores, _parts = score_pool(pool, ADVANCED_METRICS)
     ranked = sorted(scores, reverse=True)
     cutoff = ranked[min(PROTECT_TOP, len(ranked)) - 1] - PILLAR_WEIGHT
+    curated = curated_ids()
     picked = [(scores[i], e) for i, e in enumerate(pool)
-              if scores[i] >= cutoff
+              if (scores[i] >= cutoff or e.get("symphony_id") in curated)
               and e.get("symphony_id")
               and (oos_days(e) or 0) >= MIN_OOS_DAYS]
     picked.sort(key=lambda t: -t[0])
