@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.76.3
+**Version:** 1.76.4
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -2486,6 +2486,7 @@ numbering schemes; they answer different questions.
 | **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
 | V2.3 | Community signals: external submission form, curator notes, related strategies | Backlog, lowest priority | Not started |
 | V2.4 | Overfit Check: paste a symphony, test it against the definition of overfitting using the 5,228 symphonies whose logic has gone a year unedited | Requested and specified 2026-08-28, respecified the same day after the owner rejected peer ranking, then **sequenced late at the owner's request**. **Tier 1 shipped 2026-09-06 as v1.75.0**, then substantially corrected in **v1.76.0** (fitted-era split, graded Overfit Score, the ceiling finding); Tiers 2 and 3 remain as specified | **Tier 1 Complete**, Tiers 2-3 not started |
+| V2.5 | Documentation audit against the external standard, and social sharing tags on every shareable page | **Queued at the owner's request, 2026-09-07.** Specified below and in Section 27; deliberately not executed at specification time | Not started |
 | V3.0 | Formerly Monetization Expansion | **Removed entirely, 2026-08-15.** Not deferred | n/a |
 | V4.0 | Signal discovery and robustness tooling, five candidate external forks | Ideation only. No work to begin until V2.x is well underway | Not started |
 
@@ -5295,6 +5296,125 @@ The tool would have been precise, well presented, and measuring the wrong thing.
 framing survives because it can be checked, and checking it is what exposed both the turnover
 finding and the weakness of the metric the tool was originally going to be built on.
 
+
+---
+
+### V2.5: Documentation Audit and Social Sharing Tags
+
+**Status:** queued 2026-09-07 at the owner's request. Two related pieces of work, specified in full
+here and **deliberately not executed at the time of specification**. The owner's instruction was to
+add them to the roadmap rather than build them, which is why this section is longer than the work
+is far along.
+
+**The external standard this is audited against** lives at
+`https://azqato.github.io/prompts/#/documentation`. It is the owner's portable documentation
+standard, applied across projects rather than written for this one, and it is the authority for
+this item. Read it before starting: the summary below records what it asks for and how this project
+already stands against it, but it is a summary and the source can move.
+
+#### Part 1: the documentation audit
+
+**What the standard asks for.** A full read-only crawl of the codebase, then every document in
+`/docs` read in full and compared against it, then updated. The rule that matters most is **merge,
+do not overwrite**: documentation holds intent and rationale that cannot be reconstructed from code,
+so where the code contradicts a document the original text stays and the observed reality is added
+beside it as a marked discrepancy for the author to resolve. Code can be wrong as easily as a
+document. A second rule sits underneath it: **an existing project rule beats an imported default**,
+and where the two differ the difference is flagged rather than silently replaced.
+
+**Where this project already stands.** Better than a cold start, which is worth recording so the
+audit is scoped as a gap-check rather than a rewrite:
+
+| The standard asks for | This project has | Gap |
+|---|---|---|
+| Four documents: `README.md` at root, `PRD.md`, `DESIGN.md`, `PATCHNOTES.md` in `/docs` | Exactly that structure, since V1.3 consolidated 12 files into 4 | **None.** Already conformant |
+| `LICENSE.md` at root, all rights reserved, with a NO WAIVER clause and an AI and search carve-out | Exactly that. Added v1.30.4 by owner decision, renamed from `LICENSE` to `LICENSE.md` in v1.31.2 (Section 25, item 26), referenced from `robots.txt`, and carrying all the required sections | **None.** Verified 2026-09-07 rather than assumed: the first draft of this table listed the extension as an open gap, and reading the repository disproved it |
+| `robots.txt` at root, fully open, with a comment marking that as deliberate | Exactly that, including the comment and the `Sitemap:` line | **None** |
+| `sitemap.xml` at root, or elsewhere if named in `robots.txt` | At root, and named in `robots.txt` | **None** |
+| PRD sections: problem, users, goals, non-goals, stories, features, constraints, assumptions, success criteria, tenets, roadmap, metrics, runbook, technical requirements, conventions, writing style, browser testing, verification environment, security, licensing, social sharing, deprecation, doc versus reality, risks, working practice, press release, FAQ | Sections 1 to 27 cover all of these | **Verify rather than assume.** Every section exists by name; whether each is current against the code is the audit's actual job |
+| Em dashes prohibited in three forms, swept project-wide with a count reported | Section 19 states the rule; the Unicode character and the entity both measure zero in the docs | **Sweep the rest of the project**, not only `/docs`. Page copy, code comments and commit bodies were never swept as a set |
+| Edge for browser testing, never Chrome, with the binary path in the runbook | Section 11 and the harness both state it | **None** |
+| Verify locally, never against production | Stated and enforced in practice | **None** |
+
+**So the audit is not a rewrite.** It is a currency check on 27 existing sections plus two specific
+sweeps, and the honest expectation is that it finds stale numbers rather than missing structure.
+Section 24 already carries 28 rows of exactly that kind, three of them added the day this was
+queued, which is the best evidence for what the audit will turn up.
+
+**The one thing to be careful about.** The standard says completeness beats brevity in the PRD, and
+this PRD is already past 7,200 lines. That instruction is a licence for more facts, not more words
+around the same facts, and it explicitly is not a licence for filler. An audit that grows the
+document without adding information has failed on the standard's own terms.
+
+#### Part 2: social sharing tags
+
+**Specified in full in Section 27**, which was written first because the owner asked for the
+no-drifting-numbers rule to be recorded before any page was touched. That ordering turned out to
+matter: see below.
+
+**Current state, measured 2026-09-07: zero Open Graph and zero Twitter Card tags across all 15 HTML
+files.** A link pasted into a chat client renders from whatever the client can scrape unaided,
+normally `<title>` and `<meta name="description">`. What ships today is a fallback, not a design.
+
+**The scope when this is built.** Twelve pages get tags, being the twelve in `sitemap.xml`. Three
+are deliberately excluded and the exclusions belong in Section 27 so a later reader can tell a
+decision from an oversight: `404.html`, because sharing tags make a broken address look legitimate;
+`_wf-mockup.html`, an unshipped mockup; and `signal-lab.html`, a `noindex` redirect stub kept only
+so old Signal Lab links resolve.
+
+**Four implementation details that are not obvious and cost a rebuild if missed.**
+
+1. **Placement is load-bearing.** Tags go immediately after the viewport meta, above the stylesheet
+   and above any inline `<style>`. Some scrapers read only the first few KB of a document, and
+   `overfit.html` carries roughly seventy lines of inline CSS in its head. A tag pushed below that
+   can fall outside the window a scraper actually fetches, and the failure is indistinguishable
+   from having no tags at all.
+2. **`og:*` takes `property=`, `twitter:*` takes `name=`.** This is the specification, not a
+   preference. A tag written the wrong way validates as HTML, renders nothing, and reports no error.
+3. **`og:url` is absolute, per page, and unique.** Copying a head block between pages and forgetting
+   to change the URL is the most common failure and the most silent: every card still renders, and
+   every one of them links to whichever page was copied from.
+4. **Escape the attribute.** A stray `&` or a straight quote in a description truncates the tag
+   mid-attribute.
+
+**One description per page, not two.** Where a page's existing `<meta name="description">` is
+accurate it is reused verbatim as the `og:description` rather than competing with a second one.
+Where it is stale it is corrected so both carry the same sentence. Four of the twelve were found
+accurate and reusable; the rest need rewriting, three of them because they are wrong rather than
+merely thin (Section 24, rows 26 to 28).
+
+**Writing Section 27 before touching a page caught a live violation in the draft.** The prepared
+`rsi.html` description read "the 20 ETF tickers", and 20 is read from `data/rsi.json`. It is exactly
+the drifting number the section prohibits, in the first batch of tags written after the section was
+committed. "10-day RSI" in the same sentence is fine, because the window is a constant of the
+indicator rather than a measurement. **This is the argument for keeping the two parts of V2.5 in
+this order:** the policy is cheap to write and catches its own violations, and a tag shipped with a
+number in it is invisible until it is wrong.
+
+**Compliance is a script, not an argument.** A read-only checker asserting: all six tags present on
+every page that should carry them; `og:title` at 70 characters or fewer, `og:description` 200 or
+fewer, `og:site_name` 20 or fewer, with the actual count reported for anything over the target
+budgets of 60 and 150 so a person can judge the borderline cases; every `og:url` absolute, `https`,
+and unique across the site; no `og:title` containing the `og:site_name` string; and where `og:image`
+is absent, `twitter:card` set to `summary`. **Whether that checker becomes a sixth deploy gate is an
+open question and is not to be decided by whoever writes it.** The precedent is the V1.20 item 10
+validator, which was written and deliberately left manual pending an owner ruling. Section 25
+carries this as an open question.
+
+**The drifting-numbers rule cannot be checked by a script**, because prose cannot distinguish a
+measurement from a constant. It is enforced at review, which is why it is written down at length in
+Section 27 rather than encoded.
+
+#### What is deliberately not in scope
+
+**Per-strategy sharing cards.** Strategy pages are addressed as `strategies.html?slug=...` and
+resolved in JavaScript. A scraper reads raw HTML and never runs it, so all 25 strategy URLs in the
+sitemap would share one identical card no matter what is written. Fixing that means pre-rendered
+pages or an edge worker, which is a structural change to how the site is built and not a tagging
+change. Recorded here so a later reader does not mistake the single shared card for an oversight.
+
+---
+
 ### V3.0: Removed (2026-08-15)
 
 Formerly "Monetization Expansion" (premium strategy tier, newsletter integration, strategy performance alerts). **Removed entirely, not deferred.** The site will not be monetized beyond voluntary reader donations via Buy Me a Coffee, reached through the Support link in the nav and footer, and will not collect user data. See Section 3 (Goals) and Section 4 (Non-Goals). Do not reintroduce ads, paid tiers, email capture, or alert products; if the funding model is ever revisited, that is a fresh product decision, not a resumption of this section.
@@ -7138,6 +7258,19 @@ Numbered for reference. Open unless marked otherwise.
 
 ---
 
+27. **Should the social sharing compliance checker become a sixth deploy gate?** Section 14, V2.5
+    specifies a read-only script asserting tag presence, character budgets, `og:url` uniqueness and
+    the `twitter:card` fallback. Whether it runs in `deploy.yml` alongside the existing five is
+    **not a decision for whoever writes it.** The precedent is the V1.20 item 10 validator, which
+    was written and deliberately left manual pending an owner ruling, on the reasoning that a gate
+    is a promise to block a deploy and adding one is a policy change rather than a convenience.
+    Arguments each way, so the owner has both: a gate would catch the failure mode that actually
+    happens here, a head tag going stale where no test looks, which is precisely how three of
+    Section 24's rows were sitting live and unnoticed. Against it, the drifting-numbers rule that
+    caused those rows **cannot be checked by any script**, so a passing gate would certify the
+    cheap half of the policy and imply the expensive half, which is worse than no gate at all if it
+    stops anyone reading the tags. **Owner ruling required.**
+
 ## 26. Press Release
 
 Written in the working-backwards style: what the announcement would say if Composer Atlas launched
@@ -7218,7 +7351,11 @@ permanent, and Section 20 says so rather than papering over it.
 
 ## 27. Social Sharing Tags
 
-**Status: policy only. No page carries these tags yet.** Measured 2026-09-07, the site has zero
+**Status: policy only, and queued as roadmap item V2.5.** No page carries these tags yet, and
+that is a scheduling decision rather than an omission: the owner asked on 2026-09-07 for the rule to
+be recorded and the work queued rather than executed. Section 14, V2.5 carries the implementation
+spec, the twelve pages in scope, the three deliberate exclusions, and the four implementation
+details that are easy to get wrong. Measured 2026-09-07, the site has zero
 Open Graph and zero Twitter Card tags across all 15 HTML files. A link pasted into a chat client
 today renders from whatever that client can scrape on its own, usually the `<title>` tag and
 `<meta name="description">`. That is a fallback, not a design. Recorded here as a discrepancy in

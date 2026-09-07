@@ -5,6 +5,55 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.76.4] - 2026-09-07
+
+### Added
+
+- **Roadmap item V2.5: documentation audit and social sharing tags.** Queued at
+  the owner's request rather than executed. The authority is the owner's portable
+  standard at `https://azqato.github.io/prompts/#/documentation`, recorded in the
+  section so a later reader fetches it rather than working from a summary.
+- **A gap table measuring this project against that standard.** The four-document
+  structure, `LICENSE.md`, `robots.txt`, `sitemap.xml`, the PRD section list, the
+  Edge testing rule and the verify-locally rule are all already conformant, so the
+  audit is scoped as a currency check on 27 existing sections plus two sweeps, not
+  a rewrite.
+- **The social sharing implementation spec**: the twelve pages in scope, the three
+  deliberate exclusions (`404.html`, `_wf-mockup.html`, and the `noindex` redirect
+  stub `signal-lab.html`), and four details that are easy to get wrong and costly
+  to miss. Tag placement above any inline CSS, because some scrapers read only the
+  first few KB and `overfit.html` carries seventy lines of inline style in its
+  head. `og:*` takes `property=` while `twitter:*` takes `name=`, and a tag written
+  the wrong way validates as HTML and renders nothing. `og:url` must be per page,
+  since a copied head block still renders a card that links to the wrong page.
+  And attribute escaping, since a stray ampersand truncates the tag.
+- **Open question 27: should the compliance checker be a sixth deploy gate?**
+  Deliberately not decided by whoever writes it, following the V1.20 item 10
+  precedent. The argument against is recorded alongside the argument for: the
+  drifting-numbers rule cannot be checked by any script, so a passing gate would
+  certify the cheap half of the policy and imply the expensive half.
+
+### Fixed
+
+- **A wrong claim caught before it shipped, in the new section itself.** The gap
+  table's first draft listed the licence filename as an open question, on the
+  assumption that the repository held a `LICENSE` rather than a `LICENSE.md`.
+  Reading the repository disproved it: the rename landed in v1.31.2 and is already
+  recorded as Section 25 item 26. The row now states it was verified rather than
+  assumed, which is the same rule the audit it describes is built on.
+
+### Notes
+
+- **No page markup changed.** The tags were written and applied during this
+  session, then reverted in full when the owner asked for the work to be queued
+  instead. The site still carries zero Open Graph and Twitter Card tags.
+- **Writing the policy first caught a violation of it.** The prepared `rsi.html`
+  description read "the 20 ETF tickers", and 20 is read from `data/rsi.json`,
+  making it exactly the drifting number Section 27 had prohibited hours earlier.
+  Recorded in V2.5 as the argument for keeping the policy ahead of the tags.
+
+---
+
 ## [1.76.3] - 2026-09-07
 
 ### Documentation
