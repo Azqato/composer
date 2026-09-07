@@ -5,6 +5,22 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.76.1] - 2026-09-07
+
+### Changed
+
+- **The Overfit Check leads with the paste box; the population findings follow
+  it.** Owner decision, reversing the ordering settled earlier the same day. The
+  reasoning for putting the findings first was that they are true before anyone
+  types anything and survive a reader pasting a symphony the database has never
+  seen, which is still why they sit immediately below rather than behind
+  anything. But being the more important finding is not the same as being the
+  first thing to show, and checking a symphony is why a reader opens the page.
+  Results render between the box and the findings, so nobody scrolls past the
+  analysis to reach their own answer. The render harness now asserts the order.
+
+---
+
 ## [1.76.0] - 2026-09-07
 
 ### Changed

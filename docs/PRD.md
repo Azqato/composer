@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.76.0
+**Version:** 1.76.1
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -5186,9 +5186,17 @@ because the reasoning is what a later tier will need.
   error.** The shipped page names what it could not do and why the population findings above still
   hold, and points at the Database search. It cannot yet say anything Tier 2 would say, because
   Tier 2 does not exist; when it does, this is the branch it slots into.
-- **Should the page lead with the population table rather than the pasted symphony?** **Settled:
-  yes, by owner decision 2026-09-07.** It is the one finding that is true before anyone types
-  anything, and it survives the reader pasting a symphony the database has never seen.
+- **Should the page lead with the population table rather than the pasted symphony?** **Settled
+  twice, and the second answer is the shipped one. The paste box leads, by owner decision
+  2026-09-07 (v1.76.1), reversing the ruling made earlier the same day.** The original reasoning
+  still holds and is why the findings sit immediately below rather than behind anything: the
+  population result is true before anyone types, and it survives a reader pasting a symphony the
+  database has never seen. What it does not do is answer why the reader came. **Being the more
+  important finding is not the same as being the first thing to show**, and the page had been
+  ordered by importance rather than by use. Results render between the box and the findings, so a
+  reader who pastes never scrolls past the analysis to reach their own answer, and one who does not
+  paste meets the findings immediately. The DOM order is now asserted by the render harness, since
+  nothing else would catch a later edit quietly restoring it.
 - **Can turnover be separated from trading costs?** **Sharpened, not settled.** `total_costs` is
   reported by the same backtest that produced `annualized_rate_of_return`, and
   `refresh_full_database.py` requests it with slippage and both fee flags on, so **the in-sample

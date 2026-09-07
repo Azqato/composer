@@ -95,26 +95,9 @@
         </p>
       </div>
 
-      <!-- Tier 1, part one: the population result, which is true before anyone pastes anything -->
-      <div class="of-panel">
-        <div class="of-lede">
-          <span class="n" id="of-lede-n">-</span>
-          <span class="lbl" id="of-lede-lbl">of symphonies still deliver their backtested annual return once the author stops editing</span>
-        </div>
-        <p class="of-note" id="of-lede-sub"></p>
-      </div>
-
-      <div class="of-panel">
-        <h2>Two ways of asking, and they disagree</h2>
-        <p class="of-note" style="margin-top:0">
-          The same question measured twice, because each measurement has a flaw the other does not.
-          Read them together rather than picking one.
-        </p>
-        <div class="of-cols" id="of-cohorts"></div>
-        <p class="of-note" id="of-cohort-note"></p>
-      </div>
-
-      <!-- Tier 1, part two: the lookup -->
+      <!-- Tier 1, part two: the lookup. Placed first by owner decision
+           2026-09-07: the population findings are the more important result
+           but they are not what a reader arrives to do. -->
       <div class="of-panel">
         <label class="of-label" for="of-in">Check one symphony</label>
         <p class="of-hint">
@@ -132,6 +115,26 @@
       </div>
 
       <div id="of-out" style="display:none"></div>
+
+      <!-- Tier 1, part one: the population result, which is true before anyone
+           pastes anything and holds when the database has never seen theirs. -->
+      <div class="of-panel">
+        <div class="of-lede">
+          <span class="n" id="of-lede-n">-</span>
+          <span class="lbl" id="of-lede-lbl">of symphonies still deliver their backtested annual return once the author stops editing</span>
+        </div>
+        <p class="of-note" id="of-lede-sub"></p>
+      </div>
+
+      <div class="of-panel">
+        <h2>Two ways of asking, and they disagree</h2>
+        <p class="of-note" style="margin-top:0">
+          The same question measured twice, because each measurement has a flaw the other does not.
+          Read them together rather than picking one.
+        </p>
+        <div class="of-cols" id="of-cohorts"></div>
+        <p class="of-note" id="of-cohort-note"></p>
+      </div>
 
       <div class="of-panel">
         <h2>A bigger backtest predicts a better future, up to a point</h2>
@@ -708,7 +711,7 @@
                  'compare it against. This check works by looking up what a symphony actually did ' +
                  'after its author stopped editing it, which needs a recorded history. You can ' +
                  '<a href="' + u('/database.html') + '">search the database</a> for it, or read ' +
-                 'the population results above, which hold regardless.', 'info');
+                 'the population findings below, which hold regardless.', 'info');
           return;
         }
         setMsg('', '');
