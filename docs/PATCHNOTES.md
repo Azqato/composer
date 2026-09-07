@@ -5,6 +5,40 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.75.1] - 2026-09-07
+
+### Fixed
+
+- **The Overfit Check verdict described the last twelve months as though it
+  covered the whole untouched period.** It read `trailing_one_year_return` and
+  attached the words "since the logic edit" to it, so a symphony untouched for
+  1,417 days that lost money in the last year was reported as "has lost money
+  since", directly above a panel showing **+27.7% a year over that same
+  period**. The page contradicted itself on screen and the wrong half was the
+  one in bold. Where an out-of-sample re-run exists it now drives the verdict,
+  because it genuinely covers the period the sentence claims; the twelve-month
+  figure is now only ever described as twelve months.
+- **When the recent year and the longer record disagree in sign, the page says
+  so** instead of leaving the reader to notice.
+
+### Added
+
+- **Cumulative returns beside the annualized ones** in the out-of-sample panel,
+  and the untouched window in years as well as days. The example symphony
+  returned **+156.2% cumulative** over 3.9 untouched years.
+- **What the backtested rate would have compounded to over the same span**,
+  shown against what was actually delivered. For the same symphony that is
+  **+353,937% against +156.2%**. Compounding is what makes the gap legible: in
+  annual terms it is one number against another, in cumulative terms it is the
+  difference between doubling your money and multiplying it by three thousand.
+  The compounded figure is labelled hypothetical wherever it appears, since the
+  backtest posted its rate over its own window and not this one.
+- **SPY's cumulative return over the window.** `excess_return` is cumulative and
+  was sitting directly beneath an annualized figure under a similar label, so
+  the two now appear as the same kind of number.
+
+---
+
 ## [1.75.0] - 2026-09-06
 
 **Overfit Check**, a new page at `/overfit.html`. Paste a symphony and find out

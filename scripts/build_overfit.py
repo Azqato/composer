@@ -159,7 +159,7 @@ def build_index(usable, series):
     wall of numbers about an opaque 20-character id, and the reader has no way
     to tell whether the thing they pasted resolved to the thing they meant."""
     ids, names, arr, t1y, days, turn = [], [], [], [], [], []
-    oarr, oexc, odays = [], [], []
+    oarr, oexc, odays, ocum, ospy = [], [], [], [], []
     for r in usable:
         sid = r.get("symphony_id")
         if not sid:
@@ -175,6 +175,13 @@ def build_index(usable, series):
         oarr.append(r4(num(o.get("annualized_rate_of_return"))))
         oexc.append(r4(num(o.get("excess_return"))))
         odays.append(num(o.get("oos_calendar_days")))
+        # Cumulative over the untouched window, and SPY's cumulative over the
+        # same window. An annualized rate alone is easy to misread across a
+        # multi-year window, and excess_return is itself cumulative, so showing
+        # it beside an annualized figure without its cumulative sibling puts two
+        # different units next to each other under similar labels.
+        ocum.append(r4(num(o.get("cumulative_return"))))
+        ospy.append(r4(num(o.get("spy_return"))))
     return {
         "ids": ids,
         "names": names,
@@ -185,6 +192,8 @@ def build_index(usable, series):
         "true_oos_arr": oarr,
         "true_oos_excess": oexc,
         "true_oos_days": odays,
+        "true_oos_cumulative": ocum,
+        "true_oos_spy": ospy,
     }
 
 

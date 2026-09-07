@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.75.0
+**Version:** 1.75.1
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -5037,6 +5037,39 @@ text nodes only.
 edit, so the example button landed on the "not enough untouched history to judge" branch and
 demonstrated nothing. The example is now one that exercises every branch and whose two measures
 disagree. **A demo input has to be chosen against the code paths, not picked for being recognisable.**
+
+#### The period-confusion bug, found by the owner within a day of shipping
+
+**The verdict sentence read `trailing_one_year_return` and described it as "since the logic edit".**
+On a symphony untouched for 1,417 days it therefore reported "has lost money since" while the panel
+immediately below it reported **+27.7% a year over that same period**. The page contradicted itself
+on screen, and the wrong half was the half in bold at the top.
+
+**The lesson is not "check your labels".** It is that this page carries **two measures over two
+different spans**, `trailing_one_year_return` (twelve months, always) and the `data/oos.json` re-run
+(the whole untouched window, whatever its length), and any sentence built from either one has to
+name its span. The bug survived 24 passing assertions because every one of them checked whether text
+*rendered*, and none checked whether it was *true*. The regression test added with the fix asserts
+the claim, not the presence: on this symphony the verdict must not say the window lost money.
+
+**Fixed by rebuilding the verdict around the better measure.** Where an out-of-sample re-run exists
+it now drives the verdict, since it genuinely covers "since the edit"; the twelve-month figure is
+only ever described as twelve months. Where the two disagree in sign, the page now says so outright
+rather than leaving the reader to find the contradiction.
+
+**Cumulative returns are now shown beside the annualized ones**, at the owner's request, and this
+turned out to matter more than a formatting preference. The example symphony returned **+156.2%
+cumulative** over 3.9 untouched years, which is +27.7% a year. Its backtested **+725.6% a year
+compounds to +353,937%** over the same span. **Compounding is what makes the gap legible**: in
+annualized terms it is one number against another, and in cumulative terms it is the difference
+between doubling your money and multiplying it by three thousand. The compounded figure is labelled
+hypothetical wherever it appears, because the backtest earned its rate over its own window, not
+this one.
+
+**One unit inconsistency went with it.** `excess_return` in `data/oos.json` is cumulative, and it
+was being displayed directly beneath an annualized return under similarly-shaped labels. SPY's
+cumulative return is now shown alongside it so the comparison is between two figures of the same
+kind.
 
 #### Open questions
 

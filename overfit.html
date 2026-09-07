@@ -190,6 +190,22 @@
         if (typeof v !== 'number') return null;
         return (v >= 0 ? '+' : '') + (100 * v).toFixed(1) + ' pts';
       }
+      // A backtested rate compounded over several years reaches numbers where a
+      // decimal place is noise and thousands separators are the only thing
+      // keeping it readable. Matches formatLargePct in js/app.js.
+      function pctBig(v) {
+        if (typeof v !== 'number' || !isFinite(v)) return null;
+        if (Math.abs(v) < 10) return pct(v);
+        return (v >= 0 ? '+' : '') +
+          (100 * v).toLocaleString('en-US', { maximumFractionDigits: 0 }) + '%';
+      }
+      // What the backtested annual rate would have compounded to over the same
+      // span. Hypothetical, and labelled as such wherever it is shown: the
+      // backtest earned its rate over its own window, not this one.
+      function compound(rate, days) {
+        if (typeof rate !== 'number' || typeof days !== 'number' || rate <= -1) return null;
+        return Math.pow(1 + rate, days / 365.25) - 1;
+      }
       function n(v) { return typeof v === 'number' ? v.toLocaleString() : '-'; }
 
       if (!D) {
@@ -302,7 +318,9 @@
           turnover: idx.turnover[i],
           oosArr: idx.true_oos_arr[i],
           oosExcess: idx.true_oos_excess[i],
-          oosDays: idx.true_oos_days[i]
+          oosDays: idx.true_oos_days[i],
+          oosCum: idx.true_oos_cumulative[i],
+          oosSpy: idx.true_oos_spy[i]
         };
       }
 
@@ -336,12 +354,38 @@
         var out = document.getElementById('of-out');
         var verdict, html = '';
 
-        // Rank the symphony's own outcome against the population, in words, without
-        // inventing a score. Every branch names what it could not see.
+        // Judge the symphony in words, without inventing a score, and be exact
+        // about WHICH PERIOD each number covers. There are two measures here and
+        // they cover different spans: `t1y` is the last twelve months only,
+        // while `oosArr` covers the whole untouched window. An earlier version
+        // of this verdict read t1y and called it "since the logic edit", which
+        // on a symphony untouched for four years reported a losing year as
+        // though it were a losing four years, contradicting the panel directly
+        // below it. Where a true out-of-sample re-run exists it is the better
+        // measure of "since the edit" and the verdict is built on it; the
+        // twelve-month figure is only ever described as twelve months.
         var kept = (typeof r.t1y === 'number' && typeof r.arr === 'number')
           ? r.t1y - r.arr : null;
         var oosKept = (typeof r.oosArr === 'number' && typeof r.arr === 'number')
           ? r.oosArr - r.arr : null;
+        var untouched = 'It has gone <strong>' + n(r.days) + ' days</strong> without a logic edit';
+
+        function versusBacktest(actual) {
+          if (actual >= r.arr) {
+            return 'That is <strong>at or above its backtested rate</strong>, which only ' +
+              O.delivered_full + '% of the re-run pool managed.';
+          }
+          if (actual >= 0.5 * r.arr) {
+            return 'That is <strong>more than half</strong> its backtested ' + pct(r.arr) +
+              ' a year, which puts it in the better quarter of the re-run pool.';
+          }
+          if (actual > 0) {
+            return 'That is <strong>well short</strong> of its backtested ' + pct(r.arr) +
+              ' a year, but positive. That is the single most common outcome in this database.';
+          }
+          return 'It <strong>lost money</strong> over that window, against a backtest of ' +
+            pct(r.arr) + ' a year.';
+        }
 
         if (typeof r.days !== 'number') {
           verdict = 'This symphony has no recorded date for its last logic edit, so the only ' +
@@ -351,24 +395,42 @@
             'the year this test needs. There is no verdict here yet, and that is the honest ' +
             'answer rather than a weaker one dressed up. Come back after ' +
             n(D.min_oos_days - r.days) + ' more days.';
+
+        } else if (typeof r.oosArr === 'number') {
+          // The good case: a real re-run over the untouched window.
+          verdict = untouched + '. Measured over that whole untouched window it returned ' +
+            '<strong>' + pctBig(r.oosCum) + ' cumulative</strong>, or <strong>' + pct(r.oosArr) +
+            ' a year</strong>. ' + versusBacktest(r.oosArr);
+          // When the recent year disagrees in sign with the longer record, say
+          // so rather than letting the reader find the contradiction.
+          if (typeof r.t1y === 'number' && (r.t1y < 0) !== (r.oosArr < 0)) {
+            verdict += ' Its <strong>last twelve months run the other way</strong>, at ' +
+              pct(r.t1y) + ', so the recent stretch and the longer record disagree.';
+          }
+
         } else if (kept === null) {
-          verdict = 'Its logic has gone <strong>' + n(r.days) + ' days</strong> untouched, but ' +
-            'the return figures needed for the comparison are missing.';
+          verdict = untouched + ', but the return figures needed for the comparison are missing.';
         } else if (kept >= 0) {
-          verdict = 'It has gone <strong>' + n(r.days) + ' days</strong> without a logic edit and ' +
-            '<strong>kept its backtest</strong> over the last twelve months, which puts it in the ' +
-            T.delivered_full + '% that manage it.';
+          verdict = untouched + '. <strong>Over the last twelve months</strong> it matched or beat ' +
+            'its backtested rate, which puts it in the ' + T.delivered_full + '% that manage it. ' +
+            'No out-of-sample re-run exists for it, so this is a twelve-month reading rather than ' +
+            'a verdict on the whole untouched period.';
         } else if (r.t1y >= 0.5 * r.arr) {
-          verdict = 'It has gone <strong>' + n(r.days) + ' days</strong> without a logic edit and ' +
-            'delivered <strong>more than half</strong> of its backtested return, which is better ' +
-            'than roughly ' + (100 - T.delivered_half).toFixed(0) + '% of the database managed.';
+          verdict = untouched + '. <strong>Over the last twelve months</strong> it delivered more ' +
+            'than half its backtested rate, better than roughly ' +
+            (100 - T.delivered_half).toFixed(0) + '% of the database managed. No out-of-sample ' +
+            're-run exists for it, so this is a twelve-month reading rather than a verdict on the ' +
+            'whole untouched period.';
         } else if (r.t1y > 0) {
-          verdict = 'It has gone <strong>' + n(r.days) + ' days</strong> without a logic edit and ' +
-            'is <strong>still profitable</strong>, but well short of its backtest. That is the ' +
-            'single most common outcome in this database.';
+          verdict = untouched + '. <strong>Over the last twelve months</strong> it stayed ' +
+            'profitable but fell well short of its backtest, the single most common outcome in ' +
+            'this database. No out-of-sample re-run exists for it, so this is a twelve-month ' +
+            'reading rather than a verdict on the whole untouched period.';
         } else {
-          verdict = 'It has gone <strong>' + n(r.days) + ' days</strong> without a logic edit and ' +
-            'has <strong>lost money</strong> since, against a backtest of ' + pct(r.arr) + '.';
+          verdict = untouched + '. <strong>Over the last twelve months</strong> it lost money, ' +
+            'against a backtest of ' + pct(r.arr) + ' a year. No out-of-sample re-run exists for ' +
+            'it, so this is a twelve-month reading and not a verdict on the whole untouched ' +
+            'period, which may have gone differently.';
         }
 
         html += '<div class="of-panel">' +
@@ -379,21 +441,35 @@
           row('Days since the last logic edit', n(r.days)) +
           row('Actual return, last twelve months', pct(r.t1y),
               typeof r.t1y === 'number' ? (r.t1y >= 0 ? 'pos' : 'neg') : 'none') +
-          row('Kept from the backtest', pts(kept),
+          row('Kept from the backtest, last twelve months', pts(kept),
               typeof kept === 'number' ? (kept >= 0 ? 'pos' : 'neg') : 'none') +
           '</div>';
 
         // The true out-of-sample re-run, when this symphony has one.
         html += '<div class="of-panel"><h2>Measured over its untouched window only</h2>';
         if (typeof r.oosArr === 'number') {
+          var btCum = compound(r.arr, r.oosDays);
+          var years = r.oosDays / 365.25;
           html += '<p class="of-note" style="margin-top:0">A fresh backtest starting the day after ' +
             'its last logic edit, so nothing in this window was available to fit to.</p>' +
-            row('Untouched window', n(r.oosDays) + ' days') +
-            row('Annualized return over that window', pct(r.oosArr),
-                r.oosArr >= 0 ? 'pos' : 'neg') +
-            row('Kept from the backtest', pts(oosKept),
+            row('Untouched window', n(r.oosDays) + ' days (' + years.toFixed(1) + ' years)') +
+            row('Cumulative return over that window', pctBig(r.oosCum),
+                r.oosCum >= 0 ? 'pos' : 'neg') +
+            row('Annualized', pct(r.oosArr), r.oosArr >= 0 ? 'pos' : 'neg') +
+            row('Kept from the backtest, annualized', pts(oosKept),
                 typeof oosKept === 'number' ? (oosKept >= 0 ? 'pos' : 'neg') : 'none') +
-            row('Against SPY over the same window', pct(r.oosExcess),
+            '<h3>Against what the backtest implied</h3>' +
+            row('Backtested rate compounded over the same span', pctBig(btCum)) +
+            row('Actually delivered', pctBig(r.oosCum), r.oosCum >= 0 ? 'pos' : 'neg') +
+            '<p class="of-note">The first line is <strong>hypothetical</strong>: it is this ' +
+            'symphony\'s backtested ' + pct(r.arr) + ' a year compounded across the same ' +
+            years.toFixed(1) + ' years, not anything it earned. The backtest posted that rate ' +
+            'over its own window. Compounding is why a gap that looks like a rounding error in ' +
+            'annual terms becomes the distance between these two numbers.</p>' +
+            '<h3>Against the market</h3>' +
+            row('SPY over the same window', pctBig(r.oosSpy),
+                typeof r.oosSpy === 'number' ? (r.oosSpy >= 0 ? 'pos' : 'neg') : 'none') +
+            row('Difference', pts(r.oosExcess),
                 typeof r.oosExcess === 'number' ? (r.oosExcess >= 0 ? 'pos' : 'neg') : 'none');
         } else {
           html += '<p class="of-note" style="margin-top:0">' +
