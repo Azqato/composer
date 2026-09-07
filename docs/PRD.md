@@ -2475,7 +2475,7 @@ numbering schemes; they answer different questions.
 | V1.15 | Full-scale refresh: every entry through at least one real API attempt | Complete; now maintained weekly | v1.11.23 |
 | V1.16 | Performance fix: columnar summary export, page weight | Complete, built ahead of slot | v1.11.0 |
 | V1.17 | Leaderboard scoring revision: reweighting, clamp constant, real S+ rank cut | Complete | v1.14.0-1 |
-| V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | Model settled and built 2026-09-06 as two permanent models behind a toggle; ships when the first full OOS fetch lands | In progress |
+| V1.18 | Leaderboard scoring revision II: out-of-sample weighting, and a simpler factor set | **Complete.** Shipped 2026-09-07 as two permanent models behind a toggle, Simplified default and canonical, on 3,175 true out-of-sample backtests | v1.74.0 |
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
 | V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | **Complete.** All 19 items shipped; 13, 14, 15 complete on all 24 visible strategies (v1.68.0); item 16 stores the daily series and the features it unblocks are tracked in Section 14 C3 | v1.72.0 |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
