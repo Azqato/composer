@@ -5,6 +5,25 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.79.1] - 2026-09-08
+
+### Fixed
+
+- **The v1.79.0 roadmap row claimed V2.2 was "complete as scoped". It is not.**
+  V2.2 is items A, B and C. A shipped, C's empirical null shipped, but **item B,
+  walk-forward validation, is unbuilt** and its checkbox in Section 14 was never
+  ticked. The row now says so. This mattered enough to correct on its own,
+  because B is the only item in the phase that can *fail* a rule rather than
+  caveat it: every day the Miner scores is in sample by construction, and B is
+  the only test that holds back days the search never saw.
+- **Open question 6 said the Signal Miner "has no defence against overfitting".**
+  Written before any of A, B or C existed, it was simply false as of v1.79.0. It
+  now records A and C as shipped and B as the outstanding half, and keeps the
+  standing caution, which is narrower than it was but has not gone away: the
+  headline numbers are still in-sample maxima over a large search.
+
+---
+
 ## [1.79.0] - 2026-09-08
 
 ### Added

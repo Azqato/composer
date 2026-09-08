@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.79.0
+**Version:** 1.79.1
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -2492,7 +2492,7 @@ numbering schemes; they answer different questions.
 | V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | **Complete.** All 19 items shipped; 13, 14, 15 complete on all 24 visible strategies (v1.68.0); item 16 stores the daily series and the features it unblocks are tracked in Section 14 C3 | v1.72.0 |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
-| **V2.2** | **Signal Miner robustness (items A, B, C).** Split 2026-09-07: the curated-set refresh and library expansion moved out to V2.6. **Item C's empirical null shipped 2026-09-08 as v1.79.0**, which closes the phase as scoped; the other five rating components named in Section 14 item C remain unbuilt and are not queued | **Complete as scoped** | Through v1.79.0 |
+| **V2.2** | **Signal Miner robustness (items A, B, C).** Split 2026-09-07: the curated-set refresh and library expansion moved out to V2.6. **A shipped** (parameter plateau scoring, verified by `run_harness.py plateau`). **C's empirical null shipped 2026-09-08 as v1.79.0**; the other five rating components C names remain unbuilt and are not queued. **B, walk-forward validation, is NOT built**, and it is the only item here that can fail a rule outright rather than caveat it | **A and C shipped, B outstanding** | Through v1.79.0 |
 | V2.3 | Community signals: external submission form, curator notes, related strategies | Backlog, lowest priority | Not started |
 | V2.4 | Overfit Check: paste a symphony, test it against the definition of overfitting using the 5,228 symphonies whose logic has gone a year unedited | Requested and specified 2026-08-28, respecified the same day after the owner rejected peer ranking, then **sequenced late at the owner's request**. **Tier 1 shipped 2026-09-06 as v1.75.0**, then substantially corrected in **v1.76.0** (fitted-era split, graded Overfit Score, the ceiling finding); Tiers 2 and 3 remain as specified | **Tiers 1 and 2 Complete** (Tier 2 shipped v1.77.0, 2026-09-08); Tier 3 remains hard-blocked on price coverage |
 | V2.5 | Documentation audit against the external standard, and social sharing tags on every shareable page | Queued 2026-09-07, executed 2026-09-08. **Social sharing tags shipped v1.78.0** on all twelve pages; the **documentation audit shipped v1.78.1** and its findings are in Section 24. Open question 27 is now ruled: the checker stays manual | **Complete** | v1.78.1 |
@@ -7396,13 +7396,23 @@ Numbered for reference. Open unless marked otherwise.
    leak silently because nothing compares the two files.** Open question 21 below asks whether that
    should be enforced rather than remembered.
 
-6. **The Signal Miner has no defence against overfitting**, and this is the largest open product
-   risk on the site. It searches millions of candidates and reports the best number it found, which
-   is the maximum of a large sample and biased upward by construction. Three designed-but-unbuilt
-   answers are recorded in Section 14 as items A (parameter plateau scoring), B (walk-forward
-   validation) and C (an overfitting rating combining them). A is nearly free and is the
-   prerequisite for the rest. **Until at least A ships, the tool's headline numbers should be read
-   as upper bounds, not expectations.**
+6. **PARTLY ADDRESSED. The Signal Miner's defences against overfitting are now two of three.** As
+   originally written this item said the tool had none, and that is no longer true. **A, parameter
+   plateau scoring, shipped** and is verified by `scripts/run_harness.py plateau`. **C's empirical
+   null shipped 2026-09-08 (v1.79.0)** and tells a visitor, above the results table, how the run
+   compares with the same search run against rotated data; on default settings it usually reports
+   that the best result is indistinguishable from noise.
+
+   **What remains open is B, walk-forward validation, and it is the important half.** A and C both
+   describe a result; neither can *fail* a rule, because **every day the Miner scores is in sample
+   by construction**: the search picked its winners by looking at the same days it then scores them
+   on. B is the only test here that holds back days the search never saw. A finished UI mockup
+   exists at `_wf-mockup.html` and nothing behind it is built.
+
+   **So the standing caution is narrower than it was but has not gone away: the tool's headline
+   numbers are still in-sample maxima over a large search, and should be read as upper bounds
+   rather than expectations.** The null panel now says a version of this to the visitor directly,
+   which the original item asked for.
 
 7. **`estimate()` keeps its own copy of the spec-count formula.** Collapsed into a shared
    `countSpecs()` at v1.23.0, which fixed the immediate problem, but the pattern has needed a
