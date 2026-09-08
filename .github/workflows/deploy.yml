@@ -67,6 +67,17 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # KEEP THIS LIST IN STEP WITH .assetsignore. They are two separate
+      # mechanisms for the same intent and neither reads the other: rsync here
+      # controls GitHub Pages, .assetsignore controls the Cloudflare/wrangler
+      # upload that is the LIVE path. data/symphony_scores.json is the proof
+      # they drift, having had to be added to each one separately.
+      #
+      # data/database.json and its .js twin are excluded as build inputs rather
+      # than site assets: no page lists database.js in a <script src>, nothing
+      # reads the window.DATABASE_DATA global, and database.html loads the
+      # 3.86 MiB data/database_summary.js instead. The fields held only in the
+      # big file are joined in at build time by build_strategy_extras.py.
       - name: Build deploy folder
         run: |
           mkdir -p _site
@@ -76,7 +87,7 @@ jobs:
             --exclude='_site' \
             --exclude='docs' \
             --exclude='scripts' \
-            --exclude='data/symphony_scores.json' \
+            --exclude='data/symphony_scores.json'             --exclude='data/database.json'             --exclude='data/database.js' \
             --exclude='README.md' \
             --exclude='.gitignore' \
             . _site/

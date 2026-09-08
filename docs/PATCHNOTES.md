@@ -5,6 +5,49 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.79.2] - 2026-09-08
+
+### Fixed
+
+- **`data/database.json` and `data/database.js`, 19 MiB each, are no longer
+  served publicly by either host.** Nothing on the site fetches them, and both
+  sat at **76% of Cloudflare's 25 MiB per-file limit while growing weekly**. That
+  is the same shape as the 2026-09-01 outage, when a routine metrics refresh
+  pushed `symphony_scores.json` over the limit and failed the entire deployment
+  with no symptom but a red build. Closes open question 2.
+- **Both exclusion lists were updated, not just one.** `.assetsignore` is read by
+  **wrangler only**; GitHub Pages ignores it and uses the `rsync --exclude` list
+  in `deploy.yml`. The open question's own suggested fix said only
+  "add them to `.assetsignore`", which would have left the Pages build still
+  publishing 38 MiB. The two lists had already drifted once, since
+  `symphony_scores.json` had to be added to each separately, so `deploy.yml` now
+  carries a comment saying they must be changed together.
+
+### Notes
+
+- **`.assetsignore` is not `.gitignore`.** Both files stay committed, stay on
+  disk, and the 17 scripts that read them, two of which are deploy gates, are
+  unaffected. `database.json` remains the source of truth for the pipeline; it
+  is a build input rather than a site asset.
+- **Verified by removal, not by reading.** `database.html` and `strategies.html`
+  were each loaded in headless Edge with the files present and again with them
+  moved aside, and the results were identical: 126 rendered rows and the correct
+  refresh badge on one, the Herfindahl Index and Annualized Turnover tiles on the
+  other, zero JavaScript errors either way. Those two tiles are fed by fields
+  that exist only in the big file and reach the page through a build-time join
+  into the 0.06 MiB `strategy_extras.json`.
+- **A first version of the verification probe lied and was rewritten.** It
+  searched `document.body.textContent` for "Failed to load", and `textContent`
+  includes the source of `<script>` elements, so it matched the page's own
+  error-handling string literals on a page that had loaded perfectly. The
+  replacement walks visible text nodes only and collects real `window.onerror`
+  events.
+- **`data/Full Database.xlsx` (5.5 MiB) is deliberately left served.** It is a
+  human-downloadable artifact rather than dead weight, and whether it should be
+  reachable is a product question rather than a hygiene one.
+
+---
+
 ## [1.79.1] - 2026-09-08
 
 ### Fixed

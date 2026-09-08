@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.79.1
+**Version:** 1.79.2
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -7312,10 +7312,43 @@ Numbered for reference. Open unless marked otherwise.
    Unverifiable from inside the repo. **Owner action:** check the Pages settings. Also worth deciding
    whether the GitHub Pages mirror still earns its keep now that Cloudflare is canonical.
 
-2. **`data/symphony_scores.json` (22.8MB) is publicly served by both hosts** despite three documents
-   saying otherwise, and nothing on the site fetches it. Same for `data/database.json` (18.7MB) and
-   `data/Full Database.xlsx` (5.8MB). About 47MB of publicly reachable files nothing requests.
-   **Fix:** add them to `.assetsignore`. Low effort, no risk.
+2. **CLOSED 2026-09-08 (v1.79.2). Large data files were publicly served by both hosts although
+   nothing on the site fetches them.** `data/symphony_scores.json` was excluded earlier;
+   `data/database.json` and its `.js` twin, **19 MiB each**, were not, and both were at **76% of
+   Cloudflare's 25 MiB per-file limit and growing weekly**. That is the exact shape of the
+   2026-09-01 outage, where a routine metrics refresh pushed `symphony_scores.json` over the limit
+   and failed the entire deployment with no symptom but a red build.
+
+   **The original fix as written here was incomplete, and this is the part worth carrying forward.**
+   It said "add them to `.assetsignore`". `.assetsignore` is read by **wrangler only**. GitHub Pages
+   ignores it entirely and uses the `rsync --exclude` list in `.github/workflows/deploy.yml`.
+   **These are two separate mechanisms for one intent, neither reads the other, and they had already
+   drifted:** `symphony_scores.json` had to be added to each one separately. Both lists now carry
+   the database files, and `deploy.yml` carries a comment saying they must be changed together.
+
+   **Why it is safe, verified rather than assumed.** No page lists `data/database.js` in a
+   `<script src>`; nothing anywhere reads the `window.DATABASE_DATA` global it defines; and
+   `database.html`'s only data path is `data/database_summary.js`, a **3.86 MiB** columnar export
+   carrying the same **6,816 rows** and 29 of the 37 fields, with a detail modal that renders from a
+   row already in memory rather than fetching. The eight fields held only in the big file
+   (`active_asset_nodes`, `annualized_turnover`, `cumulative_return`, `herfindahl_index`, `max`,
+   `mean`, `min`, `total_costs`) reach `strategies.html` through a **build-time** join:
+   `build_strategy_extras.py` writes the 0.06 MiB `data/strategy_extras.json`, having rejected a
+   browser-side join against 6,669 entries on page weight.
+
+   **Tested by moving both files aside and reloading.** `database.html` and `strategies.html` were
+   each loaded in headless Edge twice, once with the files present and once with them absent, and
+   the probe results were **identical**: 126 rendered rows and the correct refresh badge on one,
+   the Herfindahl Index and Annualized Turnover tiles plus the right title on the other, zero
+   JavaScript errors either way. A first version of that probe reported a false positive, because
+   `document.body.textContent` includes the source of `<script>` elements and so matched the page's
+   own error-handling string literals on a page that had loaded perfectly; the probe was rewritten
+   to walk visible text only. **`.assetsignore` is not `.gitignore`:** both files stay committed and
+   on disk, and the 17 scripts that read them, two of them deploy gates, are unaffected.
+
+   **Still open, deliberately:** `data/Full Database.xlsx` (5.5 MiB) is left served. It is a
+   human-downloadable artifact rather than dead weight, and whether it should be reachable is a
+   product question rather than a hygiene one.
 
 3. **CLOSED 2026-08-24 (v1.25.1). `robots.txt` advertised a sitemap that did not exist.** Every
    crawler that read it was sent to a 404. Resolved by generating the sitemap rather than dropping
