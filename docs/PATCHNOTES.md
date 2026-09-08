@@ -5,6 +5,47 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.77.0] - 2026-09-08
+
+### Added
+
+- **Overfit Check Tier 2: a structural read of the pasted symphony.** Tier 1
+  answers what a symphony actually did after its author stopped editing it,
+  which needs a database match. Tier 2 answers how it was built, which needs
+  only the tree, so it works on symphonies the database has never seen. Six
+  observations, all readable from the JSON alone: free parameters against the
+  fitted era, RSI thresholds sitting off the conventional levels, near-duplicate
+  gates within three points on the same indicator, lookback windows within five
+  days of each other, conditions against distinct assets, and nesting depth.
+- **The page now accepts raw symphony JSON**, not only a URL or ID. Pasting the
+  JSON keeps everything in the browser; pasting a URL or ID asks Composer for
+  the tree the same way `converter.html` does, with the same manual-paste
+  fallback when CORS blocks it.
+- `scripts/harness/tier2.js` and `scripts/harness/_edge_of.py`, a launcher for
+  drivers against `overfit.html`. 28 assertions against a hand-constructed tree
+  with one correct answer per measure, rather than a real symphony where a wrong
+  answer and a right one both look plausible.
+
+### Changed
+
+- **The privacy line on the lookup panel is now conditional, because the claim
+  changed.** It said nothing you paste leaves your browser, which was true when
+  the only input was an ID checked against a downloaded table. Reading the logic
+  needs the symphony itself, so the panel now says which branch keeps everything
+  local and which one asks Composer. Overstating that would be exactly the kind
+  of claim going quietly stale that Section 27 exists to prevent.
+
+### Notes
+
+- **Tier 2 is unvalidated and says so on the page.** No measure here has been
+  tested against out-of-sample outcomes, because the database carries no
+  structural complexity field to test against. The panel is styled more quietly
+  than the Tier 1 blocks and states in its own words that these are questions
+  worth asking about the logic, not evidence it will fail. Whether any of it
+  predicts anything remains an open project.
+
+---
+
 ## [1.76.8] - 2026-09-08
 
 ### Fixed

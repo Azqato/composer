@@ -59,6 +59,19 @@
       font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.6;
     }
     #of-in:focus { outline: 2px solid var(--color-blue); outline-offset: -1px; }
+    /* Tier 2. Deliberately quieter than the Tier 1 blocks above it: these are
+       observations, not results, and the styling should not lend them the
+       authority of a number that was tested against 5,095 real outcomes. */
+    .of-struct { margin-top: 1.5rem; border: 1px solid var(--color-border); border-radius: 6px; padding: 1rem 1.1rem; }
+    .of-struct h3 { margin: 0 0 .2rem; font-size: 1.05rem; }
+    .of-struct .of-unval { font-size: .85rem; color: var(--color-text-muted); margin: 0 0 .9rem; }
+    .of-obs { display: flex; gap: .8rem; padding: .6rem 0; border-top: 1px solid var(--color-border); }
+    .of-obs:first-of-type { border-top: 0; }
+    .of-obs-k { flex: 0 0 8.5rem; font-weight: 600; font-size: .9rem; }
+    .of-obs-v { flex: 1; font-size: .92rem; }
+    .of-obs-v .of-flag { color: var(--color-amber, #b45309); font-weight: 600; }
+    .of-obs-v .of-ok { color: var(--color-text-muted); }
+    .of-obs-note { font-size: .85rem; color: var(--color-text-muted); margin-top: .15rem; }
     .of-label { display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-primary); margin-bottom: 8px; }
     .of-hint { font-size: 0.8125rem; color: var(--color-secondary); margin-bottom: 12px; line-height: 1.6; }
     .of-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
@@ -102,8 +115,12 @@
         <label class="of-label" for="of-in">Check one symphony</label>
         <p class="of-hint">
           A symphony URL like <code>https://app.composer.trade/symphony/4aI4kVT5cEc0XJpTLei3/details</code>,
-          or a bare ID. Nothing you paste leaves your browser: the lookup runs against data already
-          downloaded with this page.
+          a bare ID, or the symphony's raw JSON.
+          <strong>The record check runs entirely in your browser</strong>, against data downloaded
+          with this page. Reading the logic needs the symphony itself, so pasting a URL or ID asks
+          Composer for it, exactly as the
+          <a href="/converter.html">converter</a> does. Paste the JSON instead and nothing leaves
+          your browser at all. Nothing is stored or logged either way.
         </p>
         <textarea id="of-in" spellcheck="false" placeholder="Paste a symphony URL or ID..."></textarea>
         <div class="of-actions">
@@ -699,12 +716,274 @@
         for (var i = 0; i < tb.rows.length; i++) tb.rows[i].className = (i === qi ? 'hi' : '');
       }
 
+      // ---------------------------------------------------------------
+      // Tier 2: the structural read.
+      //
+      // UNVALIDATED BY CONSTRUCTION. None of these measures has been tested
+      // against out-of-sample outcomes, because the database has no structural
+      // complexity field to test against. They are reported as observations
+      // about how a symphony was built. Whether any of them predicts anything
+      // is an open project, named in docs/PRD.md Section 14, V2.4 Tier 2.
+      //
+      // WHY THESE SIX. Each one is a place where a fitted choice leaves a
+      // fingerprint in the tree, and all six are readable from the JSON alone.
+
+      // Conventional indicator levels. A gate ON one of these is a convention;
+      // a gate two points to the side of one is a number somebody chose, and
+      // choosing it is where fitting happens.
+      var CONVENTIONAL = [10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90];
+
+      function walkTree(root) {
+        var o = {
+          depth: 0, ifs: 0, elses: 0, assets: {}, nAssets: 0,
+          thresholds: [], windows: {}, fns: {}, conds: 0
+        };
+        (function rec(node, d) {
+          if (!node || typeof node !== 'object') return;
+          if (d > o.depth) o.depth = d;
+          if (node.step === 'asset' && node.ticker) {
+            if (!o.assets[node.ticker]) { o.assets[node.ticker] = 1; o.nAssets++; }
+          }
+          if (node.step === 'if') o.ifs++;
+          if (node.step === 'if-child') {
+            if (node['is-else-condition?']) { o.elses++; }
+            else {
+              o.conds++;
+              // A threshold is only a free parameter when it is a fixed number.
+              // Comparing two indicators to each other has no tunable constant
+              // in it, so counting one there would overstate the parameter count.
+              if (node['rhs-fixed-value?'] && node['rhs-val'] != null) {
+                var v = parseFloat(node['rhs-val']);
+                if (v === v) {
+                  o.thresholds.push({
+                    v: v, fn: node['lhs-fn'] || '', tkr: node['lhs-val'] || ''
+                  });
+                }
+              }
+              if (node['lhs-fn']) o.fns[node['lhs-fn']] = 1;
+              // A window can arrive under either key depending on the node.
+              var w = node['lhs-window-days'];
+              if (w == null && node['lhs-fn-params']) w = node['lhs-fn-params'].window;
+              if (w != null) { w = parseFloat(w); if (w === w) o.windows[w] = (o.windows[w] || 0) + 1; }
+              var w2 = node['rhs-window-days'];
+              if (w2 == null && node['rhs-fn-params']) w2 = node['rhs-fn-params'].window;
+              if (w2 != null) { w2 = parseFloat(w2); if (w2 === w2) o.windows[w2] = (o.windows[w2] || 0) + 1; }
+            }
+          }
+          var kids = node.children;
+          if (kids && kids.length) for (var i = 0; i < kids.length; i++) rec(kids[i], d + 1);
+        })(root, 0);
+        return o;
+      }
+
+      // Free parameters: every fixed threshold, plus every DISTINCT window. A
+      // window reused across ten branches was chosen once, so counting it ten
+      // times would inflate the number; a threshold repeated at ten different
+      // values was chosen ten times.
+      function freeParams(o) {
+        return o.thresholds.length + Object.keys(o.windows).length;
+      }
+
+      function nearDuplicates(list) {
+        // Thresholds within 3 points of each other, on the same indicator, in
+        // different branches. Two gates at 28 and 30 on the same measure are one
+        // idea expressed twice; the gap between them is unlikely to be a real
+        // boundary and is very likely to be a fitted one.
+        var out = [];
+        var by = {};
+        for (var i = 0; i < list.length; i++) {
+          var k = list[i].fn || 'x';
+          (by[k] = by[k] || []).push(list[i].v);
+        }
+        Object.keys(by).forEach(function (k) {
+          var vs = by[k].slice().sort(function (a, b) { return a - b; });
+          for (var i = 1; i < vs.length; i++) {
+            if (vs[i] !== vs[i - 1] && vs[i] - vs[i - 1] <= 3) {
+              out.push(vs[i - 1] + ' and ' + vs[i]);
+            }
+          }
+        });
+        return out;
+      }
+
+      function offConvention(list) {
+        var out = [];
+        for (var i = 0; i < list.length; i++) {
+          var v = list[i].v;
+          // Only judge bounded oscillators. A moving-average price threshold or
+          // a percentage return has no convention to be off, so calling it
+          // "unusual" would be inventing a standard that does not exist.
+          if (!/relative-strength-index/.test(list[i].fn)) continue;
+          var near = false;
+          for (var j = 0; j < CONVENTIONAL.length; j++) if (v === CONVENTIONAL[j]) near = true;
+          if (!near) out.push(v);
+        }
+        return out;
+      }
+
+      function obs(k, v, note) {
+        return '<div class="of-obs"><div class="of-obs-k">' + k + '</div>' +
+               '<div class="of-obs-v">' + v +
+               (note ? '<div class="of-obs-note">' + note + '</div>' : '') +
+               '</div></div>';
+      }
+
+      function renderStructure(sym, yrs) {
+        var o = walkTree(sym);
+        if (!o.conds && !o.nAssets) return '';
+        var fp = freeParams(o);
+        var wins = Object.keys(o.windows).map(Number).sort(function (a, b) { return a - b; });
+        var dup = nearDuplicates(o.thresholds);
+        var odd = offConvention(o.thresholds);
+
+        var h = '<div class="of-struct"><h3>How this symphony is built</h3>' +
+          '<p class="of-unval">These are observations about construction, not a verdict. ' +
+          'Unlike the record check above, <strong>none of them has been tested against what ' +
+          'symphonies actually go on to do</strong>, because nothing in the database records how ' +
+          'complicated a tree is. Read them as questions worth asking about the logic, not as ' +
+          'evidence it will fail.</p>';
+
+        // 1. Free parameters against sample length.
+        var fpv = '<strong>' + fp + '</strong> tunable number' + (fp === 1 ? '' : 's') +
+          ': ' + o.thresholds.length + ' fixed threshold' + (o.thresholds.length === 1 ? '' : 's') +
+          ' and ' + wins.length + ' distinct lookback window' + (wins.length === 1 ? '' : 's') + '.';
+        var fpn = '';
+        if (typeof yrs === 'number' && yrs > 0 && fp > 0) {
+          var per = yrs / fp;
+          fpn = 'Its author was fitting against about <strong>' + yrs.toFixed(1) +
+                ' years</strong> of history, so roughly <strong>' + per.toFixed(1) +
+                ' years</strong> of evidence behind each number that was chosen. Every tunable ' +
+                'number is a chance to fit the past; more of them against the same history means ' +
+                'each one is supported by less of it.';
+        } else {
+          fpn = 'Every tunable number is a chance to fit the past. There is no backtest length ' +
+                'here to weigh the count against, so this is a count and not a ratio.';
+        }
+        h += obs('Free parameters', fpv, fpn);
+
+        // 2. Threshold specificity.
+        if (odd.length) {
+          h += obs('Threshold choice',
+            '<span class="of-flag">' + odd.length + ' RSI gate' + (odd.length === 1 ? '' : 's') +
+            '</span> sit off the conventional levels: ' + esc(odd.join(', ')) + '.',
+            'Conventional RSI levels are 30 and 70, sometimes 20 and 80. A gate at ' + esc(String(odd[0])) +
+            ' is not a convention, it is a number somebody selected. That is not wrong on its own, ' +
+            'but a threshold chosen to a single point is the most common place a backtest gets ' +
+            'fitted, and it is worth knowing whether the logic still works one point either side.');
+        } else if (o.thresholds.length) {
+          h += obs('Threshold choice',
+            '<span class="of-ok">RSI gates sit on conventional levels.</span>',
+            'Nothing here looks tuned to a specific number, which is the cheaper explanation ' +
+            'when a backtest looks good.');
+        }
+
+        // 3. Near-duplicate thresholds.
+        if (dup.length) {
+          h += obs('Near-duplicate gates',
+            '<span class="of-flag">' + dup.length + '</span> pair' + (dup.length === 1 ? '' : 's') +
+            ' of thresholds sit within three points of each other on the same indicator: ' +
+            esc(dup.join('; ')) + '.',
+            'Two gates a couple of points apart are usually one idea expressed twice. The gap ' +
+            'between them is unlikely to be a real boundary in the market and is very likely to be ' +
+            'a boundary in this particular history.');
+        }
+
+        // 4. Unexplained window differences.
+        if (wins.length > 1) {
+          var close = [];
+          for (var i = 1; i < wins.length; i++) {
+            if (wins[i] - wins[i - 1] <= 5) close.push(wins[i - 1] + ' and ' + wins[i]);
+          }
+          h += obs('Lookback windows',
+            wins.length + ' distinct window' + (wins.length === 1 ? '' : 's') + ': ' +
+            esc(wins.join(', ')) + ' days.' +
+            (close.length ? ' <span class="of-flag">' + close.length + ' pair' +
+              (close.length === 1 ? ' sits' : 's sit') + ' within five days of each other</span> (' +
+              esc(close.join('; ')) + ').' : ''),
+            close.length
+              ? 'Two windows a few days apart usually have no story behind them. If there is no ' +
+                'reason a 70-day lookback should behave differently from a 75-day one, the ' +
+                'difference came from the backtest rather than from an idea about markets.'
+              : 'Windows far apart from each other are more likely to be deliberate choices about ' +
+                'different time horizons than artifacts of tuning.');
+        }
+
+        // 5. Branches against distinct assets.
+        if (o.conds) {
+          var ratio = o.nAssets ? (o.conds / o.nAssets) : 0;
+          h += obs('Branches and assets',
+            '<strong>' + o.conds + '</strong> condition' + (o.conds === 1 ? '' : 's') +
+            ' routing between <strong>' + o.nAssets + '</strong> distinct asset' +
+            (o.nAssets === 1 ? '' : 's') + '.',
+            ratio >= 3
+              ? 'That is roughly ' + ratio.toFixed(1) + ' decisions per asset. A tree can only ' +
+                'ever end up holding one of ' + o.nAssets + ' things, so a large number of ' +
+                'conditions in front of a small number of outcomes means many branches resolve to ' +
+                'the same holding by different routes.'
+              : 'The number of decisions is close to the number of things it can hold, which is ' +
+                'the simpler shape.');
+        }
+
+        // 6. Depth.
+        h += obs('Nesting depth',
+          '<strong>' + o.depth + '</strong> levels at the deepest point.',
+          o.depth >= 12
+            ? 'A deep tree is harder to audit than a shallow one, and the deepest branches are ' +
+              'reached on the fewest days, so they are supported by the least data.'
+            : 'Shallow enough to read end to end, which is the practical test that matters.');
+
+        h += '</div>';
+        return h;
+      }
+
+      // Accept a raw JSON paste. Returns the symphony object or null.
+      function parseSymphony(raw) {
+        var t = String(raw).trim();
+        if (t.charAt(0) !== '{') return null;
+        try {
+          var d = JSON.parse(t);
+          // The API wraps the tree; a copied export may be the tree itself.
+          if (d && d.symphony && d.symphony.step) return d.symphony;
+          if (d && d.step) return d;
+          if (d && d.result && d.result.step) return d.result;
+          return null;
+        } catch (e) { return null; }
+      }
+
+      function showStructure(sym, yrs) {
+        var html = renderStructure(sym, yrs);
+        if (!html) return false;
+        var out = document.getElementById('of-out');
+        out.innerHTML += html;
+        out.style.display = '';
+        return true;
+      }
+
       function check() {
         var raw = document.getElementById('of-in').value;
         document.getElementById('of-out').style.display = 'none';
         if (!raw.trim()) { setMsg('Paste a symphony URL or ID first.', 'err'); return; }
+        // A pasted tree is Tier 2 only: there is no ID to look up, so the
+        // record check cannot run and the panel says so rather than rendering
+        // an empty space where a result would be.
+        var pasted = parseSymphony(raw);
+        if (pasted) {
+          setMsg('', '');
+          var out2 = document.getElementById('of-out');
+          out2.innerHTML = '';
+          out2.style.display = '';
+          showStructure(pasted, null);
+          setMsg('Read the logic from the JSON you pasted. <strong>The record check did not ' +
+                 'run</strong>: that one needs a symphony ID so it can look up what this symphony ' +
+                 'actually did after its author stopped editing it. Paste the URL or ID to get ' +
+                 'both.', 'info');
+          return;
+        }
         var id = extractId(raw);
-        if (!id) { setMsg('Could not find a symphony ID in that input.', 'err'); return; }
+        if (!id) {
+          setMsg('Could not find a symphony ID in that input, and it is not valid symphony JSON.', 'err');
+          return;
+        }
         var r = lookup(id);
         if (!r) {
           setMsg('<code>' + esc(id) + '</code> is not in this database, so there is nothing to ' +
@@ -716,6 +995,36 @@
         }
         setMsg('', '');
         render(r);
+        fetchStructure(id, r.fittedYears);
+      }
+
+      // Best effort, and it is allowed to fail. The Composer endpoint does not
+      // send CORS headers for every caller, which is why converter.html offers
+      // a manual paste fallback; the same fallback is offered here. A failure
+      // must not disturb the record check that has already rendered, so this
+      // touches nothing except its own panel and its own message.
+      function fetchStructure(id, yrs) {
+        var url = 'https://api.composer.trade/api/v0.1/symphonies/' + id +
+                  '/score?score_version=v1';
+        fetch(url)
+          .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+          })
+          .then(function (d) {
+            var sym = (d && d.symphony && d.symphony.step) ? d.symphony
+                    : (d && d.step) ? d : null;
+            if (!sym) throw new Error('Unexpected response shape');
+            showStructure(sym, typeof yrs === 'number' ? yrs : null);
+          })
+          .catch(function (err) {
+            setMsg('The record check above is complete. Reading <em>how</em> this symphony is ' +
+                   'built needs the logic itself, and the browser could not fetch it (' +
+                   esc(err.message) + '), which is normally a CORS restriction rather than a ' +
+                   'problem with the symphony. <a href="' + esc(url) + '" target="_blank" ' +
+                   'rel="noopener noreferrer">Open the raw JSON</a>, copy it, and paste it above ' +
+                   'to get the structural read too.', 'info');
+          });
       }
 
       document.getElementById('of-btn').addEventListener('click', check);

@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.19
+**Version:** 1.20
 **Status:** Active
 **Last Updated:** 2026-09-07
 

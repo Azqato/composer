@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.76.8
+**Version:** 1.77.0
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -2485,7 +2485,7 @@ numbering schemes; they answer different questions.
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Signal Miner robustness (items A, B, C).** Split 2026-09-07: the curated-set refresh and library expansion moved out to V2.6 | **In progress, current phase** | Partially shipped through v1.73.0 |
 | V2.3 | Community signals: external submission form, curator notes, related strategies | Backlog, lowest priority | Not started |
-| V2.4 | Overfit Check: paste a symphony, test it against the definition of overfitting using the 5,228 symphonies whose logic has gone a year unedited | Requested and specified 2026-08-28, respecified the same day after the owner rejected peer ranking, then **sequenced late at the owner's request**. **Tier 1 shipped 2026-09-06 as v1.75.0**, then substantially corrected in **v1.76.0** (fitted-era split, graded Overfit Score, the ceiling finding); Tiers 2 and 3 remain as specified | **Tier 1 Complete**, Tiers 2-3 not started |
+| V2.4 | Overfit Check: paste a symphony, test it against the definition of overfitting using the 5,228 symphonies whose logic has gone a year unedited | Requested and specified 2026-08-28, respecified the same day after the owner rejected peer ranking, then **sequenced late at the owner's request**. **Tier 1 shipped 2026-09-06 as v1.75.0**, then substantially corrected in **v1.76.0** (fitted-era split, graded Overfit Score, the ceiling finding); Tiers 2 and 3 remain as specified | **Tiers 1 and 2 Complete** (Tier 2 shipped v1.77.0, 2026-09-08); Tier 3 remains hard-blocked on price coverage |
 | V2.5 | Documentation audit against the external standard, and social sharing tags on every shareable page | **Queued at the owner's request, 2026-09-07.** Specified below and in Section 27; deliberately not executed at specification time | Not started |
 | V2.6 | Curated content: the zoop evergreen replacement, and the Cohort A library expansion | **Split out of V2.2 and sequenced behind V2.5 by owner decision, 2026-09-07.** Neither is blocked; both are large content builds rather than product work, and the owner chose to clear the product and documentation queue first | Not started |
 | V3.0 | Formerly Monetization Expansion | **Removed entirely, 2026-08-15.** Not deferred | n/a |
@@ -5121,6 +5121,21 @@ Worth computing: free parameters against sample length; threshold specificity, s
 is a fitted number wearing a convention's clothes; near-duplicate thresholds; unexplained window
 differences such as a 70-day and a 75-day lookback in adjacent branches; branch count against
 distinct assets; depth.
+
+**Tier 2 shipped 2026-09-08 as v1.77.0.** All six measures named above are implemented:
+free parameters (fixed thresholds plus *distinct* windows, since a window reused across ten branches
+was chosen once), threshold specificity against the conventional RSI levels, near-duplicate gates
+within three points on the same indicator, lookback windows within five days of each other,
+conditions against distinct assets, and depth. Two decisions inside that are worth recording because
+they change the numbers: a comparison between two indicators contributes **no** threshold, since
+there is no tunable constant in it and counting one would overstate the parameter count; and only
+bounded oscillators are judged against a convention, since a moving-average price level has no
+convention to be off and calling one unusual would be inventing a standard. The denominator for the
+free-parameter ratio is **`fitted_years`**, the era the author was actually fitting against, not the
+out-of-sample window. The page also now accepts **raw symphony JSON**, which is the path that keeps
+everything in the browser; a URL or ID asks Composer for the tree as `converter.html` does. The
+panel's privacy line was rewritten to say which branch is which, because the old wording promised
+more than the feature could keep.
 
 **These are unvalidated.** Unlike Tier 1, none of them has been tested against out-of-sample
 outcomes, because the database has no structural complexity field to test with. `active_asset_nodes`
