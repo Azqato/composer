@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.77.0
+**Version:** 1.77.1
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -4667,6 +4667,52 @@ stating so a later reader does not go looking for a dependency that does not exi
   above. Median admitted row, real against null: 0.46 against 0.48 on QQQ, 0.04 against 0.04 on TLT.
   Rotation destroys alignment without shifting the level.
 
+  ---
+
+  **C-N3. The wide sweep, 2026-09-08. This answers open question 28.** Two configurations were too
+  thin a basis for "the Miner finds nothing", so the null was run across **five targets by three
+  `sl-tim` settings, fifteen configurations**, 16 rotations each, everything else held fixed.
+
+  | Target | tim 5% | tim 15% | tim 30% | Real best | Reading |
+  |---|---|---|---|---|---|
+  | QQQ | 63 | 63 | 63 | 1.01 | Middling, and identical at every filter |
+  | TLT | 100 | 69 | 88 | 0.42 to 0.55 | The only configuration that beats every rotation |
+  | SPY | 0 | 0 | 0 | 0.77 | **Worse than all 16 rotations** |
+  | IWM | 0 | 0 | 0 | 0.54 | **Worse than all 16 rotations** |
+  | GLD | 44 | 50 | 56 | 0.56 | Indistinguishable from noise |
+
+  Figures are the real search's percentile among null bests.
+
+  **Four conclusions.**
+
+  **1. No configuration shows a reliable edge.** One cell out of fifteen, TLT at a 5 percent filter,
+  beat every rotation, and its neighbours at 15 and 30 percent did not, which is what a lucky draw
+  looks like rather than a real effect. The rest sit between the 0th and 69th percentile.
+
+  **2. On SPY and IWM the search is worse than noise, at every filter setting.** Not merely
+  unimpressive: **every one of 16 rotations of scrambled data beat the real result**, on both
+  targets, six configurations in a row. That is the strongest single finding in this whole exercise
+  and it is stable rather than marginal.
+
+  **3. `sl-tim` barely matters, which retires an earlier worry.** The corrected measurement raised
+  the possibility that the display filter was driving the result. It is not: QQQ reports 63 at all
+  three settings, SPY and IWM report 0 at all three. The filter changes which rows exist without
+  changing the real-versus-null verdict.
+
+  **4. The percentile is noisy at this rotation count, and that is stated rather than hidden.** QQQ
+  measured 38 in the earlier 24 rotation run and 63 here at 16 rotations with a different sample
+  size. Those are the same finding, "middling", read at a resolution the method does not support.
+  **Any shipped version must not print a percentile to the point**, which is independent
+  confirmation of the design constraint already in this section: coarse buckets, never a number with
+  a decimal.
+
+  **The answer to open question 28: the banner would fire on essentially every run, and on current
+  evidence that is correct rather than a bug.** Fourteen of fifteen configurations fail to beat
+  their own null. The remaining design question is not whether to warn but how to word a warning
+  that is nearly always true without training visitors to ignore it, and the honest framing is
+  probably that this is a property of brute-force search over a dense lattice rather than a fault in
+  any particular run.
+
   **What this does to item C.** It strengthens the case for building it and weakens the case for the
   specific number first proposed. A component that reported "your best result is at the 38th
   percentile of what this same search finds on shuffled data" would be reporting something true,
@@ -7482,7 +7528,15 @@ Numbered for reference. Open unless marked otherwise.
     cheap half of the policy and imply the expensive half, which is worse than no gate at all if it
     stops anyone reading the tags. **Owner ruling required.**
 
-28. **If the Signal Miner's honesty banner would fire on every run, is it still the right design?**
+28. **ANSWERED 2026-09-08 by the fifteen-configuration sweep in Section 14, C-N3: yes, it would
+    fire on essentially every run, and on current evidence that is correct.** Fourteen of fifteen
+    configurations fail to beat their own null, and on SPY and IWM every one of 16 rotations of
+    scrambled data beat the real result at every filter setting. What remains open is narrower and
+    is a wording problem rather than a measurement one: how to state a warning that is nearly always
+    true without training visitors to ignore it. The likely honest framing is that this is a
+    property of brute-force search over a dense lattice, not a fault in the visitor's particular
+    run. **The original question, kept for the record:** if the Signal Miner's honesty banner would
+    fire on every run, is it still the right design?
     The owner chose "plain language only when the result is bad" for item C's presentation, on the
     reasoning that an interruption belongs where the evidence is. The corrected measurement
     (Section 14, C-N2) then found **no configuration where the displayed search beats its own

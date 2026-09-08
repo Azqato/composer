@@ -5,6 +5,27 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.77.1] - 2026-09-08
+
+### Notes
+
+- **Open question 28 answered by measurement.** The Signal Miner null was run
+  across five targets by three `sl-tim` settings, fifteen configurations, to test
+  whether "the search finds nothing" held beyond the two originally measured. It
+  does. **Fourteen of fifteen fail to beat their own null**, and on **SPY and IWM
+  every one of 16 rotations of scrambled data beat the real result**, at every
+  filter setting. Only TLT at a 5 percent filter beat every rotation, and its
+  neighbours at 15 and 30 percent did not, which is what luck looks like.
+- **An earlier worry is retired:** `sl-tim` is not driving the result. QQQ reports
+  the same percentile at all three settings, SPY and IWM report zero at all three.
+- **The percentile is noisy at this rotation count**, and the docs now say so:
+  QQQ measured 38 in one run and 63 in another, which is the same finding read at
+  a resolution the method does not support. This independently confirms the
+  existing design constraint that any shipped version must use coarse buckets
+  rather than a number with a decimal point.
+
+---
+
 ## [1.77.0] - 2026-09-08
 
 ### Added
