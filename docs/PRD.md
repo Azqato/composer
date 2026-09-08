@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.76.6
+**Version:** 1.76.7
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -4526,7 +4526,23 @@ stating so a later reader does not go looking for a dependency that does not exi
 
   ---
 
-  **C-N. The empirical null, measured 2026-09-07.** The paragraph above was a proposal. It has now
+  **C-N. The empirical null, measured 2026-09-07, and corrected the same day.**
+
+  > **CORRECTION, and read it before the figures below.** The first round of this measurement
+  > applied only **Pass 1's store admission rule** (`signal-miner.html` line 1585) and missed the
+  > shipped **`sl-tim` Min Time in Market filter, which defaults to 15 percent** and is applied at
+  > line 1676 when results are filtered for display rather than when the store is built. 15 percent
+  > of a 3,942 day window is **592 firing days**. Every figure in the original table was therefore
+  > measured on the *store*, which holds rows the page never shows, rather than on the leaderboard a
+  > visitor sees. The original table is kept below rather than deleted, because the error is
+  > instructive and because deleting a wrong measurement hides that it was made. **The corrected
+  > results are in "C-N2" further down, and they change the conclusion in both directions:** the
+  > alarming best-of-N growth was a tiny-sample artifact and is much smaller than reported, while
+  > the search's *lack of edge* is worse than reported and now holds on every configuration tested.
+  > This is the [[harness-must-assert-shipped-default]] failure in its exact textbook shape: the
+  > harness measured a population the shipped default excludes.
+
+  The paragraph above was a proposal. It has now
   been built as a measurement harness, `scripts/harness/nulldist.js`, and run. **The harness is not a
   gate and is not shipped to visitors.** It exists to answer whether the N-adjustment is worth
   building at all, and what it would say.
@@ -4556,6 +4572,10 @@ stating so a later reader does not go looking for a dependency that does not exi
   **What was measured.** Four configurations, all on the page's own `backtest()` through the harness
   hook, all ranked on **Calmar because that is the page's shipped default sort**, and all filtered by
   Pass 1's own admission rule so the null is filtered exactly as the real store is.
+
+  **The table below is SUPERSEDED. It measures the store, not the displayed leaderboard.** It is
+  retained because the relative comparison within it is still sound (both sides used the identical
+  rule) and because the size of the correction is itself the lesson.
 
   | Target | Signals | Lattice | Sample | Rotations | Real best | Null best p50 | Null best p90 | Real's percentile |
   |---|---|---|---|---|---|---|---|---|
@@ -4614,6 +4634,57 @@ stating so a later reader does not go looking for a dependency that does not exi
   `maxDD !== 0`. **This does not affect the conclusions above**, all of which are on Calmar, the
   shipped default sort. It is recorded because the Sortino column is displayed on the leaderboard
   today and can show values of that magnitude to a visitor.
+
+  ---
+
+  **C-N2. The corrected measurement, against the shipped display filter.** `nulldist.js` now applies
+  `sl-tim` at its shipped 15 percent default to both the real search and every rotation, so both
+  sides are the population a visitor actually sees. Same rotation method, same lattice, same metric.
+
+  | Target | Signals | Sample | Rotations | Real best | Null p50 | Null p90 | Real's percentile |
+  |---|---|---|---|---|---|---|---|
+  | QQQ | SPY, QQQ, TLT | 9,324 | 24 | 1.01 | 1.06 | 1.16 | **38** |
+  | TLT | SPY, QQQ, TLT | 9,324 | 24 | 0.38 | 0.41 | 0.55 | **33** |
+
+  **Three things changed, and they do not all point the same way.**
+
+  **1. The best-of-N effect is far smaller than first reported, and that finding is retracted.** On
+  store rows the null's best-of-k climbed from 0.78 at k=100 to 5.81 at k=9,324. With the shipped
+  filter applied it climbs only from **0.72 to 1.06**. The steep growth was almost entirely rows
+  firing a handful of days, whose Calmar is a ratio of two nearly empty samples. The general claim
+  that a maximum over more candidates rises is still true and still the reason item C exists; the
+  **size** of it on this page was overstated roughly fivefold and is corrected here.
+
+  **2. The headline result is worse, not better, and it is no longer a single bad configuration.**
+  On store rows the real search sat at the 80th percentile of its null on QQQ and the 4th on TLT,
+  which read as "usually finds something, sometimes finds nothing". Against the displayed population
+  it sits at the **38th percentile on QQQ and the 33rd on TLT**. Both are near the middle of their
+  own null. **On neither configuration tested does the search that a visitor sees beat scrambled
+  data.** The earlier TLT result was not an outlier; it was the honest case, and the QQQ result that
+  looked acceptable was carried by rows the page filters out.
+
+  **3. The null construction still validates itself**, which is what licenses reading any of the
+  above. Median admitted row, real against null: 0.46 against 0.48 on QQQ, 0.04 against 0.04 on TLT.
+  Rotation destroys alignment without shifting the level.
+
+  **What this does to item C.** It strengthens the case for building it and weakens the case for the
+  specific number first proposed. A component that reported "your best result is at the 38th
+  percentile of what this same search finds on shuffled data" would be reporting something true,
+  useful, and unavailable anywhere in the tool today. But the owner's chosen presentation, plain
+  language only when the result is bad, would then fire on essentially every run measured so far.
+  **That is a product question rather than a measurement question and is flagged for the owner
+  rather than resolved here.** It is recorded as open question 28.
+
+  **A note on the Sortino degeneracy, corrected the same way.** `sortino = meanAll / (negStd + 1e-9)`
+  returns values near 2e6 when a spec has fewer than two losing days, because ddof=1 leaves `negStd`
+  at exactly zero and the epsilon becomes the whole denominator. Measured on the store, 131 rows
+  (0.57%) are degenerate and 43 of the top 100 by Calmar carry one. Measured against the shipped
+  15 percent filter, **the number of degenerate rows that reach a visitor is zero**: they fire about
+  four days out of 3,942 and the filter discards every one. **So the formula is wrong but the defect
+  is latent**, reachable only by a visitor who lowers `sl-tim` toward zero, which the input permits
+  (`min="0"`). It is worth fixing as robustness, and it is not the urgent leaderboard contamination
+  the first measurement suggested. The harnesses are `scripts/harness/sortino.js` and
+  `scripts/harness/floor.js`.
 
   **What this does not yet decide.** The presentation. The design danger stated below in this section
   is unchanged and is now more acute, not less: these numbers are the strongest possible temptation to
@@ -7384,6 +7455,19 @@ Numbered for reference. Open unless marked otherwise.
     caused those rows **cannot be checked by any script**, so a passing gate would certify the
     cheap half of the policy and imply the expensive half, which is worse than no gate at all if it
     stops anyone reading the tags. **Owner ruling required.**
+
+28. **If the Signal Miner's honesty banner would fire on every run, is it still the right design?**
+    The owner chose "plain language only when the result is bad" for item C's presentation, on the
+    reasoning that an interruption belongs where the evidence is. The corrected measurement
+    (Section 14, C-N2) then found **no configuration where the displayed search beats its own
+    null**, so on current evidence the banner would fire always. Two readings, and they are
+    genuinely different products. If the search really has no edge at these settings, a banner that
+    always fires is simply the truth and the tool should say so every time, however badly that
+    reads. If instead the two configurations measured are unrepresentative, an always-on banner
+    trains visitors to ignore it and destroys the warning for the runs that need it most.
+    **Not decided, and it should not be decided from two configurations.** Resolving it needs a
+    wider sweep of targets and settings, and that sweep belongs before the presentation is built
+    rather than after, because the answer changes what gets built rather than only how it is worded.
 
 ## 26. Press Release
 

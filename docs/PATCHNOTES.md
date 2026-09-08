@@ -5,6 +5,53 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.76.7] - 2026-09-07
+
+### Fixed
+
+- **The null measurement shipped in 1.76.6 was measuring the wrong population,
+  and this corrects it.** `nulldist.js` applied only Pass 1's store admission
+  rule and missed the shipped **`sl-tim` Min Time in Market filter, default 15
+  percent**, which is applied when results are filtered for display rather than
+  when the store is built. 15 percent of a 3,942 day window is 592 firing days,
+  so every figure in the original table described rows the page never shows.
+  The harness now applies the shipped default to the real search and to every
+  rotation. The superseded table is kept in the PRD rather than deleted, marked
+  as superseded, because deleting a wrong measurement hides that it was made.
+
+### Changed
+
+- **One earlier finding is retracted.** The best-of-N effect was reported as
+  the null's best rising from 0.78 to 5.81 as the search grew. Against the
+  displayed population it rises only from **0.72 to 1.06**. The steep growth was
+  almost entirely rows firing a handful of days, whose Calmar is a ratio of two
+  nearly empty samples. The general claim still holds; its size on this page was
+  overstated roughly fivefold.
+- **The headline result is worse, and no longer a single bad configuration.**
+  Against what a visitor actually sees, the real search sits at the **38th
+  percentile** of its own null on QQQ and the **33rd** on TLT. On neither
+  configuration tested does the displayed search beat scrambled data. The
+  earlier TLT result was not an outlier, it was the honest case.
+- **The Sortino degeneracy is latent rather than live.** 131 store rows carry an
+  undefined Sortino printed as a number near 2e6, and 43 of the store's top 100
+  by Calmar carry one, but **zero reach a visitor at the default settings**:
+  they fire about four days out of 3,942 and the display filter discards every
+  one. Still worth fixing as robustness, since the input permits `sl-tim` to be
+  set to 0, but it is not the leaderboard contamination first reported.
+
+### Added
+
+- `scripts/harness/sortino.js` and `scripts/harness/floor.js`, measurement
+  harnesses for the Sortino degeneracy and for the firing-days floor sweep.
+  Neither is a deploy gate.
+- **Open question 28: if the honesty banner would fire on every run, is it still
+  the right design?** The owner chose plain language only when a result is bad;
+  the corrected measurement then found no run that beats its null. Flagged for a
+  ruling rather than resolved, and it should not be resolved from two
+  configurations.
+
+---
+
 ## [1.76.6] - 2026-09-07
 
 ### Added

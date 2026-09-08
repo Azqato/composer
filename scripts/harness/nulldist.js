@@ -69,6 +69,10 @@
   const SAMPLE = CFG.sample || 20000;     // specs drawn from the lattice
   const ROTATIONS = CFG.rotations || 30;  // null draws
   const METRIC = CFG.metric || 'calmar';
+  // The shipped sl-tim default, as a fraction. This is a DISPLAY filter, not an
+  // admission rule, so it has to be applied here explicitly or the harness
+  // measures rows the page would never show.
+  const TIMF = (CFG.timPct === undefined ? 15 : CFG.timPct) / 100;
 
   function pct(sorted, q) {
     if (!sorted.length) return NaN;
@@ -82,7 +86,8 @@
     const T = window.__t;
     log('Signal Miner empirical null, V2.2 item C');
     log('target ' + TARGET + ' · signals ' + SIGNALS.join(',') +
-        ' · min period ' + MINP + ' · metric ' + METRIC);
+        ' · min period ' + MINP + ' · metric ' + METRIC +
+        ' · sl-tim ' + (TIMF * 100).toFixed(1) + '% (shipped display filter)');
     log('');
 
     // ---- set the run up exactly as the page would ----
@@ -166,7 +171,17 @@
         // Pass 1's own admission rule, so the null is filtered exactly as the
         // real store is. Without this the null would include losing rows the
         // real search never keeps, and its median would stop being comparable.
-        vals[i] = (m.total > 0 && m.sortino === m.sortino && v === v) ? v : -Infinity;
+        // Pass 1 admission AND the shipped display filter. sl-tim defaults to
+        // 15 percent and is applied at line 1676 when results are filtered for
+        // display, not when the store is built. An earlier version of this
+        // harness stopped at the admission rule and so measured a population a
+        // visitor never sees: its "real best" came from a spec firing five days
+        // out of 3,942, which the default filter discards. Both sides of the
+        // comparison always used the same rule, so the percentile was sound,
+        // but the absolute figures were store figures. TIMF defaults to the
+        // shipped 15 percent; set it to 0 to measure the raw store instead.
+        vals[i] = (m.total > 0 && m.sortino === m.sortino && v === v &&
+                   m.tim > TIMF) ? v : -Infinity;
       }
       return vals;
     }
