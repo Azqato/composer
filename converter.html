@@ -3,7 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Convert a Composer.trade symphony into clean, formatted JSON and a readable IF/ELSE logic tree.">
+  <!-- Social sharing (PRD Section 27). Kept high in <head>, above the stylesheet
+       and any inline CSS, because some scrapers read only the first few KB of a
+       document. Text only by policy: no og:image, so twitter:card is "summary",
+       since a declared image that does not exist renders worse than none.
+       og:* takes property=, twitter:* takes name=. No drifting numbers: nothing
+       in these descriptions is read from a data file. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Composer Atlas">
+  <meta property="og:url" content="https://composeratlas.com/converter.html">
+  <meta property="og:title" content="Symphony to JSON Converter">
+  <meta property="og:description" content="Paste a Composer.trade symphony and get clean, formatted JSON beside a readable IF/ELSE logic tree, so you can see what a strategy really does.">
+  <meta name="twitter:card" content="summary">
+  <meta name="description" content="Paste a Composer.trade symphony and get clean, formatted JSON beside a readable IF/ELSE logic tree, so you can see what a strategy really does.">
   <title>Symphony → JSON Converter: Composer Atlas</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/main.css">

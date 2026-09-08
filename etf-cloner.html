@@ -3,6 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Social sharing (PRD Section 27). Kept high in <head>, above the stylesheet
+       and any inline CSS, because some scrapers read only the first few KB of a
+       document. Text only by policy: no og:image, so twitter:card is "summary",
+       since a declared image that does not exist renders worse than none.
+       og:* takes property=, twitter:* takes name=. No drifting numbers: nothing
+       in these descriptions is read from a data file. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Composer Atlas">
+  <meta property="og:url" content="https://composeratlas.com/etf-cloner.html">
+  <meta property="og:title" content="ETF to Composer Cloner">
+  <meta property="og:description" content="Type an ETF ticker and get a Composer.trade symphony that clones its top holdings, with matched or equal weights, ready to paste.">
+  <meta name="twitter:card" content="summary">
   <meta name="description" content="Type an ETF ticker and get a Composer.trade symphony that clones its top holdings, with matched or equal weights, ready to paste.">
   <title>ETF → Composer Cloner: Composer Atlas</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">

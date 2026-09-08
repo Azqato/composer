@@ -3,6 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Social sharing (PRD Section 27). Kept high in <head>, above the stylesheet
+       and any inline CSS, because some scrapers read only the first few KB of a
+       document. Text only by policy: no og:image, so twitter:card is "summary",
+       since a declared image that does not exist renders worse than none.
+       og:* takes property=, twitter:* takes name=. No drifting numbers: nothing
+       in these descriptions is read from a data file. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Composer Atlas">
+  <meta property="og:url" content="https://composeratlas.com/k1.html">
+  <meta property="og:title" content="Does This ETF Issue a K-1?">
+  <meta property="og:description" content="Check whether an ETF issues a Schedule K-1 instead of a 1099. Type a ticker for an instant answer, with the fund's legal structure and the tax form it sends.">
+  <meta name="twitter:card" content="summary">
   <meta name="description" content="Check whether an ETF issues a Schedule K-1 instead of a 1099. Type a ticker for an instant answer, with the fund's legal structure and the tax form it sends.">
   <title>K1 Lookup: Does This ETF Issue a K-1?: Composer Atlas</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">

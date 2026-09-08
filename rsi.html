@@ -3,7 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Live 10-day RSI for the 20 ETF tickers used as signals in Frontrunner-family Composer strategies.">
+  <!-- Social sharing (PRD Section 27). Kept high in <head>, above the stylesheet
+       and any inline CSS, because some scrapers read only the first few KB of a
+       document. Text only by policy: no og:image, so twitter:card is "summary",
+       since a declared image that does not exist renders worse than none.
+       og:* takes property=, twitter:* takes name=. No drifting numbers: nothing
+       in these descriptions is read from a data file. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Composer Atlas">
+  <meta property="og:url" content="https://composeratlas.com/rsi.html">
+  <meta property="og:title" content="Live RSI Signals for Strategy Tickers">
+  <meta property="og:description" content="Live 10-day RSI for every ETF ticker used as a signal in Frontrunner-family Composer strategies, refreshed daily, with the levels that trigger a switch.">
+  <meta name="twitter:card" content="summary">
+  <meta name="description" content="Live 10-day RSI for every ETF ticker used as a signal in Frontrunner-family Composer strategies, refreshed daily, with the levels that trigger a switch.">
   <title>RSI Signals: Composer Atlas</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/main.css">

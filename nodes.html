@@ -3,6 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Social sharing (PRD Section 27). Kept high in <head>, above the stylesheet
+       and any inline CSS, because some scrapers read only the first few KB of a
+       document. Text only by policy: no og:image, so twitter:card is "summary",
+       since a declared image that does not exist renders worse than none.
+       og:* takes property=, twitter:* takes name=. No drifting numbers: nothing
+       in these descriptions is read from a data file. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Composer Atlas">
+  <meta property="og:url" content="https://composeratlas.com/nodes.html">
+  <meta property="og:title" content="Composer Symphony Node Counter">
+  <meta property="og:description" content="Count the nodes in a Composer.trade symphony. Paste a symphony URL and get the node total with a breakdown by node type.">
+  <meta name="twitter:card" content="summary">
   <meta name="description" content="Count the nodes in a Composer.trade symphony. Paste a symphony URL and get the node total with a breakdown by node type.">
   <title>Nodes: Composer Symphony Node Counter: Composer Atlas</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">

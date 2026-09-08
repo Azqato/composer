@@ -3,7 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="How much of a Composer.trade backtest survives once its author stops editing it. Measured across thousands of symphonies, with a lookup for any one of them.">
+  <!-- Social sharing (PRD Section 27). Kept high in <head>, above the stylesheet
+       and any inline CSS, because some scrapers read only the first few KB of a
+       document. Text only by policy: no og:image, so twitter:card is "summary",
+       since a declared image that does not exist renders worse than none.
+       og:* takes property=, twitter:* takes name=. No drifting numbers: nothing
+       in these descriptions is read from a data file. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Composer Atlas">
+  <meta property="og:url" content="https://composeratlas.com/overfit.html">
+  <meta property="og:title" content="Overfit Check: Does the Backtest Survive?">
+  <meta property="og:description" content="Paste a symphony and see how much of its backtest survived after its author stopped editing it, scored against what a backtest that size usually gives up.">
+  <meta name="twitter:card" content="summary">
+  <meta name="description" content="Paste a symphony and see how much of its backtest survived after its author stopped editing it, scored against what a backtest that size usually gives up.">
   <title>Overfit Check: Does the Backtest Survive: Composer Atlas</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/main.css">

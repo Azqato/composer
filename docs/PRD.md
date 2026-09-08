@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.77.1
+**Version:** 1.78.0
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -2486,7 +2486,7 @@ numbering schemes; they answer different questions.
 | **V2.2** | **Signal Miner robustness (items A, B, C).** Split 2026-09-07: the curated-set refresh and library expansion moved out to V2.6 | **In progress, current phase** | Partially shipped through v1.73.0 |
 | V2.3 | Community signals: external submission form, curator notes, related strategies | Backlog, lowest priority | Not started |
 | V2.4 | Overfit Check: paste a symphony, test it against the definition of overfitting using the 5,228 symphonies whose logic has gone a year unedited | Requested and specified 2026-08-28, respecified the same day after the owner rejected peer ranking, then **sequenced late at the owner's request**. **Tier 1 shipped 2026-09-06 as v1.75.0**, then substantially corrected in **v1.76.0** (fitted-era split, graded Overfit Score, the ceiling finding); Tiers 2 and 3 remain as specified | **Tiers 1 and 2 Complete** (Tier 2 shipped v1.77.0, 2026-09-08); Tier 3 remains hard-blocked on price coverage |
-| V2.5 | Documentation audit against the external standard, and social sharing tags on every shareable page | **Queued at the owner's request, 2026-09-07.** Specified below and in Section 27; deliberately not executed at specification time | Not started |
+| V2.5 | Documentation audit against the external standard, and social sharing tags on every shareable page | Queued 2026-09-07, started 2026-09-08 at the owner's instruction. **Social sharing tags shipped v1.78.0** on all twelve pages, with a compliance checker left manual pending open question 27. The documentation audit is the remaining half | **Part 2 of 2 complete**, audit outstanding |
 | V2.6 | Curated content: the zoop evergreen replacement, and the Cohort A library expansion | **Split out of V2.2 and sequenced behind V2.5 by owner decision, 2026-09-07.** Neither is blocked; both are large content builds rather than product work, and the owner chose to clear the product and documentation queue first | Not started |
 | V3.0 | Formerly Monetization Expansion | **Removed entirely, 2026-08-15.** Not deferred | n/a |
 | V4.0 | Signal discovery and robustness tooling, five candidate external forks | Ideation only. No work to begin until V2.x is well underway | Not started |
@@ -7629,7 +7629,17 @@ permanent, and Section 20 says so rather than papering over it.
 
 ## 27. Social Sharing Tags
 
-**Status: policy only, and queued as roadmap item V2.5.** No page carries these tags yet, and
+**Status: SHIPPED 2026-09-08 as v1.78.0.** All twelve pages in scope carry the full tag set, and
+`scripts/check_social_tags.py` asserts the mechanical half of this policy on demand. It is **not** a
+deploy gate; open question 27 is still open and is not a decision for whoever wrote the checker. The
+drifting-numbers rule below caught four real violations at authoring time, three of them descriptions
+that were already live and wrong: `database.html` said "6,500+", `rsi.html` said "the 20 ETF
+tickers", and `strategies.html` claimed to list "all" strategies when it lists a curated set. That is
+the argument for writing the policy before the tags, kept here because the next person will be
+tempted to do it the other way round.
+
+**Superseded status line, kept for the record:** policy only, and queued as roadmap item V2.5. No
+page carries these tags yet, and
 that is a scheduling decision rather than an omission: the owner asked on 2026-09-07 for the rule to
 be recorded and the work queued rather than executed. Section 14, V2.5 carries the implementation
 spec, the twelve pages in scope, the three deliberate exclusions, and the four implementation

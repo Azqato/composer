@@ -5,6 +5,53 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.78.0] - 2026-09-08
+
+### Added
+
+- **Open Graph and Twitter Card tags on all twelve shareable pages.** The site
+  had none: a link pasted into a chat client rendered from whatever the client
+  could scrape unaided. Text only by policy, so there is no `og:image` and
+  `twitter:card` is `summary`, since a declared image that does not exist renders
+  worse than none. Tags sit immediately after the viewport meta, above the
+  stylesheet and any inline CSS, because some scrapers read only the first few KB
+  and `overfit.html` carries about seventy lines of inline style in its head.
+- **`scripts/check_social_tags.py`**, a read-only compliance checker: all six
+  tags present, character budgets with the count reported for anything over
+  target, `og:url` absolute and unique and matching its sitemap entry, `og:*`
+  using `property=` and `twitter:*` using `name=`, `twitter:card` set to
+  `summary` where there is no image, and the tag block sitting above any inline
+  `<style>`. **Deliberately not wired into `deploy.yml`**: whether it becomes a
+  sixth gate is open question 27 and is not a decision for whoever writes it.
+
+### Fixed
+
+- **Four page descriptions were wrong or carried drifting numbers**, which is the
+  rule written into Section 27 before any tag was authored:
+  - `database.html` said **"6,500+"**, a count that goes stale on every refresh.
+    Now "thousands", which stays true.
+  - `rsi.html` said **"the 20 ETF tickers"**, a number read from `data/rsi.json`.
+    "10-day RSI" stays, because the window is a constant of the indicator rather
+    than a measurement.
+  - `strategies.html` claimed **"all"** Composer.trade strategies; it lists a
+    curated set.
+  - `overfit.html` predated the 0-to-100 score and described an older page.
+- **One description per page.** Where a page's existing meta description was
+  accurate it is reused verbatim as the `og:description`; where it was not, the
+  meta description is corrected so both carry the same sentence. Nine of the
+  twelve needed correcting. The checker asserts the two never disagree.
+
+### Notes
+
+- **Per-strategy sharing cards remain out of scope, and this is a decision
+  rather than an oversight.** Strategy pages are addressed as
+  `strategies.html?slug=...` and resolved in JavaScript; a scraper reads raw HTML
+  and never runs it, so all 24 strategy URLs would share one identical card no
+  matter what is written. Fixing that needs pre-rendering or an edge worker,
+  which is a change to how the site is built rather than a tagging change.
+
+---
+
 ## [1.77.1] - 2026-09-08
 
 ### Notes

@@ -3,7 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Browse the full 6,500+ symphony database with a leaderboard and screener.">
+  <!-- Social sharing (PRD Section 27). Kept high in <head>, above the stylesheet
+       and any inline CSS, because some scrapers read only the first few KB of a
+       document. Text only by policy: no og:image, so twitter:card is "summary",
+       since a declared image that does not exist renders worse than none.
+       og:* takes property=, twitter:* takes name=. No drifting numbers: nothing
+       in these descriptions is read from a data file. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Composer Atlas">
+  <meta property="og:url" content="https://composeratlas.com/database.html">
+  <meta property="og:title" content="Searchable Database of Community Symphonies">
+  <meta property="og:description" content="Browse thousands of community-built Composer.trade symphonies with a leaderboard, a screener, and full backtested metrics for every one. Refreshed weekly.">
+  <meta name="twitter:card" content="summary">
+  <meta name="description" content="Browse thousands of community-built Composer.trade symphonies with a leaderboard, a screener, and full backtested metrics for every one. Refreshed weekly.">
   <title>Database: Composer Atlas</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/main.css">
