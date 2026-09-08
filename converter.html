@@ -843,10 +843,10 @@
         var tickers = Object.keys(acc.tickers);
         var fns = Object.keys(acc.fns);
         document.getElementById('conv-summary').innerHTML =
-          field('Name', sym.name || '—') +
-          field('Rebalance', sym.rebalance || '—') +
+          field('Name', sym.name || '-') +
+          field('Rebalance', sym.rebalance || '-') +
           field('Unique tickers', String(tickers.length)) +
-          field('Indicators', fns.length ? String(fns.length) : '—');
+          field('Indicators', fns.length ? String(fns.length) : '-');
         document.getElementById('conv-chips').innerHTML =
           tickers.map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join('') +
           fns.map(function (f) { return '<span class="chip" style="color:var(--color-yellow)">' + esc(f) + '</span>'; }).join('');

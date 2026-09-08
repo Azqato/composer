@@ -5,6 +5,44 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.78.1] - 2026-09-08
+
+### Added
+
+- **PRD Section 28, Licensing.** The licence itself dates to v1.30.4; what was
+  missing was a section saying what it does. A reader previously had to
+  reconstruct the posture from a gap table and a closed risk item. It now states
+  in one place what is granted (referencing, crawling, quoting and citing, no
+  permission needed), what is not (substitution, and training data by default,
+  the latter routed to a request path that is not usually refused), why the NO
+  WAIVER clause is load-bearing, and what the licence deliberately does not
+  claim.
+
+### Fixed
+
+- **The em-dash sweep was extended from `/docs` to the whole project**, which the
+  standard asks for and which had never been run as a set. **Three instances,
+  all in `converter.html`**, all empty-value placeholders rendered into the UI.
+  Replaced with a single hyphen, which the standard permits. The repository now
+  measures zero outside `data/`.
+
+### Notes
+
+- **The documentation standard was fetched rather than recalled**, and the way to
+  do that is now recorded: `azqato.github.io/prompts/#/documentation` is
+  hash-routed and returns only a shell to a plain fetch, so the readable source
+  is `prompts/documentation.md` in the `Azqato/prompts` repository. Worth knowing
+  because the obvious approach fails silently and looks like an empty document.
+- **Browser Testing and Verification Environment stay where they are**, as
+  subsections of Working Practice, rather than being promoted to match the
+  standard's section list. The standard's own rule is that an existing project
+  arrangement beats an imported default. A table-of-contents pointer was added so
+  they can be found.
+- **The audit's limit is stated in Section 24**: it was a currency check, not a
+  line-by-line re-derivation of 7,000 PRD lines against the codebase.
+
+---
+
 ## [1.78.0] - 2026-09-08
 
 ### Added

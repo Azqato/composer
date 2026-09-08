@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.78.0
+**Version:** 1.78.1
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -42,6 +42,15 @@ This is the single authoritative reference for Composer Atlas. It consolidates p
 25. [Risks and Open Questions](#25-risks-and-open-questions)
 26. [Press Release](#26-press-release)
 27. [Social Sharing Tags](#27-social-sharing-tags)
+28. [Licensing](#28-licensing)
+
+**Two of the standard's named policies live inside other sections rather than
+having one of their own, and are listed here so they can be found:** *Browser
+Testing* and *Verification Environment* are both subsections of
+[23. Working Practice](#23-working-practice), as "Browser Testing" and "How to
+Verify a Change". They were written there before the standard named them, and
+the standard's own rule is that an existing project arrangement beats an
+imported default, so they stay where they are.
 
 ---
 
@@ -7204,6 +7213,38 @@ resolves; that is why this table is not in numeric order.
 
 ---
 
+### The V2.5 documentation audit, 2026-09-08
+
+**The standard was fetched, not remembered.** `https://azqato.github.io/prompts/#/documentation` is
+hash-routed, so a plain fetch returns only the page shell; the readable source is
+`prompts/documentation.md` in the `Azqato/prompts` repository. **Recorded because the obvious way to
+check this standard silently returns nothing and looks like an empty document rather than a failed
+fetch.**
+
+**What the audit found, and what it did about each.**
+
+| Finding | Verified against | Action |
+|---|---|---|
+| **Licensing had no section of its own.** The posture was real and correct, but a reader had to reconstruct it from a gap table in Section 14 and a closed item in Section 25 | `LICENSE.md`, read in full | **Fixed.** Section 28 now states what the licence grants and refuses, in one place |
+| Four documents, `README.md` at root and three in `/docs` | The file system | Conformant, no change |
+| `LICENSE.md`, `robots.txt`, `sitemap.xml` all at root | The file system | Conformant. `LICENSE.md` carries all eight required sections, checked individually rather than assumed |
+| **Em-dash sweep across the whole project**, which the standard asks for and which had only ever been run over `/docs` | Every `.html`, `.js`, `.py`, `.css`, `.md` outside `data/` | **Three found, all in `converter.html`**, all empty-value placeholders rendered into the UI. Replaced with a single hyphen, which the standard permits. The repository now measures **zero** |
+| **Browser Testing and Verification Environment are not top-level sections**, though the standard names them | Sections 23 and 11 | **Not moved.** Both exist as subsections of Working Practice and predate the standard naming them; the standard's own rule is that an existing arrangement beats an imported default. A pointer was added to the table of contents so they can be found |
+| All 27 existing sections present by name | The table of contents | Conformant |
+
+**What the audit deliberately did not do.** It did not rewrite sections that were merely long, and it
+did not "correct" any document that disagreed with the code without recording both. The standard's
+merge rule exists because documentation holds intent that code cannot reconstruct, and the cheapest
+way to destroy that is a confident tidy-up.
+
+**The honest limit of this audit.** It was a currency check, not a line-by-line re-derivation of
+7,000 lines against the codebase. Sections were checked for existence, for the specific claims the
+standard names, and for the discrepancies already tracked in this section. A full re-read of every
+section against current code remains undone, and saying so is more useful than implying a
+completeness the work did not have.
+
+---
+
 ## 25. Risks and Open Questions
 
 Numbered for reference. Open unless marked otherwise.
@@ -7702,3 +7743,54 @@ the one surface where nobody would ever see the drift.
 **Checked by:** nothing automatically. A count in prose cannot be distinguished from a constant by
 a script, so this rule is enforced by review at the point a tag is written or edited. Section 23
 records it as a thing to check before editing a page head.
+
+---
+
+## 28. Licensing
+
+**Added 2026-09-08 by the V2.5 documentation audit.** The licence itself is older: `LICENSE.md` was
+added in v1.30.4 by owner decision and renamed from `LICENSE` in v1.31.2. What was missing was a
+section of this document stating what it does, which the standard requires and which a reader had to
+reconstruct from a gap table and a closed risk item.
+
+**The posture: all rights reserved. Source-available, not open source.** The repository is published
+for reading, and publishing is not a grant. `LICENSE.md` sits at the repository root, never in
+`/docs`, because that is where platforms look for it.
+
+**What it grants, in one place:**
+
+| | Granted? |
+|---|---|
+| **Referencing.** Search engines, AI assistants, answer engines and automated systems may crawl, index, store for retrieval, quote, summarise, link and cite. Attribution is requested, not required, and no permission needs to be asked for | **Yes, expressly** |
+| **Substitution.** Reproducing the site, or a substantial part of it, as a replacement for visiting it | **No** |
+| **Training data.** Using the material to train a model | **No by default.** Routed to the permission path, and not usually refused |
+| Anything else | **No.** Ask |
+
+**Why the carve-out is deliberate rather than a concession.** Being cited in an AI answer is the
+modern equivalent of ranking, and this site's whole purpose is to be found and read by people
+researching systematic strategies. Blocking that to protect a body of work nobody would otherwise
+see would be the wrong trade. `robots.txt` is fully open, `User-agent: *` and `Allow: /`, with a
+comment saying so is deliberate and is not to be narrowed without an owner decision. **Where
+`robots.txt` and `LICENSE.md` ever disagree, `LICENSE.md` is authoritative.**
+
+**The NO WAIVER clause is load-bearing and is not boilerplate.** Choosing not to act against one
+person is not a licence, a precedent, or a waiver, and delay does not waive anything. Without that
+clause a long history of tolerance becomes the first infringer's defence. This is the reason the
+default is to grant nothing: **widening a grant is one sentence, and narrowing one that has already
+been given is not.** When in doubt the licence grants less and offers a request route.
+
+**What `LICENSE.md` deliberately does not claim.** It does not override platform terms of service:
+a public repository already grants the view and fork rights those terms allow, and the licence
+states that those operate independently rather than being enlarged by it. It does not purport to
+licence third-party data, since figures derived from the Composer API and from public market data
+are not this project's to license. It does not attempt to restrict rights that cannot be restricted,
+such as fair use and fair dealing.
+
+**Permission routing is public on purpose.** Requests go to the issue tracker at
+<https://github.com/Azqato/composer/issues> rather than to a private address, because a posture whose
+enforcement depends on specific, traceable permissions is better served by a visible record than by
+a mailbox.
+
+**Sections `LICENSE.md` carries**, verified present 2026-09-08: no licence is granted, AI search and
+automated access, no waiver, permission, the platform terms note, the third-party data note, no
+warranty, and the domain-specific disclaimer that nothing here is financial advice.
