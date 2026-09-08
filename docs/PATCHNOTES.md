@@ -5,6 +5,44 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.80.0] - 2026-09-08
+
+### Added
+
+- **PRD Section 29, Outstanding Work and Recommended Sequence**, written at the
+  owner's request after v1.79.2 emptied the queue. It gathers everything still
+  outstanding into one ordered table and argues a sequence. **No new work is
+  recorded**; the items already existed, spread across four lists that did not
+  cross-reference each other: the roadmap table, the open questions, the
+  unchecked boxes inside Section 14's item bodies, and the Explicitly Deferred
+  table.
+- **Eleven outstanding items, plus six open questions reclassified as recorded
+  facts rather than work** (the duplicated spec-count formula, Composer's rate
+  limit behaviour, the 255-target cap, browser heap ceilings, the
+  `dedupe_symphonies.py` tiebreak, and the two AI-facing conventions). Those are
+  kept so they are not rediscovered as mysteries.
+
+### Notes
+
+- **The section is explicitly a view, not a second source of truth**, and says so:
+  where it disagrees with the item it points at, the item wins. Open question 20
+  records this document contradicting itself three times because one fact lived
+  in two sections, and a summary that restates detail becomes the fourth list
+  rather than the fix for three.
+- **One item is currently counted three times**, which is the clearest evidence
+  of that problem: the zoop evergreen replacement is roadmap phase V2.6, open
+  question 13, and an unchecked box in Section 14. It is one piece of work.
+- **The central recommendation is that V2.6 and item B do not compete for the
+  same resource.** V2.6 is bottlenecked on owner judgement; walk-forward
+  validation is bottlenecked on implementation against a finished mockup.
+  Treating them as one queue makes the largest product-integrity item wait on
+  calendar time that has nothing to do with it.
+- **V2.6 is the only outstanding item that decays while it waits**, per open
+  question 13: the curated set's headline metrics go staler the longer the eleven
+  confirmed replacements sit.
+
+---
+
 ## [1.79.2] - 2026-09-08
 
 ### Fixed

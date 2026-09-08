@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.79.2
+**Version:** 1.80.0
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -43,6 +43,7 @@ This is the single authoritative reference for Composer Atlas. It consolidates p
 26. [Press Release](#26-press-release)
 27. [Social Sharing Tags](#27-social-sharing-tags)
 28. [Licensing](#28-licensing)
+29. [Outstanding Work and Recommended Sequence](#29-outstanding-work-and-recommended-sequence)
 
 **Two of the standard's named policies live inside other sections rather than
 having one of their own, and are listed here so they can be found:** *Browser
@@ -7899,3 +7900,94 @@ a mailbox.
 **Sections `LICENSE.md` carries**, verified present 2026-09-08: no licence is granted, AI search and
 automated access, no waiver, permission, the platform terms note, the third-party data note, no
 warranty, and the domain-specific disclaimer that nothing here is financial advice.
+
+---
+
+## 29. Outstanding Work and Recommended Sequence
+
+**Written 2026-09-08 at the owner's request, after v1.79.2 closed the last item in the queue.**
+Nothing in this section is new work. It is the same work already recorded elsewhere, gathered into
+one place and ordered, because it was spread across four lists that do not cross-reference each
+other: the roadmap table above, the open questions in Section 25, the unchecked boxes inside this
+section's own item bodies, and the Explicitly Deferred table.
+
+**This section is a view, not a second source of truth.** Where it disagrees with the item it points
+at, the item wins. It is written this way deliberately: open question 20 records that this document
+has contradicted itself three times purely because one fact lived in two sections, and a summary
+that starts restating detail becomes the fourth list rather than the fix for three.
+
+**One item is currently counted three times**, which is the clearest illustration of the problem:
+the zoop evergreen replacement appears as roadmap phase V2.6, as open question 13, and as an
+unchecked box in this section. It is one piece of work.
+
+### What is actually outstanding
+
+| # | Item | Where it lives | Who is blocked | Size |
+|---|---|---|---|---|
+| 1 | **GitHub Pages settings check**, and the decision on whether the Pages mirror still earns its keep now Cloudflare is canonical | Open question 1 | **Owner.** Not verifiable from inside the repository | Minutes for the owner |
+| 2 | **`--dry-run` for `sync_storage_to_database.py`** | Open question 24 | Nobody | Small |
+| 3 | **V2.6 curated content:** the zoop evergreen replacement (11 replacements, 1 removal) and the Cohort A expansion (7 strategies) | V2.6, open question 13, unchecked box | **Owner.** Held for a dedicated session by ruling, 2026-09-08 | Large, and it decays |
+| 4 | **V2.2 item B, walk-forward validation** | Item B, open question 6 | Nobody | Large |
+| 5 | **Curated metrics diverge from the same symphonies' database rows** | Open question 14, Deferred "Option B" | Nobody, but it is a design decision | Medium |
+| 6 | **State each count in exactly one place** and cross-reference it | Open question 20 | Nobody | Medium |
+| 7 | **Document the three tool pages' inline stylesheets**, roughly 250 lines covering a third of the interface | Open question 9 | Nobody | Small |
+| 8 | **Cross-link curated strategies and the full database** both ways | Section 14, decided 2026-07-13, never built | Nobody | Medium |
+| 9 | **V2.3 community signals:** external Google Form, curator notes, related strategies | V2.3 | Nobody | Medium |
+| 10 | **V2.4 Tier 3** | V2.4 | **Hard-blocked.** Only 16.7% of symphonies hold exclusively covered tickers | Blocked |
+| 11 | **V4.0, five external forks** | V4.0 | Ideation only, by its own rule not to start until V2.x is well underway | Large |
+
+**Recorded but requiring no action:** open questions 7 (a duplicated formula to watch for), 15
+(Composer's rate limit behaviour), 16 (the 255-target cap, which cannot bind at 72 tickers), 17
+(browser heap ceilings), 18 (the `dedupe_symphonies.py` tiebreak, whose wanted fix needs an API
+field Composer does not expose) and 19 (two AI-facing conventions that are easy to break silently).
+These are facts kept so they are not rediscovered as mysteries, not work.
+
+### The recommended sequence, and the reasoning
+
+**The single most useful observation is that items 3 and 4 do not compete for the same resource.**
+V2.6 is large but is bottlenecked on owner judgement about which strategies earn a page and what
+each one says. Item B is large but is almost entirely implementation against a finished mockup.
+Treating them as one queue means the site's biggest product-integrity item waits on calendar time
+that has nothing to do with it. **Schedule V2.6 as sessions; use solo time for item B.**
+
+**1. The owner's GitHub Pages check (item 1), first, because it is minutes and it may delete a whole
+class of future problem.** v1.79.2 had to update *two* exclusion lists, `.assetsignore` for wrangler
+and an `rsync --exclude` list for Pages, which are separate mechanisms that neither read each other
+nor stay in step on their own; `symphony_scores.json` had already drifted between them. If the Pages
+mirror no longer earns its keep, retiring it removes that duplication permanently rather than
+documenting around it. If it stays, the answer to open question 1 at least makes the boundary real
+instead of aspirational.
+
+**2. The `--dry-run` flag (item 2), because it is small and the incident already happened twice.**
+`sync_storage_to_database.py` has twice been run expecting a report and produced a roughly
+1,000-row import instead, on 2026-07-15 and 2026-08-24. Both were reverted and neither was
+committed, so the cost so far has been time rather than data. **Carry the caveat already recorded in
+open question 24 into the implementation:** promotion is an approval decision rather than a sync, so
+a dry-run makes the wrong operation safer without making it the right operation. It is worth doing
+anyway, and it is worth not mistaking for a fix.
+
+**3. Book V2.6 (item 3) as dedicated sessions, starting soon, because it is the only item here that
+gets worse while it waits.** Open question 13 states the decay directly: the curated set's headline
+metrics go staler the longer the eleven replacements wait, and the replacement IDs have been
+confirmed and in the database since 2026-07-15. Everything else on this list is stable if ignored.
+
+**4. V2.2 item B, walk-forward validation (item 4), as the main solo build.** It is the only Miner
+test that can **fail** a rule rather than caveat it. A and C both describe a result; neither can
+reject one, because every day the Miner scores is in sample by construction. `_wf-mockup.html` is a
+finished mockup with nothing behind it and is the only artifact describing what the panel should
+look like. Completing it closes V2.2 honestly rather than by redefinition.
+
+**5. Then the documentation and consistency work (items 5, 6, 7)**, which is where the value drops
+off but does not vanish. Item 5 is the one a visitor can actually see: the same symphony can show
+two slightly different numbers on two pages.
+
+**6. Items 8 and 9 are product growth** and should be sequenced on what the site needs next rather
+than on this list's order. Item 10 stays blocked and item 11 stays ideation.
+
+### What this section deliberately does not do
+
+It does not re-rank the Explicitly Deferred table. Each row there was considered and set aside for a
+stated reason, several of them by owner decision, and quietly promoting one into a work queue is how
+a declined item becomes a surprise. It also does not assign dates. **The honest limit of this
+ordering is that it is an argument about sequence, not a schedule, and the two items at the top of
+it are both bottlenecked on the owner rather than on effort.**
