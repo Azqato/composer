@@ -5,6 +5,43 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.76.8] - 2026-09-08
+
+### Fixed
+
+- **Signal Miner: the Sortino ratio no longer prints an undefined value as a
+  confident one.** `sortino = meanAll / (negStd + 1e-9)` returned numbers near
+  2,000,000 whenever a spec had fewer than two losing days, because a ddof=1
+  standard deviation is undefined below two observations and the 1e-9 guard
+  became the entire denominator. It now returns NaN in that case, which the
+  table already renders as a dash and the sorter already sends to the bottom.
+  On a 27,972 spec lattice the largest Sortino falls from **2,065,411 to 1.31**.
+- **Also guards `negStd === 0` with two or more losing days**, which happens when
+  the negative returns are identical. That divided to Infinity, which passes an
+  `x === x` test and would have sorted to the top exactly like the bug fixed.
+
+### Changed
+
+- **Sortino is no longer part of the store admission rule**, in either Pass 1 or
+  the combination pass. A row that is undefined on one column is not a reason to
+  delete the row, since its Calmar, return and drawdown are all still real.
+  Without this the fix would have silently **evicted 131 rows** rather than
+  showing a dash in one cell. Calmar stays in the rule because it is the default
+  sort key, so a row without one cannot be ranked at all. Verified: the store
+  holds the same 23,108 rows before and after, with 131 now carrying a blank
+  Sortino.
+
+### Notes
+
+- **The defect was latent, not live.** The `sl-tim` display filter, default 15
+  percent, discarded every one of these rows before a visitor saw it: they fire
+  between 2 and 11 days out of 3,942. This is robustness for the case where a
+  visitor lowers that filter toward 0, which the input permits.
+- Adds `scripts/harness/sortino_fix.js`, which asserts the value returned by
+  `backtest()` rather than the text in a cell.
+
+---
+
 ## [1.76.7] - 2026-09-07
 
 ### Fixed

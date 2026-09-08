@@ -1063,7 +1063,24 @@
       let negStd = 0;
       if (nNeg > 1) { const mN = sumNeg / nNeg; negStd = Math.sqrt((sumNeg2 - nNeg * mN * mN) / (nNeg - 1)); }
       else if (nNeg === 1) negStd = 0;
-      const sortino = meanAll / (negStd + 1e-9) * Math.sqrt(252);
+      // A ddof=1 standard deviation is UNDEFINED below two observations, and
+      // the branches above say so in their own structure: nNeg === 1 sets
+      // negStd to exactly 0, and nNeg === 0 leaves it at its initial 0. In both
+      // cases the 1e-9 guard becomes the entire denominator, so the result was
+      // not a large Sortino, it was meanAll multiplied by a billion. Measured
+      // on a 27,972 spec lattice, 131 rows returned values near 2e6 and 43 of
+      // the store's top 100 by Calmar carried one. Returning NaN says "this
+      // quantity does not exist for this row", which fmtVal already renders as
+      // a dash and selectTop already sorts to the bottom. The defect was latent
+      // rather than live: the sl-tim display filter, default 15%, discards every
+      // one of these rows before a visitor sees it, so this is robustness for
+      // the case where someone lowers that filter toward 0, which the input
+      // permits. See docs/PRD.md Section 14, item C, and scripts/harness/sortino.js.
+      // negStd > 0 is checked as well as nNeg > 1: two negative days with an
+      // identical return give a real but zero deviation, and dividing by it
+      // would return Infinity, which passes an `x === x` test and would sort to
+      // the top exactly like the bug being fixed.
+      const sortino = (nNeg > 1 && negStd > 0) ? meanAll / negStd * Math.sqrt(252) : NaNv;
       // Calmar = ANNUALISED return over worst drawdown. The source notebook
       // used total return here, which is only comparable between runs of equal
       // length: over the 2010 axis TQQQ scored 418 that way, against a real
@@ -1582,7 +1599,15 @@
         const arr = evalSpecAt(specs, s, cache, sigBuf);
         for (let ti = 0; ti < tgt.length; ti++) {
           const m = backtest(arr, targetLret[tgt[ti]], win.s0, win.len);
-          if (m.total > 0 && m.sortino === m.sortino && m.calmar === m.calmar) {
+          // Sortino is deliberately NOT part of admission. It is undefined for a
+          // row with fewer than two losing days, and a row being undefined on
+          // ONE column is not a reason to delete the row: its Calmar, return and
+          // drawdown are all still real. Requiring a finite Sortino here would
+          // have made the formula fix silently evict about 0.6% of the store
+          // instead of showing a dash in one cell. Calmar stays in the rule
+          // because it is the default sort key, so a row without one cannot be
+          // ranked at all.
+          if (m.total > 0 && m.calmar === m.calmar) {
             pushStore(store, s, ti, m);
           }
         }
@@ -1714,8 +1739,10 @@
               const arr = new Uint8Array(N);
               for (let k = 0; k < N; k++) arr[k] = (A[k] & B[k]);
               const m = backtest(arr, targetLret[t], win.s0, win.len);
+              // Same reasoning as Pass 1: an undefined Sortino is one blank cell,
+              // not grounds to drop a combination that has a real Calmar.
               if (m.tim > TIM && m.maxDD > MDD && m.total > 0 &&
-                  m.sortino === m.sortino && m.calmar === m.calmar) {
+                  m.calmar === m.calmar) {
                 comboRows.push({
                   single: false, target: t,
                   label: survRows[i].label + '  AND  ' + survRows[j].label,

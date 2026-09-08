@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.76.7
+**Version:** 1.76.8
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -4674,6 +4674,17 @@ stating so a later reader does not go looking for a dependency that does not exi
   language only when the result is bad, would then fire on essentially every run measured so far.
   **That is a product question rather than a measurement question and is flagged for the owner
   rather than resolved here.** It is recorded as open question 28.
+
+  **The Sortino degeneracy was fixed in v1.76.8**, after the owner chose the smallest of three
+  options: correct the formula, leave the `sl-tim` input range alone, and keep the affected rows on
+  the leaderboard with a blank cell rather than evicting them. `sortino` now returns NaN when there
+  are fewer than two losing days or when the downside deviation is exactly zero, and **Sortino was
+  removed from the store admission rule** so that an undefined value blanks one cell instead of
+  deleting a row whose Calmar, return and drawdown are all still real. Without that second change the
+  fix would have quietly evicted 131 rows, which is a different product decision than the one taken.
+  Largest Sortino on a 27,972 spec lattice falls from 2,065,411 to 1.31, with the store unchanged at
+  23,108 rows. Verified by `scripts/harness/sortino_fix.js`, which asserts the returned value rather
+  than the rendered cell.
 
   **A note on the Sortino degeneracy, corrected the same way.** `sortino = meanAll / (negStd + 1e-9)`
   returns values near 2e6 when a spec has fewer than two losing days, because ddof=1 leaves `negStd`
