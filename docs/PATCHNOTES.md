@@ -5,6 +5,61 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.79.0] - 2026-09-08
+
+### Added
+
+- **The Signal Miner now checks its own result against shuffled data and says so
+  above the table.** This is item C of V2.2 and it closes that phase. After a run
+  finishes, the tool samples about 1,500 signals from the lattice it just
+  searched, scores them against the real target, then scores the same sample
+  against eight circular rotations of that target, and reports how many of the
+  eight the real result beat. Rotation preserves the target's own distribution
+  and every signal's firing pattern and destroys only the alignment between
+  them, which is the thing being tested.
+- **Four buckets, and the bad ones are the loud ones**, per the owner's ruling
+  that plain language appears only when the result is bad. The measured reality
+  is that this will fire on most runs: a default QQQ run lands on "the best
+  result in this run is indistinguishable from noise", with a real best Calmar of
+  0.95 against a null median of 0.96.
+- **`scripts/harness/honesty.js`**, which verifies the feature in two separate
+  passes. The first checks the render. The second **recomputes the whole check
+  independently from the page's own primitives and requires the printed figures
+  to match**, which is the pass that matters, because an earlier round of work on
+  this page passed 24 render assertions on a verdict that was flatly false.
+  Eighteen checks, exact agreement on the beat count, the real best and the null
+  median.
+
+### Notes
+
+- **What shipped is narrower than what Section 14 item C specifies, and the PRD
+  now says so at the top of C-SHIP.** The empirical null is live; the plateau,
+  out-of-sample decay, trade count, time-in-market and time-concentration
+  components are not built and are not queued.
+- **The verdict carries no percentile and no number with a decimal point**, and
+  the harness asserts this rather than trusting it. The fifteen-configuration
+  sweep read the same configuration at percentile 38 once and 63 another time, so
+  anything finer would be reporting noise as precision. The components are shown
+  above the verdict and are exact, because they are measurements rather than
+  interpretations.
+- **The store-admission versus display-filter distinction bit a second time.**
+  The first working version scored both sides on Pass 1 admission only. That is
+  symmetric, so the verdict was never unfair, but the number printed did not
+  describe the table underneath it. The shipped panel reads Min Time in Market
+  and Max Drawdown from the live controls exactly as `applyFilters` does.
+  Correcting it moved the figures from 1.19 against a null median of 2.30 to 0.95
+  against 0.96.
+- **Open question 27 is ruled: the social sharing checker stays manual and
+  `deploy.yml` stays at five gates.** The drifting-numbers rule that caused every
+  one of the live-and-wrong descriptions cannot be checked by any script, so a
+  green sixth gate would certify the mechanical half of the policy while implying
+  the half that actually failed.
+- **V2.6 is held for a dedicated working session** at the owner's instruction, not
+  merely sequenced behind V2.5. It is not to be opened opportunistically at the
+  end of another run.
+
+---
+
 ## [1.78.1] - 2026-09-08
 
 ### Added

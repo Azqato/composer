@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.78.1
+**Version:** 1.79.0
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -2492,11 +2492,11 @@ numbering schemes; they answer different questions.
 | V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | **Complete.** All 19 items shipped; 13, 14, 15 complete on all 24 visible strategies (v1.68.0); item 16 stores the daily series and the features it unblocks are tracked in Section 14 C3 | v1.72.0 |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
-| **V2.2** | **Signal Miner robustness (items A, B, C).** Split 2026-09-07: the curated-set refresh and library expansion moved out to V2.6 | **In progress, current phase** | Partially shipped through v1.73.0 |
+| **V2.2** | **Signal Miner robustness (items A, B, C).** Split 2026-09-07: the curated-set refresh and library expansion moved out to V2.6. **Item C's empirical null shipped 2026-09-08 as v1.79.0**, which closes the phase as scoped; the other five rating components named in Section 14 item C remain unbuilt and are not queued | **Complete as scoped** | Through v1.79.0 |
 | V2.3 | Community signals: external submission form, curator notes, related strategies | Backlog, lowest priority | Not started |
 | V2.4 | Overfit Check: paste a symphony, test it against the definition of overfitting using the 5,228 symphonies whose logic has gone a year unedited | Requested and specified 2026-08-28, respecified the same day after the owner rejected peer ranking, then **sequenced late at the owner's request**. **Tier 1 shipped 2026-09-06 as v1.75.0**, then substantially corrected in **v1.76.0** (fitted-era split, graded Overfit Score, the ceiling finding); Tiers 2 and 3 remain as specified | **Tiers 1 and 2 Complete** (Tier 2 shipped v1.77.0, 2026-09-08); Tier 3 remains hard-blocked on price coverage |
-| V2.5 | Documentation audit against the external standard, and social sharing tags on every shareable page | Queued 2026-09-07, started 2026-09-08 at the owner's instruction. **Social sharing tags shipped v1.78.0** on all twelve pages, with a compliance checker left manual pending open question 27. The documentation audit is the remaining half | **Part 2 of 2 complete**, audit outstanding |
-| V2.6 | Curated content: the zoop evergreen replacement, and the Cohort A library expansion | **Split out of V2.2 and sequenced behind V2.5 by owner decision, 2026-09-07.** Neither is blocked; both are large content builds rather than product work, and the owner chose to clear the product and documentation queue first | Not started |
+| V2.5 | Documentation audit against the external standard, and social sharing tags on every shareable page | Queued 2026-09-07, executed 2026-09-08. **Social sharing tags shipped v1.78.0** on all twelve pages; the **documentation audit shipped v1.78.1** and its findings are in Section 24. Open question 27 is now ruled: the checker stays manual | **Complete** | v1.78.1 |
+| V2.6 | Curated content: the zoop evergreen replacement (11 strategies), and the Cohort A library expansion (7 strategies) | **Split out of V2.2 and sequenced behind V2.5 by owner decision, 2026-09-07.** Neither is blocked; both are large content builds rather than product work. **The owner ruled on 2026-09-08 that this needs a dedicated working session and must NOT be started opportunistically at the tail of another run**, because it turns on judgement calls only the owner can make about which strategies earn a page and what each one says. A spare hour at the end of a session is the wrong time to open it | **Held for a dedicated session** |
 | V3.0 | Formerly Monetization Expansion | **Removed entirely, 2026-08-15.** Not deferred | n/a |
 | V4.0 | Signal discovery and robustness tooling, five candidate external forks | Ideation only. No work to begin until V2.x is well underway | Not started |
 
@@ -4767,6 +4767,62 @@ stating so a later reader does not go looking for a dependency that does not exi
   **The design danger, and it is the real one.** A single letter grade or 0-to-100 score invites exactly the false confidence it is meant to prevent, and the moment it exists people will optimise against it, which converts a diagnostic into a target and destroys it. **Show the components, and only then a summary.** The summary should be coarse on purpose, three or four buckets rather than a number with a decimal point, because the underlying estimate does not support more precision than that.
 
   **The honesty test for whether it works.** Given a 4.8M-candidate search, **most rows should rate badly**, including rows near the top of the leaderboard. If a first implementation rates most of the leaderboard as trustworthy, the rating is wrong and should not ship. It exists to make the tool argue with its own output.
+
+  **C-SHIP. Shipped 2026-09-08 as v1.79.0, and what shipped is narrower than the specification
+  above.** What is live is the **empirical null**, rendered as a panel above the results table, and
+  none of the other components. The plateau, out-of-sample decay, trade count, time in market and
+  time concentration components are still unbuilt. This is stated plainly because the section above
+  reads like a specification for a composite rating, and a reader who assumes all of it shipped will
+  be wrong about five sixths of it.
+
+  **Why the null shipped alone, ahead of a sequencing note saying C cannot ship before A.** The null
+  turned out not to need A. It is not a component of a composite score; it is a single question with
+  a single answer, and C-N3 established that the answer is almost always "no" (fourteen of fifteen
+  configurations failed to beat their own null, and two targets were beaten by every rotation).
+  Holding a finding that strong behind four unbuilt components would have meant the tool kept
+  presenting a leaderboard it already had the evidence to doubt.
+
+  **How the shipped check works.** After Pass 1, it samples about 1,500 spec indices from the run's
+  own lattice with a seeded shuffle, evaluates each signal once, and scores that one sample against
+  the real target and against eight circular rotations of it. **Both sides are a best-of-k at the
+  same k**, which is the only thing that makes the comparison mean anything, and the panel says "a
+  sample of your search" rather than implying the whole lattice was re-run. Inventing a scaling
+  factor from the sample up to the full lattice was considered and rejected: it would be a guess
+  wearing a number's clothing.
+
+  **The filter distinction bit for the second time, and the panel is corrected for it.** The first
+  working version scored both sides against Pass 1's store admission rule only. That is symmetric,
+  so the verdict was never unfair, but the *number printed* did not describe the table underneath
+  it: Min Time in Market defaults to 15% and is applied at display time, so an admission-only best
+  can come from a spec firing a handful of days out of nearly four thousand, which the default
+  filter discards before anyone reads it. The shipped panel reads `sl-tim` and `sl-mdd` from the
+  live controls exactly as `applyFilters` does. **The correction moved the measured figures
+  materially**, from a real best of 1.19 against a null median of 2.30 to a real best of 0.95
+  against a null median of 0.96, and brought them into line with C-N2. This is the same error that
+  had to be corrected in `scripts/harness/nulldist.js` earlier the same day, which is why it is
+  recorded here rather than quietly fixed.
+
+  **What the panel refuses to say.** No percentile, and **no number carrying a decimal point anywhere
+  in the verdict**, which `scripts/harness/honesty.js` asserts directly. C-N3 measured the same
+  configuration reading percentile 38 once and 63 another time, so any finer figure would be
+  reporting noise as precision. The four buckets are: beat every rotation, beat most of them, beat
+  some of them, and beaten by nearly all of them. **The components are printed above the bucket**,
+  per the design danger noted above, and the components are exact, because they are measurements
+  rather than interpretations.
+
+  **The honesty test is satisfied by the shipped build, not merely by the specification.** A default
+  QQQ run over a 34,800-signal lattice lands in the third bucket, "indistinguishable from noise",
+  with the real best at 0.95 against a null median of 0.96. The tool argues with its own output on
+  its own default settings, which was the requirement.
+
+  **Verified by `scripts/harness/honesty.js`**, which does two separate jobs: it checks the render,
+  and then it **recomputes the entire check independently from the page's primitives and requires
+  the page's printed figures to match**. Eighteen checks pass, including exact agreement on the beat
+  count, the real best and the null median. The second job exists because an earlier round of work
+  on this page passed 24 render assertions on a verdict that was flatly false. **One behaviour is
+  verified by inspection rather than by test:** a new run clears the previous run's panel before it
+  starts, which is a single line at the top of the run function and is not covered by the harness,
+  because asserting it would mean paying for a second full run.
 
   **Sequencing.** C cannot ship before A, since plateau width is its backbone and A is nearly free. B strengthens it but is not a prerequisite; the rating can carry an explicit "not validated out of sample" state until B exists. The N-adjusted component could ship on its own, before either, and would be worth doing even if nothing else here is ever built.
 
@@ -7567,7 +7623,13 @@ Numbered for reference. Open unless marked otherwise.
     Section 24's rows were sitting live and unnoticed. Against it, the drifting-numbers rule that
     caused those rows **cannot be checked by any script**, so a passing gate would certify the
     cheap half of the policy and imply the expensive half, which is worse than no gate at all if it
-    stops anyone reading the tags. **Owner ruling required.**
+    stops anyone reading the tags.
+
+    **RULED 2026-09-08: it stays manual.** The owner chose the checker's own second argument. The
+    rule that caused every one of Section 24's live-and-wrong rows, that a description must carry no
+    number which can drift, **cannot be checked by any script**, so a green sixth gate would certify
+    the mechanical half of the policy while implying the half that actually failed. Run
+    `scripts/check_social_tags.py` by hand when tags are touched. `deploy.yml` stays at five gates.
 
 28. **ANSWERED 2026-09-08 by the fifteen-configuration sweep in Section 14, C-N3: yes, it would
     fire on essentially every run, and on current evidence that is correct.** Fourteen of fifteen
