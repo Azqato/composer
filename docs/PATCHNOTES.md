@@ -5,6 +5,61 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.76.6] - 2026-09-07
+
+### Added
+
+- **An empirical null for the Signal Miner search**, `scripts/harness/nulldist.js`.
+  A measurement harness, not a deploy gate and not shipped to visitors. It rotates
+  the target's log-return series circularly inside the scored window and re-runs
+  the same search over the same lattice, through the page's own `backtest()`. This
+  answers the question the Miner cannot currently answer about itself: how much of
+  its best-of-N result is the search size rather than a real relationship.
+- **The measurement, written into PRD Section 14, item C.** Four configurations.
+  The finding that matters: on a TLT target the real search's best Calmar was 0.48
+  against a null median of 1.84, putting the real result at the **4th percentile**
+  of scrambled data. Twenty-three of twenty-four rotations of pure noise beat it,
+  and the Miner as it ships today would have printed that run's leaderboard with
+  the same formatting and the same confidence as a run that found something.
+- **A recorded departure from the method the PRD proposed.** The PRD proposed
+  random signals with matched time-in-market. Rotation was used instead, because
+  real signals fire in blocks and block structure drives max drawdown, which is
+  Calmar's denominator. The original proposal is kept in place with the reasoning
+  for the change beside it rather than being overwritten.
+
+### Fixed
+
+- **A flaw in the harness's own sampling, caught before the result was believed.**
+  The sample was drawn by stride, which is uniform over the lattice but leaves its
+  *prefix* ordered by family, and `best-of-k` reads a prefix. The k=100 row was
+  reporting the best of one family. Fixed with a seeded shuffle. The corrected
+  method produced a *less* flattering headline, 80th percentile against 92nd.
+
+### Notes
+
+- **Sortino is degenerate as a ranking metric on this page.** `meanAll / (negStd +
+  1e-9)` returns values in the millions for a spec with almost no losing days.
+  Calmar is guarded by `maxDD !== 0` and is the shipped default sort, so no
+  conclusion above depends on Sortino. Recorded because the column is displayed.
+
+---
+
+## [1.76.5] - 2026-09-07
+
+### Changed
+
+- **Roadmap resequencing, at the owner's request.** V2.2 had carried three
+  unrelated things: two curated-content builds and one product build. The zoop
+  evergreen replacement and the Cohort A library expansion both move behind V2.5
+  as the new **V2.6**, and V2.2 is rescoped to Signal Miner robustness only, which
+  becomes the active phase. **Neither content item is blocked**, which is stated
+  explicitly so a later reader does not go looking for a dependency that does not
+  exist. The two are different kinds of work: the content items are bounded and
+  well specified, while the Signal Miner work is unsolved product design and is
+  recorded as the largest open product risk on the site.
+
+---
+
 ## [1.76.4] - 2026-09-07
 
 ### Added

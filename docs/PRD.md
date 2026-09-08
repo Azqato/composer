@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.76.4
+**Version:** 1.76.6
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -2483,10 +2483,11 @@ numbering schemes; they answer different questions.
 | V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | **Complete.** All 19 items shipped; 13, 14, 15 complete on all 24 visible strategies (v1.68.0); item 16 stores the daily series and the features it unblocks are tracked in Section 14 C3 | v1.72.0 |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
-| **V2.2** | **Scale and discovery: curated-set refresh, cross-linking, Signal Miner robustness** | **In progress, current phase** | Partially shipped through v1.24.8 |
+| **V2.2** | **Signal Miner robustness (items A, B, C).** Split 2026-09-07: the curated-set refresh and library expansion moved out to V2.6 | **In progress, current phase** | Partially shipped through v1.73.0 |
 | V2.3 | Community signals: external submission form, curator notes, related strategies | Backlog, lowest priority | Not started |
 | V2.4 | Overfit Check: paste a symphony, test it against the definition of overfitting using the 5,228 symphonies whose logic has gone a year unedited | Requested and specified 2026-08-28, respecified the same day after the owner rejected peer ranking, then **sequenced late at the owner's request**. **Tier 1 shipped 2026-09-06 as v1.75.0**, then substantially corrected in **v1.76.0** (fitted-era split, graded Overfit Score, the ceiling finding); Tiers 2 and 3 remain as specified | **Tier 1 Complete**, Tiers 2-3 not started |
 | V2.5 | Documentation audit against the external standard, and social sharing tags on every shareable page | **Queued at the owner's request, 2026-09-07.** Specified below and in Section 27; deliberately not executed at specification time | Not started |
+| V2.6 | Curated content: the zoop evergreen replacement, and the Cohort A library expansion | **Split out of V2.2 and sequenced behind V2.5 by owner decision, 2026-09-07.** Neither is blocked; both are large content builds rather than product work, and the owner chose to clear the product and documentation queue first | Not started |
 | V3.0 | Formerly Monetization Expansion | **Removed entirely, 2026-08-15.** Not deferred | n/a |
 | V4.0 | Signal discovery and robustness tooling, five candidate external forks | Ideation only. No work to begin until V2.x is well underway | Not started |
 
@@ -4237,7 +4238,24 @@ designed in a way that implies the full database will eventually get the same tr
 
 ### V2.2: Scale + Discovery (Curated Library)
 
-**Status:** Backlog
+**Status:** In progress, current phase. **Rescoped 2026-09-07 by owner decision.**
+
+**What changed.** V2.2 had carried three unrelated things: two curated-content builds (the zoop
+evergreen replacement, and the Cohort A library expansion) and one product build (Signal Miner
+robustness, items A, B and C). The owner moved **both content items behind V2.5** and kept the
+Signal Miner work as the active phase. The content items are now **V2.6** and their full
+specifications stay below rather than moving, because they are long, they are already written, and
+splitting a specification across two sections to match a scheduling change costs more than it
+explains. Read the two bulleted content items below as V2.6 work.
+
+**Why the split is worth recording rather than just re-ordering a list.** These are two different
+kinds of work with different failure modes. The content items are bounded and well specified: 11
+replacements and 7 expansions, each one a known workflow, and the only real risk is the sheer
+volume of full-tree reads. The Signal Miner work is genuinely unsolved product design, it is
+recorded as **the largest open product risk on the site** (Section 25, item 6), and it is the piece
+where the tool currently overstates its own results. Interleaving them would have meant the risky
+item competing for attention with a long grind. **Neither content item is blocked**, which is worth
+stating so a later reader does not go looking for a dependency that does not exist.
 
 - [ ] **Replace 11 of the 12 curated "zoop's X (2026 Edition)" strategies with newer "evergreen" versions; remove the 12th (decided/confirmed 2026-07-15, all source symphonies now in the full database, not yet applied to the curated set)**: user authored updated, more evergreen versions of the curated zoop 2026-Edition strategies. Full mapping, confirmed by the user:
 
@@ -4505,6 +4523,102 @@ designed in a way that implies the full database will eventually get the same tr
   **The input the tool has and does not use: how many candidates it looked at.** This is the most important item on this list and the cheapest. A search over 4,800,024 candidates will produce a spectacular best-of-N Calmar **from pure noise**, and the size of that effect is knowable rather than mysterious: it grows with the number of candidates and shrinks with the length and independence of the sample. The Miner already knows N exactly, knows the sample length exactly, and knows how correlated the candidates are (it built them from one lattice). Today it reports a winner's Calmar as though it had tested one hypothesis. **Reporting a row's edge against what the best of N would look like under a null is the single most honest number this tool could add**, and it needs no new backtests at all. The literature calls the general idea a deflated or multiple-testing-adjusted performance measure; the exact formulation should be chosen deliberately, since the standard ones assume independence that a dense lattice badly violates.
 
   A more expensive but far more defensible alternative to a closed-form null: **measure it**. Score a few thousand random signals with time-in-market matched to the row being rated, take the distribution of their Calmars, and report the row's percentile against it. That is an empirical null built from this exact search space, so it needs no independence assumption. It costs one small extra pass and could be run once per session rather than per row.
+
+  ---
+
+  **C-N. The empirical null, measured 2026-09-07.** The paragraph above was a proposal. It has now
+  been built as a measurement harness, `scripts/harness/nulldist.js`, and run. **The harness is not a
+  gate and is not shipped to visitors.** It exists to answer whether the N-adjustment is worth
+  building at all, and what it would say.
+
+  **One deliberate departure from the proposal above, recorded rather than silently substituted.**
+  The proposal says to score *random signals with time-in-market matched to the row*. The harness
+  instead **rotates the target's log-return series circularly inside the scored window** and re-runs
+  the same search over the same lattice. The proposal's method was not followed because matched
+  time-in-market is not enough to make a random boolean array comparable to a real signal: real
+  signals fire in **blocks**, and block structure is most of what drives max drawdown, which is
+  Calmar's denominator. A random array with the same firing rate and no block structure produces a
+  null that is too easy to beat, which biases every reported edge upward. Rotation preserves the
+  target's return distribution, its volatility clustering and its drawdown structure; it preserves
+  every signal's firing rate *and* its run lengths; and because it searches the same lattice, it
+  **preserves the dependence between candidates**, which is the exact assumption this section warns
+  that closed-form adjustments violate. The only thing rotation destroys is the alignment between
+  signal and target, which is the relationship being tested. **The one artifact is stated rather than
+  hidden:** a circular rotation splices the end of the window onto its start, creating one artificial
+  day-to-day join per rotation, against a window of 3,942 days.
+
+  **Rotation is bounded inside the scored window**, not applied to the whole axis. `lret` carries NaN
+  before a ticker's listing date and `backtest` maps NaN to a zero return, so rotating the full axis
+  would drag pre-listing NaNs into the window and quietly convert them to flat days. That would bias
+  the null **downward**, which is the dangerous direction: a suppressed null makes a real row look
+  better than it is.
+
+  **What was measured.** Four configurations, all on the page's own `backtest()` through the harness
+  hook, all ranked on **Calmar because that is the page's shipped default sort**, and all filtered by
+  Pass 1's own admission rule so the null is filtered exactly as the real store is.
+
+  | Target | Signals | Lattice | Sample | Rotations | Real best | Null best p50 | Null best p90 | Real's percentile |
+  |---|---|---|---|---|---|---|---|---|
+  | QQQ | SPY, QQQ, TLT | 27,972 | 9,324 | 40 | 11.87 | 5.81 | 20.23 | **80** |
+  | QQQ | SPY, QQQ, TLT, IWM, GLD, XLK | 68,904 | 6,264 | 24 | 10.35 | 3.07 | 9.41 | **92** |
+  | TLT | SPY, QQQ, TLT | 27,972 | 6,993 | 24 | 0.48 | 1.84 | 5.35 | **4** |
+
+  **Four findings, in order of how much they should change the product.**
+
+  **1. The null construction validates itself.** On every configuration the *median* admitted row is
+  essentially identical under the real target and under rotation: 0.40 against 0.43, 0.38 against
+  0.39, 0.04 against 0.04. Rotation therefore destroys alignment without shifting the metric's level,
+  which is precisely what a null has to do to be one. **The entire effect lives in the maximum**, and
+  that is the claim the whole section rests on.
+
+  **2. The best-of-N effect is enormous, and it was measured rather than assumed.** The null's
+  best-of-k rises steeply with how many candidates were examined. On the first configuration the null
+  alone climbs from 0.78 at k=100 to **5.81 at k=9,324**, on scrambled data, purely from taking a
+  maximum over more draws. Extrapolating the shape toward the full 4.8M-candidate search is exactly
+  the adjustment this component is for.
+
+  **3. The real search's headline number sits inside its own null's range.** On the first
+  configuration the real best of 11.87 lands at the **80th percentile** of null bests, and one
+  rotation of scrambled data reached **59.20**, five times the real result. At k=100 the real search
+  was actually **behind** the null. A leaderboard row is not evidence of anything until it is placed
+  against this distribution, and today the tool prints the row and not the distribution.
+
+  **4. The result that settles it: on TLT the search found nothing, and would still have printed a
+  leaderboard.** Real best 0.48 against a null median of 1.84 and a null p90 of 5.35, putting the
+  real search at the **4th percentile** of scrambled data. Not a weak edge, a **negative** one: 23 of
+  24 rotations of pure noise beat it. The Miner as it ships today would present that run's top rows
+  in the same table, with the same formatting and the same confidence, as a run that had found
+  something. **This is the strongest available argument that item C is not a refinement but a
+  correction.**
+
+  **The honesty test above is satisfied.** That test demanded that "most rows should rate badly,
+  including rows near the top of the leaderboard", and warned that an implementation rating most of
+  the leaderboard as trustworthy is wrong and should not ship. A null whose p90 exceeds the real best
+  on two of three configurations rates the leaderboard badly, and one configuration rates it below
+  noise.
+
+  **A methodological note worth keeping, because it cost a wrong answer once.** The sample is drawn
+  by stride and **then shuffled with a seeded permutation**. The stride alone gives a sample uniform
+  over the lattice, but the lattice is ordered by family, then ticker, then window, then level, so
+  the sample's *prefix* is not uniform: its first hundred entries are all one family. `best-of-k`
+  reads a prefix. The first run reported a suspiciously flat 1.00 at both k=100 and k=300 for exactly
+  this reason: it was reporting the best of one family and calling it the best of a hundred
+  candidates. **The fix made the result less flattering, not more:** the headline percentile fell from
+  92 to 80. That direction is the reason to trust the number.
+
+  **Sortino is not usable as the measured metric, and this is a finding about the page, not about the
+  null.** Repeating the first configuration on Sortino returns a real best of **2,065,411** against a
+  null median of 298,522. The magnitudes are degenerate: `sortino = meanAll / (negStd + 1e-9)`
+  (`signal-miner.html`), so a spec with almost no losing days divides by the epsilon and returns a
+  number with no meaning. Calmar has a similar near-zero-denominator shape but is guarded by
+  `maxDD !== 0`. **This does not affect the conclusions above**, all of which are on Calmar, the
+  shipped default sort. It is recorded because the Sortino column is displayed on the leaderboard
+  today and can show values of that magnitude to a visitor.
+
+  **What this does not yet decide.** The presentation. The design danger stated below in this section
+  is unchanged and is now more acute, not less: these numbers are the strongest possible temptation to
+  print a precise score, and a precise score is the one thing this component must not produce. The
+  harness output is a measurement, not a proposed UI.
 
   **The other components, all cheap:**
   - **Plateau width (from A).** A knife edge rates badly no matter how good its number is.
