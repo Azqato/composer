@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.23
+**Version:** 1.24
 **Status:** Active
 **Last Updated:** 2026-09-07
 
@@ -559,6 +559,48 @@ Used on glossary detail pages when a concept has a formula.
 .formula-label { font-size: 0.6875rem; font-weight: 500; text-transform: uppercase; color: var(--color-disabled); margin-bottom: 6px; }
 .formula-value { font-family: var(--font-mono); font-size: 0.875rem; color: var(--color-green); }
 ```
+
+---
+
+### Wiki Index (glossary listing, v1.83.0)
+
+```css
+.wiki-jump        /* horizontal in-page anchor strip */
+.wiki-group       /* one category, with scroll-margin-top for the fixed nav */
+.wiki-group-head  /* heading + count, underlined */
+.wiki-entry       /* one row: name | description | meta */
+```
+
+**The problem this fixed.** The glossary listing sorted 27 concepts by category and then rendered
+them as a flat grid of 27 identical cards. **The grouping existed only in the sort order and was
+invisible on screen.** Each card spent a category badge, a two-line clamped description and a "Learn
+more" button to deliver a single name, and repeated the same four category labels 27 times. At three
+columns, finding one term meant scanning the whole grid.
+
+**Borrowed from the `wiki-portal` template**, which states the thesis directly: the home page of a
+large reference site "is a directory, and its success is measured by how quickly a reader reaches one
+of the hundreds of pages behind it", built from "many small, dense, scannable blocks rather than a
+few large ones".
+
+**Not borrowed: the 168px navigation rail.** The owner reversed that decision on 2026-09-09 in favour
+of the existing top nav, before any rail code was written. `.wiki-jump` does the rail's actual job,
+showing the whole structure and jumping into it, while scrolling with the page and needing no second
+column. Whether a per-page contents sidebar is ever warranted is to be judged against real pages, not
+decided in advance.
+
+**Category order is fixed, not alphabetical:** Indicator, Risk Metric, Strategy Concept, Asset Class.
+Sorting the categories by name would lead with Asset Class, the least likely reason anyone opens a
+glossary. Concepts *within* a group stay alphabetical, because that is what a reader scans.
+
+**An unrecognised category is appended in its own group, never dropped.** A concept added with a new
+category would otherwise vanish from the page with no error anywhere.
+
+**`.wiki-group[id]` carries `scroll-margin-top: calc(var(--nav-height) + 16px)`.** The nav is
+`position: fixed`, so a jump-strip anchor would otherwise land the group heading underneath it. The
+offset is derived from the nav token rather than typed, so it follows the nav.
+
+**Rows are a single-column grid that becomes three columns at 720px**, so the same markup serves
+mobile and desktop without a media query on the row itself.
 
 ---
 

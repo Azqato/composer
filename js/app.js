@@ -4,6 +4,7 @@
      - BASE URL detection
      - Data loading
      - Format utilities
+     - HTML escaping
      - Nav + Footer rendering
    ============================================= */
 
@@ -23,6 +24,23 @@ function u(path) {
   const [pathPart, qs] = path.split('?');
   const rel = pathPart === '/' ? 'index.html' : pathPart.replace(/^\//, '');
   return rel + (qs ? '?' + qs : '');
+}
+
+// ---- HTML escaping ----
+// Promoted here at v1.83.0 on its third use. Two local copies still exist, in
+// database.html and signal-miner.html; both pages load this file first and then
+// redefine the name at their own top level, so they keep exactly the function
+// they have today. Removing those is a mechanical follow-up, kept out of a
+// visual change so that a regression on the two heaviest pages on the site
+// cannot arrive wearing a CSS commit message.
+//
+// Quotes are escaped as well as angle brackets, so the result is safe in an
+// attribute value and not only in text. signal-miner's local copy escapes only
+// & < > and is therefore NOT interchangeable with this one.
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : String(str);
+  return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 // ---- Data loading ----

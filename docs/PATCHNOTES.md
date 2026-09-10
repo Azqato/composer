@@ -5,6 +5,63 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.83.0] - 2026-09-09
+
+### Changed
+
+- **The glossary listing is now a grouped directory instead of a grid of
+  cards.** Four category groups with headings and counts, one row per concept,
+  and a jump strip at the top. Same information, same links, roughly a third of
+  the vertical space.
+- **The grouping was previously invisible.** The old code sorted 27 concepts by
+  category and then rendered them as 27 identical cards, so the structure
+  existed only in the sort order. Each card spent a category badge, a two-line
+  clamped description and a "Learn more" button to deliver one name, and
+  repeated the same four labels 27 times.
+- **Category order is fixed, not alphabetical:** Indicator, Risk Metric,
+  Strategy Concept, Asset Class. Sorting the categories by name would lead with
+  Asset Class, the least likely reason anyone opens a glossary. Concepts within
+  a group stay alphabetical.
+- **The intro copy names what the page contains** rather than describing it as
+  "definitions, formulas, and context ... referenced across the library".
+
+### Added
+
+- **`escapeHtml` promoted into `js/app.js`** on its third use, matching the
+  standing rule set when the JSON syntax highlighter was promoted at v1.31.2.
+  Two local copies already existed, in `database.html` and `signal-miner.html`.
+  **Both are left in place on purpose:** each page loads `app.js` first and then
+  redefines the name at its own top level, so both keep exactly the function
+  they have today. Deleting them is a mechanical follow-up, kept out of a visual
+  change so a regression on the two heaviest pages cannot arrive wearing a CSS
+  commit message.
+- **`.wiki-jump` / `.wiki-group` / `.wiki-entry` styles** in `css/main.css`.
+
+### Removed
+
+- **The left rail, before it was built.** The owner reversed that decision in
+  favour of the existing top nav. `.wiki-jump` does the rail's actual job,
+  showing the whole structure and jumping into it, while scrolling with the page
+  and adding no second column. Whether a per-page contents sidebar is warranted
+  is now a question to be answered against real pages rather than in advance.
+
+### Notes
+
+- **Verified with assertions, not by eye, because the failure mode here is
+  invisible.** A concept dropped by a category filter would leave a page that
+  looks completely normal. Asserted instead that **all 27 slugs in
+  `glossary.json` reach the page**, every group's stated count matches its
+  rendered row count, all four jump anchors resolve to real groups, no old
+  concept cards survive, and there are no JavaScript errors.
+- **An unrecognised category is appended in its own group, never dropped.** A
+  concept added with a new category would otherwise vanish with no error.
+- **`strategies.html` is deliberately not getting this treatment.** Its cards
+  carry ARR, Max Drawdown and Sharpe per entry, which is real scannable data
+  rather than chrome. That is the opposite of the glossary's problem, and the
+  same fix would make it worse.
+
+---
+
 ## [1.82.1] - 2026-09-09
 
 ### Changed

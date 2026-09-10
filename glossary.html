@@ -51,21 +51,64 @@
         function strategyCount(concept) {
           return strategies.filter(s => s.tags && s.tags.some(t => concept.related_tags.includes(t))).length;
         }
+        // Fixed order, not alphabetical: a reader meets indicators first in a
+        // strategy page, and sorting the CATEGORIES by name would lead with
+        // Asset Class, the least likely reason anyone opened the glossary.
+        const CATEGORY_ORDER = ['indicator', 'risk-metric', 'strategy-concept', 'asset-class'];
+        const present = CATEGORY_ORDER.filter(c => sorted.some(x => x.category === c));
+        // Anything with a category nobody listed above still gets a group.
+        // Dropping it would remove the concept from the page silently, with no
+        // error to notice.
+        const extra = [...new Set(sorted.map(c => c.category))]
+          .filter(c => !CATEGORY_ORDER.includes(c));
+        const groups = [...present, ...extra];
+
+        const label = c => CATEGORY_LABELS[c] || c;
+        const groupOf = c => sorted.filter(x => x.category === c);
+
+        const jump = groups.map(c => `
+          <a href="#cat-${c}">${label(c)}<span class="wiki-jump-count">${groupOf(c).length}</span></a>
+        `).join('');
+
+        const body = groups.map(c => {
+          const items = groupOf(c).map(x => {
+            const n = strategyCount(x);
+            const meta = n > 0
+              ? `<span class="wiki-entry-meta">${n} ${n === 1 ? 'strategy' : 'strategies'}</span>`
+              : '<span class="wiki-entry-meta"></span>';
+            const href = u('/glossary.html?slug=' + x.slug);
+            return `
+              <div class="wiki-entry">
+                <p class="wiki-entry-name"><a href="${href}">${escapeHtml(x.name)}</a></p>
+                <p class="wiki-entry-desc">${escapeHtml(x.description)}</p>
+                ${meta}
+              </div>
+            `;
+          }).join('');
+          return `
+            <section class="wiki-group" id="cat-${c}">
+              <div class="wiki-group-head">
+                <h2>${label(c)}</h2>
+                <span class="wiki-group-count">${groupOf(c).length} ${groupOf(c).length === 1 ? 'concept' : 'concepts'}</span>
+              </div>
+              ${items}
+            </section>
+          `;
+        }).join('');
+
         document.getElementById('content').innerHTML = `
-          <div style="max-width:600px;margin-bottom:40px">
+          <div style="max-width:640px;margin-bottom:4px">
             <h1 style="color:var(--color-primary);margin-bottom:8px">Glossary</h1>
             <p style="color:var(--color-secondary);font-size:1.0625rem">
-              Definitions, formulas, and context for the indicators, risk metrics, and strategy
-              concepts referenced across the Composer Atlas strategy library.
+              Every indicator, risk metric and strategy concept used across the site, defined in
+              plain English with its formula and the strategies that rely on it.
             </p>
           </div>
-          <div class="section-header">
-            <h2 style="color:var(--color-primary)">All Concepts</h2>
-            <span class="section-count">${glossary.length} concepts</span>
-          </div>
-          <div class="grid-3">
-            ${sorted.map(c => renderConceptCard(c, strategyCount(c))).join('')}
-          </div>
+          <nav class="wiki-jump" aria-label="Jump to a category">
+            <span class="wiki-jump-label">Jump to</span>
+            ${jump}
+          </nav>
+          ${body}
         `;
         return;
       }

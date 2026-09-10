@@ -1107,6 +1107,144 @@ p { color: var(--color-secondary); }
   color: var(--color-secondary);
 }
 
+/* ---- Wiki-style index (v1.83.0) ----
+   A directory, not a gallery. See DESIGN.md "Wiki Index" for the reasoning;
+   the short version is that a reference page is measured by how fast a reader
+   reaches the entry behind it, and a grid of identical cards is slow at that.
+
+   Deliberately NOT a fixed rail: the owner kept the top nav, so the "see the
+   whole structure at once" job is done by .wiki-jump, an in-page anchor strip
+   that scrolls with the page and needs no second column. */
+.wiki-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 0 22px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.wiki-jump-label {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-disabled);
+  align-self: center;
+  margin-right: 4px;
+}
+
+.wiki-jump a {
+  font-size: 0.8125rem;
+  color: var(--color-secondary);
+  text-decoration: none;
+  padding: 4px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.wiki-jump a:hover,
+.wiki-jump a:focus-visible {
+  color: var(--color-primary);
+  border-color: var(--color-border-hover);
+}
+
+.wiki-jump a .wiki-jump-count {
+  color: var(--color-disabled);
+  margin-left: 5px;
+}
+
+.wiki-group {
+  margin-bottom: 40px;
+}
+
+/* The nav is position: fixed, so an anchor jump would otherwise land the
+   group heading underneath it. Derived from --nav-height rather than typed,
+   so it follows the nav if the nav changes. */
+.wiki-group[id] {
+  scroll-margin-top: calc(var(--nav-height) + 16px);
+}
+
+.wiki-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.wiki-group-head h2 {
+  color: var(--color-primary);
+  font-size: 1.125rem;
+  margin: 0;
+}
+
+.wiki-group-count {
+  font-size: 0.75rem;
+  color: var(--color-disabled);
+  white-space: nowrap;
+}
+
+/* One row per entry. The name and its description share a line on desktop and
+   stack on narrow screens, so the same markup serves both without a media
+   query on the row itself. */
+.wiki-entry {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px 16px;
+  padding: 10px 8px;
+  margin: 0 -8px;
+  border-radius: var(--radius-sm, 6px);
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.12s;
+}
+
+.wiki-entry:last-child {
+  border-bottom: none;
+}
+
+.wiki-entry:hover {
+  background: var(--color-surface);
+}
+
+.wiki-entry-name {
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.wiki-entry-name a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.wiki-entry-name a:hover,
+.wiki-entry-name a:focus-visible {
+  color: var(--color-green);
+}
+
+.wiki-entry-desc {
+  color: var(--color-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.wiki-entry-meta {
+  font-size: 0.75rem;
+  color: var(--color-disabled);
+  white-space: nowrap;
+}
+
+@media (min-width: 720px) {
+  .wiki-entry {
+    grid-template-columns: minmax(140px, 200px) 1fr auto;
+    align-items: baseline;
+  }
+}
+
 /* ---- Breadcrumb ---- */
 .breadcrumb {
   display: flex;

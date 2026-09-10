@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.82.1
+**Version:** 1.83.0
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -8001,8 +8001,20 @@ commissioned after that table was written; it is recorded here so the section st
 | Part | State | Note |
 |---|---|---|
 | 1. Design tokens | **Shipped v1.82.0** | Base lifted to Visual Studio dark range; every text/surface pair re-derived and measured |
-| 2. Left rail on content pages only | Not started | Owner ruling: content pages (`strategies.html`, `glossary.html`, `about.html`) only, **not** the data-heavy tool pages, which need the horizontal room |
-| 3. Wiki-style content pages | Not started | Owner ruling: the homepage keeps its pitch structure and CTAs, which direct into wiki-style content pages |
+| 2. Left rail on content pages only | **REVERSED by the owner 2026-09-09, will not be built** | The owner prefers the existing top nav. Superseded before any code was written. The rail's job, seeing the whole structure at once and jumping into it, is done instead by `.wiki-jump`, an in-page anchor strip that scrolls with the page and adds no second column |
+| 3. Wiki-style content pages | **In progress.** `glossary.html` listing shipped v1.83.0 | Owner ruling: the homepage keeps its pitch structure and CTAs, which direct into wiki-style content pages |
+
+**On whether anything should replace the rail: deliberately undecided.** The owner's ruling was to
+build the content pages with the top nav alone and judge afterwards whether anything is genuinely
+hard to find. If a per-page contents sidebar is ever added it will be because a real page proved it
+was needed, not because a template had one. `.wiki-jump` exists to make that test fair rather than to
+pre-empt it.
+
+**Remaining in part 3:** the glossary *detail* view (`glossary.html?slug=`), `about.html`, and a
+decision on `strategies.html`. The recommendation on `strategies.html` is to **keep its cards**: they
+carry ARR, Max Drawdown and Sharpe per entry, which is real scannable data rather than chrome, and a
+plain row list would lose it. That is the opposite of the glossary's problem and should not get the
+same fix.
 
 **The owner's verdict on part 1's first attempt is the useful record here.** That attempt improved
 every measured number and the owner, looking at it, could not see any difference. The diagnosis was
