@@ -5,6 +5,41 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.82.1] - 2026-09-09
+
+### Changed
+
+- **The hero paragraph is cut from 363 characters to 148**, 57 words to 22.
+  Owner instruction: it was too much text for a first interaction whose job is
+  to get the visitor into a call to action.
+- **It measurably was.** At 363 characters the paragraph pushed the two CTA
+  buttons **below the fold at 1440x900**. They now sit about 150px higher, in
+  view on load, which is the whole purpose of the section.
+- **It also buried the offer.** The old copy spent two full sentences on setup
+  ("Composer.trade makes it easy to run an automated strategy. It does not make
+  it easy to judge one.") before naming the site, then listed all four product
+  areas. The replacement is one sentence that front-loads the terms someone
+  would actually search: Composer.trade, symphonies, database, strategy.
+
+### Notes
+
+- **The `h1` is unchanged.** At 57 characters it is inside the title budget and
+  leads with the query a person would type. The owner's objection was the
+  paragraph, and shortening a working headline alongside it would have been
+  scope the request did not ask for.
+- **`og:title` and both descriptions are unchanged** and still satisfy Section
+  27: og:title 43 characters, description 149, `meta name="description"` and
+  `og:description` identical. They were already written for a search result
+  rather than for reading on the page.
+- **A hero copy budget is now recorded in DESIGN.md** (h1 under ~60 characters,
+  paragraph under ~150). The failure here was length, not wording, and a budget
+  is the only part of that a future edit can check itself against.
+- **No drifting numbers.** "Thousands more" is a standing property of the
+  database rather than a count, so it does not go stale on the next refresh.
+  Same rule that removed "Ten ways to explore" and "the 20 tickers" in v1.81.0.
+
+---
+
 ## [1.82.0] - 2026-09-09
 
 ### Changed

@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.22
+**Version:** 1.23
 **Status:** Active
 **Last Updated:** 2026-09-07
 
@@ -168,6 +168,18 @@ Google Fonts import (in `css/main.css`):
 | Body | `body` | `0.9375rem` (15px) | `400` | `1.6` |
 | Hero title | `.hero-title` | `clamp(1.75rem, 4vw, 3rem)` | `700` | `1.15` |
 | Hero description | `.hero-desc` | `1.0625rem` (17px) | `400` | `1.7` |
+
+**Hero copy budget, set 2026-09-09 (v1.82.1): the h1 stays under ~60 characters and the
+paragraph under ~150.** This is a real constraint, not a style note. At 363 characters the
+paragraph pushed the call-to-action buttons below the fold at 1440x900, which is the one thing
+a landing hero must not do. It also spent its first two sentences on setup before saying what
+the site is. The rule is that the paragraph names the offer and the search terms; the argument
+for the site belongs in the sections below it.
+
+**The hero paragraph is not the meta description and must not be written as one.** Section 27
+governs `og:description` and `meta name="description"`, which are read in a search result or a
+shared link. The hero is read by someone already on the page with a button in front of them.
+Conflating the two is what produced the 363-character version.
 | Card title | `.card-title` | `0.9375rem` (15px) | `600` | `1.4` |
 | Card description | `.card-desc` | `0.875rem` (14px) | `400` | `1.6` |
 | Metric value (card) | `.card-metric-value` | `0.875rem` (14px) | `500` | n/a |
