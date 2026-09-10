@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.81.0
+**Version:** 1.82.0
 **Status:** Active
 **Last Updated:** 2026-09-03
 
@@ -7992,6 +7992,27 @@ two slightly different numbers on two pages.
 
 **6. Items 8 and 9 are product growth** and should be sequenced on what the site needs next rather
 than on this list's order. Item 10 stays blocked and item 11 stays ideation.
+
+### In progress: the visual rebrand (added 2026-09-09)
+
+**Owner-directed, three approved workstreams, one shipped.** Not in the table above because it was
+commissioned after that table was written; it is recorded here so the section stays a complete view.
+
+| Part | State | Note |
+|---|---|---|
+| 1. Design tokens | **Shipped v1.82.0** | Base lifted to Visual Studio dark range; every text/surface pair re-derived and measured |
+| 2. Left rail on content pages only | Not started | Owner ruling: content pages (`strategies.html`, `glossary.html`, `about.html`) only, **not** the data-heavy tool pages, which need the horizontal room |
+| 3. Wiki-style content pages | Not started | Owner ruling: the homepage keeps its pitch structure and CTAs, which direct into wiki-style content pages |
+
+**The owner's verdict on part 1's first attempt is the useful record here.** That attempt improved
+every measured number and the owner, looking at it, could not see any difference. The diagnosis was
+that it raised borders past the visibility threshold but left surfaces at 1.10 separation, and
+surfaces are most of the page. The second attempt targeted an **external reference the owner named**,
+Visual Studio's dark theme, rather than an internal threshold, and was approved from three rendered
+candidates.
+
+**The honest limit of part 1: it is a correction, not the rebrand.** Density and structure are what
+the owner is actually reacting to, and those are parts 2 and 3.
 
 ### What this section deliberately does not do
 

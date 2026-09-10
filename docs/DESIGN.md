@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.21
+**Version:** 1.22
 **Status:** Active
 **Last Updated:** 2026-09-07
 
@@ -30,32 +30,52 @@ All colors are defined as CSS custom properties in the `:root` block of `css/mai
 
 ### CSS Custom Properties
 
+**Rebuilt 2026-09-09 (v1.82.0).** The owner asked for backgrounds in the range Visual Studio's dark
+theme uses. Measured relative luminance of the reference: VS Code Dark+ editor `#1e1e1e` is 0.0130,
+Dark Modern `#1f1f1f` is 0.0137, the sidebar `#252526` is 0.0186. The palette this replaced sat at
+**0.0040**, roughly three and a half times darker than the editor it was meant to resemble.
+
 | Token | Hex | Usage |
 |---|---|---|
-| `--color-bg` | `#0d0d0d` | Page background (`body` background) |
-| `--color-surface` | `#141414` | Card and panel background |
-| `--color-surface-raised` | `#1a1a1a` | Elevated surface; hover state background; nav active state |
-| `--color-border` | `#1f1f1f` | Default borders and dividers |
-| `--color-border-hover` | `#2e2e2e` | Border color on hover |
-| `--color-primary` | `#f0f0f0` | Body text, headings, primary content |
-| `--color-secondary` | `#b0b0b0` | Labels, captions, metadata, muted text, `<p>` elements |
-| `--color-disabled` | `#444444` | Disabled states, breadcrumb separators, metric labels |
-
-> **Discrepancy (found 2026-08-24).** The row above is the original text and is kept as written. The
-> observed value in `css/main.css` is **`#c0c0c0`**, not `#444444`. The evidence says the code is
-> right and this table went stale: PATCHNOTES v1.5.4 (2026-06-15), "Fix: Improve disabled text
-> legibility", records the change from `#444444` to `#c0c0c0` as deliberate, made because `#444444`
-> was illegible on `#0d0d0d`. Trust `css/main.css`.
->
-> A second-order note for the author, not a change made here: at `#c0c0c0` the token is a *light*
-> grey, so the name `--color-disabled` now reads backwards and the usage column above ("disabled
-> states") describes an intent the value no longer serves. Renaming it is a real refactor across
-> every page, so it is flagged, not done.
+| `--color-bg` | `#16191f` | Page background (`body` background). L 0.0096, just under VS Dark+ |
+| `--color-surface` | `#2c3038` | Card and panel background. Separation 1.33 above bg |
+| `--color-surface-raised` | `#373c46` | Elevated surface; **`.db-table tbody tr:hover`**; nav active state. 1.20 above surface |
+| `--color-border` | `#4c515c` | Default borders and dividers. 1.66 above surface |
+| `--color-border-hover` | `#616672` | Border color on hover. 2.30 above surface |
+| `--color-primary` | `#e9edf2` | Body text, headings, primary content |
+| `--color-secondary` | `#c0c6ce` | Labels, captions, metadata, muted text, `<p>` elements |
+| `--color-disabled` | `#a3a9b1` | **Tertiary text.** Breadcrumb separators, captions, table labels, `.risk-cat.is-absent`, `.j-null` |
 | `--color-green` | `#00e676` | Positive returns, CTAs, active nav, highlights, "View Strategy" links |
-| `--color-pink` | `#ff4d8d` | Negative returns, max drawdown, warning states |
-| `--color-blue` | `#4d9fff` | Links, interactive element hover borders, focus rings, "Built by" link |
+| `--color-pink` | `#ff82ac` | Negative returns, max drawdown, warning states |
+| `--color-blue` | `#68afff` | Links, interactive element hover borders, focus rings |
 | `--color-yellow` | `#f5c518` | Neutral caution indicators, mean/median return values |
-| `--color-purple` | `#a78bfa` | Momentum tag, strategy-concept badge |
+| `--color-purple` | `#b39dff` | Momentum tag, strategy-concept badge |
+| `--color-positive` | alias of green | Semantic role, added v1.82.0 |
+| `--color-negative` | alias of pink | Semantic role, added v1.82.0 |
+| `--color-caution` | alias of yellow | Semantic role, added v1.82.0 |
+| `--color-info` | alias of blue | Semantic role, added v1.82.0 |
+
+**Every step is solved for a contrast ratio, not picked by eye.** sRGB is not linear, so adding a
+fixed amount to each channel is a different perceptual step at every brightness level, and a ladder
+built that way drifts. The surface step matters most: **a separation below about 1.3 is not an edge a
+person can see**, and panels are most of the page.
+
+> **The failed first attempt is worth recording, because the mistake is easy to repeat.** v1.82.0's
+> first pass raised the *borders* past the visibility threshold (1.18 to 1.55) but left the
+> *surfaces* at 1.10. Every number improved, and the owner, looking at the result, could not see any
+> difference at all. That was the correct reading: borders are thin, surfaces are most of the pixels.
+
+> **`--color-disabled` is a misnomer and is knowingly kept.** It renders breadcrumb separators,
+> captions, table labels, `.risk-cat.is-absent` body copy and `.j-null`, all of which a reader is
+> meant to read. It is therefore set to clear AA rather than to something dim enough to deserve the
+> name. Renaming it touches 30 rules in `css/main.css` and 61 places in markup, which belongs in its
+> own mechanical commit rather than inside a visual change. This supersedes the 2026-08-24
+> discrepancy note, which recorded the table claiming `#444444` while the code said `#c0c0c0`; the
+> code was right then too.
+
+> **The prior palette had the grey hierarchy backwards.** `--color-disabled` (`#c0c0c0`) was
+> *brighter* than `--color-secondary` (`#b0b0b0`), so the text meant to recede was the most prominent
+> grey on the site. Fixed here.
 
 ### Inline rgba() Values (Not Named Properties)
 
@@ -63,26 +83,26 @@ The following color variants appear as inline `rgba()` values in `css/main.css` 
 
 | Usage | Value |
 |---|---|
-| Tag background: RSI, 200d-MA | `rgba(77, 159, 255, 0.08)` |
-| Tag border: RSI, 200d-MA | `rgba(77, 159, 255, 0.25)` |
-| Tag background: momentum | `rgba(167, 139, 250, 0.08)` |
-| Tag border: momentum | `rgba(167, 139, 250, 0.25)` |
+| Tag background: RSI, 200d-MA | `rgba(104, 175, 255, 0.08)` |
+| Tag border: RSI, 200d-MA | `rgba(104, 175, 255, 0.25)` |
+| Tag background: momentum | `rgba(179, 157, 255, 0.08)` |
+| Tag border: momentum | `rgba(179, 157, 255, 0.25)` |
 | Tag background: vix-tiers | `rgba(245, 197, 24, 0.08)` |
 | Tag border: vix-tiers | `rgba(245, 197, 24, 0.25)` |
-| Tag background: leveraged-etfs | `rgba(255, 77, 141, 0.08)` |
-| Tag border: leveraged-etfs | `rgba(255, 77, 141, 0.25)` |
+| Tag background: leveraged-etfs | `rgba(255, 130, 172, 0.08)` |
+| Tag border: leveraged-etfs | `rgba(255, 130, 172, 0.25)` |
 | Tag background: sharpe/calmar/max-drawdown | `rgba(0, 230, 118, 0.08)` |
 | Tag border: sharpe/calmar/max-drawdown | `rgba(0, 230, 118, 0.25)` |
-| Badge background: indicator | `rgba(77, 159, 255, 0.1)` |
-| Badge border: indicator | `rgba(77, 159, 255, 0.2)` |
-| Badge background: risk-metric | `rgba(255, 77, 141, 0.1)` |
-| Badge border: risk-metric | `rgba(255, 77, 141, 0.2)` |
+| Badge background: indicator | `rgba(104, 175, 255, 0.1)` |
+| Badge border: indicator | `rgba(104, 175, 255, 0.2)` |
+| Badge background: risk-metric | `rgba(255, 130, 172, 0.1)` |
+| Badge border: risk-metric | `rgba(255, 130, 172, 0.2)` |
 | Badge background: asset-class | `rgba(245, 197, 24, 0.1)` |
 | Badge border: asset-class | `rgba(245, 197, 24, 0.2)` |
-| Badge background: strategy-concept | `rgba(167, 139, 250, 0.1)` |
-| Badge border: strategy-concept | `rgba(167, 139, 250, 0.2)` |
+| Badge background: strategy-concept | `rgba(179, 157, 255, 0.1)` |
+| Badge border: strategy-concept | `rgba(179, 157, 255, 0.2)` |
 | Inline code background | `rgba(0, 230, 118, 0.08)` |
-| Nav background | `rgba(13, 13, 13, 0.95)` |
+| Nav background | `rgba(22, 25, 31, 0.95)` |
 
 ### Semantic Color Rules
 
@@ -94,14 +114,27 @@ The following color variants appear as inline `rgba()` values in `css/main.css` 
 
 ### Contrast Ratios (WCAG AA)
 
-| Foreground | Background | Ratio |
-|---|---|---|
-| `#f0f0f0` (primary) | `#0d0d0d` (bg) | ~15:1 |
-| `#b0b0b0` (secondary) | `#0d0d0d` (bg) | ~9.4:1 |
-| `#00e676` (green) | `#0d0d0d` (bg) | ~8.4:1 |
-| `#c0c0c0` (disabled, observed) | `#0d0d0d` (bg) | ~11:1 |
-| `#ff4d8d` (pink) | `#0d0d0d` (bg) | ~4.6:1 (minimum) |
-| `#0d0d0d` (bg) | `#00e676` (CTA button) | ~15:1 |
+**Quoted against `--color-surface-raised` (`#373c46`), the brightest surface and therefore the
+hardest case.** Quoting the easy pair against `--color-bg` is how a palette passes on paper and fails
+on a card. Every value below also clears 4.5:1 on `--color-bg` and `--color-surface`.
+
+| Foreground | On raised `#373c46` | On surface `#2c3038` | On bg `#16191f` |
+|---|---|---|---|
+| `#e9edf2` (primary) | 9.41 | 11.25 | 14.97 |
+| `#c0c6ce` (secondary) | 6.44 | 7.69 | 10.24 |
+| `#a3a9b1` (tertiary) | 4.67 | 5.59 | 7.43 |
+| `#00e676` (green) | 6.63 | 7.93 | 10.55 |
+| `#ff82ac` (pink) | 4.77 | 5.70 | 7.58 |
+| `#68afff` (blue) | 4.83 | 5.77 | 7.68 |
+| `#f5c518` (yellow) | 6.79 | 8.12 | 10.80 |
+| `#b39dff` (purple) | 4.84 | 5.79 | 7.70 |
+
+`#16191f` used as dark text on a bright chip measures 10.55 on green and 10.80 on yellow.
+
+**Pink, blue and purple were re-derived, not carried over.** At their previous values they *failed*
+AA on the raised surface once the base came up. That is the constraint that makes a dark theme
+impossible to lighten one token at a time: surfaces, greys and accents are one system, and moving one
+silently drops another under the line.
 
 ---
 
@@ -158,7 +191,7 @@ Google Fonts import (in `css/main.css`):
 - Headings (`h1`–`h4`): inherit `--color-primary` from body, or set explicitly
 - `.text-primary` class: `--color-primary`
 - `.text-secondary` class: `--color-secondary`
-- `.text-disabled` class: `--color-disabled`
+- `.text-disabled` class: `--color-disabled` (tertiary text, not a disabled state)
 
 ---
 
@@ -256,7 +289,7 @@ break `position: sticky` and `position: fixed` inside it.
 **Desktop nav (768px+):**
 
 - Fixed to top of viewport; `z-index: 100`; height: `56px` (`--nav-height`)
-- Background: `rgba(13, 13, 13, 0.95)` with `backdrop-filter: blur(8px)` and `border-bottom: 1px solid var(--color-border)`
+- Background: `rgba(22, 25, 31, 0.95)` with `backdrop-filter: blur(8px)` and `border-bottom: 1px solid var(--color-border)`
 - Logo: 🗺️ emoji (`font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji'`, `font-size: 1.25rem`) + "Composer Atlas" text (hidden below 480px)
 - Logo hover: transitions to `--color-green` in 150ms
 - Nav links: `--color-secondary` default; `--color-primary` + `bg-surface` on active/hover; 150ms transition
@@ -469,12 +502,12 @@ Used at the top of strategy detail pages, directly above the "How It Works" sect
 
 ```css
 .ai-summary {
-  background: linear-gradient(180deg, rgba(167, 139, 250, 0.06), rgba(167, 139, 250, 0.02));
-  border: 1px solid rgba(167, 139, 250, 0.25);
+  background: linear-gradient(180deg, rgba(179, 157, 255, 0.06), rgba(179, 157, 255, 0.02));
+  border: 1px solid rgba(179, 157, 255, 0.25);
   border-radius: var(--radius-lg);
   padding: 20px 22px;
 }
-.ai-summary-mark { width: 26px; height: 26px; border-radius: var(--radius-sm); background: rgba(167, 139, 250, 0.12); color: var(--color-purple); }
+.ai-summary-mark { width: 26px; height: 26px; border-radius: var(--radius-sm); background: rgba(179, 157, 255, 0.12); color: var(--color-purple); }
 .ai-summary-title { font-size: 1.125rem; font-weight: 700; color: var(--color-primary); }
 .ai-summary-p { font-size: 0.9375rem; color: var(--color-secondary); line-height: 1.75; }
 ```
@@ -627,10 +660,10 @@ A "Filter" button sits directly above each tab's result-count line. Clicking it 
 .tier-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; padding: 2px 8px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; border: 1px solid; }
 .tier-sp { color: var(--color-green); background: rgba(0, 230, 118, 0.14); border-color: rgba(0, 230, 118, 0.35); }
 .tier-s  { color: var(--color-green); background: rgba(0, 230, 118, 0.08); border-color: rgba(0, 230, 118, 0.25); }
-.tier-a  { color: var(--color-blue); background: rgba(77, 159, 255, 0.08); border-color: rgba(77, 159, 255, 0.25); }
+.tier-a  { color: var(--color-blue); background: rgba(104, 175, 255, 0.08); border-color: rgba(104, 175, 255, 0.25); }
 .tier-b  { color: var(--color-yellow); background: rgba(245, 197, 24, 0.08); border-color: rgba(245, 197, 24, 0.25); }
 .tier-c  { color: var(--color-secondary); background: var(--color-surface-raised); border-color: var(--color-border); }
-.tier-f  { color: var(--color-pink); background: rgba(255, 77, 141, 0.08); border-color: rgba(255, 77, 141, 0.25); }
+.tier-f  { color: var(--color-pink); background: rgba(255, 130, 172, 0.08); border-color: rgba(255, 130, 172, 0.25); }
 ```
 
 Six tiers (S+, S, A, B, C, F), color intensity roughly tracking favorability: S+/S green, A blue, B yellow, C neutral/secondary, F pink. S+ is visually distinguished from S by a stronger background/border opacity rather than a different hue, since both represent "top tier," S+ is just the perfect-score special case.
@@ -640,16 +673,35 @@ Six tiers (S+, S, A, B, C, F), color intensity roughly tracking favorability: S+
 ### RSI Signal Colors (rsi.html, shipped V2.1)
 
 ```css
-.db-table td.rsi-extreme-oversold   { color: #ff0000; font-weight: 700; }
-.db-table td.rsi-oversold           { color: #e04545; }
-.db-table td.rsi-neutral            { color: #b0b0b0; }
-.db-table td.rsi-overbought         { color: #2fb92f; }
-.db-table td.rsi-extreme-overbought { color: #00ff00; font-weight: 700; }
+.db-table td.rsi-extreme-oversold   { color: var(--color-green); font-weight: 700; }  /* 6.63:1 */
+.db-table td.rsi-oversold           { color: #52c98a; }                               /* 5.31:1 */
+.db-table td.rsi-neutral            { color: var(--color-secondary); }                /* 6.44:1 */
+.db-table td.rsi-overbought         { color: #f78a83; }                               /* 4.70:1 */
+.db-table td.rsi-extreme-overbought { color: #ffaaa4; font-weight: 700; }             /* 6.08:1 */
 ```
 
-Five tiers, thresholds ≥79 / 70–78 / 42–69 / 29–41 / ≤28 (see PRD.md Section 14, V2.1; the section comment in `css/main.css:1634` says V2.2, which is a
-stale label on the code side, not a second palette). These are **literal hex values, not the
-standard token palette**, a deliberate exception. The user specified a green (oversold, "buy the dip") → red (overbought) gradient for this page rather than the site's usual green-good/pink-bad convention (`--color-green`/`--color-pink`), so the colors are hardcoded rather than aliased to tokens that carry a different semantic elsewhere on the site. Both extreme tiers are bold; the three inner tiers are not. The user's original inner-tier values (`#890000` / `#008900`) were too low-contrast against the dark table background (`--color-surface` `#141414`) to read at all; brightened to `#e04545` / `#2fb92f` while keeping the bright `#ff0000`/`#00ff00` extremes unchanged.
+Five tiers, thresholds >=79 / 70-78 / 42-69 / 29-41 / <=28 (see PRD.md Section 14, V2.1). Direction
+is **buy = green**: oversold, where Frontrunner dip-buy branches may fire, reads green; overbought
+reads red. Both extremes are bold, so the ladder does not depend on colour vision alone.
+
+> **This entry described the ladder BACKWARDS until 2026-09-09.** It listed `rsi-extreme-oversold` as
+> `#ff0000` and `rsi-extreme-overbought` as `#00ff00`, the exact inverse of the shipped code and of
+> the stated buy-is-green semantic. Nothing broke, because a doc that contradicts the code produces
+> no error.
+
+**Ratios are quoted against `--color-surface-raised`, not the table's resting background.** This is
+the correction that mattered: `.db-table tbody tr:hover` swaps the row to the raised surface, so a
+**hovered row is the hardest case** and the only one worth measuring. Two tiers passed review against
+the resting background and still failed in practice.
+
+**Order matters as much as the threshold.** Each colour carries a rank, so a mild tier must stay
+dimmer than the extreme above it. Brightening a mid tier past its own extreme to clear 4.5:1 would
+satisfy the checker and destroy the ladder.
+
+**These reds were never right.** The original `#e04545` / `#ff0000` measured 4.48 and 4.41 on the old
+`#141414` surface, both under AA, so the note claiming all five tiers passed was wrong from the day
+it was written rather than broken by any later change. They were re-derived twice in v1.82.0: once
+for the new surface, then again once the base moved to Visual Studio range.
 
 **Selector specificity note:** these rules must be scoped as `.db-table td.rsi-x`, not a bare `.rsi-x` class. `.db-table td` (class+type, specificity 0,1,1) otherwise wins over a bare single-class selector (0,1,0) regardless of source order, which silently prevented any of these colors from rendering until this was caught and fixed.
 
@@ -1015,7 +1067,7 @@ being handed a tax detail before they know what they are looking at.
 ```css
 .hold-notice { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px 16px; font-size: 0.875rem; line-height: 1.7; color: var(--color-secondary); margin-bottom: 10px; }
 .hold-notice.k1 { border-color: rgba(245, 197, 24, 0.4); background: rgba(245, 197, 24, 0.05); }
-.hold-notice.etn { border-color: rgba(77, 159, 255, 0.4); background: rgba(77, 159, 255, 0.05); }
+.hold-notice.etn { border-color: rgba(104, 175, 255, 0.4); background: rgba(104, 175, 255, 0.05); }
 .hold-notice-title { display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 6px; color: var(--color-primary); }
 .hold-notice.k1 .hold-notice-title { color: var(--color-yellow); }
 .hold-notice.etn .hold-notice-title { color: var(--color-blue); }
@@ -1499,7 +1551,7 @@ All interactive elements have visible focus rings:
 
 ```css
 /* Implemented via browser defaults + no focus suppression */
-/* Target: outline: 2px solid #4d9fff; outline-offset: 2px */
+/* Target: outline: 2px solid #68afff; outline-offset: 2px */
 ```
 
 Tab order follows visual reading order. Mobile nav hamburger: `aria-expanded` attribute updates on open/close; `aria-controls="mobile-menu"`.

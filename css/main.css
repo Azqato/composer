@@ -8,19 +8,75 @@
 
 /* ---- Design Tokens ---- */
 :root {
-  --color-bg: #0d0d0d;
-  --color-surface: #141414;
-  --color-surface-raised: #1a1a1a;
-  --color-border: #1f1f1f;
-  --color-border-hover: #2e2e2e;
-  --color-primary: #f0f0f0;
-  --color-secondary: #b0b0b0;
-  --color-disabled: #c0c0c0;
-  --color-green: #00e676;
-  --color-pink: #ff4d8d;
-  --color-blue: #4d9fff;
-  --color-yellow: #f5c518;
-  --color-purple: #a78bfa;
+  /* SURFACES. Owner-approved 2026-09-09 after looking at three rendered
+     candidates side by side; this is the softest of the three.
+
+     THE TARGET WAS AN EXTERNAL REFERENCE, NOT A FEELING. The owner asked for
+     backgrounds in the range Visual Studio's dark theme uses. Measured
+     relative luminance of the real thing: VS Code Dark+ editor #1e1e1e is
+     0.0130, Dark Modern #1f1f1f is 0.0137, the sidebar #252526 is 0.0186.
+     The palette this replaces sat at 0.0040, which is roughly three and a
+     half times darker than the editor it was meant to resemble. This base is
+     0.0096, just under Dark+.
+
+     EVERY STEP IS SOLVED FOR A CONTRAST RATIO, NOT PICKED BY EYE. sRGB is not
+     linear, so adding a fixed amount to each channel is a different
+     perceptual step at every brightness level, and a ladder built that way
+     drifts. Targets: surface 1.33 above the base, raised 1.20 above surface,
+     border 1.66, border-hover 2.30. The surface step matters most, because a
+     separation below about 1.3 is not an edge a person can see, and panels
+     are most of the page. The previous attempt at this raised the borders
+     past that line but left the surfaces at 1.10, which is why it shipped a
+     measurable change nobody could actually see.
+
+     THE COOL CAST IS DELIBERATE. Visual Studio's greys are near-neutral;
+     these carry a few points of blue so the green reads as a brand colour
+     against a blue-black rather than as a highlighter on grey. */
+  --color-bg: #16191f;                 /* L 0.0096, just under VS Dark+     */
+  --color-surface: #2c3038;            /* sep 1.33 above bg                 */
+  --color-surface-raised: #373c46;     /* sep 1.20 above surface            */
+  --color-border: #4c515c;             /* sep 1.66 above surface            */
+  --color-border-hover: #616672;       /* sep 2.30 above surface            */
+
+  /* TEXT, in strictly decreasing luminance. Ratios shown are against
+     --color-surface-raised, the BRIGHTEST surface and therefore the hardest
+     case: quoting the easy pair against --color-bg is how a palette passes on
+     paper and fails on a card. Every value here also clears 4.5:1 on bg and
+     on surface.
+
+     The old palette had this hierarchy BACKWARDS: --color-disabled (#c0c0c0)
+     was brighter than --color-secondary (#b0b0b0), so the text meant to
+     recede was the most prominent grey on the site. */
+  --color-primary: #e9edf2;            /* 9.41:1 on raised                  */
+  --color-secondary: #c0c6ce;          /* 6.44:1 on raised                  */
+  /* MISNOMER, KEPT DELIBERATELY. This is the TERTIARY TEXT colour, not a
+     disabled state: it renders breadcrumb separators, captions, table labels,
+     `.risk-cat.is-absent` body copy and `.j-null`, all of which a reader is
+     meant to read. It is therefore set to clear AA rather than to something
+     dim enough to deserve the name. Renaming it touches 30 rules here and 61
+     places in markup, which belongs in its own mechanical commit rather than
+     inside a visual change. */
+  --color-disabled: #a3a9b1;           /* 4.67:1 on raised                  */
+
+  /* HUES. The green is the brand and is untouched. Pink, blue and purple were
+     re-derived: at the old values they FAILED AA on the raised surface once
+     the base came up, which is the constraint that makes a dark theme
+     impossible to lighten one token at a time. Surfaces, greys and accents
+     are one system. */
+  --color-green: #00e676;              /* unchanged   6.63:1 on raised      */
+  --color-pink: #ff82ac;               /* was #ff5c93 4.77:1 on raised      */
+  --color-blue: #68afff;               /* was #5aa7ff 4.83:1 on raised      */
+  --color-yellow: #f5c518;             /* unchanged   6.79:1 on raised      */
+  --color-purple: #b39dff;             /* was #a78bfa 4.84:1 on raised      */
+
+  /* Semantic roles. The five hues above are a paint box; these say what a
+     colour MEANS, so a rule can express intent instead of picking a hue and
+     hoping the next person guesses the same way. Aliases, not new colours, so
+     nothing needs repainting to adopt them. */
+  --color-positive: var(--color-green);
+  --color-negative: var(--color-pink);
+  --color-caution: var(--color-yellow);
+  --color-info: var(--color-blue);
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   --radius-sm: 4px;
@@ -152,7 +208,7 @@ p { color: var(--color-secondary); }
   right: 0;
   z-index: 100;
   height: var(--nav-height);
-  background: rgba(13, 13, 13, 0.95);
+  background: rgba(22, 25, 31, 0.95);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--color-border);
 }
@@ -567,10 +623,10 @@ p { color: var(--color-secondary); }
 
 .tag:hover { opacity: 0.8; }
 
-.tag-rsi, .tag-200d-ma { background: rgba(77, 159, 255, 0.08); color: var(--color-blue); border-color: rgba(77, 159, 255, 0.25); }
-.tag-momentum { background: rgba(167, 139, 250, 0.08); color: var(--color-purple); border-color: rgba(167, 139, 250, 0.25); }
+.tag-rsi, .tag-200d-ma { background: rgba(104, 175, 255, 0.08); color: var(--color-blue); border-color: rgba(104, 175, 255, 0.25); }
+.tag-momentum { background: rgba(179, 157, 255, 0.08); color: var(--color-purple); border-color: rgba(179, 157, 255, 0.25); }
 .tag-vix-tiers { background: rgba(245, 197, 24, 0.08); color: var(--color-yellow); border-color: rgba(245, 197, 24, 0.25); }
-.tag-leveraged-etfs { background: rgba(255, 77, 141, 0.08); color: var(--color-pink); border-color: rgba(255, 77, 141, 0.25); }
+.tag-leveraged-etfs { background: rgba(255, 130, 172, 0.08); color: var(--color-pink); border-color: rgba(255, 130, 172, 0.25); }
 .tag-sharpe-ratio, .tag-calmar-ratio, .tag-max-drawdown { background: rgba(0, 230, 118, 0.08); color: var(--color-green); border-color: rgba(0, 230, 118, 0.25); }
 .tag-zoop { background: rgba(255, 149, 0, 0.08); color: #ff9500; border-color: rgba(255, 149, 0, 0.25); }
 .tag-original { background: rgba(148, 163, 184, 0.1); color: var(--color-secondary); border-color: rgba(148, 163, 184, 0.3); }
@@ -677,10 +733,10 @@ p { color: var(--color-secondary); }
   border: 1px solid;
 }
 
-.badge-indicator { background: rgba(77, 159, 255, 0.1); color: var(--color-blue); border-color: rgba(77, 159, 255, 0.2); }
-.badge-risk-metric { background: rgba(255, 77, 141, 0.1); color: var(--color-pink); border-color: rgba(255, 77, 141, 0.2); }
+.badge-indicator { background: rgba(104, 175, 255, 0.1); color: var(--color-blue); border-color: rgba(104, 175, 255, 0.2); }
+.badge-risk-metric { background: rgba(255, 130, 172, 0.1); color: var(--color-pink); border-color: rgba(255, 130, 172, 0.2); }
 .badge-asset-class { background: rgba(245, 197, 24, 0.1); color: var(--color-yellow); border-color: rgba(245, 197, 24, 0.2); }
-.badge-strategy-concept { background: rgba(167, 139, 250, 0.1); color: var(--color-purple); border-color: rgba(167, 139, 250, 0.2); }
+.badge-strategy-concept { background: rgba(179, 157, 255, 0.1); color: var(--color-purple); border-color: rgba(179, 157, 255, 0.2); }
 
 /* ---- Metrics Table ---- */
 .metrics-section {
@@ -1146,8 +1202,8 @@ p { color: var(--color-secondary); }
    scanning for, so they carry the accent. */
 .type-threshold   { background: var(--color-surface-raised); color: var(--color-secondary); }
 .type-trend       { background: var(--color-surface-raised); color: var(--color-secondary); }
-.type-selection   { background: rgba(77, 159, 255, 0.14);  color: var(--color-blue); }
-.type-composition { background: rgba(167, 139, 250, 0.14); color: var(--color-purple); }
+.type-selection   { background: rgba(104, 175, 255, 0.14);  color: var(--color-blue); }
+.type-composition { background: rgba(179, 157, 255, 0.14); color: var(--color-purple); }
 
 code.signal-ind {
   display: inline-block;
@@ -1517,8 +1573,8 @@ code.signal-ind {
 }
 
 .hold-notice.etn {
-  border-color: rgba(77, 159, 255, 0.4);
-  background: rgba(77, 159, 255, 0.05);
+  border-color: rgba(104, 175, 255, 0.4);
+  background: rgba(104, 175, 255, 0.05);
 }
 
 .hold-notice-title {
@@ -1645,8 +1701,8 @@ code.signal-ind {
 
 /* ---- AI Summary box ---- */
 .ai-summary {
-  background: linear-gradient(180deg, rgba(167, 139, 250, 0.06), rgba(167, 139, 250, 0.02));
-  border: 1px solid rgba(167, 139, 250, 0.25);
+  background: linear-gradient(180deg, rgba(179, 157, 255, 0.06), rgba(179, 157, 255, 0.02));
+  border: 1px solid rgba(179, 157, 255, 0.25);
   border-radius: var(--radius-lg);
   padding: 20px 22px;
 }
@@ -1665,7 +1721,7 @@ code.signal-ind {
   width: 26px;
   height: 26px;
   border-radius: var(--radius-sm);
-  background: rgba(167, 139, 250, 0.12);
+  background: rgba(179, 157, 255, 0.12);
   color: var(--color-purple);
   font-size: 0.875rem;
   line-height: 1;
@@ -2375,25 +2431,40 @@ footer {
 
 .tier-sp { color: var(--color-green); background: rgba(0, 230, 118, 0.14); border-color: rgba(0, 230, 118, 0.35); }
 .tier-s  { color: var(--color-green); background: rgba(0, 230, 118, 0.08); border-color: rgba(0, 230, 118, 0.25); }
-.tier-a  { color: var(--color-blue); background: rgba(77, 159, 255, 0.08); border-color: rgba(77, 159, 255, 0.25); }
+.tier-a  { color: var(--color-blue); background: rgba(104, 175, 255, 0.08); border-color: rgba(104, 175, 255, 0.25); }
 .tier-b  { color: var(--color-yellow); background: rgba(245, 197, 24, 0.08); border-color: rgba(245, 197, 24, 0.25); }
 .tier-c  { color: var(--color-secondary); background: var(--color-surface-raised); border-color: var(--color-border); }
-.tier-f  { color: var(--color-pink); background: rgba(255, 77, 141, 0.08); border-color: rgba(255, 77, 141, 0.25); }
+.tier-f  { color: var(--color-pink); background: rgba(255, 130, 172, 0.08); border-color: rgba(255, 130, 172, 0.25); }
 
 /* ---- RSI signal tiers (rsi.html, V2.2) ---- */
 /* Direction is "buy = green": oversold (low RSI, where Frontrunner dip-buy
    branches may fire) reads green; overbought reads red. Oversold uses the
-   site's --color-green token; overbought keeps the original red values. All
-   five tiers clear WCAG AA against the table surface (--color-surface #141414);
-   the two extremes add bold weight as a second cue.
+   site's --color-green token; overbought uses reds chosen to clear the bar.
+   Every ratio below is measured against --color-surface-raised (#373c46),
+   NOT the table's resting background. That is deliberate: `.db-table tbody
+   tr:hover` swaps the row to the raised surface, so a hovered row is the
+   hardest case and the only one worth quoting. Measuring against the resting
+   background is how two of these tiers passed review and still failed in
+   practice. Every one clears WCAG AA there; the two extremes add bold weight as
+   a second cue so the ladder does not depend on colour vision alone.
+   All four coloured tiers were RE-DERIVED at v1.82.0, twice. The original
+   pair (#e04545 and #ff0000) had NEVER cleared AA: 4.48 and 4.41 on the old
+   #141414 surface, so the comment claiming all five passed was wrong from the
+   start rather than broken by this change. The surface then moved again when
+   the base was lifted to Visual Studio range, which is why these are the
+   values that survived and not the first replacements.
+   ORDER MATTERS AS MUCH AS THE THRESHOLD. Each colour carries a rank, so the
+   mild tier must stay dimmer than the extreme above it; clearing 4.5:1 by
+   brightening a mid tier past its own extreme would satisfy the checker and
+   destroy the ladder.
    Selectors are scoped to ".db-table td.rsi-x" (not a bare class) because
    ".db-table td" alone (0,1,1) outranks a single class selector (0,1,0) -
    without the td these colors silently never apply against that rule. */
-.db-table td.rsi-extreme-oversold   { color: #00e676; font-weight: 700; }
-.db-table td.rsi-oversold           { color: #3aa76a; }
-.db-table td.rsi-neutral            { color: #b0b0b0; }
-.db-table td.rsi-overbought         { color: #e04545; }
-.db-table td.rsi-extreme-overbought { color: #ff0000; font-weight: 700; }
+.db-table td.rsi-extreme-oversold   { color: var(--color-green); font-weight: 700; }  /*  7.93:1 */
+.db-table td.rsi-oversold           { color: #52c98a; }                               /*  5.31:1 */
+.db-table td.rsi-neutral            { color: var(--color-secondary); }                /*  7.69:1 */
+.db-table td.rsi-overbought         { color: #f78a83; }                               /*  4.70:1 */
+.db-table td.rsi-extreme-overbought { color: #ffaaa4; font-weight: 700; }             /*  6.08:1 */
 
 /* ---- JSON syntax highlighter (converter.html, etf-cloner.html) ----
    Promoted out of both pages' inline stylesheets at v1.31.2. It was the one

@@ -5,6 +5,84 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.82.0] - 2026-09-09
+
+### Changed
+
+- **The whole colour palette is rebuilt on a Visual Studio dark base.** Owner
+  instruction, chosen from three rendered candidates. Measured relative
+  luminance: the old base `#0d0d0d` was **0.0040**, roughly three and a half
+  times darker than VS Code Dark+ `#1e1e1e` (0.0130). The new base `#16191f` is
+  **0.0096**, just under it.
+- **Every step in the ladder is solved for a contrast ratio rather than picked
+  by eye**: surface 1.33 above the base, raised 1.20 above surface, border 1.66,
+  border-hover 2.30. sRGB is not linear, so a fixed increment per channel is a
+  different perceptual step at every level and a hand-picked ladder drifts.
+- **Pink, blue and purple were re-derived, not carried over.** At their old
+  values they failed AA on the raised surface once the base came up. Surfaces,
+  greys and accents are one system; a dark theme cannot be lightened one token
+  at a time.
+- **Four semantic aliases added**: `--color-positive`, `--color-negative`,
+  `--color-caution`, `--color-info`. Aliases, not new colours, so nothing needs
+  repainting to adopt them.
+
+### Fixed
+
+- **Two RSI signal tiers failed WCAG AA on a hovered row, and had never passed
+  at all.** `.db-table tbody tr:hover` swaps the row background to
+  `--color-surface-raised`, so a hovered row is the hardest case; the tiers had
+  only ever been measured against the resting background. The original
+  `#e04545` and `#ff0000` measured **4.48 and 4.41 on the old `#141414`
+  surface**, both under 4.5, so the code comment claiming all five tiers cleared
+  AA was wrong from the day it was written rather than broken by this change.
+  All four coloured tiers re-derived, **preserving the ladder's order**: a mild
+  tier brightened past its own extreme would satisfy the checker and destroy the
+  ranking the colour is carrying.
+- **The nav background was a hardcoded copy of the old page colour.**
+  `rgba(13, 13, 13, 0.95)` would have rendered the fixed nav visibly darker than
+  the page it floats over: a translucent bar of the previous design sitting on
+  top of the new one. An `rgba()` tint is a copy of a token and does not follow
+  when the token moves. Sixteen such copies updated across `css/main.css`,
+  `signal-miner.html` and `_wf-mockup.html`.
+- **The grey hierarchy ran backwards.** `--color-disabled` (`#c0c0c0`) was
+  brighter than `--color-secondary` (`#b0b0b0`), so the text meant to recede was
+  the most prominent grey on the site.
+- **A hand-rolled blue (`#6ea0f0`) shadowing `--color-blue`** in
+  `signal-miner.html` and `_wf-mockup.html`, and a hardcoded near-black
+  (`#0b0b0b`) as chip text in `k1.html` that was tuned to the old base. Both now
+  use the tokens.
+- **`DESIGN.md` described the RSI ladder backwards**, listing
+  `rsi-extreme-oversold` as `#ff0000` and `rsi-extreme-overbought` as `#00ff00`,
+  the exact inverse of the shipped code and of the stated buy-is-green semantic.
+  A doc that contradicts the code produces no error, so nothing caught it.
+- **`DESIGN.md`'s contrast table quoted every ratio against the background**,
+  the easiest surface. It is now quoted against `--color-surface-raised`, the
+  brightest and therefore hardest one. Quoting the easy pair is how a palette
+  passes on paper and fails on a card.
+
+### Notes
+
+- **The first attempt at this shipped a change nobody could see, and that is the
+  lesson worth keeping.** It raised borders from 1.18 to 1.55 separation, past
+  the visibility threshold, but left surfaces at **1.10**, well under the ~1.3
+  where an edge becomes visible. Every number improved. The owner looked at it
+  and correctly reported no difference: borders are thin, surfaces are most of
+  the pixels.
+- **Verified in headless Edge across 8 pages.** The check that mattered was not
+  the colour: a CSS parse error drops every rule after it, so the probe renders
+  an element styled by a rule near the **end** of `main.css` and reads its
+  computed colour back. An earlier version of the probe counted
+  `styleSheets.cssRules`, which silently returns zero for an external stylesheet
+  on `file://` (SecurityError), and so measured nothing at all.
+- **Audited every hardcoded colour on the site**: 8 tokens against 3 surfaces,
+  every `color:` literal in every page, and both RSI ladders checked for
+  ordering as well as threshold. All pass.
+- **This is a correction, not the rebrand.** Density and structure are what the
+  homepage actually needs; the left rail and wiki-style content pages are the
+  approved next parts. Recorded in PRD Section 29.
+
+---
+
 ## [1.81.0] - 2026-09-09
 
 ### Changed

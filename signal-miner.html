@@ -35,7 +35,7 @@
     }
     .sl-chip:hover { border-color: var(--color-disabled); color: var(--color-primary); }
     .sl-chip.on-target { background: rgba(58,167,106,0.16); border-color: var(--color-green); color: var(--color-green); }
-    .sl-chip.on-compare { background: rgba(74,124,220,0.16); border-color: var(--color-blue); color: #6ea0f0; }
+    .sl-chip.on-compare { background: rgba(74,124,220,0.16); border-color: var(--color-blue); color: var(--color-blue); }
 
     /* Ticker group blocks + select-all controls (v1.18.0). The universe grew to
        80 tickers, so flat chip rows became unusable; chips are now grouped by
@@ -54,7 +54,7 @@
     }
     .sl-sel:hover { border-color: var(--color-disabled); color: var(--color-primary); }
     .sl-sel.is-on { border-color: var(--color-green); color: var(--color-green); background: rgba(58,167,106,0.12); }
-    .sl-cmp .sl-sel.is-on { border-color: var(--color-blue); color: #6ea0f0; background: rgba(74,124,220,0.12); }
+    .sl-cmp .sl-sel.is-on { border-color: var(--color-blue); color: var(--color-blue); background: rgba(74,124,220,0.12); }
     .sl-tgroup { margin-bottom: 14px; }
     .sl-tgroup:last-child { margin-bottom: 0; }
     .sl-tgroup-name { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.03em; color: var(--color-disabled); }
@@ -118,7 +118,7 @@
     .sl-honesty.q-good { border: 1px solid var(--color-border); color: var(--color-secondary); padding: .55rem .9rem; }
     .sl-honesty.q-fair { border: 1px solid var(--color-border); }
     .sl-honesty.q-poor { border: 1px solid var(--color-yellow); background: rgba(245, 197, 24, .06); }
-    .sl-honesty.q-bad  { border: 1px solid var(--color-pink); background: rgba(255, 77, 141, .07); }
+    .sl-honesty.q-bad  { border: 1px solid var(--color-pink); background: rgba(255, 130, 172, .07); }
     .sl-honesty strong { font-weight: 700; }
     .sl-honesty .sl-h-head { display: block; margin-bottom: .3rem; }
     .sl-honesty .sl-h-comp { font-size: .85rem; color: var(--color-secondary); margin-top: .45rem; }
@@ -157,7 +157,7 @@
     .sl-combo-tag { display: inline-block; font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-yellow); border: 1px solid var(--color-yellow); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
 
     .sl-note { font-size: 0.8125rem; color: var(--color-secondary); line-height: 1.7; }
-    .sl-warn-box { background: rgba(224,69,69,0.08); border: 1px solid rgba(224,69,69,0.35); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; }
+    .sl-warn-box { background: rgba(247,138,131,0.08); border: 1px solid rgba(247,138,131,0.35); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; }
     .sl-warn-box strong { color: var(--color-pink); }
     .sl-empty { padding: 40px 16px; text-align: center; color: var(--color-secondary); font-size: 0.9375rem; }
     .sl-meta { font-size: 0.75rem; color: var(--color-disabled); margin-top: 10px; }
@@ -189,7 +189,7 @@
       <!-- Controls -->
       <div class="sl-panel">
         <h2>1. Assets</h2>
-        <p class="sl-sub">Pick <span style="color:var(--color-green)">Target</span> tickers (what you invest in when a signal fires) and <span style="color:#6ea0f0">Signal</span> tickers (what conditions are measured on). <strong>Conditions are built only from the Signal set</strong>, so a target is not measured unless you also add it there. To test a rule that reads its own target, like <em>if RSI(TECL) &gt; 79 then hold TECL</em>, put that ticker in <em>both</em> boxes. Chips are grouped by asset class, and each group has an <strong>All</strong> toggle; the row-level button selects the whole universe. Watch the estimate below as you go: signal counts grow with the <em>square</em> of the tickers used, so selecting everything is far heavier than it looks. A <span style="border:1px dashed var(--color-disabled);border-radius:4px;padding:0 5px;font-family:var(--font-mono);font-size:0.75rem">dashed</span> chip means the fund covers less than 90% of the price history, so it both shortens the sample window for the whole run and has its metrics fit to fewer days.</p>
+        <p class="sl-sub">Pick <span style="color:var(--color-green)">Target</span> tickers (what you invest in when a signal fires) and <span style="color:var(--color-blue)">Signal</span> tickers (what conditions are measured on). <strong>Conditions are built only from the Signal set</strong>, so a target is not measured unless you also add it there. To test a rule that reads its own target, like <em>if RSI(TECL) &gt; 79 then hold TECL</em>, put that ticker in <em>both</em> boxes. Chips are grouped by asset class, and each group has an <strong>All</strong> toggle; the row-level button selects the whole universe. Watch the estimate below as you go: signal counts grow with the <em>square</em> of the tickers used, so selecting everything is far heavier than it looks. A <span style="border:1px dashed var(--color-disabled);border-radius:4px;padding:0 5px;font-family:var(--font-mono);font-size:0.75rem">dashed</span> chip means the fund covers less than 90% of the price history, so it both shortens the sample window for the whole run and has its metrics fit to fewer days.</p>
 
         <div class="sl-group sl-tgt">
           <div class="sl-rowhead">
@@ -205,7 +205,7 @@
         </div>
         <div class="sl-group sl-cmp">
           <div class="sl-rowhead">
-            <span class="sl-label">Signal / comparison tickers <span id="sl-cmp-count" style="color:#6ea0f0"></span></span>
+            <span class="sl-label">Signal / comparison tickers <span id="sl-cmp-count" style="color:var(--color-blue)"></span></span>
             <span class="sl-selgroup">
               <button type="button" class="sl-sel" data-all="compare">Select all</button>
               <button type="button" class="sl-sel" data-none="compare">Clear</button>
