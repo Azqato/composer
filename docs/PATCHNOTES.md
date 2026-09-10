@@ -5,6 +5,42 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.83.1] - 2026-09-09
+
+### Changed
+
+- **Body prose is brighter on every page.** `--color-secondary` `#c0c6ce` to
+  `#d2d8df` and `--color-disabled` `#a3a9b1` to `#b8bec6`. Owner instruction,
+  raised against `signal-miner.html`.
+- **Nothing was failing.** An audit of every visible paragraph across all ten
+  pages, reading computed colours from the live document rather than from the
+  CSS, found body prose at **10.24:1 on the page background and 7.69:1 on a
+  card**. Both comfortably past AA, and the owner still could not read it
+  comfortably. **AA is a floor for whether text is perceivable, not a target for
+  whether a long paragraph is comfortable.** Prose is now 12.26:1 and 9.22:1.
+- **The grey hierarchy still holds** on the hardest surface: primary 9.41,
+  secondary 7.71, tertiary 5.91. That ordering is the constraint that stops
+  "brighter" from collapsing into "all one colour".
+
+### Fixed
+
+- **A bug in the audit probe itself, which reported a contrast ratio for a
+  colour that is not on the screen.** It walked up to the first ancestor with a
+  background that was not fully transparent and then treated that colour as
+  opaque. `.sl-note` sits on `rgba(247, 138, 131, 0.08)`, which is 92%
+  see-through, so the probe scored its text against a bright red and reported
+  **1.37:1**. Composited properly against what is actually painted, the same
+  text measures **10.85:1**. The probe now composites every translucent layer
+  down the chain.
+
+### Notes
+
+- **23 distinct prose colour and background pairs across 10 pages, none under
+  4.5:1.** The lowest remaining is a pink metric value at 5.70, which is a data
+  figure rather than prose.
+
+---
+
 ## [1.83.0] - 2026-09-09
 
 ### Changed

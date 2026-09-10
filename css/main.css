@@ -44,11 +44,22 @@
      paper and fails on a card. Every value here also clears 4.5:1 on bg and
      on surface.
 
+     THE TWO LOWER GREYS WERE RAISED AGAIN AT v1.83.1, and the reason is worth
+     keeping because it is not a bug report. NOTHING WAS FAILING: an audit of
+     every visible paragraph on all ten pages found body prose at 10.24:1 on
+     the page background and 7.69:1 on a card, comfortably past AA, and the
+     owner still reported it as hard to read. AA is a floor for whether text is
+     perceivable, not a target for whether a long paragraph is comfortable, and
+     a page of body copy is exactly where that gap shows. Secondary went 6.44
+     to 7.71 on the raised surface and tertiary 4.67 to 5.91. The ordering
+     against --color-primary (9.41) still holds, which is the constraint that
+     stops "brighter" from collapsing into "all one colour".
+
      The old palette had this hierarchy BACKWARDS: --color-disabled (#c0c0c0)
      was brighter than --color-secondary (#b0b0b0), so the text meant to
      recede was the most prominent grey on the site. */
   --color-primary: #e9edf2;            /* 9.41:1 on raised                  */
-  --color-secondary: #c0c6ce;          /* 6.44:1 on raised                  */
+  --color-secondary: #d2d8df;          /* 7.71:1 on raised                  */
   /* MISNOMER, KEPT DELIBERATELY. This is the TERTIARY TEXT colour, not a
      disabled state: it renders breadcrumb separators, captions, table labels,
      `.risk-cat.is-absent` body copy and `.j-null`, all of which a reader is
@@ -56,7 +67,7 @@
      dim enough to deserve the name. Renaming it touches 30 rules here and 61
      places in markup, which belongs in its own mechanical commit rather than
      inside a visual change. */
-  --color-disabled: #a3a9b1;           /* 4.67:1 on raised                  */
+  --color-disabled: #b8bec6;           /* 5.91:1 on raised                  */
 
   /* HUES. The green is the brand and is untouched. Pink, blue and purple were
      re-derived: at the old values they FAILED AA on the raised surface once

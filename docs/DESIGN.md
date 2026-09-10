@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.24
+**Version:** 1.25
 **Status:** Active
 **Last Updated:** 2026-09-07
 
@@ -43,8 +43,8 @@ Dark Modern `#1f1f1f` is 0.0137, the sidebar `#252526` is 0.0186. The palette th
 | `--color-border` | `#4c515c` | Default borders and dividers. 1.66 above surface |
 | `--color-border-hover` | `#616672` | Border color on hover. 2.30 above surface |
 | `--color-primary` | `#e9edf2` | Body text, headings, primary content |
-| `--color-secondary` | `#c0c6ce` | Labels, captions, metadata, muted text, `<p>` elements |
-| `--color-disabled` | `#a3a9b1` | **Tertiary text.** Breadcrumb separators, captions, table labels, `.risk-cat.is-absent`, `.j-null` |
+| `--color-secondary` | `#d2d8df` | Labels, captions, metadata, muted text, `<p>` elements |
+| `--color-disabled` | `#b8bec6` | **Tertiary text.** Breadcrumb separators, captions, table labels, `.risk-cat.is-absent`, `.j-null` |
 | `--color-green` | `#00e676` | Positive returns, CTAs, active nav, highlights, "View Strategy" links |
 | `--color-pink` | `#ff82ac` | Negative returns, max drawdown, warning states |
 | `--color-blue` | `#68afff` | Links, interactive element hover borders, focus rings |
@@ -121,8 +121,8 @@ on a card. Every value below also clears 4.5:1 on `--color-bg` and `--color-surf
 | Foreground | On raised `#373c46` | On surface `#2c3038` | On bg `#16191f` |
 |---|---|---|---|
 | `#e9edf2` (primary) | 9.41 | 11.25 | 14.97 |
-| `#c0c6ce` (secondary) | 6.44 | 7.69 | 10.24 |
-| `#a3a9b1` (tertiary) | 4.67 | 5.59 | 7.43 |
+| `#d2d8df` (secondary) | 7.71 | 9.22 | 12.26 |
+| `#b8bec6` (tertiary) | 5.91 | 7.07 | 9.40 |
 | `#00e676` (green) | 6.63 | 7.93 | 10.55 |
 | `#ff82ac` (pink) | 4.77 | 5.70 | 7.58 |
 | `#68afff` (blue) | 4.83 | 5.77 | 7.68 |
@@ -130,6 +130,15 @@ on a card. Every value below also clears 4.5:1 on `--color-bg` and `--color-surf
 | `#b39dff` (purple) | 4.84 | 5.79 | 7.70 |
 
 `#16191f` used as dark text on a bright chip measures 10.55 on green and 10.80 on yellow.
+
+**The two lower greys were raised again at v1.83.1, and nothing was failing when they were.** An
+audit of every visible paragraph across all ten pages, reading computed colours from the live
+document rather than from the CSS, found body prose at **10.24:1 on the page background and 7.69:1 on
+a card**, comfortably past AA, and the owner still reported it as hard to read. **AA is a floor for
+whether text is perceivable, not a target for whether a long paragraph is comfortable**, and a page of
+body copy is exactly where that gap shows. Secondary went 6.44 to 7.71 on the raised surface, tertiary
+4.67 to 5.91, and the ordering against `--color-primary` (9.41) still holds, which is the constraint
+that stops "brighter" from collapsing into "all one colour".
 
 **Pink, blue and purple were re-derived, not carried over.** At their previous values they *failed*
 AA on the raised surface once the base came up. That is the constraint that makes a dark theme
