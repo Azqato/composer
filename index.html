@@ -12,10 +12,10 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Composer Atlas">
   <meta property="og:url" content="https://composeratlas.com/">
-  <meta property="og:title" content="A Reference Library for Systematic Investing">
-  <meta property="og:description" content="Hand-picked Composer.trade strategies with full logic breakdowns, a searchable symphony database, daily RSI signals, and an in-browser signal miner.">
+  <meta property="og:title" content="Judge a Composer Strategy Before You Run It">
+  <meta property="og:description" content="Judge a Composer.trade strategy before you run it: free breakdowns of hand-picked symphonies, a searchable database, daily signals and testing tools.">
   <meta name="twitter:card" content="summary">
-  <meta name="description" content="Hand-picked Composer.trade strategies with full logic breakdowns, a searchable symphony database, daily RSI signals, and an in-browser signal miner.">
+  <meta name="description" content="Judge a Composer.trade strategy before you run it: free breakdowns of hand-picked symphonies, a searchable database, daily signals and testing tools.">
   <title>Composer Atlas: Systematic Strategy Library</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/main.css">
@@ -28,49 +28,57 @@
     <section class="hero">
       <div class="container">
         <p class="hero-eyebrow">Composer Atlas</p>
-        <h1 class="hero-title">A reference library for systematic Composer.trade investing.</h1>
-        <p class="hero-desc">Explore hand-picked strategies with full logic breakdowns, browse a live database of thousands of community symphonies, check daily RSI signals, mine and backtest your own signals in the browser, and learn the concepts behind it all. Free, and independent of Composer.trade.</p>
+        <h1 class="hero-title">Understand any Composer strategy before you invest in it.</h1>
+        <p class="hero-desc">Composer.trade makes it easy to run an automated strategy. It does not make it easy to judge one. Composer Atlas is a free, independent reference that closes the gap: hand-picked strategies with their logic explained in plain English, a searchable database of community symphonies, daily signals, and in-browser tools that stress-test an idea before you trust it.</p>
         <div class="hero-actions">
           <a id="hero-strategies-link" href="#" class="btn btn-green btn-lg">Browse Strategies</a>
-          <a id="hero-glossary-link" href="#" class="btn btn-outline btn-lg">Glossary</a>
+          <!-- A real in-page anchor, not a scripted scroll: it works before
+               app.js runs, it can be middle-clicked and copied, and the
+               keyboard lands on the section rather than nowhere. -->
+          <a href="#explore" class="btn btn-outline btn-lg">Explore</a>
         </div>
       </div>
     </section>
 
-    <!-- Stats bar (static values; update by hand after each full database refresh until a small derived stats file replaces this) -->
-    <section class="stats-bar">
+    <!-- How it works. Directly below the hero by owner instruction:
+         a visitor who has just read the pitch wants the shape of the
+         thing before a menu of ten tools. -->
+    <section class="home-section">
       <div class="container">
-        <div class="stats-inner">
-          <div>
-            <p class="stat-value">6,816</p>
-            <p class="stat-label">Strategies</p>
+        <p class="hero-eyebrow">Overview</p>
+        <h2 class="home-section-title">How to use this site</h2>
+        <p class="home-section-sub">Four steps to go from browsing to building.</p>
+        <div class="grid-4">
+          <div class="card">
+            <div class="step-num">1</div>
+            <h3 class="card-title">Browse a strategy</h3>
+            <p class="card-desc">Start with a hand-picked strategy, or search thousands more in the full Database.</p>
           </div>
-          <div>
-            <p class="stat-value">+50.7%</p>
-            <p class="stat-label">Median ARR</p>
+          <div class="card">
+            <div class="step-num">2</div>
+            <h3 class="card-title">Read the breakdown</h3>
+            <p class="card-desc">Every strategy links out to the Glossary concepts that explain its signals and risk profile.</p>
           </div>
-          <div>
-            <p class="stat-value">-35.1%</p>
-            <p class="stat-label">Median Drawdown</p>
+          <div class="card">
+            <div class="step-num">3</div>
+            <h3 class="card-title">Check live signals</h3>
+            <p class="card-desc">See today's RSI Signals to know if a Frontrunner dip-buy trigger is active right now.</p>
           </div>
-          <div>
-            <p class="stat-value">24</p>
-            <p class="stat-label">Curated</p>
-          </div>
-          <div>
-            <p class="stat-value">Sep 1, 2026</p>
-            <p class="stat-label">Last Refreshed</p>
+          <div class="card">
+            <div class="step-num">4</div>
+            <h3 class="card-title">Mine your own signals</h3>
+            <p class="card-desc">Use Signal Miner to brute-force and backtest thousands of your own IF/THEN signals in the browser.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Explore the site -->
-    <section style="padding: 56px 0 16px">
+    <!-- Explore. The hero's second button targets this id. -->
+    <section class="home-section home-section-last" id="explore">
       <div class="container">
         <p class="hero-eyebrow">Explore</p>
-        <h2 style="color:var(--color-primary);font-size:1.5rem;margin-bottom:8px">Everything on this site</h2>
-        <p style="color:var(--color-secondary);font-size:1rem;max-width:620px;margin-bottom:32px">Ten ways to explore and build with systematic Composer.trade investing.</p>
+        <h2 class="home-section-title">Everything on this site</h2>
+        <p class="home-section-sub">Every tool on this site, and what each one is for.</p>
         <div class="grid-3">
           <a href="#" class="card" id="explore-strategies">
             <div class="explore-icon">&#x1F4DA;</div>
@@ -85,7 +93,7 @@
           <a href="#" class="card" id="explore-rsi">
             <div class="explore-icon">&#x1F4C8;</div>
             <h3 class="card-title">RSI Signals</h3>
-            <p class="card-desc">Live 10-day RSI for the 20 tickers used as Frontrunner-family dip-buy signals.</p>
+            <p class="card-desc">Live 10-day RSI for the tickers used as Frontrunner-family dip-buy signals.</p>
           </a>
           <a href="#" class="card" id="explore-signal-miner">
             <div class="explore-icon">&#x26CF;&#xFE0F;</div>
@@ -125,37 +133,6 @@
         </div>
       </div>
     </section>
-
-    <!-- How it works -->
-    <section style="padding: 56px 0 64px">
-      <div class="container">
-        <p class="hero-eyebrow">Overview</p>
-        <h2 style="color:var(--color-primary);font-size:1.5rem;margin-bottom:8px">How to use this site</h2>
-        <p style="color:var(--color-secondary);font-size:1rem;max-width:620px;margin-bottom:32px">Four steps to go from browsing to building.</p>
-        <div class="grid-4">
-          <div class="card">
-            <div class="step-num">1</div>
-            <h3 class="card-title">Browse a strategy</h3>
-            <p class="card-desc">Start with a hand-picked strategy, or search thousands more in the full Database.</p>
-          </div>
-          <div class="card">
-            <div class="step-num">2</div>
-            <h3 class="card-title">Read the breakdown</h3>
-            <p class="card-desc">Every strategy links out to the Glossary concepts that explain its signals and risk profile.</p>
-          </div>
-          <div class="card">
-            <div class="step-num">3</div>
-            <h3 class="card-title">Check live signals</h3>
-            <p class="card-desc">See today's RSI Signals to know if a Frontrunner dip-buy trigger is active right now.</p>
-          </div>
-          <div class="card">
-            <div class="step-num">4</div>
-            <h3 class="card-title">Mine your own signals</h3>
-            <p class="card-desc">Use Signal Miner to brute-force and backtest thousands of your own IF/THEN signals in the browser.</p>
-          </div>
-        </div>
-      </div>
-    </section>
   </div>
 
   <footer id="footer-root"></footer>
@@ -164,7 +141,6 @@
   <script>
     (function () {
       document.getElementById('hero-strategies-link').href = u('/strategies.html');
-      document.getElementById('hero-glossary-link').href = u('/glossary.html');
       document.getElementById('explore-strategies').href = u('/strategies.html');
       document.getElementById('explore-database').href = u('/database.html');
       document.getElementById('explore-rsi').href = u('/rsi.html');

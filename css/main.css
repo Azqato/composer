@@ -87,7 +87,15 @@ button {
   border: none;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {
@@ -997,32 +1005,35 @@ p { color: var(--color-secondary); }
   gap: 12px;
 }
 
-/* ---- Stats bar ---- */
-.stats-bar {
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
-  padding: 16px 0;
+/* ---- Homepage sections ----
+   Padding is keyed to POSITION, not to which section it is, so the two can be
+   reordered without the bottom spacing following the wrong one. The old markup
+   had this inline and hardcoded, which is why swapping them needed a class. */
+.home-section {
+  padding: 56px 0 16px;
 }
 
-.stats-inner {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 32px;
+.home-section-last {
+  padding-bottom: 64px;
 }
 
-.stat-value {
-  font-family: var(--font-mono);
-  font-size: 1.5rem;
-  font-weight: 700;
+/* Cleared by the fixed nav, so an in-page anchor does not land the heading
+   underneath it. */
+.home-section[id] {
+  scroll-margin-top: calc(var(--nav-height) + 16px);
+}
+
+.home-section-title {
   color: var(--color-primary);
-  line-height: 1;
+  font-size: 1.5rem;
+  margin-bottom: 8px;
 }
 
-.stat-label {
-  font-size: 0.75rem;
-  color: var(--color-disabled);
-  margin-top: 4px;
+.home-section-sub {
+  color: var(--color-secondary);
+  font-size: 1rem;
+  max-width: 620px;
+  margin-bottom: 32px;
 }
 
 /* ---- Section headings ---- */

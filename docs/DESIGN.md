@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.20
+**Version:** 1.21
 **Status:** Active
 **Last Updated:** 2026-09-07
 
@@ -695,23 +695,44 @@ A 99.7 printed as "100" would state the stronger claim.
 
 ---
 
-### Stats Bar (Homepage)
+### Stats Bar (Homepage) - REMOVED 2026-09-09 (v1.81.0)
+
+**The component is gone and so are its four CSS rules**, which nothing else on the site used. Removed
+by owner instruction. Recorded here rather than deleted because the failure it ended is worth not
+repeating: the values were hardcoded and updated by hand after each database refresh, and by removal
+day two of the five had drifted, with Last Refreshed reading Sep 1 against an actual refresh date of
+Sep 6, and Median ARR reading +50.7% against a measured +50.6%.
+
+**This entry was also wrong for roughly two months before that**, which is the smaller lesson. It
+described five stats, "Strategies, Best Sharpe, Top ARR, Concepts, Longest Backtest", that were
+replaced on 2026-07-15 by a different five. A component doc that names specific content goes stale
+without anything breaking, so nothing catches it.
+
+---
+
+### Homepage Sections
 
 ```css
-.stats-bar {
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
-  padding: 16px 0;
-}
-.stats-inner { display: flex; flex-wrap: wrap; gap: 32px; }
-.stat-value { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--color-primary); line-height: 1; }
-.stat-label { font-size: 0.75rem; color: var(--color-disabled); margin-top: 4px; }
+.home-section { padding: 56px 0 16px; }
+.home-section-last { padding-bottom: 64px; }
+.home-section[id] { scroll-margin-top: calc(var(--nav-height) + 16px); }
+.home-section-title { color: var(--color-primary); font-size: 1.5rem; margin-bottom: 8px; }
+.home-section-sub { color: var(--color-secondary); font-size: 1rem; max-width: 620px; margin-bottom: 32px; }
 ```
 
-Stat values use `--color-primary` (not `--color-green`), consistent white for all five stats.
+**Order, top to bottom: hero, How It Works, Explore.** Set 2026-09-09 by owner instruction.
 
-Five stats (left to right): Strategies, Best Sharpe, Top ARR, Concepts, Longest Backtest. The Longest Backtest stat reads the max `backtest_days` across all strategies and displays it as `~X.X years` (e.g. `~15.2 years`). The strategy grid on the homepage is sorted by `backtest_days` descending (longest first).
+**Padding is keyed to position rather than to content**, which is the point of these classes. The two
+sections previously carried inline `style` attributes with a different bottom padding on each,
+hardcoded because one of them happened to be last. Reordering them moved the spacing to the wrong
+one. `.home-section-last` moves with the position instead.
+
+**`scroll-margin-top` is not optional here.** The nav is `position: fixed`, so the hero's Explore
+button, a plain `#explore` anchor, would otherwise scroll the section heading underneath it. The
+offset is derived from `--nav-height` rather than typed as a number, so it follows the nav.
+
+**Smooth scrolling is set on `html` and turned back off under `prefers-reduced-motion`.** A large
+involuntary scroll is precisely the motion that preference exists to prevent.
 
 ---
 

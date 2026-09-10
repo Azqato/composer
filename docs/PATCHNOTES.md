@@ -5,6 +5,62 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.81.0] - 2026-09-09
+
+### Changed
+
+- **The homepage is reordered: hero, then How It Works, then Explore.** Owner
+  instruction. A visitor who has just read the pitch gets the shape of the site
+  before a menu of ten tools.
+- **The hero is rewritten as a pitch rather than a category description.** It
+  opened with what the site *is* ("a reference library for systematic
+  Composer.trade investing") and then listed all five tools in a single 45-word
+  sentence. It now leads with the problem: Composer.trade makes it easy to run an
+  automated strategy and does not make it easy to judge one.
+- **The second hero button is now "Explore" and scrolls to the Explore section**,
+  rather than leaving the page for the Glossary. It is a real `#explore` anchor,
+  not a scripted scroll, so it works before `app.js` runs, can be middle-clicked
+  and copied, and moves keyboard focus to the section.
+- **`og:title` and both descriptions follow the new positioning**, held to the
+  Section 27 budgets: og:title 43 characters, description 149, and the meta
+  description and `og:description` remain the same string.
+
+### Removed
+
+- **The homepage stats bar, and its four CSS rules**, which nothing else used.
+  Owner instruction. The values were hardcoded and updated by hand after each
+  database refresh, and **two of the five had drifted by removal day**: Last
+  Refreshed read **Sep 1, 2026** against an actual refresh date of **Sep 6**, and
+  Median ARR read **+50.7%** against a measured **+50.6%**. Strategies (6,816),
+  Median Drawdown (-35.1%) and Curated (24) were still correct.
+
+### Fixed
+
+- **Two drifting numbers in homepage body copy.** "Ten ways to explore" breaks
+  the moment a tool is added or removed, and the RSI card's "the 20 tickers" is a
+  count read from a data file. Section 27's no-drifting-numbers rule had only
+  ever been applied to meta descriptions; this is the first time it was applied
+  to visible copy.
+- **The two homepage sections no longer carry inline `style` attributes.** They
+  hardcoded a different bottom padding on each because one happened to be last,
+  so reordering them would have moved the spacing to the wrong section.
+- **`DESIGN.md`'s Stats Bar entry had been wrong for about two months** before
+  the component was removed, describing five stats that were replaced on
+  2026-07-15. A component doc that names specific content goes stale without
+  anything breaking, so nothing catches it.
+
+### Notes
+
+- **Verified in headless Edge.** The check that mattered was not the layout: the
+  deleted glossary-button wiring lived in the same IIFE that assigns hrefs to all
+  ten Explore cards, so a wrong deletion would have thrown on the first line and
+  left every card pointing at `#`, on a page that still rendered and still looked
+  normal. Asserted instead that all ten links resolve, the sections are in the
+  new order, the Explore button resolves to the Explore section, the stats bar is
+  absent, and there are no JavaScript errors.
+
+---
+
 ## [1.80.0] - 2026-09-08
 
 ### Added
