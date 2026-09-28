@@ -29,11 +29,15 @@ community, in one searchable place, with three ways to work through it:
   ranks it into tiers. The full methodology is on the page, and each score breaks down on click.
 - **Screener**, a bucketed filter grid for narrowing thousands of rows to the handful worth reading.
 
-**Tools that build things.** A **Signal Miner** that brute-forces millions of "if this, then hold
-that" rules against real price history and hands you the survivors as pasteable Composer JSON. An
-**ETF Cloner** that turns any ETF's holdings into a Composer symphony. A **Converter** that turns
-any symphony URL into clean, readable JSON. A **live RSI page** tracking the signal universe the
-popular Frontrunner-style strategies watch.
+**Tools that build things, and one that argues with you.** A **Signal Miner** that brute-forces
+millions of "if this, then hold that" rules against real price history and hands you the survivors as
+pasteable Composer JSON. An **Overfit Check** that takes any symphony and scores it from 0 to 100
+against the thousands whose logic has gone a year untouched, so a strategy that only looks good in a
+backtest has somewhere to be caught. An **ETF Cloner** that turns any ETF's holdings into a Composer
+symphony. A **Converter** that turns any symphony URL into clean, readable JSON. A **Node Counter**
+for checking a symphony against Composer's own complexity limits, and a **K-1 Lookup** that answers
+whether holding a given ticker means a Schedule K-1 instead of a 1099. Plus a **live RSI page**
+tracking the signal universe the popular Frontrunner-style strategies watch.
 
 Everything runs in your browser. Nothing you type, select or mine is sent anywhere.
 
@@ -60,7 +64,7 @@ It runs no ads and sells nothing. If it is useful to you, there is a voluntary d
 ## Current Status
 
 Live and actively maintained. The curated library, the glossary, the full community database with
-its leaderboard and screener, and all four tools are built and public. Strategy metrics and the
+its leaderboard and screener, and all six tools are built and public. Strategy metrics and the
 community database refresh on an automated schedule, and the RSI page refreshes several times each
 weekday.
 

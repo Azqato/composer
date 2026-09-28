@@ -5,6 +5,88 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.83.2] - 2026-09-28
+
+### Fixed
+
+- **Section 10 of the PRD held a second copy of the design tokens, and it was
+  the palette v1.82.0 replaced.** It still read `--color-bg: #0d0d0d` and
+  `--color-pink: #ff4d8d` nineteen days after the whole palette was rebuilt on a
+  Visual Studio dark base, so the master reference described a site that no
+  longer existed. **Replaced with a pointer to `docs/DESIGN.md` rather than
+  re-synced.** Re-syncing restores the same drift with a later start date, and
+  DESIGN.md Sections 2 to 5 already document every token the block listed. This
+  is the third time the same pair has disagreed: Section 24 row 12 registered
+  `--color-disabled` as `#444444` here against `#c0c0c0` in the code back on
+  2026-08-24, and that row was only ever half true, because the stale `#444444`
+  was in the PRD as well as DESIGN.md.
+- **The `deploy.yml` snippet showed two gates. There are five.** The prose
+  beneath it said "Two Python scripts gate the publish", which has been wrong
+  since v1.25.2 and further wrong since v1.43.2. `check_database_keys.py`,
+  `check_strategy_extras.py` and `check_asset_sizes.py` were all absent from the
+  snippet, Section 20's verification table said "the four deploy gates",
+  Section 23's file-to-work map omitted `check_asset_sizes.py`, and so did
+  Section 12's. All corrected, and the snippet now carries a table naming what
+  each of the five catches, which incident it exists because of, and where it is
+  documented. Gate 5's inverted limitation is stated with it: it publishes to the
+  Pages mirror, so it cannot stop the Cloudflare build that is the live path, and
+  what it buys is a legible red X instead of a silent dashboard failure.
+- **`overfit.html` was undocumented in the architecture and absent from the
+  README.** The page has been live since v1.75.0 and sits in the nav Tools
+  dropdown. The PRD names it forty times in the roadmap and had it in neither the
+  directory tree, the Page Routes table, the tool-pages paragraph, nor either of
+  the two places that list the Tools dropdown's contents. Added to all of them.
+  The README's "all four tools" is now six, and its tools paragraph names the
+  Overfit Check, the Node Counter and the K-1 Lookup, none of which it mentioned.
+- **The directory tree disagreed with the file system on 23 data files and
+  scripts, and with Section 6 of its own document on three counts.** It listed 22
+  data files against 28 on disk, 20 scripts against 37, and one workflow against
+  six. Missing: `strategy_extras`, `daily_returns`, `oos`, `overfit` and
+  `ticker_inception` with their `.js` twins, seventeen scripts **including two of
+  the five deploy gates**, five of the six scheduled workflows, and `LICENSE.md`,
+  `wrangler.jsonc` and `.assetsignore`.
+
+### Changed
+
+- **The tree was rebuilt from `ls`, not edited.** An edit pass can only correct
+  what it notices, and failing to notice is the entire failure mode here. Every
+  entry now carries what the file is for, and the ones that are load-bearing say
+  so: which data files are build inputs excluded from both hosts rather than site
+  assets, which two scripts are manual-only and must never enter CI, which one is
+  dangerous enough to have its own runbook warning, and which of the checkers
+  gate versus merely advise.
+- **Three duplicated counts are gone rather than corrected.** `strategies.json`
+  "31 strategy entries" against 36, `glossary.json` "20 glossary concept entries"
+  against 27, and `database.json` "~6,800" against 6,816 are now
+  cross-references to the one dated statement in Section 6. **This is the first
+  application of open question 20's own rule**, which asks that each count be
+  stated in exactly one place; the fix that corrects a number in two places
+  guarantees a fourth disagreement later.
+- **PRD version header 1.83.1 to 1.83.2, and Last Updated 2026-09-03 to
+  2026-09-28.** The date had not moved through six releases.
+
+### Notes
+
+- **One finding is recorded and deliberately left open.** `data/Full Database.xlsx`
+  is not in `.assetsignore`, so Cloudflare still serves it. That is the
+  unresolved remainder of Section 24 row 2: `symphony_scores.json`,
+  `database.json` and `database.js` were all excluded at v1.79.2 and the xlsx was
+  not. The tree now says so where a reader will meet it. **Not fixed here,
+  because editing `.assetsignore` changes what the live host publishes, and that
+  is a deploy change wearing a documentation commit's message.** It gets its own
+  push and its own check that no page requests the file.
+- **No code changed and no gate output moved.** This release touches
+  `docs/PRD.md` and `README.md` only.
+- **The honest limit.** This was a currency check on what a reader meets first:
+  the architecture section, the route table, the file tree, the README. It did not
+  re-derive Sections 12 to 14, which are five thousand lines of schema and
+  roadmap. One known survivor is left in place and named in Section 24: a V1.20
+  line reading "all 31 strategies today" where the file holds 36 with 24 visible.
+  The population it means is ambiguous, and guessing would trade a stale number
+  for a wrong one.
+
+---
+
 ## [1.83.1] - 2026-09-09
 
 ### Changed

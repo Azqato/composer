@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.83.1
+**Version:** 1.83.2
 **Status:** Active
-**Last Updated:** 2026-09-03
+**Last Updated:** 2026-09-28
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -135,13 +135,13 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - Strategy card titles are clickable links
 
 **Concept Glossary**
-- Index page listing all 20 glossary concepts with category badges and strategy-use counts
+- Index page listing every glossary concept. **Rebuilt as a grouped directory at v1.83.0**: four category groups with headings and counts, one row per concept, and a jump strip at the top, replacing 27 identical cards. **27 concepts as of 2026-09-28**
 - Each concept has a dedicated page with: definition, how it works, in practice examples, limitations, formula (when applicable), and a "Building with..." essay section
 - Concepts cross-link back to strategies that use them
 
 **Data Layer**
-- `data/strategies.json`: flat-file database of all 31 strategies
-- `data/glossary.json`: flat-file database of all 20 glossary concepts
+- `data/strategies.json`: flat-file database of every curated strategy. **Count stated once, in the Strategy Library bullet above**, rather than repeated here
+- `data/glossary.json`: flat-file database of every glossary concept. Count stated once, in the Concept Glossary bullet above
 - Dual-mode loading: `window.STRATEGIES_DATA` / `window.GLOSSARY_DATA` globals for `file://` compatibility; `fetch()` fallback for HTTP
 - `scripts/update_metrics.py`: reusable script to refresh all metrics and logic trees from the Composer API
 
@@ -311,103 +311,132 @@ Composer Atlas is a fully static, browser-only application. There is no server, 
 ### Directory Structure
 
 ```
-ComposerAtlas/
+composer/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml          # GitHub Actions deploy (no build step)
+│       ├── deploy.yml               # Five pre-deploy gates, then rsync → GitHub Pages (a MIRROR; Cloudflare is canonical)
+│       ├── update-metrics.yml       # Daily 21:20 UTC: curated metrics + logic trees; script skips anything refreshed inside 7 days
+│       ├── refresh-prices.yml       # Weekly, Friday. FIRST link in the chain: prices → database → out-of-sample
+│       ├── refresh-full-database.yml # Weekly, Saturday. MIDDLE link
+│       ├── refresh-oos.yml          # Weekly, Sunday. LAST link
+│       └── refresh-rsi.yml          # 15:07 / 19:07 / 22:07 UTC, weekdays only
 ├── css/
-│   └── main.css                # Full design system: tokens, layout, components
+│   └── main.css                 # Full design system: tokens, layout, components
 ├── data/
-│   ├── strategies.json         # 31 strategy entries, source of truth
-│   ├── strategies.js           # Same data as window.STRATEGIES_DATA, for file:// compat
-│   ├── glossary.json           # 20 glossary concept entries, source of truth (was 8 at MVP)
-│   ├── glossary.js             # Same data as window.GLOSSARY_DATA, for file:// compat
-│   ├── symphony_scores.json    # Full logic trees; AI analysis only, not served publicly
-│   ├── database.json           # Full raw ~6,800-symphony database (not the curated 35); see Section 14
-│   ├── database.js             # Same data as window.DATABASE_DATA, for file:// compat
-│   ├── database_summary.json   # Columnar, float-rounded subset of database.json for list/filter/score views (v1.16)
-│   ├── database_summary.js     # Same data as window.DATABASE_SUMMARY_DATA, for file:// compat (v1.16)
-│   ├── Full Database.xlsx      # Raw source spreadsheet; database.json is generated from this
-│   ├── storage.csv             # Append-only archive of EVERY symphony URL ever seen, alive or dead; deliberately larger than database.json (v1.10.1)
-│   ├── AddSymphony.csv         # User-submitted URL inbox, single `url` column, manual-only (added 2026-07-15)
-│   ├── rsi.json                # 10-day RSI (Wilder's smoothing) for the 20-ticker Frontrunner universe (V2.1)
-│   ├── rsi.js                  # Same data as window.RSI_DATA, for file:// compat (V2.1)
-│   ├── prices.json             # Full daily adjusted-close history (72 tickers from 2010) for Signal Miner (v1.15.0)
-│   ├── prices.js               # Same data as window.PRICES_DATA, for file:// compat (v1.15.0)
-│   ├── k1.json                 # Master K-1 database: fund structure -> tax form, per ticker (v1.27.0)
-│   ├── k1.js                   # Same data as window.K1_DATA, for file:// compat (v1.27.0)
-│   └── k1_seed.txt             # Ticker candidate list refresh_k1.py reads with --seed; a request to check, not a claim (v1.27.0)
+│   ├── strategies.json          # Curated strategy entries, source of truth. Count in Section 6
+│   ├── strategies.js            # Same data as window.STRATEGIES_DATA, for file:// compat
+│   ├── strategy_extras.json     # BUILD-TIME JOIN of strategies × database × k1, written by build_strategy_extras.py. strategies.html reads THIS, not the source files (v1.28.0)
+│   ├── strategy_extras.js       # Same data as window.STRATEGY_EXTRAS_DATA, for file:// compat
+│   ├── daily_returns.json       # Daily return series per visible strategy; unblocks worst month, VaR, CVaR, time in market, year-jackknife (V1.20 item 16)
+│   ├── daily_returns.js         # Same data as window.DAILY_RETURNS_DATA, for file:// compat
+│   ├── glossary.json            # Glossary concept entries, source of truth (was 8 at MVP). Count in Section 6
+│   ├── glossary.js              # Same data as window.GLOSSARY_DATA, for file:// compat
+│   ├── symphony_scores.json     # Full logic trees; AI analysis input only. Excluded from BOTH hosts (.assetsignore + deploy.yml)
+│   ├── database.json            # Full community database. A BUILD INPUT, not a site asset: 19 MiB, excluded from both hosts, and no page fetches it (closed open question 2, v1.79.2)
+│   ├── database.js              # Same data as window.DATABASE_DATA. Also excluded; nothing reads the global
+│   ├── database_summary.json    # Columnar, float-rounded export of database.json. THIS is what database.html loads (v1.16)
+│   ├── database_summary.js      # Same data as window.DATABASE_SUMMARY_DATA, for file:// compat (v1.16)
+│   ├── oos.json                 # True out-of-sample statistics for the Leaderboard candidate set, keyed by symphony_id (V1.18)
+│   ├── oos.js                   # Same data as window.OOS_DATA, for file:// compat
+│   ├── overfit.json             # Population findings, the "par" curve the Overfit Score is read against, and a per-symphony index (V2.4)
+│   ├── overfit.js               # Same data as window.OVERFIT_DATA, for file:// compat
+│   ├── rsi.json                 # 10-day RSI (Wilder's smoothing) for the 20-ticker Frontrunner universe (V2.1)
+│   ├── rsi.js                   # Same data as window.RSI_DATA, for file:// compat (V2.1)
+│   ├── prices.json              # Full daily adjusted-close history (72 tickers from 2010) for the Signal Miner (v1.15.0)
+│   ├── prices.js                # Same data as window.PRICES_DATA, for file:// compat (v1.15.0)
+│   ├── ticker_inception.json    # Real first-trade date per ticker, so a backtest window can be judged against fund age rather than assumed
+│   ├── ticker_inception.js      # Same data as window.TICKER_INCEPTION_DATA, for file:// compat
+│   ├── k1.json                  # Master K-1 database: fund structure → tax form, per ticker (v1.27.0)
+│   ├── k1.js                    # Same data as window.K1_DATA, for file:// compat (v1.27.0)
+│   ├── k1_seed.txt              # Ticker candidate list refresh_k1.py reads with --seed; a request to check, not a claim (v1.27.0)
+│   ├── storage.csv              # Append-only archive of EVERY symphony URL ever seen, alive or dead; deliberately larger than database.json (v1.10.1)
+│   ├── AddSymphony.csv          # User-submitted URL inbox, single `url` column, manual-only (added 2026-07-15)
+│   └── Full Database.xlsx       # Occasional export of the JSON for spreadsheet work. NOT in .assetsignore and therefore still served; see Section 24 row 2
 ├── js/
-│   └── app.js                  # Shared utilities: format, nav, footer, render helpers
-├── scripts/                    # All Python scripts live here, never in the project root
-│   ├── update_metrics.py       # Fetches backtest metrics + logic trees from Composer API (curated 25)
-│   ├── add_glossary.py         # One-time: added 9 glossary entries (v1.5.2), safe to re-run
-│   ├── add_zoop.py             # One-time: added Zoop glossary entry + zoop tags (v1.5.3)
-│   ├── add_ai_summary.py       # Writes the ai_summary field on all strategies (v1.7.0), safe to re-run
-│   ├── refresh_full_database.py # Resumable, checkpointed API refresh for the full database (v1.9.0)
+│   └── app.js                   # Shared utilities: format, nav, footer, render helpers, escapeHtml
+├── scripts/                     # All Python scripts live here, never in the project root
+│   ├── update_metrics.py        # Fetches backtest metrics + logic trees from the Composer API for the curated set
+│   ├── refresh_full_database.py # Resumable, checkpointed API refresh for the community database (v1.9.0)
+│   ├── refresh_prices.py        # Full Yahoo Finance daily-close history for the Signal Miner universe (v1.15.0)
+│   ├── refresh_rsi.py           # Yahoo Finance daily bars → Wilder's RSI(10) (V2.1)
+│   ├── refresh_oos.py           # True out-of-sample statistics for the Leaderboard candidates (V1.18)
+│   ├── refresh_k1.py            # Reads each fund's Structure field, derives its tax form (v1.27.0)
+│   ├── refresh_ticker_inception.py # Real first-trade date per ticker
+│   ├── export_summary.py        # Derives database_summary.json/.js from database.json (v1.16); run after EVERY refresh
 │   ├── export_full_database_to_xlsx.py # Local-only, occasional: regenerates the xlsx from the JSON (v1.9.4)
-│   ├── export_summary.py       # Derives database_summary.json/.js from database.json (v1.16); run after every refresh
-│   ├── build_sitemap.py        # Regenerates sitemap.xml from the indexable pages + curated slugs (v1.25.1)
-│   ├── check_database_keys.py  # Deploy gate: symphony_id unique, summary in sync, every symphony archived (v1.25.2)
-│   ├── sync_database_to_storage.py # Archives any database.json URL missing from storage.csv (v1.25.4)
-│   ├── sync_storage_to_database.py # Adds storage.csv URLs missing from database.json as new unrefreshed rows (v1.11.1)
-│   ├── refresh_rsi.py          # Fetches Yahoo Finance daily bars, computes Wilder's RSI(10) (V2.1)
-│   ├── refresh_prices.py       # Fetches full Yahoo Finance daily-close history for the Signal Miner universe (v1.15.0)
-│   ├── refresh_k1.py           # Builds data/k1.json: reads each fund's Structure field, derives its tax form (v1.27.0)
 │   ├── build_strategy_extras.py # Joins the featured strategies to database.json and k1.json at build time (v1.28.0)
-│   ├── check_strategy_extras.py # Deploy gate: the committed join matches a fresh one, both twins (v1.28.0)
-│   └── check_asset_sizes.py     # No served file exceeds Cloudflare's 25 MiB per-file limit (v1.43.2, manual)
-├── index.html                  # Home page: marketing/landing (hero, stats, explore cards, how-it-works) (V2.2, 2026-07-15)
-├── strategies.html             # Strategy listing + detail (?slug=X), single file
-├── glossary.html               # Glossary listing + concept detail (?slug=X), single file
+│   ├── build_overfit.py         # Derives data/overfit.json + twin for the Overfit Check page (V2.4)
+│   ├── build_sitemap.py         # Regenerates sitemap.xml from the indexable pages + curated slugs (v1.25.1)
+│   ├── check_html_js.py         # GATE 1: tokenizes every inline <script>; catches the v1.22.2 outage class
+│   ├── check_composer_ladder.py # GATE 2: the emitted Composer tree satisfies the invariants Composer requires (v1.22.7)
+│   ├── check_database_keys.py   # GATE 3: symphony_id unique, summary in sync, every symphony archived (v1.25.2)
+│   ├── check_strategy_extras.py # GATE 4: the committed join matches a fresh one, both twins (v1.28.0)
+│   ├── check_asset_sizes.py     # GATE 5: no served file exceeds Cloudflare's 25 MiB per-file limit (v1.43.2)
+│   ├── check_prose_tokens.py    # GATE: a metric quoted in prose must be a {token}, never a typed figure
+│   ├── check_risk_profiles.py   # ADVISORY by owner ruling: risk_profile is a string or a known-key object
+│   ├── check_stat_drift.py      # ADVISORY by owner ruling: a hand-typed figure in prose that no longer matches live metrics
+│   ├── check_daily_returns.py   # daily_returns.json is intact and agrees with the metrics table
+│   ├── check_rank_claims.py     # Re-derives every library-wide rank claim in prose from live metrics
+│   ├── check_signal_types.py    # The `signals` schema shape after V1.20 item 11; both fields degrade silently by design
+│   ├── check_social_tags.py     # Open Graph and Twitter Card compliance. NOT a gate; open question 27, ruled manual
+│   ├── check_live.py            # Lints what Cloudflare actually SERVES, rather than what git says was pushed
+│   ├── analyze_leaderboard.py   # Manual only, never in CI. Re-derives every V1.18 number in this document
+│   ├── measure_throughput.py    # Times Signal Miner Pass 1 from outside the browser
+│   ├── run_harness.py           # Runs one of the Signal Miner headless-Edge harnesses (Edge, never Chrome)
+│   ├── harness/                 # The harness drivers themselves, plus their own README
+│   ├── dedupe_symphonies.py     # MANUAL ONLY, never in CI: flags near-identical name-cluster duplicates (V1.14)
+│   ├── flag_name_noise.py       # MANUAL ONLY, never in CI: flags test ports and work-in-progress rows by name pattern (V1.14)
+│   ├── purge_flagged_entries.py # Removes database.json entries by flag level
+│   ├── sync_database_to_storage.py # Archives any database.json URL missing from storage.csv (v1.25.4)
+│   ├── sync_storage_to_database.py # DANGEROUS: seeds storage.csv URLs into database.json. Run twice by mistake; see the runbook warning
+│   ├── id_to_url.py             # Converts a symphony id to its canonical URL and back
+│   ├── add_glossary.py          # One-time: added 9 glossary entries (v1.5.2), safe to re-run
+│   ├── add_zoop.py              # One-time: added the zoop glossary entry + zoop tags (v1.5.3)
+│   └── add_ai_summary.py        # Writes the ai_summary field on all strategies (v1.7.0), safe to re-run
+├── index.html                   # Home page: pitch-led hero, explore cards, how-it-works. Reordered and the stats bar removed at v1.81.0
+├── strategies.html              # Strategy listing + detail (?slug=X), single file
+├── glossary.html                # Glossary listing + concept detail (?slug=X), single file. Listing rebuilt as a grouped directory at v1.83.0
 ├── database.html                # Full-database tabs: All Strategies / Leaderboard / Screener (v1.9.0)
 ├── rsi.html                     # Live RSI signals table, 20-ticker Frontrunner universe (V2.1)
-├── converter.html               # Tool: Symphony → JSON converter + logic tree; indexable, in nav Tools dropdown + footer + homepage card (v1.16.3)
-├── signal-miner.html              # Tool: client-side IF/THEN signal miner + backtester; in nav Tools dropdown + footer + home (renamed from Signal Lab v1.16.6) (v1.15.2)
+├── signal-miner.html            # Tool: client-side IF/THEN signal miner + backtester; nav Tools dropdown + footer + home (renamed from Signal Lab v1.16.6) (v1.15.2)
 ├── signal-lab.html              # Redirect stub → signal-miner.html (noindex); preserves old Signal Lab links (v1.16.6)
-├── nodes.html                   # Tool: symphony URL → node count + breakdown by node type; indexable, in nav Tools dropdown + footer + homepage card (v1.26.0)
-├── k1.html                      # Tool: ticker → does it issue a Schedule K-1; local lookup over data/k1.json; indexable, in nav Tools dropdown + footer + homepage card (v1.27.0)
-├── etf-cloner.html              # Tool: type an ETF (or upload its holdings file) → Composer symphony that clones the holdings; indexable, in footer + homepage card, intentionally NOT in nav (v1.16.0)
+├── converter.html               # Tool: Symphony → JSON converter + logic tree; nav Tools dropdown + footer + homepage card (v1.16.3)
+├── nodes.html                   # Tool: symphony URL → node count + breakdown by node type; nav Tools dropdown + footer + homepage card (v1.26.0)
+├── k1.html                      # Tool: ticker → does it issue a Schedule K-1; local lookup over data/k1.json; nav Tools dropdown + footer + homepage card (v1.27.0)
+├── overfit.html                 # Tool: paste a symphony → a 0-100 Overfit Score against the unedited-for-a-year population; nav Tools dropdown + footer (V2.4, v1.75.0, corrected v1.76.0)
+├── etf-cloner.html              # Tool: ETF ticker or holdings file → a Composer symphony cloning the basket; footer + homepage card, intentionally NOT in nav (v1.16.0)
 ├── about.html                   # About page
-├── 404.html                    # Custom 404 page
-├── favicon.svg                 # 🗺️ map emoji SVG favicon
-├── robots.txt                  # Allows everything, advertises /sitemap.xml
-├── sitemap.xml                 # Generated by scripts/build_sitemap.py; never hand-edited (v1.25.1)
+├── 404.html                     # Custom 404 page
+├── _wf-mockup.html              # Walk-forward validation mockup. GITIGNORED and local-only; the sole artifact describing V2.2 item B
+├── favicon.svg                  # 🗺️ map emoji SVG favicon
+├── robots.txt                   # Allows everything, advertises /sitemap.xml
+├── sitemap.xml                  # Generated by scripts/build_sitemap.py; never hand-edited (v1.25.1)
+├── README.md                    # General-reader front door. No install steps, by owner instruction 2026-08-24. Excluded from both hosts
+├── LICENSE.md                   # All rights reserved, source-available. See Section 28
+├── wrangler.jsonc               # Cloudflare Pages config. Sets assets.directory to ".", which is why .assetsignore exists
+├── .assetsignore                # What Cloudflare does NOT serve. KEEP IN STEP with deploy.yml's rsync excludes; they do not read each other
 ├── .gitignore
-└── docs/                       # All documentation (excluded from public deploy)
+└── docs/                        # PRD, DESIGN, PATCHNOTES. Excluded from both hosts
 ```
 
 ### CSS Custom Properties (Design Tokens)
 
-All design tokens are defined as CSS variables in `css/main.css`:
+All design tokens are defined as CSS variables in the `:root` block of `css/main.css`. **The values
+are documented in `docs/DESIGN.md` and are deliberately not repeated here:** Section 2 holds the
+colour palette with every step's measured contrast separation and the reasoning behind it, Section 3
+the font stacks, Section 4 the layout tokens (`--nav-height`, `--page-px`, `--max-width`), and
+Section 5 the radii. Between them they cover every token this section used to list.
 
-```css
-:root {
-  --color-bg:             #0d0d0d;
-  --color-surface:        #141414;
-  --color-surface-raised: #1a1a1a;
-  --color-border:         #1f1f1f;
-  --color-border-hover:   #2e2e2e;
-  --color-primary:        #f0f0f0;
-  --color-secondary:      #b0b0b0;
-  --color-disabled:       #444444;
-  --color-green:          #00e676;
-  --color-pink:           #ff4d8d;
-  --color-blue:           #4d9fff;
-  --color-yellow:         #f5c518;
-  --color-purple:         #a78bfa;
-  --font-sans:            'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono:            'JetBrains Mono', 'Fira Code', monospace;
-  --radius-sm:            4px;
-  --radius-md:            8px;
-  --radius-lg:            12px;
-  --nav-height:           56px;
-  --max-width:            1280px;
-  --page-px:              24px;
-}
-```
+> **This section carried a second copy of the palette, and that copy went two releases stale.** It
+> still read `--color-bg: #0d0d0d` and `--color-pink: #ff4d8d` after v1.82.0 rebuilt the entire
+> palette on a Visual Studio dark base, so the master reference described a site that had not existed
+> for nineteen days. **Replaced with a pointer rather than re-synced, because re-syncing restores the
+> same drift with a later start date.** It is also the third time this exact pair has disagreed:
+> Section 24 row 12 registered `--color-disabled` as `#444444` here against `#c0c0c0` in the code on
+> 2026-08-24. This is open question 20's rule applied to tokens rather than counts: state a fact in
+> one place and cross-reference it everywhere else.
 
-Dark mode is the only supported mode in MVP.
+Dark mode is the only supported mode, and per Section 4 a light mode is a standing non-goal.
 
 ### Data Layer
 
@@ -436,7 +465,7 @@ async function loadStrategies() {
 
 The same pattern applies to `loadGlossary()`. This ensures the site works in all three environments: double-click (`file://`), Python HTTP server, and GitHub Pages.
 
-**Full database dataset:** `database.html` uses the identical pattern via its own inline `loadFullDatabase()` (not a shared `js/app.js` function, since this dataset is not part of the curated-library data layer). `data/database.js` assigns `window.DATABASE_DATA`; every script that writes `database.json` writes the `.js` twin in sync, same as `update_metrics.py` does for the curated 25. A v1.9.0/v1.9.1 oversight shipped `database.html` with `fetch()`-only loading (no global fallback), which fails with "Failed to fetch" on `file://`; fixed in v1.9.2.
+**Full database dataset:** `database.html` uses the identical pattern via its own inline `loadFullDatabase()` (not a shared `js/app.js` function, since this dataset is not part of the curated-library data layer). `data/database.js` assigns `window.DATABASE_DATA`; every script that writes `database.json` writes the `.js` twin in sync, same as `update_metrics.py` does for the curated set. A v1.9.0/v1.9.1 oversight shipped `database.html` with `fetch()`-only loading (no global fallback), which fails with "Failed to fetch" on `file://`; fixed in v1.9.2.
 
 ### BASE URL and `u()` Helper
 
@@ -501,12 +530,13 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/nodes.html` | `nodes.html` | Tool: paste a symphony URL, get its node count and a breakdown by node type. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.26.0) |
 | `/composer/k1.html` | `k1.html` | Tool: type a ticker, get whether it issues a Schedule K-1 or a 1099, plus the structure that decides it. Answers come from `data/k1.json`, shipped with the site, so the lookup is local and works offline. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.27.0) |
 | `/composer/etf-cloner.html` | `etf-cloner.html` | Tool: ETF → Composer holdings-clone generator. Live top-holdings fetch by ticker + full-basket upload of an issuer CSV/xlsx. Indexable; in the footer sitemap + homepage Explore card, but intentionally **not** in the primary nav (v1.16.3) |
+| `/composer/overfit.html` | `overfit.html` | Tool: paste a symphony and read a 0 to 100 **Overfit Score** against the population of 5,228 symphonies whose logic has gone a year unedited. Leads with the score as of v1.76.0. Indexable; in the nav **Tools** dropdown and the footer sitemap (V2.4 Tier 1, v1.75.0; substantially corrected v1.76.0; Tier 2 v1.77.0) |
 | `/composer/about.html` | `about.html` | Static HTML |
 | `/composer/404.html` | `404.html` | GitHub Pages error page |
 
 **Listing/detail routing:** Each combined page checks `new URLSearchParams(window.location.search).get('slug')` on load. `null` → listing view; non-null → detail view for that slug.
 
-**Tool pages:** `converter.html`, `signal-miner.html`, `nodes.html`, `k1.html`, and `etf-cloner.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). All are indexable. As of v1.16.3 the tools reachable from the primary nav (RSI Signals, Signal Miner, Converter, Nodes since v1.26.0, and K1 Lookup since v1.27.0) are grouped under a single **Tools** dropdown rather than sitting as separate top-level links; all of them also appear in the footer sitemap and homepage Explore grid. The ETF Cloner is lower-profile: it is live and indexable and appears in the footer sitemap + homepage Explore card, but at the user's request is intentionally held out of the primary nav (including the Tools dropdown). As of v1.15.4 no page carries a `noindex` robots meta.
+**Tool pages:** `converter.html`, `signal-miner.html`, `nodes.html`, `k1.html`, `overfit.html`, and `etf-cloner.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). All are indexable. As of v1.16.3 the tools reachable from the primary nav (RSI Signals, Signal Miner, Converter, Nodes since v1.26.0, K1 Lookup since v1.27.0, and Overfit Check since v1.75.0) are grouped under a single **Tools** dropdown rather than sitting as separate top-level links; all of them also appear in the footer sitemap and homepage Explore grid. The ETF Cloner is lower-profile: it is live and indexable and appears in the footer sitemap + homepage Explore card, but at the user's request is intentionally held out of the primary nav (including the Tools dropdown). As of v1.15.4 no page carries a `noindex` robots meta.
 
 **K1 Lookup data flow (v1.27.0):** the tool takes a ticker and answers whether holding it issues a
 Schedule K-1 instead of a 1099. **The lookup is entirely local.** `k1.html` reads `data/k1.js`
@@ -596,7 +626,7 @@ such symphony" rather than as a relay failure, since the two have completely dif
 
 Three link surfaces, each with a distinct, deliberate rule. When adding a new page, decide its placement against all three:
 
-1. **Primary nav (`links` array in `renderNav`, `js/app.js`)**: *curated*, not exhaustive. Holds Home plus the main destinations, then the external CTAs (Azqato Invests, Support). As of v1.16.3, the tools (RSI Signals, Signal Miner, Converter) are collapsed under a single **Tools** dropdown group, an item with a `children` array renders as a hover/click dropdown, to keep the top level short. Deliberately omits the lowest-profile utility (ETF Cloner) even from the Tools dropdown. Adding a page here is an editorial choice, not automatic.
+1. **Primary nav (`links` array in `renderNav`, `js/app.js`)**: *curated*, not exhaustive. Holds Home plus the main destinations, then the external CTAs (Azqato Invests, Support). As of v1.16.3, the tools (RSI Signals, Signal Miner, Converter, and since then Nodes, K1 Lookup and Overfit Check) are collapsed under a single **Tools** dropdown group, an item with a `children` array renders as a hover/click dropdown, to keep the top level short. Deliberately omits the lowest-profile utility (ETF Cloner) even from the Tools dropdown. Adding a page here is an editorial choice, not automatic.
 
 2. **Footer (`renderFooter`, `js/app.js`)**: the **complete sitemap**. It must link *every* public-facing page on the site: Home and all internal pages (Strategies, Database, RSI, Signal Miner, Glossary, Converter, ETF Cloner, About), followed by external links (Support, Composer.trade). `404.html` is the only page excluded on principle (it is an error page, not a destination). When you add any public page, you **must** add it to the footer. As of v1.16.3 there is no exception, `etf-cloner.html` is now in the footer, closing the earlier temporary deferral.
 
@@ -605,6 +635,10 @@ Three link surfaces, each with a distinct, deliberate rule. When adding a new pa
 **Rule of thumb when shipping a new page:** always add it to the footer (rule 2); add an Explore card if it is a tool/section we built (rule 3); add it to the nav only if it is a primary destination (rule 1).
 
 ### GitHub Actions Deploy Pipeline
+
+**This workflow publishes the GitHub Pages MIRROR, not the live site.** Cloudflare Pages builds
+independently on the same push and is canonical. A red build here does not take the site down, and
+a green one does not prove the site updated; `scripts/check_live.py` exists for the second half.
 
 ```yaml
 name: Deploy to GitHub Pages
@@ -619,6 +653,10 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -626,12 +664,25 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Check inline JS syntax
         run: python3 scripts/check_html_js.py
       - name: Check the Composer export shape
         run: python3 scripts/check_composer_ladder.py
-      - uses: actions/configure-pages@v5
+      - name: Check the database primary key and summary sync
+        run: python3 scripts/check_database_keys.py
+      - name: Check the strategy extras join
+        run: python3 scripts/check_strategy_extras.py
+      - name: Check served file sizes against Cloudflare's limit
+        run: python3 scripts/check_asset_sizes.py
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # KEEP THIS LIST IN STEP WITH .assetsignore. Two separate mechanisms for
+      # one intent, and neither reads the other.
       - name: Build deploy folder
         run: |
           mkdir -p _site
@@ -642,17 +693,48 @@ jobs:
             --exclude='docs' \
             --exclude='scripts' \
             --exclude='data/symphony_scores.json' \
+            --exclude='data/database.json' \
+            --exclude='data/database.js' \
             --exclude='README.md' \
             --exclude='.gitignore' \
             . _site/
-      - uses: actions/upload-pages-artifact@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: '_site'
-      - uses: actions/deploy-pages@v4
+
+      - name: Deploy to GitHub Pages
         id: deployment
+        uses: actions/deploy-pages@v4
 ```
 
-**Pre-deploy checks (added v1.22.7).** Two Python scripts gate the publish. They run before anything is built, so a failure leaves the previously deployed, working site untouched.
+**The snippet above is abridged only in its comments.** `deploy.yml` carries a paragraph of reasoning
+above most steps, explaining the specific incident each one exists to prevent. Read the file, not
+this copy, before changing a step.
+
+**Pre-deploy checks.** **Five** Python scripts gate the publish, added between v1.22.7 and v1.43.2.
+They run before anything is built, so a failure leaves the previously deployed, working site
+untouched. Every one of them exists because the failure it catches had already shipped, and because
+each of those failures is invisible from outside: the page returns HTTP 200 and looks correct.
+
+| # | Gate | Catches | Documented in |
+|---|---|---|---|
+| 1 | `check_html_js.py` | An inline `<script>` killed by a syntax error, on a page that still serves 200 with its static HTML intact (v1.22.2) | Below |
+| 2 | `check_composer_ladder.py` | Miner output that is syntactically perfect and structurally wrong, so Composer rejects the import (v1.22.5) | Below |
+| 3 | `check_database_keys.py` | A duplicate `symphony_id`, a `database_summary.json` out of step with `database.json`, or a symphony missing from `storage.csv`. The first shows one symphony twice everywhere; the second makes real symphonies invisible. Both have happened (v1.25.1, v1.25.2) | Section 12, "The Primary Key Invariant" |
+| 4 | `check_strategy_extras.py` | A stale or half-committed `strategy_extras` join, which renders a correctly laid out strategy page with its new sections silently empty. Demands byte equality with **both** twins, so it also catches the `.json`/`.js` drift that gate 3 does not (v1.27.9 shipped exactly that) | Section 14, V1.20 |
+| 5 | `check_asset_sizes.py` | Any served file past Cloudflare's 25 MiB per-file limit, which fails the **entire** deployment. That is how the site silently stopped updating on 2026-09-01 (v1.43.2) | Section 25, closed question 2 |
+
+**Gate 5's honest limitation, recorded because it reverses the usual logic.** This workflow publishes
+to GitHub Pages and is not the live path, so failing here cannot stop the Cloudflare build, which
+runs independently on the same push. What the gate buys is a legible red X naming the offending file
+and its size, instead of an opaque failure in a dashboard nobody watches.
+
+**Three more checkers exist and deliberately do not gate**, by owner ruling on 2026-09-02:
+`check_prose_tokens.py` gates metric tokens in authored prose, while `check_risk_profiles.py` and
+`check_stat_drift.py` run, report, and cannot block. `check_social_tags.py` is manual by the ruling on
+open question 27. See Section 14, V1.20 item 10b for the reasoning and the full gated/advisory table.
 
 `scripts/check_html_js.py` tokenizes every inline `<script>` in the repo's HTML and rejects two things: a `'` or `"` string that runs past end of line, and unbalanced brackets. It exists because of the v1.22.2 outage, where an apostrophe inside `'Ignore BIL's Sortino...'` closed the string early, the stray quotes re-paired so brackets still balanced, and the entire inline script died. The page still served HTTP 200 with its static HTML intact, so nothing downstream could tell. There is no JS runtime in this toolchain, so `node --check` is not an option; this is the substitute. It understands line and block comments, template literals with nested `${...}`, and regex literals, the last being necessary because converter.html and etf-cloner.html both carry a JSON-highlighting regex holding unbalanced brackets and quotes. Run bare it checks every `*.html` in the repo root; `--self-test` runs 13 built-in cases, including the real outage string, and the full run executes them too so a checker that has stopped working cannot pass silently.
 
@@ -1549,7 +1631,7 @@ No two entries may carry the same `symphony_id`, and every entry must have one.
 > key.** The id is.
 
 **Enforced, not merely stated.** `scripts/check_database_keys.py` runs as a deploy gate alongside
-`check_html_js.py`, `check_composer_ladder.py` and `check_strategy_extras.py`, and asserts four
+`check_html_js.py`, `check_composer_ladder.py`, `check_strategy_extras.py` and `check_asset_sizes.py`, and asserts four
 things:
 
 1. every entry has a non-empty `symphony_id`
@@ -3391,7 +3473,7 @@ question will be what `risk_profile` is still for, not how to migrate it.
 taken from it. The analysis that followed is summarised here rather than in a chat log, because the
 half of it that matters is the data audit, not the design admiration. **The screenshot is a source
 of structure, not of palette:** it is a light editorial print-style page and this site is dark
-(`#0d0d0d`). What is worth copying is how it organises information, and specifically that it turns
+(the base was `#0d0d0d` when this was written, `#16191f` since v1.82.0). What is worth copying is how it organises information, and specifically that it turns
 prose into structures that force an author to name failure modes.
 
 **Where each item came from.** The owner asked for both the screenshot's sections and any missing
@@ -6891,7 +6973,7 @@ from files rather than reported by a service.
 
 | When | What |
 |---|---|
-| Every deploy | `check_live.py`, plus the four deploy gates (`check_html_js.py`, `check_composer_ladder.py`, `check_database_keys.py`, `check_strategy_extras.py`) |
+| Every deploy | `check_live.py`, plus the five deploy gates (`check_html_js.py`, `check_composer_ladder.py`, `check_database_keys.py`, `check_strategy_extras.py`, `check_asset_sizes.py`) |
 | Every release touching counts | Re-count strategies, glossary entries and database rows; update this document and the patch note in the same commit |
 | Weekly, after the database refresh | Flag distribution and refresh coverage |
 | Monthly | Cloudflare Web Analytics review: paths, referrers, outbound clicks, Core Web Vitals |
@@ -7124,7 +7206,7 @@ next, including an AI assistant with no memory of the previous session.
 | The Signal Miner's price history or ticker universe | `scripts/refresh_prices.py`, which writes `data/prices.json` and `.js` |
 | The RSI page's data | `scripts/refresh_rsi.py` |
 | Whether a ticker issues a K-1, or adding tickers to the lookup | `data/k1_seed.txt`, then `scripts/refresh_k1.py`, then commit `data/k1.json` **and** `data/k1.js` together |
-| Deploy behaviour or the deploy gates | `.github/workflows/deploy.yml`, `scripts/check_html_js.py`, `scripts/check_composer_ladder.py`, `scripts/check_database_keys.py`, `scripts/check_strategy_extras.py` |
+| Deploy behaviour or the deploy gates | `.github/workflows/deploy.yml`, `scripts/check_html_js.py`, `scripts/check_composer_ladder.py`, `scripts/check_database_keys.py`, `scripts/check_strategy_extras.py`, `scripts/check_asset_sizes.py` |
 | **`data/database.json`, `data/k1.json`, `data/prices.json` (since v1.42.1), or the featured set in `data/strategies.json`** | `scripts/build_strategy_extras.py`, then commit `data/strategy_extras.json` **and** `data/strategy_extras.js`. The strategy pages read that join, not the source files, so a refresh that skips this step leaves the page showing yesterday's numbers with no visible sign. `scripts/check_strategy_extras.py` fails the deploy if it is skipped. **Automated since v1.31.1** for the two workflow-driven inputs (`refresh-full-database.yml` for `database.json`, `update-metrics.yml` for `strategies.json`); the `k1.json` path and manual `database.json` edits are still hand-run |
 | Which pages search engines are told about | `scripts/build_sitemap.py`, then re-run it. Never hand-edit `sitemap.xml`. Re-run automatically by `update-metrics.yml` since v1.26.1, so a forgotten run self-corrects within a day |
 | What Cloudflare serves publicly | `.assetsignore` (not `deploy.yml`, which governs GitHub Pages only) |
@@ -7248,7 +7330,7 @@ evidence, usually a patch note recording the change as deliberate.
 | 9 | Section 15: "`data/strategies.json` is the only data source" | **Nine committed data sources** under `data/` | **The code** | True at MVP. Everything the sentence goes on to assert still holds for all of them |
 | 10 | Section 10 directory tree: `glossary.json # 8 glossary concept entries` | **20 entries** | **The code** | Corrected. Section 12's own canonical table already said 20, so the document disagreed with itself |
 | 11 | Section 10 directory tree: `prices.json (37 tickers from 2018)` | **72 tickers, from 2010-01-01**, 4,184 trading days | **The code** | Two separate changes landed (v1.18.0 expanded the universe, v1.20.1 extended the history) and this line tracked neither |
-| 12 | DESIGN.md: `--color-disabled` is `#444444` | `css/main.css` has **`#c0c0c0`** | **The code** | PATCHNOTES v1.5.4 records the change as a deliberate legibility fix. Doc went stale on 2026-08-15 and stayed that way for two months. Secondary issue flagged: the token's name now reads backwards |
+| 12 | DESIGN.md: `--color-disabled` is `#444444` | `css/main.css` has **`#c0c0c0`** | **The code** | PATCHNOTES v1.5.4 records the change as a deliberate legibility fix. Doc went stale on 2026-08-15 and stayed that way for two months. Secondary issue flagged: the token's name now reads backwards. **Closed 2026-09-28.** DESIGN.md Section 2 now documents the real value and keeps the misnomer knowingly, with the reason. The deeper cause was that *two* documents held the palette: the `#444444` this row registered was in Section 10 of this file as well, where it survived the v1.82.0 rebuild. That copy is gone; see the currency pass below |
 | 26 | `database.html` `<meta name="description">`: "the full 6,500+ symphony database" | **6,816 rows** in `data/database_summary.json` | **The code** | Written once and never revisited. Nothing reads a `<meta>` tag, so no job, gate or test could have caught it; the only reader is a search engine and a link preview. The direct case for Section 27 |
 | 27 | `strategies.html` `<meta name="description">`: "Browse **all** Composer.trade strategies" | **24 visible curated strategies.** "All" is `database.html`, which holds thousands | **The code** | Not a stale number but a stale scope: the sentence was true when the curated set was the whole site and became wrong when the Database shipped. Worse than row 26, because a reader who believes it concludes the site has 24 strategies in total |
 | 28 | `overfit.html` `<meta name="description">` describes the page as measuring what survives a backtest, with no mention of a score | The page has led with a **0 to 100 Overfit Score** since v1.76.0 | **The code** | The description is not false, it is two versions behind. Shows the second failure mode for hand-written head tags: they go stale on a feature change, not only on a data refresh, and nothing in the deploy path looks at them |
@@ -7308,6 +7390,42 @@ way to destroy that is a confident tidy-up.
 standard names, and for the discrepancies already tracked in this section. A full re-read of every
 section against current code remains undone, and saying so is more useful than implying a
 completeness the work did not have.
+
+---
+
+### The currency pass of 2026-09-28 (v1.83.2)
+
+**Prompted by a plain read of the three public documents rather than by an audit.** Four places where
+this document described a site that no longer exists, found by reading `README.md`, this file and
+`docs/PATCHNOTES.md` end to end and then checking the claims against the file system. All four are
+fixed; none required a code change.
+
+| Finding | What was wrong | Fix |
+|---|---|---|
+| **Section 10 carried a second copy of the design tokens**, and it was the pre-v1.82.0 palette | `--color-bg: #0d0d0d`, `--color-pink: #ff4d8d`, `--color-disabled: #444444`, nineteen days after the palette was rebuilt on a Visual Studio dark base | **Replaced with a pointer to DESIGN.md**, not re-synced. Re-syncing restores the same drift with a later start date. DESIGN.md Sections 2 to 5 already cover every token the block listed |
+| **The `deploy.yml` snippet showed two gates**, and the prose beneath it said "Two Python scripts gate the publish" | There are **five**, and have been since v1.43.2. `check_database_keys.py`, `check_strategy_extras.py` and `check_asset_sizes.py` were all missing, and three other places in this document also said four or omitted one | Snippet rebuilt against the real file, and a table added naming what each of the five catches and where it is documented. Section 12, Section 20 and Section 23 corrected to match |
+| **`overfit.html` was absent from the directory tree, the Page Routes table, the tool-pages paragraph and the README entirely** | The page has been live since v1.75.0 and is in the nav Tools dropdown. This document mentions it forty times in the roadmap and never once in the architecture | Added to all four. README's "all four tools" is now six, and its tools paragraph names the Overfit Check, the Node Counter and the K-1 Lookup, none of which it mentioned |
+| **Counts in the directory tree contradicted Section 6 of the same document** | `strategies.json` "31 strategy entries" against 36, `glossary.json` "20 glossary concept entries" against 27, `database.json` "~6,800" against 6,816 | The duplicated counts are **gone rather than corrected**, replaced by cross-references to the one dated statement in Section 6. This is open question 20's rule, applied for the first time |
+
+**The tree had drifted much further than the counts.** It listed 22 data files against 28 on disk, 20
+scripts against 37, and one workflow against six. Missing were `strategy_extras`, `daily_returns`,
+`oos`, `overfit` and `ticker_inception` with their twins, seventeen scripts including two of the five
+deploy gates, and five of the six scheduled workflows. **It was rebuilt from `ls` rather than edited**,
+which is the only way to fix an omission: an edit pass can only correct what it notices, and the whole
+failure mode here is not noticing. `LICENSE.md`, `wrangler.jsonc` and `.assetsignore` are now in it too.
+
+**One finding was left open on purpose.** `data/Full Database.xlsx` is not in `.assetsignore`, so
+Cloudflare still serves it, which is the unresolved remainder of Section 24 row 2: `symphony_scores.json`,
+`database.json` and `database.js` were all excluded at v1.79.2 and the xlsx was not. The tree now says so
+in place. **It is recorded rather than fixed because editing `.assetsignore` changes what the live host
+publishes, and that is a deploy change wearing a documentation commit's message.** It belongs in its own
+push, with its own verification that nothing on the site requests the file.
+
+**The honest limit of this pass.** It checked the claims a reader meets first: the architecture section,
+the route table, the file tree and the README. It did not re-derive Sections 12 to 14, which run to
+five thousand lines of schema and roadmap detail. One known survivor is a line in V1.20 saying "all 31
+strategies today" where the file now holds 36 with 24 visible; it was left alone because the population
+it means is ambiguous and guessing would trade a stale number for a wrong one.
 
 ---
 
