@@ -1,7 +1,7 @@
 // RSI signals data - loaded as a script tag so the site works with file:// protocol.
 // To update: run scripts/refresh_rsi.py
 window.RSI_DATA = {
-  "refreshed_at": "2026-09-28T21:10:05Z",
+  "refreshed_at": "2026-09-29T01:42:25Z",
   "tickers": [
     {
       "symbol": "XLF",
@@ -20,7 +20,7 @@ window.RSI_DATA = {
     {
       "symbol": "VTV",
       "name": "Vanguard Value ETF",
-      "rsi_10": 30.8,
+      "rsi_10": 34.0,
       "price": 218.38,
       "price_date": "2026-09-28"
     },
