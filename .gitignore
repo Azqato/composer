@@ -30,3 +30,7 @@ _wf-mockup.html
 # Headless harness test copies (written and deleted by scripts/run_harness.py)
 _harness_*.html
 _harness_*_driver.js
+
+# Phase 7 brand showcase. Built by brand/build/build_showcase.py,
+# opened from the file system, deliberately never published.
+brand/brand-design.html

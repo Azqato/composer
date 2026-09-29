@@ -44,6 +44,7 @@ This is the single authoritative reference for Composer Atlas. It consolidates p
 27. [Social Sharing Tags](#27-social-sharing-tags)
 28. [Licensing](#28-licensing)
 29. [Outstanding Work and Recommended Sequence](#29-outstanding-work-and-recommended-sequence)
+30. [Brand Identity](#brand-identity)
 
 **Two of the standard's named policies live inside other sections rather than
 having one of their own, and are listed here so they can be found:** *Browser
@@ -8151,3 +8152,248 @@ stated reason, several of them by owner decision, and quietly promoting one into
 a declined item becomes a surprise. It also does not assign dates. **The honest limit of this
 ordering is that it is an argument about sequence, not a schedule, and the two items at the top of
 it are both bottlenecked on the owner rather than on effort.**
+
+---
+
+## Brand Identity
+
+**Opened 2026-09-28.** A complete logo system for Composer Atlas, commissioned because the project
+has a fully specified colour and type system and **no owned mark**: the identity is currently a
+`🗺️` emoji in a `<text>` element, which renders as a different drawing on every operating system.
+
+**Scope, fixed at commission.** This work lives in `brand/` and in the two `## Brand Identity`
+sections of this file and `docs/DESIGN.md`. **It does not change the site.** The favicon is not
+relinked, the nav mark is not replaced, and `css/main.css` is not touched. Adoption is a separate
+decision the owner takes after seeing the presentation.
+
+**Where the build tooling lives, and why it breaks a rule on purpose.** Section 10 requires every
+Python script to sit in `scripts/` and use the standard library only. The brand asset generators sit in
+`brand/build/` instead and use Pillow and fontTools. Both departures are deliberate: the rule exists so
+the deploy stays dependency-free and the repository root stays clean, and a generator that runs once on
+a maintainer's machine to produce committed PNGs is neither in the deploy path nor in the root. Nothing
+in CI, in `deploy.yml`, or at serve time imports them.
+
+---
+
+### Brand Brief
+
+Settled with the owner on 2026-09-28. The three fields the documents could not answer were put to
+the owner directly and are marked as rulings.
+
+| Field | Value |
+|---|---|
+| **Brand name** | Composer Atlas |
+| **Core value** | **Mapped territory.** Thousands of strategies charted and navigable. **Owner ruling.** |
+| **Audience** | Primary: self-directed retail investors already using Composer, who want to understand a strategy before cloning it. Secondary: systematic-investing learners who know what a moving average is but have not built a strategy. Tertiary: quant-curious beginners who do not yet have the vocabulary. From Section 2 |
+| **Idea the mark represents** | An atlas of a territory that is real, large and previously uncharted: an automated strategy is legible before money is committed to it. The press release states the specific promise better than the tagline does: *the drawdown printed next to the return rather than beneath it* |
+| **Industry to analyse** | Retail systematic-investing research and tooling. Adjacent: investment screeners, portfolio backtesters, financial data terminals, and equity research publishers |
+| **Colour constraints** | **`--color-green` `#00e676` is fixed, and so is the dark base `#16191f`. Owner ruling.** The palette was rebuilt at v1.82.0 with every step solved for a measured contrast ratio, three weeks before this work opened, and reopening it would mean redoing that. See `docs/DESIGN.md` Section 2 |
+| **Font constraints** | The site runs Inter and JetBrains Mono from Google Fonts. The mono is a brand signal in its own right, since it carries every number on the site. A wordmark may use a third face if it earns its place; it must be open-license and it must sit beside Inter without conflict |
+| **Existing brand** | See below. It exists, and it is thin enough that concept D has real room |
+| **References** | **None. Owner ruling.** Work from the brief and the competitive analysis alone |
+
+**The existing brand, summarised honestly.**
+
+| Asset | State |
+|---|---|
+| Logo | **A `🗺️` emoji.** `favicon.svg` is a 32x32 viewBox containing one `<text>` element at `font-size: 28`. The nav uses the same glyph with a font stack of `'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji'`, so the mark is whichever drawing the visitor's operating system ships. There is no owned artwork of any kind |
+| Wordmark | "Composer Atlas" in Inter, beside the emoji, **hidden below 480px**. So on a phone the entire brand is a system emoji |
+| Palette | Complete and measured. Base `#16191f`, surfaces `#2c3038` and `#373c46`, text `#e9edf2` / `#d2d8df` / `#b8bec6`, accents green `#00e676`, pink `#ff82ac`, blue `#68afff`, yellow `#f5c518`, purple `#b39dff` |
+| Type | Inter 400/500/600/700 and JetBrains Mono 400/500/700 |
+| Style rules | Dark mode only, and a light mode is a standing non-goal. **Colour is semantic and never decorative:** green means a positive value or a primary action, pink means a negative one, blue means interactive, yellow means caution, purple is reserved for momentum. Radii 4 / 8 / 12. Motion capped at 0.2s, no entrance or scroll animation |
+| Voice | Plain English, measured, unafraid of a bad number. Em-dashes are prohibited project-wide, and so is `--` as punctuation |
+
+**The one constraint the palette puts on the logo, stated because it is easy to miss.**
+`docs/DESIGN.md` Section 2 says green is used **exclusively** for positive values and primary calls
+to action, never decoratively. A logo is neither. The resolution taken here is that the mark uses
+green as **identity** rather than as data, which is a third role the rule did not anticipate, and that
+this is recorded as an addition to the rule rather than an exception to it. A logo that borrowed the
+green while the rest of the page used it to mean "up" would be the failure case; the mark therefore
+never pairs green with an arrow, a rising line, or anything else that reads as a value.
+
+**The risk the owner accepted in choosing this core value.** "Mapped territory" was presented as the
+most literal of the four options and the easiest to make generic, and was chosen anyway. That puts the
+whole weight of differentiation on the cliché list below: the obvious executions of "map" are pins,
+compass roses, globes, folded paper and contour lines, and every one of them is either a competitor
+habit or a stock-icon default. **The brief is therefore only satisfiable by cartographic vocabulary
+that is real but unused**, which is what Phase 3 goes looking for.
+
+---
+
+### Competitive Analysis
+
+**Method, stated so it can be discounted.** Eight brands. Positioning and current corporate status
+were verified by web search on 2026-09-28, and one material fact changed the picture (below). **The
+visual reads are from my own knowledge of these brands rather than from a rendered screenshot of each
+one**, because the fetch tool returns markdown and cannot show a logo. Treat the shape and colour
+observations as a designer's recollection, accurate in the aggregate and worth re-checking before any
+claim is made publicly.
+
+**The finding that reshapes the analysis: Composer is no longer independent.** SoFi acquired Composer
+in June 2026 for roughly $70.1 million, and the platform now trades as **"Composer by SoFi"**. This
+document and the README still describe Composer Technologies, Inc. as the counterparty. Three
+consequences for the brand:
+
+1. **Composer's own visual identity will drift toward SoFi's**, which is a large consumer-fintech
+   house style: saturated blue, rounded geometric sans, friendly gradients. Whatever Composer Atlas
+   does, it must not read as a SoFi sub-brand, because that would imply exactly the affiliation
+   Tenet 7 denies.
+2. **An independent reference is worth more, not less, after an acquisition.** A platform owned by a
+   lender has commercial reasons to present strategies favourably. A site whose entire proposition is
+   the drawdown next to the return now has a sharper reason to exist, and the identity should feel
+   institutional enough to carry that.
+3. **It is a live documentation discrepancy**, recorded here and left for Section 24 rather than fixed
+   inside a brand commit.
+
+| Brand | What it is | Visual language, as recalled |
+|---|---|---|
+| **Composer by SoFi** | The platform itself. Build and automate strategies in plain language | Was a clean startup identity; now carries SoFi endorsement. Expect SoFi blue and a rounded geometric sans |
+| **Allocate Smartly** | The closest analogue in existence: tracks published tactical asset allocation strategies and lets members combine them | Utilitarian and data-first. Blue, a plain sans, effectively no symbol. Credible, and visually almost absent |
+| **QuantConnect** | Open-source cloud algorithmic trading platform, founded 2011 | Developer-platform look. Dark UI, a geometric symbol, technical sans. The closest competitor in *tone* to a dark reference site |
+| **Portfolio Visualizer** | Backtesting, Monte Carlo, tactical allocation and optimisation tools | Almost unbranded. A plain wordmark and chart colours. Trusted precisely because it looks like a tool |
+| **Finviz** | The reference screener. Dense tables and heatmaps | Deliberately plain wordmark; the *heatmap* is the real brand asset. Proof that a data view can be more recognisable than a logo |
+| **Koyfin** | Modern retail terminal, charting and fundamentals | Contemporary fintech: a geometric mark, blue and teal, rounded sans, gradients |
+| **Morningstar** | The incumbent independent research authority | Institutional. A serif-adjacent wordmark, a constellation-like mark, restrained palette. The credibility benchmark |
+| **Seeking Alpha** | Retail equity research and commentary publisher | Editorial publisher: a strong wordmark, a Greek alpha as the mark, orange accent |
+
+**What they share.**
+
+- **Shape:** the upward-right diagonal in some form, whether an arrow, a rising line, a candlestick series or a bar ramp. Geometric marks built from a rounded square or a circle. Node-and-line graphs, increasingly, to signal automation or AI.
+- **Colour:** blue, overwhelmingly, because blue is the finance-trust default. Teal and violet as the modern escape from blue. Green used specifically to mean gain.
+- **Type:** a rounded geometric sans on the newer products (the Circular and Poppins family of shapes), a neutral grotesque on the older tools, and a serif only where the brand is claiming institutional authority.
+
+**Clichés this logo must avoid.** Each is ruled out because it is either a competitor habit or a
+stock-icon default, and several are the *obvious* reading of this brief.
+
+| Cliché | Why it is out |
+|---|---|
+| **The upward-right arrow, rising line, candlestick or bar ramp** | The single most used device in the category, and it is a performance claim. A site whose first tenet is Transparency Over Hype cannot open with a picture of going up |
+| **Blue as the primary** | The category default, and now specifically SoFi's territory |
+| **The globe or the orbiting sphere** | The first thing anyone draws for "atlas", and it says "global markets", which this site is not about |
+| **The map pin or location marker** | The second thing anyone draws for "atlas". It is a Google Maps component, not a cartographic idea |
+| **The compass rose and cardinal points** | The third. Decorative antiquarianism, and it appears on every travel and navigation brand |
+| **The folded or perspective-curled paper map** | The fourth, and it is what the `🗺️` emoji already is. Replacing an emoji with a drawing of the same emoji is not an identity |
+| **Topographic contour lines as texture** | A 2020s trend, heavily used, and purely decorative. It would also fail the project's own rule that nothing is decorative for its own sake |
+| **Node-and-line graphs** | Now reads as "AI product" rather than as a mapped structure |
+| **Gradient mesh, glassmorphism, glow** | Trend-dated, and each one fails the Phase 3 test that every effect must have a job |
+| **A rounded geometric sans wordmark** | Reads as consumer startup. This is a reference library, and it is competing with Morningstar for credibility, not with a neobank for warmth |
+| **An `A` monogram in a rounded square** | The generic app-icon solution, and it discards the one distinctive word in the name |
+| **Anything resembling Composer's or SoFi's marks** | Tenet 7. Visual similarity implies the affiliation the site explicitly denies |
+
+**How Composer Atlas stands out while staying credible, in one sentence.**
+
+> Composer Atlas will look like a **reference instrument rather than a growth story**: a precise,
+> typographically confident identity built from the measured vocabulary of real cartography, the
+> graticule, the neatline and the index cell, rather than from the arrow, the pin and the globe,
+> keeping the site's existing green so the mark stays continuous with the product while reading as an
+> independent library rather than as a broker or a platform.
+
+**Why that is the credible position and not merely the contrarian one.** Two of the eight brands above
+are trusted precisely because they look like instruments: Portfolio Visualizer and Finviz are close to
+unbranded, and nobody mistrusts them. One, Morningstar, earns institutional authority through
+restraint. The category's *decorated* end, the gradients and the rounded sans, belongs to products
+selling a feeling about money. This site sells an accurate picture, so restraint is the honest
+expression of the product rather than a style preference imposed on it.
+
+
+---
+
+### Deliverables Checklist
+
+**Phases 1 to 7 complete, 2026-09-28.** Specifications for everything below are in `docs/DESIGN.md`,
+Section 11. This table is the inventory; that section is the reasoning.
+
+| # | Deliverable | State | File |
+|---|---|---|---|
+| 1 | Horizontal lockup | Done, 4 treatments | `brand/logo/lockup-horizontal-*.svg` |
+| 2 | Compact horizontal lockup | Done, 4 treatments | `brand/logo/lockup-horizontal-compact-*.svg` |
+| 3 | Stacked lockup | Done, 4 treatments | `brand/logo/lockup-stacked-*.svg` |
+| 4 | Symbol only, primary | Done, 4 treatments | `brand/logo/symbol-primary-*.svg` |
+| 5 | Symbol only, compact | Done, 4 treatments | `brand/logo/symbol-compact-*.svg` |
+| 6 | Wordmark only | Done, 4 treatments | `brand/logo/wordmark-*.svg` |
+| 7 | Monochrome black | Done | the `-black` treatment of every vector |
+| 8 | Reversed white | Done | the `-white` treatment of every vector |
+| 9 | Full colour | Done | the `-color` and `-color-reversed` treatments |
+| 10 | `favicon.svg` with a dark-scheme variant | Done | `brand/logo/favicon.svg` |
+| 11 | `favicon.ico` at 16, 32 and 48 | Done | `brand/logo/favicon.ico` |
+| 12 | Favicon PNGs | Done | `brand/logo/favicon-{16,32,48}.png` |
+| 13 | App icons 180, 192, 512, 1024 | Done, opaque | `brand/logo/icon-*.png` |
+| 14 | Maskable 192 and 512 | Done, ink inside the central 80% | `brand/logo/maskable-*.png` |
+| 15 | Merchandise single colour | Done, verified at 25mm | `brand/logo/merch-single-colour.svg` |
+| 16 | Clear space and minimum size rules | Done | `docs/DESIGN.md` Section 11 |
+| 17 | Brand kit | Done, 8 files | `brand/kit/` |
+| 18 | Presentation and PDF | Done, 15 pages A4 landscape | `brand/presentation.html`, `brand/brand-guidelines.pdf` |
+| 19 | Brand Design page | Done, **gitignored and unpublished** | `brand/brand-design.html` |
+
+**36 files, every one judged from a rendered screenshot.** The screenshots are kept in
+`brand/checks/` rather than regenerated on demand, because the point of the rule is that a specific
+image was looked at and a specific fault was found in it, and a sheet that is rebuilt each time cannot
+be cited later.
+
+**Two deliverables required a decision the brief did not anticipate, both recorded in DESIGN.md.**
+The compact horizontal lockup is not in the original list: it exists because the primary symbol's 32px
+floor silently becomes a 288px floor for the whole lockup, and without a compact version the system
+has no answer between 120px and 288px. The raster favicons are opaque rather than transparent, which
+the brief did not specify either way, because a transparent favicon bakes one ink and a tab strip can
+
+
+---
+
+### How the Brand Work Is Deployed, Which Is To Say It Is Not
+
+**`brand/` is committed and served by neither host.** That was a decision, and without it the
+commission's "do not change the site" rule would have been broken by the act of committing the work.
+
+`wrangler.jsonc` sets `assets.directory` to `"."`, so **anything not listed in `.assetsignore` is
+published**. A `brand/` directory holding 104 files and 4.6 MB, including a 539 KB PDF and 2.5 MB of
+contact sheets that exist only as evidence for a design decision, would have become 104 public URLs on
+composeratlas.com the moment it was pushed.
+
+| File | Entry | Governs |
+|---|---|---|
+| `.assetsignore` | `brand/` | Cloudflare Pages, which is the canonical host |
+| `.github/workflows/deploy.yml` | `--exclude='brand'` | The GitHub Pages mirror |
+| `.gitignore` | `brand/brand-design.html` | Git itself. That one file is not even committed |
+
+**Both host exclusions were added in the same change on purpose.** Section 24 records that
+`.assetsignore` and the rsync excludes in `deploy.yml` do not read each other and have drifted before,
+most recently over `data/symphony_scores.json`. Changing one and not the other is how that drift
+starts, and the cost is a file that is private on one host and public on the other.
+
+**This is not `.gitignore`.** Everything under `brand/` except the showcase page stays committed, on
+disk and in the history. It is versioned and backed up; it is simply not served.
+
+---
+
+### The Brand Design Page, and Why It Is Not Published
+
+**`brand/brand-design.html` exists, and it is deliberately not part of the site.**
+
+The prompt for this work asked for a choice between a gated page and an offline one, decided from the
+project rather than from preference. **Offline is the only honest answer here.** Composer Atlas is a
+public static site on Cloudflare Pages with no accounts, no sessions and no server that could check
+one, and Tenet 3 rules out user accounts permanently. A "gated" page on this stack could only ever be
+an obscure URL, and an obscure URL is not a gate, it is a page you have lost track of.
+
+| | |
+|---|---|
+| **Where it is** | `brand/brand-design.html`, built by `brand/build/build_showcase.py` |
+| **How to open it** | From the file system. Double-click it, or open the local path in a browser |
+| **Is it in git?** | **No. It is in `.gitignore`**, under a comment saying why |
+| **Is it linked?** | No. Nothing on the site references it, and it carries `noindex,nofollow` as a second line of defence in case it is ever copied somewhere served |
+| **Does it deploy?** | No. It cannot: an ignored file is never committed, so neither Cloudflare nor the Pages mirror ever sees it |
+
+**What it is for, and why it is not the presentation.** `brand/presentation.html` argues the case and
+prints to a PDF; it is the document you send. The Brand Design page is the one you poke at: a size
+slider that runs the mark from 12px to 220px and switches from the primary to the compact mark at the
+real threshold, a light and dark ground toggle, the four colour treatments side by side, and
+click-to-copy tokens. **It shows the responsive substitution happening rather than describing it**,
+which is the one claim in this system that is genuinely hard to believe from a written table.
+
+**The consequence of ignoring it, stated plainly.** The file is on the maintainer's disk and nowhere
+else. It is not backed up by the repository, and a fresh clone will not have it. That is recoverable,
+because `build_showcase.py` **is** committed and regenerates the page in full, and it is the reason
+the generator is the deliverable rather than the HTML.
+
+be either colour.
+

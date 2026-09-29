@@ -5,6 +5,71 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Brand identity
+
+**Not a site change.** No page, stylesheet, script or data file that the site
+serves was touched. `favicon.svg` is still the emoji, the nav mark is still the
+emoji, and `css/main.css` is untouched. This entry records design work that
+sits beside the product and has not been adopted into it.
+
+### Added
+
+- **A complete logo system, in `brand/`.** The project had no owned mark: the
+  identity was a map emoji in a `<text>` element, so the logo was whichever
+  drawing the visitor's operating system shipped, and below 480px, where the
+  wordmark is hidden, the entire brand was a system emoji.
+- **37 logo files** in `brand/logo/`. Two symbols, a wordmark, three lockups,
+  four colour treatments each, a favicon that answers both colour schemes from
+  one file, an ICO, favicon PNGs, four app icons, two maskable icons, and two
+  single-colour merchandise files.
+- **8 brand kit files** in `brand/kit/`. Social images at exact platform sizes,
+  an email signature at 2x, `tokens.css`, `tokens.json` and a `site.webmanifest`
+  that is **written and deliberately not linked**.
+- **`brand/presentation.html` and `brand/brand-guidelines.pdf`**, 15 pages of A4
+  landscape. One file, every logo inlined, no `<img>` tags at all, and no
+  photographs: `brand/mockups/` is empty because this brand has never been
+  photographed, so the phone, the browser, the business cards and the
+  embroidered patch are drawn in CSS and SVG.
+- **`brand/brand-design.html`**, an interactive showcase. **Added to
+  `.gitignore` and never linked**, because the site has no gated area and an
+  obscure URL is not a gate.
+- **Seven scripts in `brand/build/`**, five of them generators, plus a render
+  checker and a typesetting library. They are the source; the SVGs are
+  output. They use Pillow and fontTools, which breaks Section 10's
+  standard-library-only rule on purpose: they run once on a maintainer's
+  machine, never in CI and never at serve time.
+
+### Notes
+
+- **Every mark was judged from a rendered screenshot, never from its markup**,
+  and the rule earned its place. Six faults were invisible in the code: the mark
+  was drawn dark-on-dark and the dark-ground test was *passing*; the wordmark
+  rendered with slashed Scandinavian O's; the raster favicons vanished on a dark
+  tab strip; the maskable icons sat at 47% of their canvas; the stacked lockup
+  was spaced from the symbol's canvas instead of its ink; and the single-colour
+  mark merged its located cell into the strokes it touched. The last of those
+  was found only on the embroidered patch in the presentation, because on an
+  empty contact sheet the merge still looks deliberate.
+- **The palette was not reopened.** `--color-green: #00e676` and
+  `--color-bg: #16191f` were fixed by owner ruling, three weeks after v1.82.0
+  solved every step for a measured contrast ratio. The brand kit's contrast
+  table is computed from `css/main.css` rather than retyped, and its figures
+  match the ratios recorded in that file's own comments exactly.
+- **The green gained a third role.** DESIGN.md Section 2 says green is used
+  exclusively for positive values and primary actions and never decoratively. A
+  logo is neither, so the mark uses green as **identity**, recorded as an
+  addition to the rule rather than an exception to it, with a standing
+  constraint: the mark never pairs green with an arrow or a rising line.
+- **A material competitive fact surfaced and is left for Section 24.** SoFi
+  acquired Composer in June 2026 for roughly $70.1M and the platform now trades
+  as "Composer by SoFi". The README and the PRD still describe Composer
+  Technologies, Inc. as an independent counterparty.
+- Documentation is in exactly two places, as the commission required:
+  `docs/PRD.md` `## Brand Identity` for the why, `docs/DESIGN.md` Section 11 for
+  the how.
+
+---
+
 ## [1.83.2] - 2026-09-28
 
 ### Fixed

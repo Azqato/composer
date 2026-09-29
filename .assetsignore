@@ -72,3 +72,18 @@ wrangler.jsonc
 .gitignore
 .assetsignore
 .github/
+
+# Brand identity work: concepts, the logo system, the brand kit, the guidelines
+# and every render check. Committed so it is versioned and backed up, excluded
+# here so the served site is unchanged by it.
+#
+# This entry is what keeps that promise. wrangler.jsonc sets assets.directory
+# to ".", so anything NOT listed in this file is published: without these two
+# lines, committing the brand work would add 104 public URLs and 4.6 MB to the
+# site, including a 539 KB PDF and 2.5 MB of contact sheets that exist only as
+# evidence for a design decision.
+#
+# NOT .gitignore. Everything here stays committed and on disk. The one brand
+# file that is gitignored is brand/brand-design.html, and that is a separate
+# decision recorded in docs/PRD.md.
+brand/

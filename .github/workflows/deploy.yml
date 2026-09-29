@@ -87,6 +87,7 @@ jobs:
             --exclude='_site' \
             --exclude='docs' \
             --exclude='scripts' \
+            --exclude='brand' \
             --exclude='data/symphony_scores.json'             --exclude='data/database.json'             --exclude='data/database.js' \
             --exclude='README.md' \
             --exclude='.gitignore' \
