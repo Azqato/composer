@@ -8344,6 +8344,18 @@ the brief did not specify either way, because a transparent favicon bakes one in
 **`brand/` is committed and served by neither host.** That was a decision, and without it the
 commission's "do not change the site" rule would have been broken by the act of committing the work.
 
+**That rule was superseded by the owner on 2026-09-28, narrowly.** The instruction was to apply the
+brand to the site's branding colours and update `docs/DESIGN.md` and the CSS. Acting on it revealed
+that the colour part was already done and could not be done again: `brand/kit/tokens.css` is
+*generated from* the `:root` block of `css/main.css`, and a diff of all thirteen base colour tokens
+returns **zero differences**, because the palette was fixed by owner ruling at the Phase 1 gate and
+the brand work introduced no new colour. **So the adoption added meaning, not pigment.**
+`css/main.css` gained `--color-brand` (an alias of `--color-green`, distinguishing identity from a
+positive value) and `--font-brand` (declared, and deliberately not loaded). Nothing in `brand/`
+became served, and the table below still holds in full. **The mark remains unadopted**: the favicon
+and nav mark are still the map emoji, and moving them would mean taking files out of the exclusions
+below, which is a separate change.
+
 `wrangler.jsonc` sets `assets.directory` to `"."`, so **anything not listed in `.assetsignore` is
 published**. A `brand/` directory holding 104 files and 4.6 MB, including a 539 KB PDF and 2.5 MB of
 contact sheets that exist only as evidence for a design decision, would have become 104 public URLs on

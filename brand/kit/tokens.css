@@ -21,6 +21,7 @@
   --color-blue: #68afff;  /* Interactive */
   --color-yellow: #f5c518;  /* Caution */
   --color-purple: #b39dff;  /* Momentum */
+  --color-brand: #00e676;  /* Identity, not a value. The mark only, and never paired with an arrow or a rising line; see DESIGN.md Section 11 */
 
   /* radius */
   --radius-sm: 4px;

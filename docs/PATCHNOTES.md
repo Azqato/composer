@@ -7,10 +7,49 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ## [Unreleased] - Brand identity
 
-**Not a site change.** No page, stylesheet, script or data file that the site
-serves was touched. `favicon.svg` is still the emoji, the nav mark is still the
-emoji, and `css/main.css` is untouched. This entry records design work that
-sits beside the product and has not been adopted into it.
+**The brand build was not a site change. The token adoption that followed it is
+one, and it is the only one.** Everything in `brand/` sits beside the product
+and is served by neither host. `favicon.svg` is still the emoji and the nav mark
+is still the emoji, so the mark itself remains unadopted. `css/main.css` gained
+two tokens and no new colour; see "Adopted into the site" below for exactly what
+changed and why it was so small.
+
+### Adopted into the site
+
+- **`--color-brand` in `css/main.css`**, an alias of `--color-green`. **No colour
+  value changed anywhere, and none needed to.** `brand/kit/tokens.css` was
+  generated *from* the site's `:root` block, so the eleven colours in the brand
+  design were already the live palette; a diff of all thirteen base tokens
+  against the kit returns zero differences. What the brand work actually added
+  was a *meaning* the stylesheet had no way to say. Section 2 of `docs/DESIGN.md`
+  reserved green exclusively for positive values and primary actions, and a logo
+  is neither, so the mark uses green in a third role: identity. The alias keeps
+  the two from ever being confused in a rule. `--color-positive` means a number
+  went up; `--color-brand` means this is us. They resolve to the same hue today
+  and are not obliged to forever.
+- **`--font-brand` in `css/main.css`**, `'Archivo', 'Inter', sans-serif`, and
+  **deliberately not added to the Google Fonts `@import`**. The wordmark ships
+  from `brand/logo/` as drawn outlines rather than as live text, so no page needs
+  the font file to render the mark correctly. Declaring the stack without
+  requesting the font keeps the token honest: it falls back to Inter, which is
+  already loaded, and costs nothing. Loading Archivo is a real per-page cost for
+  one line of type and waits until something on the site sets live brand copy.
+
+### Changed
+
+- **`docs/DESIGN.md` to v1.27.** Section 2's green rule now reads "positive
+  values, primary CTAs, and **identity**", stated as an *addition* to the rule
+  rather than an exception to it, and carries the constraint that comes with the
+  third role: brand green is never paired with an arrow, a rising line or
+  anything else that reads as a value, because that is exactly what collapses
+  identity back into data. Both token tables gained their new rows, and Section
+  11 now points at the amended Section 2 instead of merely asserting the
+  amendment had been made.
+- **`brand/build/build_kit.py` learned `--color-brand`**, flattened to its
+  literal `#00e676` because the portable copy is consumed by decks and
+  prototypes that will not have `--color-green` defined. Without this the CSS
+  would carry a token its own generated copy lacked, which is the drift
+  `tokens.css`'s header exists to forbid.
 
 ### Added
 

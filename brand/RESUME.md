@@ -10,10 +10,15 @@ work up without re-deriving it, and it should be deleted when the brand work clo
 
 ## The one thing that is open
 
-**Adoption.** Nothing built here is wired into the site. `favicon.svg` in the repository root is still
-the map emoji, the nav mark is still the emoji, and `css/main.css` has not been touched. Adopting the
-system is the owner's call and a separate change, and the files that would make it a small one already
-exist: `brand/logo/favicon.svg`, the icon PNGs, and `brand/kit/site.webmanifest`.
+**Adopting the mark.** The **token layer is done**: `css/main.css` carries `--color-brand` and
+`--font-brand`, and Section 2 of `docs/DESIGN.md` now names identity as green's third role. No colour
+changed, because there was never a colour to change; the kit was generated from the site's `:root`.
+
+What is left is the **mark**. `favicon.svg` in the repository root is still the map emoji and the nav
+mark is still the emoji. The files exist (`brand/logo/favicon.svg`, the icon PNGs,
+`brand/kit/site.webmanifest`) but they live under `brand/`, which **both hosts are configured to skip**,
+so this is not a copy-paste: it means moving files out of that exclusion and re-checking
+`.assetsignore` and `deploy.yml` together, since those two drift.
 
 `brand/mockups/` is also still empty. Every mockup in the presentation is drawn in CSS and SVG, and a
 real photograph would replace one.

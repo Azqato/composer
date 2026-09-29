@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.26
+**Version:** 1.27
 **Status:** Active
 **Last Updated:** 2026-09-28
 
@@ -54,6 +54,7 @@ Dark Modern `#1f1f1f` is 0.0137, the sidebar `#252526` is 0.0186. The palette th
 | `--color-negative` | alias of pink | Semantic role, added v1.82.0 |
 | `--color-caution` | alias of yellow | Semantic role, added v1.82.0 |
 | `--color-info` | alias of blue | Semantic role, added v1.82.0 |
+| `--color-brand` | alias of green | **Identity**, not a value. Added when the brand system was adopted; see the Semantic Color Rules below and Section 11 |
 
 **Every step is solved for a contrast ratio, not picked by eye.** sRGB is not linear, so adding a
 fixed amount to each channel is a different perceptual step at every brightness level, and a ladder
@@ -106,7 +107,14 @@ The following color variants appear as inline `rgba()` values in `css/main.css` 
 
 ### Semantic Color Rules
 
-- **Green**: used exclusively for positive values and primary CTAs. Never decorative.
+- **Green**: used for positive values, primary CTAs, and **identity**. Never decorative.
+  Identity is a third role, added when the brand system was adopted, and it is an *addition*
+  to this rule rather than an exception to it: a logo is neither a positive value nor a call to
+  action, so the original wording had no place to put it. `--color-positive` means a number went
+  up; `--color-brand` means this is us. Both resolve to `#00e676` today and are not obliged to
+  forever. **The constraint that comes with the third role:** brand green is never paired with an
+  arrow, a rising line, or anything else that reads as a value, because that is exactly what
+  collapses identity back into data. See Section 11.
 - **Pink**: used exclusively for negative values (drawdown, losses). Never decorative.
 - **Purple**: reserved for momentum tags and strategy-concept glossary badges.
 - **Blue**: reserved for interactive states (links, focus rings, hover borders). Not used for data values.
@@ -156,6 +164,7 @@ Defined in `:root` in `css/main.css` and loaded via Google Fonts:
 ```css
 --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+--font-brand: 'Archivo', 'Inter', sans-serif;
 ```
 
 Google Fonts import (in `css/main.css`):
@@ -165,6 +174,12 @@ Google Fonts import (in `css/main.css`):
 
 - **Inter**: body text, UI labels, headings, nav links
 - **JetBrains Mono**: metric values, strategy IDs, code blocks, `font-mono` utility class
+- **Archivo**: the brand face, and **the one font in this list the site does not load.** The
+  wordmark is Archivo SemiBold caps, but it ships from `brand/logo/` as drawn outlines rather than
+  as live text, so no page needs the font file to render the mark correctly. The token is declared
+  without being added to the `@import` above so that it falls back to Inter, which is already
+  loaded, and costs nothing. Adding Archivo to the font request is a real per-page cost for one
+  line of type, and it waits until something on the site sets live brand copy. See Section 11.
 
 ### Type Scale (from css/main.css)
 
@@ -1688,9 +1703,11 @@ Keep motion minimal and purposeful. No page transitions at MVP.
 `## Brand Identity` heading: the brand brief, the audience, the competitive analysis and the cliche
 list are there and are not repeated here.
 
-**This section documents work that does not ship.** The site is unchanged. `favicon.svg` is still the
-map emoji, the nav mark is still the emoji, and `css/main.css` is untouched. Adoption is a separate
-decision taken after the presentation.
+**This section documents work that mostly does not ship, and says which part now does.** Nothing in
+`brand/` is served by either host. **The token layer has been adopted:** `css/main.css` carries
+`--color-brand` and `--font-brand`, and Section 2's green rule has been amended to name identity as a
+third role. **The mark has not:** `favicon.svg` is still the map emoji and the nav mark is still the
+emoji. Adopting the mark is a separate decision and a separate change.
 
 ### The Design Vocabulary
 
@@ -2063,7 +2080,10 @@ straightened.
 
 **The green was inherited, not chosen, and that constrains it.** On the site green means a positive
 value or a primary action and is never decorative. A logo is neither, so the mark uses green as a
-third role, identity, recorded as an addition to the rule rather than an exception to it. The price of
+third role, identity, recorded as an addition to the rule rather than an exception to it. **Section 2
+now carries that amended wording and `css/main.css` carries the token that enforces it**, `--color-brand`,
+which exists so that no rule can confuse the two meanings: `--color-positive` says a number went up,
+`--color-brand` says this is us. They resolve to the same hue today and are not obliged to forever. The price of
 that is a standing prohibition: the mark never pairs green with an arrow, a rising line or anything
 else that reads as a value, because a logo that borrowed the product's "up" colour while sitting in
 the corner of every page would be making a performance claim on every page.
@@ -2156,10 +2176,17 @@ a contact sheet shows the mark on an empty ground where the merge still looks de
 were presented and the owner chose C and D as one system locked up with the B wordmark. That choice is
 recorded above under Chosen Direction, and everything after it follows from it.
 
-**Nothing has been adopted.** `favicon.svg` in the repository root is still the emoji, the nav mark is
-still the emoji, and `css/main.css` has not been touched. Adopting the system is a separate decision
-and a separate change, and the files that would make it a small one already exist:
-`brand/logo/favicon.svg`, the icon PNGs and `brand/kit/site.webmanifest`.
+**The tokens are adopted; the mark is not.** `css/main.css` carries `--color-brand` and
+`--font-brand`, and **no colour value changed to add them**, because `brand/kit/tokens.css` was
+generated from the site's own `:root` block and the palettes were therefore already identical. What
+the tokens added was a meaning the stylesheet could not previously express.
+
+`favicon.svg` in the repository root is still the emoji and the nav mark is still the emoji, so the
+mark itself remains unadopted. That is a separate decision and a separate change, and the files that
+would make it a small one already exist: `brand/logo/favicon.svg`, the icon PNGs and
+`brand/kit/site.webmanifest`. **It is not merely a file copy**: all three live under `brand/`, which
+is excluded from both hosts by `.assetsignore` and by an rsync `--exclude` in `deploy.yml`, so
+adopting the mark means moving files out of that exclusion and re-checking both.
 
 **What is still open.**
 

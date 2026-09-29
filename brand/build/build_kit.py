@@ -57,6 +57,14 @@ TOKENS = {
         'blue':           ('#68afff', 'Interactive'),
         'yellow':         ('#f5c518', 'Caution'),
         'purple':         ('#b39dff', 'Momentum'),
+        # An ALIAS in the CSS (var(--color-green)), flattened to its literal
+        # value here on purpose: this file is consumed by decks and prototypes
+        # that will not have --color-green defined. The distinction it carries
+        # is meaning, not hue. --color-positive says a number went up;
+        # --color-brand says this is us.
+        'brand':          ('#00e676', 'Identity, not a value. The mark only, '
+                                      'and never paired with an arrow or a '
+                                      'rising line; see DESIGN.md Section 11'),
     },
     'radius': {'sm': ('4px', ''), 'md': ('8px', ''), 'lg': ('12px', '')},
     'font': {
