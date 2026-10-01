@@ -135,8 +135,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 2.3530563375382294,
     "sortino_ratio": 5.156148773497603,
     "spy_best_day_baseline": {
-      "days": 1717,
-      "top_five_percent_day_contribution": 2.07333
+      "days": 1721,
+      "top_five_percent_day_contribution": 2.079494
     },
     "symphony_id": "mlgAKFuUIPZiCT0aV7ho",
     "tail_ratio": 1.4665355594540117,
@@ -173,8 +173,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 1.0293236920070254,
     "sortino_ratio": 2.215538105245787,
     "spy_best_day_baseline": {
-      "days": 3754,
-      "top_five_percent_day_contribution": 1.870779
+      "days": 3758,
+      "top_five_percent_day_contribution": 1.868838
     },
     "symphony_id": "0HCtnEKGw1PRt8Om77a3",
     "tail_ratio": 1.2430388059415367,
@@ -327,8 +327,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 3.3486950127497703,
     "sortino_ratio": 4.1011692892207945,
     "spy_best_day_baseline": {
-      "days": 3700,
-      "top_five_percent_day_contribution": 1.865696
+      "days": 3704,
+      "top_five_percent_day_contribution": 1.851675
     },
     "symphony_id": "vkJ5YCvzJLBu2KKF6Oy0",
     "tail_ratio": 1.1995773909291132,
@@ -379,8 +379,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 0.3789286684752241,
     "sortino_ratio": 4.655441957089101,
     "spy_best_day_baseline": {
-      "days": 1382,
-      "top_five_percent_day_contribution": 1.925473
+      "days": 1386,
+      "top_five_percent_day_contribution": 1.923957
     },
     "symphony_id": "tlDwKY3NRXjYU61jCt0g",
     "tail_ratio": 1.4792039000955888,
@@ -432,8 +432,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 1.4808850187333347,
     "sortino_ratio": 2.937015519494296,
     "spy_best_day_baseline": {
-      "days": 3764,
-      "top_five_percent_day_contribution": 1.836312
+      "days": 3768,
+      "top_five_percent_day_contribution": 1.850526
     },
     "symphony_id": "MmQbpf2U5TMQFmr9Nt2e",
     "tail_ratio": 1.0585502674884701,
@@ -479,8 +479,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 0.5963378883834225,
     "sortino_ratio": 1.8569489859758028,
     "spy_best_day_baseline": {
-      "days": 3764,
-      "top_five_percent_day_contribution": 1.836312
+      "days": 3768,
+      "top_five_percent_day_contribution": 1.850526
     },
     "symphony_id": "KJqNBGxYyyKuCcEfdHhq",
     "tail_ratio": 1.0091705313837576,
@@ -538,8 +538,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 0.9281695361679134,
     "sortino_ratio": 1.8025046870990815,
     "spy_best_day_baseline": {
-      "days": 3551,
-      "top_five_percent_day_contribution": 1.897526
+      "days": 3555,
+      "top_five_percent_day_contribution": 1.889577
     },
     "symphony_id": "HgK8mCeBnH4fQFNcfZ7q",
     "tail_ratio": 1.1673738332540526,
@@ -662,8 +662,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 3.025151561623159,
     "sortino_ratio": 6.6798423312578645,
     "spy_best_day_baseline": {
-      "days": 1448,
-      "top_five_percent_day_contribution": 1.870292
+      "days": 1452,
+      "top_five_percent_day_contribution": 1.854627
     },
     "symphony_id": "sEUgeRfSayPbBh8mJxSy",
     "tail_ratio": 1.5783882369322118,
@@ -787,8 +787,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 3.2562741130732316,
     "sortino_ratio": 5.296069852353364,
     "spy_best_day_baseline": {
-      "days": 622,
-      "top_five_percent_day_contribution": 1.486784
+      "days": 626,
+      "top_five_percent_day_contribution": 1.510604
     },
     "symphony_id": "K8ql2SKFd4VDBemIstEr",
     "tail_ratio": 1.3408436500984005,
@@ -895,8 +895,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 0.8665067274117035,
     "sortino_ratio": 5.093250401468711,
     "spy_best_day_baseline": {
-      "days": 1115,
-      "top_five_percent_day_contribution": 1.945127
+      "days": 1119,
+      "top_five_percent_day_contribution": 2.008445
     },
     "symphony_id": "u5iBJE751BM5FKPRJvKf",
     "tail_ratio": 1.4246127780690083,
@@ -958,8 +958,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 2.9145068178056746,
     "sortino_ratio": 5.250987423963609,
     "spy_best_day_baseline": {
-      "days": 3764,
-      "top_five_percent_day_contribution": 1.836312
+      "days": 3768,
+      "top_five_percent_day_contribution": 1.850526
     },
     "symphony_id": "MyRyWhvbdxTsRfzHmE1U",
     "tail_ratio": 1.395109104962226,
@@ -1009,8 +1009,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 0.3492294658127239,
     "sortino_ratio": 2.194774356286237,
     "spy_best_day_baseline": {
-      "days": 3911,
-      "top_five_percent_day_contribution": 2.042381
+      "days": 3915,
+      "top_five_percent_day_contribution": 2.033619
     },
     "symphony_id": "CW8oWU12S6vEvn2Hh7jD",
     "tail_ratio": 1.1931687334744205,
@@ -1052,8 +1052,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 0.7333065331296035,
     "sortino_ratio": 2.2663876190427783,
     "spy_best_day_baseline": {
-      "days": 3680,
-      "top_five_percent_day_contribution": 1.902743
+      "days": 3684,
+      "top_five_percent_day_contribution": 1.882497
     },
     "symphony_id": "7PBSP926Mp40r6bPnP0j",
     "tail_ratio": 1.2339390616123118,
@@ -1115,8 +1115,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 0.6898178189673309,
     "sortino_ratio": 1.8887085166523692,
     "spy_best_day_baseline": {
-      "days": 3551,
-      "top_five_percent_day_contribution": 1.897526
+      "days": 3555,
+      "top_five_percent_day_contribution": 1.889577
     },
     "symphony_id": "rtyBIBOKEY2cPSbJSQX8",
     "tail_ratio": 1.1355299642033492,
@@ -1230,8 +1230,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 3.064217545253193,
     "sortino_ratio": 3.0113216461523926,
     "spy_best_day_baseline": {
-      "days": 3685,
-      "top_five_percent_day_contribution": 1.882819
+      "days": 3689,
+      "top_five_percent_day_contribution": 1.883353
     },
     "symphony_id": "zTV33nu3o0h5fKpT6IqL",
     "tail_ratio": 1.2166933082602704,
@@ -1293,8 +1293,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 1.0876551972575235,
     "sortino_ratio": 2.7176370481078194,
     "spy_best_day_baseline": {
-      "days": 2843,
-      "top_five_percent_day_contribution": 2.074855
+      "days": 2847,
+      "top_five_percent_day_contribution": 2.085479
     },
     "symphony_id": "wadbe3IfwvSES5vk6yiu",
     "tail_ratio": 1.430423157482072,
@@ -1346,8 +1346,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 1.4703412056642289,
     "sortino_ratio": 3.04264460042363,
     "spy_best_day_baseline": {
-      "days": 3764,
-      "top_five_percent_day_contribution": 1.836312
+      "days": 3768,
+      "top_five_percent_day_contribution": 1.850526
     },
     "symphony_id": "HukRwDJLlYPLMbrQbua5",
     "tail_ratio": 1.0857361919716533,
@@ -1401,8 +1401,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 5.6882269613954515,
     "sortino_ratio": 4.353505562794312,
     "spy_best_day_baseline": {
-      "days": 3680,
-      "top_five_percent_day_contribution": 1.902743
+      "days": 3684,
+      "top_five_percent_day_contribution": 1.882497
     },
     "symphony_id": "g0J87gnk7SausotpUoCt",
     "tail_ratio": 1.33839632146855,
@@ -1448,8 +1448,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 1.1429055577894789,
     "sortino_ratio": 2.0808782059526236,
     "spy_best_day_baseline": {
-      "days": 3764,
-      "top_five_percent_day_contribution": 1.836312
+      "days": 3768,
+      "top_five_percent_day_contribution": 1.850526
     },
     "symphony_id": "0jPwZ5Lm2Y3xH24oEijB",
     "tail_ratio": 1.0005946611786063,
@@ -1506,8 +1506,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 0.6756339871163141,
     "sortino_ratio": 3.6737716030832828,
     "spy_best_day_baseline": {
-      "days": 1099,
-      "top_five_percent_day_contribution": 1.668474
+      "days": 1103,
+      "top_five_percent_day_contribution": 1.784624
     },
     "symphony_id": "kl2dR0Rlp4RgZUHAJY2k",
     "tail_ratio": 1.3371660204860367,
@@ -1654,8 +1654,8 @@ window.STRATEGY_EXTRAS_DATA = {
     "skewness": 8.474175287207135,
     "sortino_ratio": 3.8279732685980985,
     "spy_best_day_baseline": {
-      "days": 2182,
-      "top_five_percent_day_contribution": 2.185775
+      "days": 2186,
+      "top_five_percent_day_contribution": 2.170805
     },
     "symphony_id": "zPBn8HkmTIQ5BEJdff0v",
     "tail_ratio": 1.1643003084797665,
