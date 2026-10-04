@@ -4,7 +4,7 @@
 // To update: run scripts/build_strategy_extras.py
 window.STRATEGY_EXTRAS_DATA = {
   "beta-ballers-original": {
-    "annualized_turnover": 112.50387667575701,
+    "annualized_turnover": 112.46991301684498,
     "backtest_floor": {
       "date": "2011-10-04",
       "dated": 33,
@@ -14,7 +14,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 33
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.999977202368085,
+    "herfindahl_index": 0.9999772679036117,
     "holdings": {
       "AGG": 0.0,
       "BIL": 0.0,
@@ -32,7 +32,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "QLD": 0.0,
       "SHY": 0.0,
       "SOXL": 0.0,
-      "SOXS": 429875001.242719,
+      "SOXS": 443781579.1382577,
       "SPXL": 0.0,
       "SPXS": 0.0,
       "SPXU": 0.0,
@@ -129,25 +129,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "YCS"
       }
     ],
-    "kurtosis": 19.472709656239594,
+    "kurtosis": 19.46704957366982,
     "oos_date": "2022-10-21",
-    "refresh_date": "2026-09-27",
-    "skewness": 2.3530563375382294,
-    "sortino_ratio": 5.156148773497603,
+    "refresh_date": "2026-10-04",
+    "skewness": 2.3518186745103766,
+    "sortino_ratio": 5.1238310721035445,
     "spy_best_day_baseline": {
       "days": 1721,
       "top_five_percent_day_contribution": 2.091442
     },
     "symphony_id": "mlgAKFuUIPZiCT0aV7ho",
-    "tail_ratio": 1.4665355594540117,
-    "top_five_percent_day_contribution": 0.9348661251460942,
-    "top_one_day_contribution": 0.03240151288751957,
-    "top_ten_percent_day_contribution": 1.409077441607991,
-    "total_costs": 6491947656.18,
-    "win_rate": 0.5541327124563445
+    "tail_ratio": 1.4661751266093126,
+    "top_five_percent_day_contribution": 0.9452150785325193,
+    "top_one_day_contribution": 0.032529726155579794,
+    "top_ten_percent_day_contribution": 1.4191197362938597,
+    "total_costs": 6522040024.25,
+    "win_rate": 0.5536854323853744
   },
   "bnd-vs-sphb": {
-    "annualized_turnover": 42.68228466597522,
+    "annualized_turnover": 42.62552647977296,
     "backtest_floor": {
       "date": "2010-03-11",
       "dated": 2,
@@ -157,9 +157,9 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 2
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999997305769357,
+    "herfindahl_index": 0.9999997716574971,
     "holdings": {
-      "SHV": 2375220.4173774864,
+      "SHV": 2381674.4914413397,
       "SOXL": 0.0
     },
     "holdings_inception": {
@@ -167,25 +167,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "SOXL": "2010-03-11"
     },
     "k1_holdings": [],
-    "kurtosis": 16.92494776096251,
+    "kurtosis": 16.95153468023042,
     "oos_date": "2024-01-11",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.0293236920070254,
-    "sortino_ratio": 2.215538105245787,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.0303230420746257,
+    "sortino_ratio": 2.214215138629998,
     "spy_best_day_baseline": {
       "days": 3758,
       "top_five_percent_day_contribution": 1.876063
     },
     "symphony_id": "0HCtnEKGw1PRt8Om77a3",
-    "tail_ratio": 1.2430388059415367,
-    "top_five_percent_day_contribution": 1.9227377979335996,
-    "top_one_day_contribution": 0.042844407656811884,
-    "top_ten_percent_day_contribution": 2.9198241653042887,
-    "total_costs": 12115905.06,
-    "win_rate": 0.4921438082556591
+    "tail_ratio": 1.2405849056931173,
+    "top_five_percent_day_contribution": 1.922568215640803,
+    "top_one_day_contribution": 0.042840625255395566,
+    "top_ten_percent_day_contribution": 2.919566721063789,
+    "total_costs": 12115895.03,
+    "win_rate": 0.49281914893617024
   },
   "dip-buying-tech": {
-    "annualized_turnover": 12.274026754347481,
+    "annualized_turnover": 12.265163361265408,
     "backtest_floor": {
       "date": "1998-12-22",
       "dated": 3,
@@ -196,7 +196,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 3
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.999999729262835,
+    "herfindahl_index": 0.9999997294183172,
     "holdings": {
       "SPY": 471.8308270624599,
       "XLK": 0.0,
@@ -208,22 +208,22 @@ window.STRATEGY_EXTRAS_DATA = {
       "XLP": "1998-12-22"
     },
     "k1_holdings": [],
-    "kurtosis": 21.00399697745819,
+    "kurtosis": 21.014981069090567,
     "oos_date": "2022-10-06",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.2423908059824689,
-    "sortino_ratio": 1.2384458283076085,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.2427492393587949,
+    "sortino_ratio": 1.2372360701310765,
     "spy_best_day_baseline": null,
     "symphony_id": "98cACZSS00eDg8Kv5BBV",
-    "tail_ratio": 0.9479235122185177,
-    "top_five_percent_day_contribution": 2.475284209708193,
-    "top_one_day_contribution": 0.04124672372053092,
-    "top_ten_percent_day_contribution": 3.7503875549169314,
+    "tail_ratio": 0.9482631798825281,
+    "top_five_percent_day_contribution": 2.481120398414958,
+    "top_one_day_contribution": 0.0412722069615755,
+    "top_ten_percent_day_contribution": 3.7559005742713794,
     "total_costs": 19872.48,
-    "win_rate": 0.5409741292094233
+    "win_rate": 0.5408723281340265
   },
   "four-horsemen": {
-    "annualized_turnover": 60.0852274355255,
+    "annualized_turnover": 60.004162696866565,
     "backtest_floor": {
       "date": "2011-10-04",
       "dated": 25,
@@ -234,7 +234,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 25
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.4086879180067887,
+    "herfindahl_index": 0.4087116747440274,
     "holdings": {
       "BSV": 0.0,
       "DIA": 0.0,
@@ -245,15 +245,15 @@ window.STRATEGY_EXTRAS_DATA = {
       "SCO": 0.0,
       "SHV": 0.0,
       "SMH": 0.0,
-      "SOXL": 10644167.776897883,
+      "SOXL": 10096066.90066678,
       "SPLV": 0.0,
       "SPY": 0.0,
       "SQQQ": 0.0,
-      "SVXY": 37090918.78111622,
-      "TECL": 6874452.920320285,
+      "SVXY": 38093750.49116208,
+      "TECL": 6710347.612838488,
       "TLT": 0.0,
       "TMF": 0.0,
-      "TQQQ": 110932296.53787726,
+      "TQQQ": 111758252.48298514,
       "UDOW": 0.0,
       "UPRO": 0.0,
       "UUP": 0.0,
@@ -321,25 +321,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "VIXY"
       }
     ],
-    "kurtosis": 40.88273373149474,
+    "kurtosis": 40.89709950527425,
     "oos_date": "2023-09-29",
-    "refresh_date": "2026-09-27",
-    "skewness": 3.3486950127497703,
-    "sortino_ratio": 4.1011692892207945,
+    "refresh_date": "2026-10-04",
+    "skewness": 3.348082197751391,
+    "sortino_ratio": 4.103260659360674,
     "spy_best_day_baseline": {
       "days": 3704,
       "top_five_percent_day_contribution": 1.869498
     },
     "symphony_id": "vkJ5YCvzJLBu2KKF6Oy0",
-    "tail_ratio": 1.1995773909291132,
-    "top_five_percent_day_contribution": 1.082826122967906,
-    "top_one_day_contribution": 0.028594202457516926,
-    "top_ten_percent_day_contribution": 1.5841139923620298,
-    "total_costs": 1467114236.14,
-    "win_rate": 0.5663334233990813
+    "tail_ratio": 1.201310316387525,
+    "top_five_percent_day_contribution": 1.0809226642576453,
+    "top_one_day_contribution": 0.02854394008699674,
+    "top_ten_percent_day_contribution": 1.5813292854608834,
+    "total_costs": 1467379707.8200002,
+    "win_rate": 0.5666486778197517
   },
   "gold-miner-original": {
-    "annualized_turnover": 60.85899409920638,
+    "annualized_turnover": 60.8213176074926,
     "backtest_floor": {
       "date": "2020-12-03",
       "dated": 3,
@@ -351,20 +351,20 @@ window.STRATEGY_EXTRAS_DATA = {
     },
     "etn_holdings": [
       {
-        "held": false,
+        "held": true,
         "name": "MicroSectors Gold Miners -3X Inverse Leveraged ETNs",
         "ticker": "GDXD"
       },
       {
-        "held": true,
+        "held": false,
         "name": "MicroSectors Gold Miners 3X Leveraged ETN",
         "ticker": "GDXU"
       }
     ],
-    "herfindahl_index": 0.9999997445735087,
+    "herfindahl_index": 0.9999997451328315,
     "holdings": {
-      "GDXD": 0.0,
-      "GDXU": 4726346.580990368,
+      "GDXD": 20913118.364699613,
+      "GDXU": 0.0,
       "GLD": 0.0
     },
     "holdings_inception": {
@@ -373,25 +373,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "GLD": "2004-11-18"
     },
     "k1_holdings": [],
-    "kurtosis": 4.44505105880026,
+    "kurtosis": 4.415615828183996,
     "oos_date": "2026-08-19",
-    "refresh_date": "2026-09-27",
-    "skewness": 0.3789286684752241,
-    "sortino_ratio": 4.655441957089101,
+    "refresh_date": "2026-10-04",
+    "skewness": 0.3644779110202208,
+    "sortino_ratio": 4.51617966302588,
     "spy_best_day_baseline": {
       "days": 1386,
       "top_five_percent_day_contribution": 1.968684
     },
     "symphony_id": "tlDwKY3NRXjYU61jCt0g",
-    "tail_ratio": 1.4792039000955888,
-    "top_five_percent_day_contribution": 0.900112838773843,
-    "top_one_day_contribution": 0.0234837981916931,
-    "top_ten_percent_day_contribution": 1.4665782040158237,
-    "total_costs": 23299186.92,
-    "win_rate": 0.5422993492407809
+    "tail_ratio": 1.4608269762355168,
+    "top_five_percent_day_contribution": 0.9216221631922554,
+    "top_one_day_contribution": 0.024044972982366835,
+    "top_ten_percent_day_contribution": 1.501623928303148,
+    "total_costs": 23791721.14,
+    "win_rate": 0.5410662824207493
   },
   "holy-grail": {
-    "annualized_turnover": 23.29242664300702,
+    "annualized_turnover": 23.26153478540201,
     "backtest_floor": {
       "date": "2011-10-04",
       "dated": 6,
@@ -401,13 +401,13 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 6
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999996507052837,
+    "herfindahl_index": 0.9999996261455565,
     "holdings": {
       "BSV": 0.0,
       "SOXL": 0.0,
       "SQQQ": 0.0,
       "TECL": 0.0,
-      "TQQQ": 116595927.57714997,
+      "TQQQ": 116595855.51768696,
       "UVXY": 0.0
     },
     "holdings_inception": {
@@ -426,25 +426,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "UVXY"
       }
     ],
-    "kurtosis": 16.6417301213214,
+    "kurtosis": 16.654865682824035,
     "oos_date": "2022-07-20",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.4808850187333347,
-    "sortino_ratio": 2.937015519494296,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.4810373653974964,
+    "sortino_ratio": 2.9376428222403357,
     "spy_best_day_baseline": {
       "days": 3768,
       "top_five_percent_day_contribution": 1.850902
     },
     "symphony_id": "MmQbpf2U5TMQFmr9Nt2e",
-    "tail_ratio": 1.0585502674884701,
-    "top_five_percent_day_contribution": 1.2864083358531027,
-    "top_one_day_contribution": 0.029513510541055686,
-    "top_ten_percent_day_contribution": 1.9651178128305324,
-    "total_costs": 331635940.52,
-    "win_rate": 0.5649402390438247
+    "tail_ratio": 1.0578655864554543,
+    "top_five_percent_day_contribution": 1.2847666868299685,
+    "top_one_day_contribution": 0.029475846803059133,
+    "top_ten_percent_day_contribution": 1.9626101727950633,
+    "total_costs": 331635741.88,
+    "win_rate": 0.5652519893899204
   },
   "mean-reversion-py": {
-    "annualized_turnover": 7.362549248927756,
+    "annualized_turnover": 7.352784595510519,
     "backtest_floor": {
       "date": "2011-10-04",
       "dated": 3,
@@ -454,7 +454,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 3
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999994537934972,
+    "herfindahl_index": 0.9999994537888542,
     "holdings": {
       "SPY": 0.0,
       "TQQQ": 828049.7439474034,
@@ -473,25 +473,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "UVXY"
       }
     ],
-    "kurtosis": 13.256725798806908,
+    "kurtosis": 13.268130087904062,
     "oos_date": "2022-10-20",
-    "refresh_date": "2026-09-27",
-    "skewness": 0.5963378883834225,
-    "sortino_ratio": 1.8569489859758028,
+    "refresh_date": "2026-10-04",
+    "skewness": 0.5962897326998396,
+    "sortino_ratio": 1.8582673242782672,
     "spy_best_day_baseline": {
       "days": 3768,
       "top_five_percent_day_contribution": 1.850902
     },
     "symphony_id": "KJqNBGxYyyKuCcEfdHhq",
-    "tail_ratio": 1.0091705313837576,
-    "top_five_percent_day_contribution": 1.927217783578469,
-    "top_one_day_contribution": 0.04611838794785953,
-    "top_ten_percent_day_contribution": 3.007118858386088,
+    "tail_ratio": 1.0101701104405427,
+    "top_five_percent_day_contribution": 1.9233772624923762,
+    "top_one_day_contribution": 0.04602648414597499,
+    "top_ten_percent_day_contribution": 3.001126332018583,
     "total_costs": 1522081.27,
-    "win_rate": 0.5614873837981408
+    "win_rate": 0.5618037135278514
   },
   "nancy-pelosi-chips": {
-    "annualized_turnover": 66.80661450801252,
+    "annualized_turnover": 66.78355205744988,
     "backtest_floor": {
       "date": "2012-03-30",
       "dated": 9,
@@ -501,14 +501,14 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 9
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9098354624420865,
+    "herfindahl_index": 0.9099621685172875,
     "holdings": {
-      "AMD": 0.0,
+      "AMD": 64893.46768223469,
       "DBC": 0.0,
       "ENPH": 0.0,
       "NVDA": 0.0,
       "SOXL": 0.0,
-      "SOXS": 1146880.2169682167,
+      "SOXS": 0.0,
       "SOXX": 0.0,
       "SPY": 0.0,
       "XLE": 0.0
@@ -532,25 +532,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "DBC"
       }
     ],
-    "kurtosis": 12.982132793912244,
+    "kurtosis": 12.987834250273856,
     "oos_date": "2022-07-28",
-    "refresh_date": "2026-09-27",
-    "skewness": 0.9281695361679134,
-    "sortino_ratio": 1.8025046870990815,
+    "refresh_date": "2026-10-04",
+    "skewness": 0.9271598181309807,
+    "sortino_ratio": 1.816363114402194,
     "spy_best_day_baseline": {
       "days": 3555,
       "top_five_percent_day_contribution": 1.900889
     },
     "symphony_id": "HgK8mCeBnH4fQFNcfZ7q",
-    "tail_ratio": 1.1673738332540526,
-    "top_five_percent_day_contribution": 2.5317617035337605,
-    "top_one_day_contribution": 0.053016437866749234,
-    "top_ten_percent_day_contribution": 3.825674109470399,
-    "total_costs": 6793438.0,
-    "win_rate": 0.5309684684684685
+    "tail_ratio": 1.1671388232276312,
+    "top_five_percent_day_contribution": 2.5011053948666735,
+    "top_one_day_contribution": 0.052374478443236366,
+    "top_ten_percent_day_contribution": 3.78060698263791,
+    "total_costs": 6833731.81,
+    "win_rate": 0.5313466404273264
   },
   "ob-os-staple-bonds": {
-    "annualized_turnover": 51.24361630081324,
+    "annualized_turnover": 51.243006938718075,
     "backtest_floor": {
       "date": "1999-03-10",
       "dated": 3,
@@ -560,11 +560,11 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 3
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999376871697733,
+    "herfindahl_index": 0.9999377242853332,
     "holdings": {
       "QQQ": 0.0,
-      "VBF": 55495.0,
-      "XLP": 0.0
+      "VBF": 0.0,
+      "XLP": 9820.554338354288
     },
     "holdings_inception": {
       "QQQ": "1999-03-10",
@@ -572,22 +572,22 @@ window.STRATEGY_EXTRAS_DATA = {
       "XLP": "1998-12-22"
     },
     "k1_holdings": [],
-    "kurtosis": 28.29623362369133,
+    "kurtosis": 28.313924249486064,
     "oos_date": "2025-03-25",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.6156244426967667,
-    "sortino_ratio": 1.6457691169582376,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.6159342677985298,
+    "sortino_ratio": 1.6468229746397356,
     "spy_best_day_baseline": null,
     "symphony_id": "OmMmeWyyAu0IRN2yOP6k",
-    "tail_ratio": 1.1017245381674694,
-    "top_five_percent_day_contribution": 2.060084675045439,
-    "top_one_day_contribution": 0.03541835748281593,
-    "top_ten_percent_day_contribution": 3.0018279995528383,
-    "total_costs": 282283.98,
-    "win_rate": 0.5139471021823963
+    "tail_ratio": 1.1011218775385552,
+    "top_five_percent_day_contribution": 2.0611031124310455,
+    "top_one_day_contribution": 0.03537805526816403,
+    "top_ten_percent_day_contribution": 3.0006722736039357,
+    "total_costs": 283099.56999999995,
+    "win_rate": 0.514153668399769
   },
   "rains-unified-best-signals": {
-    "annualized_turnover": 86.31878815193272,
+    "annualized_turnover": 86.17211916380633,
     "backtest_floor": {
       "date": "2011-10-04",
       "dated": 20,
@@ -597,24 +597,24 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 20
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.578026574956439,
+    "herfindahl_index": 0.5773765262341316,
     "holdings": {
       "BSV": 0.0,
       "LQD": 0.0,
-      "SOXL": 115267.2937939757,
+      "SOXL": 36113.074548656055,
       "SOXS": 0.0,
       "SPXL": 0.0,
       "SPXU": 0.0,
       "SQQQ": 0.0,
-      "TECL": 74444.48467267201,
+      "TECL": 72007.69070014384,
       "TECS": 0.0,
-      "TLT": 0.0,
+      "TLT": 915635.0547648194,
       "TMF": 0.0,
       "TMV": 0.0,
-      "TQQQ": 877247.8214877794,
+      "TQQQ": 1021713.368982128,
       "UGE": 0.0,
       "UVXY": 0.0,
-      "VBF": 4919439.0,
+      "VBF": 0.0,
       "VIXY": 0.0,
       "XLP": 0.0,
       "XLU": 0.0,
@@ -656,25 +656,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "VIXY"
       }
     ],
-    "kurtosis": 36.267652676166584,
+    "kurtosis": 36.368280348705795,
     "oos_date": "2025-11-08",
-    "refresh_date": "2026-09-27",
-    "skewness": 3.025151561623159,
-    "sortino_ratio": 6.6798423312578645,
+    "refresh_date": "2026-10-04",
+    "skewness": 3.028900887932805,
+    "sortino_ratio": 6.675312207285148,
     "spy_best_day_baseline": {
       "days": 1452,
       "top_five_percent_day_contribution": 1.884548
     },
     "symphony_id": "sEUgeRfSayPbBh8mJxSy",
-    "tail_ratio": 1.5783882369322118,
-    "top_five_percent_day_contribution": 0.7334509554000928,
-    "top_one_day_contribution": 0.04462576834732528,
-    "top_ten_percent_day_contribution": 1.113420114126118,
-    "total_costs": 16880676.12,
-    "win_rate": 0.5686680469289165
+    "tail_ratio": 1.575708035977528,
+    "top_five_percent_day_contribution": 0.7322324537044187,
+    "top_one_day_contribution": 0.044551624351929185,
+    "top_ten_percent_day_contribution": 1.1159678391346284,
+    "total_costs": 17036241.86,
+    "win_rate": 0.5694635488308115
   },
   "s90-half-low-catch": {
-    "annualized_turnover": 73.24283132645826,
+    "annualized_turnover": 73.46750386880028,
     "backtest_floor": {
       "date": "2024-04-02",
       "dated": 27,
@@ -684,7 +684,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 27
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.7971040285684783,
+    "herfindahl_index": 0.79553769212961,
     "holdings": {
       "AGQ": 0.0,
       "BIL": 0.0,
@@ -697,14 +697,14 @@ window.STRATEGY_EXTRAS_DATA = {
       "LABU": 0.0,
       "NAIL": 0.0,
       "SBIT": 0.0,
-      "SOXL": 1585.908482336427,
+      "SOXL": 1487.6755714865412,
       "SPY": 0.0,
       "SQQQ": 0.0,
-      "TECL": 979.6184307259072,
+      "TECL": 944.8784793814433,
       "TLT": 0.0,
       "TMF": 0.0,
       "TNA": 0.0,
-      "TQQQ": 2856.110286824802,
+      "TQQQ": 2819.0146097654747,
       "UDOW": 0.0,
       "UGL": 0.0,
       "UPRO": 0.0,
@@ -781,25 +781,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "ZSL"
       }
     ],
-    "kurtosis": 29.48032534951976,
+    "kurtosis": 29.568052537106727,
     "oos_date": "2026-02-13",
-    "refresh_date": "2026-09-27",
-    "skewness": 3.2562741130732316,
-    "sortino_ratio": 5.296069852353364,
+    "refresh_date": "2026-10-04",
+    "skewness": 3.256955493067057,
+    "sortino_ratio": 5.275113019143981,
     "spy_best_day_baseline": {
       "days": 626,
       "top_five_percent_day_contribution": 1.454733
     },
     "symphony_id": "K8ql2SKFd4VDBemIstEr",
-    "tail_ratio": 1.3408436500984005,
-    "top_five_percent_day_contribution": 0.9579470940412321,
-    "top_one_day_contribution": 0.1026840886894639,
-    "top_ten_percent_day_contribution": 1.3711076583674626,
-    "total_costs": 42046.369999999995,
-    "win_rate": 0.565008025682183
+    "tail_ratio": 1.3331108979791997,
+    "top_five_percent_day_contribution": 0.9555715971944159,
+    "top_one_day_contribution": 0.10242944346309008,
+    "top_ten_percent_day_contribution": 1.3677076377810533,
+    "total_costs": 43404.95,
+    "win_rate": 0.5636942675159236
   },
   "safe-sectors-or-bonds-original": {
-    "annualized_turnover": 95.58553850536055,
+    "annualized_turnover": 95.58933345914207,
     "backtest_floor": {
       "date": "1999-05-26",
       "dated": 7,
@@ -809,11 +809,11 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 7
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.999962693330376,
+    "herfindahl_index": 0.9999627170046229,
     "holdings": {
       "BKT": 0.0,
-      "EVN": 0.0,
-      "MMU": 180333.0,
+      "EVN": 179819.0,
+      "MMU": 0.0,
       "NAN": 0.0,
       "PMM": 0.0,
       "VBF": 0.0,
@@ -829,22 +829,22 @@ window.STRATEGY_EXTRAS_DATA = {
       "XLP": "1998-12-22"
     },
     "k1_holdings": [],
-    "kurtosis": 58.654803637974446,
+    "kurtosis": 58.47886562781597,
     "oos_date": "2025-11-14",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.354649153168848,
-    "sortino_ratio": 1.882806834528286,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.3527534808521702,
+    "sortino_ratio": 1.8918386508950755,
     "spy_best_day_baseline": null,
     "symphony_id": "DtlEo2Y1DWR7hngZkxTB",
-    "tail_ratio": 1.1232522733062815,
-    "top_five_percent_day_contribution": 1.6047456489415215,
-    "top_one_day_contribution": 0.041453288718970166,
-    "top_ten_percent_day_contribution": 2.3793395065128213,
-    "total_costs": 1143221.1300000001,
-    "win_rate": 0.5312454479242534
+    "tail_ratio": 1.1215182949184732,
+    "top_five_percent_day_contribution": 1.5980709705608813,
+    "top_one_day_contribution": 0.04121020955675924,
+    "top_ten_percent_day_contribution": 2.3697570751481254,
+    "total_costs": 1146575.6400000001,
+    "win_rate": 0.5312954876273653
   },
   "simons-kmlm-switcher": {
-    "annualized_turnover": 81.06474565507332,
+    "annualized_turnover": 80.93588022767979,
     "backtest_floor": {
       "date": "2022-03-30",
       "dated": 8,
@@ -854,13 +854,13 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 8
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.762077719545435,
+    "herfindahl_index": 0.7609110623439267,
     "holdings": {
       "LABU": 0.0,
-      "SOXL": 173899.62181967907,
+      "SOXL": 171938.1209251995,
       "SPXL": 0.0,
       "SQQQ": 0.0,
-      "SVIX": 863332.7983899195,
+      "SVIX": 885776.5151391643,
       "TECL": 0.0,
       "TLT": 0.0,
       "UVXY": 0.0
@@ -889,25 +889,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "UVXY"
       }
     ],
-    "kurtosis": 6.556045512270122,
+    "kurtosis": 6.574511281263263,
     "oos_date": "2024-07-22",
-    "refresh_date": "2026-09-27",
-    "skewness": 0.8665067274117035,
-    "sortino_ratio": 5.093250401468711,
+    "refresh_date": "2026-10-04",
+    "skewness": 0.8663231111459326,
+    "sortino_ratio": 5.100756878471358,
     "spy_best_day_baseline": {
       "days": 1119,
       "top_five_percent_day_contribution": 1.952387
     },
     "symphony_id": "u5iBJE751BM5FKPRJvKf",
-    "tail_ratio": 1.4246127780690083,
-    "top_five_percent_day_contribution": 0.8121167476324266,
-    "top_one_day_contribution": 0.03827219164417018,
-    "top_ten_percent_day_contribution": 1.2820324771469958,
-    "total_costs": 4229621.220000001,
-    "win_rate": 0.5645161290322581
+    "tail_ratio": 1.4218535455399588,
+    "top_five_percent_day_contribution": 0.817894334242839,
+    "top_one_day_contribution": 0.038081576747501324,
+    "top_ten_percent_day_contribution": 1.2825731305567978,
+    "total_costs": 4282066.87,
+    "win_rate": 0.5655664585191793
   },
   "sometimes-tqqq": {
-    "annualized_turnover": 67.71633048011432,
+    "annualized_turnover": 67.62652354501898,
     "backtest_floor": {
       "date": "2011-10-04",
       "dated": 11,
@@ -917,7 +917,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 11
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9994300893569068,
+    "herfindahl_index": 0.9994281943243518,
     "holdings": {
       "BIL": 0.0,
       "GLD": 0.0,
@@ -925,7 +925,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "QQQ": 0.0,
       "SH": 0.0,
       "SPY": 0.0,
-      "SQQQ": 476419555596.56415,
+      "SQQQ": 476419686208.6467,
       "TECL": 0.0,
       "TQQQ": 0.0,
       "UPRO": 0.0,
@@ -952,25 +952,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "UVXY"
       }
     ],
-    "kurtosis": 34.31912002053094,
+    "kurtosis": 34.33763726177244,
     "oos_date": "2024-06-26",
-    "refresh_date": "2026-09-27",
-    "skewness": 2.9145068178056746,
-    "sortino_ratio": 5.250987423963609,
+    "refresh_date": "2026-10-04",
+    "skewness": 2.9152487319131963,
+    "sortino_ratio": 5.241644600019952,
     "spy_best_day_baseline": {
       "days": 3768,
       "top_five_percent_day_contribution": 1.850902
     },
     "symphony_id": "MyRyWhvbdxTsRfzHmE1U",
-    "tail_ratio": 1.395109104962226,
-    "top_five_percent_day_contribution": 0.8715878709610704,
-    "top_one_day_contribution": 0.02137296301742298,
-    "top_ten_percent_day_contribution": 1.295574807287128,
-    "total_costs": 13540992208.16,
-    "win_rate": 0.5723771580345286
+    "tail_ratio": 1.3971114998316057,
+    "top_five_percent_day_contribution": 0.8723624835912344,
+    "top_one_day_contribution": 0.021391957772974726,
+    "top_ten_percent_day_contribution": 1.2967261810535426,
+    "total_costs": 13541044751.83,
+    "win_rate": 0.5718832891246685
   },
   "soxl-growth-rl": {
-    "annualized_turnover": 30.984986723058064,
+    "annualized_turnover": 30.945434786980638,
     "backtest_floor": {
       "date": "2010-03-11",
       "dated": 8,
@@ -981,7 +981,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 8
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9509319914174686,
+    "herfindahl_index": 0.9509946101114228,
     "holdings": {
       "SOXL": 0.0,
       "SOXS": 0.0,
@@ -1003,25 +1003,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "TQQQ": "2010-02-11"
     },
     "k1_holdings": [],
-    "kurtosis": 5.826896434267719,
+    "kurtosis": 5.836422973195686,
     "oos_date": "2023-03-14",
-    "refresh_date": "2026-09-27",
-    "skewness": 0.3492294658127239,
-    "sortino_ratio": 2.194774356286237,
+    "refresh_date": "2026-10-04",
+    "skewness": 0.3498254071256588,
+    "sortino_ratio": 2.1922374193307284,
     "spy_best_day_baseline": {
       "days": 3915,
       "top_five_percent_day_contribution": 2.043037
     },
     "symphony_id": "CW8oWU12S6vEvn2Hh7jD",
-    "tail_ratio": 1.1931687334744205,
-    "top_five_percent_day_contribution": 1.828425449744392,
-    "top_one_day_contribution": 0.03319552471183834,
-    "top_ten_percent_day_contribution": 2.933770206142745,
+    "tail_ratio": 1.1945910706367617,
+    "top_five_percent_day_contribution": 1.8296893663707845,
+    "top_one_day_contribution": 0.03321847143663425,
+    "top_ten_percent_day_contribution": 2.935798202932047,
     "total_costs": 759807123.8499999,
-    "win_rate": 0.5370654396728016
+    "win_rate": 0.5368904774061782
   },
   "soxx-group": {
-    "annualized_turnover": 76.6067025009132,
+    "annualized_turnover": 76.62238378915946,
     "backtest_floor": {
       "date": "2010-03-11",
       "dated": 4,
@@ -1032,12 +1032,12 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 4
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.8129861608612491,
+    "herfindahl_index": 0.812731232607759,
     "holdings": {
       "BIL": 0.0,
-      "BSV": 5025633.561199349,
+      "BSV": 3349997.660897345,
       "SOXL": 0.0,
-      "SOXS": 3948245.430157262
+      "SOXS": 8592886.03219355
     },
     "holdings_inception": {
       "BIL": "2007-05-30",
@@ -1046,25 +1046,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "SOXS": "2010-03-11"
     },
     "k1_holdings": [],
-    "kurtosis": 13.18201972009681,
+    "kurtosis": 13.196611994213674,
     "oos_date": "2022-12-05",
-    "refresh_date": "2026-09-27",
-    "skewness": 0.7333065331296035,
-    "sortino_ratio": 2.2663876190427783,
+    "refresh_date": "2026-10-04",
+    "skewness": 0.7337925581261725,
+    "sortino_ratio": 2.2639165743738645,
     "spy_best_day_baseline": {
       "days": 3684,
       "top_five_percent_day_contribution": 1.9068
     },
     "symphony_id": "7PBSP926Mp40r6bPnP0j",
-    "tail_ratio": 1.2339390616123118,
-    "top_five_percent_day_contribution": 1.7834417040124073,
-    "top_one_day_contribution": 0.040239392603829895,
-    "top_ten_percent_day_contribution": 2.750222040933452,
-    "total_costs": 78871329.61,
-    "win_rate": 0.5082857919043738
+    "tail_ratio": 1.2315217920248793,
+    "top_five_percent_day_contribution": 1.7840539236039878,
+    "top_one_day_contribution": 0.04025321293513753,
+    "top_ten_percent_day_contribution": 2.751166205702131,
+    "total_costs": 79821482.21,
+    "win_rate": 0.5084102007596311
   },
   "spy-energy-chips": {
-    "annualized_turnover": 18.800673588690614,
+    "annualized_turnover": 18.774245878060807,
     "backtest_floor": {
       "date": "2012-03-30",
       "dated": 8,
@@ -1074,7 +1074,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 8
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999997380449439,
+    "herfindahl_index": 0.9999997380653018,
     "holdings": {
       "AMD": 40723.3888156594,
       "DBC": 0.0,
@@ -1109,25 +1109,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "VIXM"
       }
     ],
-    "kurtosis": 8.476504800911991,
+    "kurtosis": 8.48380240615997,
     "oos_date": "2022-08-22",
-    "refresh_date": "2026-09-27",
-    "skewness": 0.6898178189673309,
-    "sortino_ratio": 1.8887085166523692,
+    "refresh_date": "2026-10-04",
+    "skewness": 0.6898811529855783,
+    "sortino_ratio": 1.8879568923570136,
     "spy_best_day_baseline": {
       "days": 3555,
       "top_five_percent_day_contribution": 1.900889
     },
     "symphony_id": "rtyBIBOKEY2cPSbJSQX8",
-    "tail_ratio": 1.1355299642033492,
-    "top_five_percent_day_contribution": 2.185648175747953,
-    "top_one_day_contribution": 0.036217745004181526,
-    "top_ten_percent_day_contribution": 3.3409247643538533,
+    "tail_ratio": 1.1353099807148341,
+    "top_five_percent_day_contribution": 2.1842049173393634,
+    "top_one_day_contribution": 0.03619382918570834,
+    "top_ten_percent_day_contribution": 3.338718637214032,
     "total_costs": 855092.9199999999,
-    "win_rate": 0.5335022522522522
+    "win_rate": 0.5335957267360135
   },
   "super-semiconductors": {
-    "annualized_turnover": 59.69646010448557,
+    "annualized_turnover": 59.617384727883184,
     "backtest_floor": {
       "date": "2011-10-04",
       "dated": 31,
@@ -1137,11 +1137,11 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 31
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.6415491796402515,
+    "herfindahl_index": 0.6411318424527357,
     "holdings": {
       "ADI": 0.0,
       "AMAT": 0.0,
-      "AMD": 134831.8635300234,
+      "AMD": 134831.9252664414,
       "ASML": 0.0,
       "AVGO": 0.0,
       "BSV": 0.0,
@@ -1149,8 +1149,8 @@ window.STRATEGY_EXTRAS_DATA = {
       "KLAC": 0.0,
       "LRCX": 0.0,
       "MCHP": 0.0,
-      "MRVL": 322448.1647369648,
-      "MU": 79497.01965592551,
+      "MRVL": 322448.3123785842,
+      "MU": 79497.05605578757,
       "NVDA": 0.0,
       "NXPI": 0.0,
       "ON": 0.0,
@@ -1224,25 +1224,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "VIXY"
       }
     ],
-    "kurtosis": 43.460989899351716,
+    "kurtosis": 43.475926573258405,
     "oos_date": "2023-07-27",
-    "refresh_date": "2026-09-27",
-    "skewness": 3.064217545253193,
-    "sortino_ratio": 3.0113216461523926,
+    "refresh_date": "2026-10-04",
+    "skewness": 3.0635303304529744,
+    "sortino_ratio": 3.011077721857152,
     "spy_best_day_baseline": {
       "days": 3689,
       "top_five_percent_day_contribution": 1.884324
     },
     "symphony_id": "zTV33nu3o0h5fKpT6IqL",
-    "tail_ratio": 1.2166933082602704,
-    "top_five_percent_day_contribution": 1.4026146956761893,
-    "top_one_day_contribution": 0.0429486432396463,
-    "top_ten_percent_day_contribution": 2.0388567013781884,
-    "total_costs": 18970459.07,
-    "win_rate": 0.5401519262072707
+    "tail_ratio": 1.217215285504127,
+    "top_five_percent_day_contribution": 1.400899849604496,
+    "top_one_day_contribution": 0.04289613938147705,
+    "top_ten_percent_day_contribution": 2.0392130298825766,
+    "total_costs": 18970468.930000003,
+    "win_rate": 0.5405039284746681
   },
   "top-cap-ma-rsi": {
-    "annualized_turnover": 104.82277080625154,
+    "annualized_turnover": 104.99261495803424,
     "backtest_floor": {
       "date": "2015-05-28",
       "dated": 11,
@@ -1252,14 +1252,14 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 11
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999997608157023,
+    "herfindahl_index": 0.9999997605333903,
     "holdings": {
       "AAPL": 0.0,
       "AMZN": 0.0,
       "BRK/B": 0.0,
       "KO": 0.0,
       "LABU": 0.0,
-      "MSTR": 654544.4423151299,
+      "MSTR": 629242.834447847,
       "SPXL": 0.0,
       "TQQQ": 0.0,
       "TSLA": 0.0,
@@ -1287,25 +1287,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "UVXY"
       }
     ],
-    "kurtosis": 9.350345727024518,
+    "kurtosis": 9.368414052555659,
     "oos_date": "2023-06-13",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.0876551972575235,
-    "sortino_ratio": 2.7176370481078194,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.0894701039752268,
+    "sortino_ratio": 2.7076301253669306,
     "spy_best_day_baseline": {
       "days": 2847,
       "top_five_percent_day_contribution": 2.069905
     },
     "symphony_id": "wadbe3IfwvSES5vk6yiu",
-    "tail_ratio": 1.430423157482072,
-    "top_five_percent_day_contribution": 1.7028202852363077,
-    "top_one_day_contribution": 0.03253648845859299,
-    "top_ten_percent_day_contribution": 2.5208078870587967,
-    "total_costs": 23479025.04,
-    "win_rate": 0.5242616033755274
+    "tail_ratio": 1.4310835321963198,
+    "top_five_percent_day_contribution": 1.7084797515394663,
+    "top_one_day_contribution": 0.032644626211972505,
+    "top_ten_percent_day_contribution": 2.5291860038907594,
+    "total_costs": 23891713.61,
+    "win_rate": 0.5236925236925237
   },
   "tqqq-long-term": {
-    "annualized_turnover": 21.886850686521154,
+    "annualized_turnover": 21.857822779456647,
     "backtest_floor": {
       "date": "2011-10-04",
       "dated": 6,
@@ -1315,12 +1315,12 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 6
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999998747290693,
+    "herfindahl_index": 0.9999998693336505,
     "holdings": {
       "SQQQ": 0.0,
       "TECL": 0.0,
       "TLT": 0.0,
-      "TQQQ": 211442679.6553492,
+      "TQQQ": 211442720.00319293,
       "UPRO": 0.0,
       "UVXY": 0.0
     },
@@ -1340,25 +1340,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "UVXY"
       }
     ],
-    "kurtosis": 15.89792616177051,
+    "kurtosis": 15.910772900117458,
     "oos_date": "2023-01-24",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.4703412056642289,
-    "sortino_ratio": 3.04264460042363,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.4705169589230909,
+    "sortino_ratio": 3.0431727042134464,
     "spy_best_day_baseline": {
       "days": 3768,
       "top_five_percent_day_contribution": 1.850902
     },
     "symphony_id": "HukRwDJLlYPLMbrQbua5",
-    "tail_ratio": 1.0857361919716533,
-    "top_five_percent_day_contribution": 1.2389463682706963,
-    "top_one_day_contribution": 0.028288109524625155,
-    "top_ten_percent_day_contribution": 1.9042426874733203,
-    "total_costs": 549251862.24,
-    "win_rate": 0.5670650730411687
+    "tail_ratio": 1.085077650421605,
+    "top_five_percent_day_contribution": 1.2374307851827855,
+    "top_one_day_contribution": 0.028253505031988233,
+    "top_ten_percent_day_contribution": 1.9019132512361772,
+    "total_costs": 549251978.83,
+    "win_rate": 0.5673740053050398
   },
   "tqqq-or-not-original": {
-    "annualized_turnover": 37.14588625698532,
+    "annualized_turnover": 37.09549813791637,
     "backtest_floor": {
       "date": "2011-10-04",
       "dated": 7,
@@ -1368,9 +1368,9 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 7
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.7346595592400869,
+    "herfindahl_index": 0.7350193981566442,
     "holdings": {
-      "BIL": 5207693.117554158,
+      "BIL": 5222689.515230017,
       "SOXL": 0.0,
       "SOXS": 0.0,
       "SPXL": 0.0,
@@ -1395,25 +1395,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "UVXY"
       }
     ],
-    "kurtosis": 87.08782052239826,
+    "kurtosis": 87.21013469074379,
     "oos_date": "2023-01-09",
-    "refresh_date": "2026-09-27",
-    "skewness": 5.6882269613954515,
-    "sortino_ratio": 4.353505562794312,
+    "refresh_date": "2026-10-04",
+    "skewness": 5.692408494977627,
+    "sortino_ratio": 4.3508458776755825,
     "spy_best_day_baseline": {
       "days": 3684,
       "top_five_percent_day_contribution": 1.9068
     },
     "symphony_id": "g0J87gnk7SausotpUoCt",
-    "tail_ratio": 1.33839632146855,
-    "top_five_percent_day_contribution": 1.1415980629153617,
-    "top_one_day_contribution": 0.037644482884901354,
-    "top_ten_percent_day_contribution": 1.5811879796977488,
-    "total_costs": 44478269.65,
-    "win_rate": 0.5091007878293942
+    "tail_ratio": 1.3415667519973598,
+    "top_five_percent_day_contribution": 1.1415133357716747,
+    "top_one_day_contribution": 0.03764168882651319,
+    "top_ten_percent_day_contribution": 1.581070891779767,
+    "total_costs": 44478253.29,
+    "win_rate": 0.5094953879544222
   },
   "triple-accelerator": {
-    "annualized_turnover": 12.516333778435094,
+    "annualized_turnover": 12.499733866262634,
     "backtest_floor": {
       "date": "2011-10-04",
       "dated": 3,
@@ -1423,7 +1423,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 3
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999998868524718,
+    "herfindahl_index": 0.9999998870019818,
     "holdings": {
       "SPY": 0.0,
       "TQQQ": 658919.1153044035,
@@ -1442,25 +1442,25 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "UVXY"
       }
     ],
-    "kurtosis": 20.13543489834132,
+    "kurtosis": 20.143687105023393,
     "oos_date": "2026-07-29",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.1429055577894789,
-    "sortino_ratio": 2.0808782059526236,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.1425240652407826,
+    "sortino_ratio": 2.082534808875978,
     "spy_best_day_baseline": {
       "days": 3768,
       "top_five_percent_day_contribution": 1.850902
     },
     "symphony_id": "0jPwZ5Lm2Y3xH24oEijB",
-    "tail_ratio": 1.0005946611786063,
-    "top_five_percent_day_contribution": 1.5721488174308977,
-    "top_one_day_contribution": 0.047348597939602756,
-    "top_ten_percent_day_contribution": 2.5009219052530245,
+    "tail_ratio": 1.001066830886259,
+    "top_five_percent_day_contribution": 1.5689324692214168,
+    "top_one_day_contribution": 0.04725173078776828,
+    "top_ten_percent_day_contribution": 2.495805445791409,
     "total_costs": 1709748.9200000002,
-    "win_rate": 0.5625498007968127
+    "win_rate": 0.5628647214854111
   },
   "wooden-arkk": {
-    "annualized_turnover": 133.3274050635929,
+    "annualized_turnover": 133.180222125322,
     "backtest_floor": {
       "date": "2022-05-02",
       "dated": 12,
@@ -1470,11 +1470,11 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 12
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999420224508621,
+    "herfindahl_index": 0.9999422823425744,
     "holdings": {
       "DRV": 0.0,
       "EDC": 0.0,
-      "PSQ": 67160.6599025974,
+      "PSQ": 67412.70467365028,
       "SARK": 0.0,
       "SOXX": 0.0,
       "TARK": 0.0,
@@ -1500,25 +1500,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "YINN": "2009-12-03"
     },
     "k1_holdings": [],
-    "kurtosis": 5.255437618401659,
+    "kurtosis": 5.290988970939093,
     "oos_date": "2023-04-22",
-    "refresh_date": "2026-09-27",
-    "skewness": 0.6756339871163141,
-    "sortino_ratio": 3.6737716030832828,
+    "refresh_date": "2026-10-04",
+    "skewness": 0.6788028694641588,
+    "sortino_ratio": 3.664528326696271,
     "spy_best_day_baseline": {
       "days": 1103,
       "top_five_percent_day_contribution": 1.678061
     },
     "symphony_id": "kl2dR0Rlp4RgZUHAJY2k",
-    "tail_ratio": 1.3371660204860367,
-    "top_five_percent_day_contribution": 1.080346934867987,
-    "top_one_day_contribution": 0.04881212284726545,
-    "top_ten_percent_day_contribution": 1.7324791150358159,
-    "total_costs": 330223.63,
-    "win_rate": 0.5254545454545455
+    "tail_ratio": 1.3360508876907218,
+    "top_five_percent_day_contribution": 1.0943034453432552,
+    "top_one_day_contribution": 0.048822980946274845,
+    "top_ten_percent_day_contribution": 1.743194312954236,
+    "total_costs": 333655.80000000005,
+    "win_rate": 0.5248868778280543
   },
   "zoops-2026-frontrunner": {
-    "annualized_turnover": 28.513050819049145,
+    "annualized_turnover": 28.447893579555828,
     "backtest_floor": {
       "date": "2018-01-25",
       "dated": 6,
@@ -1534,9 +1534,9 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "VXX"
       }
     ],
-    "herfindahl_index": 0.9999997572277582,
+    "herfindahl_index": 0.9999998384895508,
     "holdings": {
-      "BIL": 27877.767461807245,
+      "BIL": 27957.98887741419,
       "SOXL": 0.0,
       "SPXU": 0.0,
       "TQQQ": 0.0,
@@ -1552,25 +1552,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "VXX": "2018-01-25"
     },
     "k1_holdings": [],
-    "kurtosis": 152.54985002668252,
+    "kurtosis": 152.9065935783683,
     "oos_date": "2026-03-16",
-    "refresh_date": "2026-09-27",
-    "skewness": 9.556238996035047,
-    "sortino_ratio": 5.647056010497736,
+    "refresh_date": "2026-10-04",
+    "skewness": 9.567517758260403,
+    "sortino_ratio": 5.641330932362148,
     "spy_best_day_baseline": {
       "days": 2184,
       "top_five_percent_day_contribution": 2.206143
     },
     "symphony_id": "4aI4kVT5cEc0XJpTLei3",
-    "tail_ratio": 7.269648854801329,
-    "top_five_percent_day_contribution": 1.343761751974456,
-    "top_one_day_contribution": 0.07863397194660093,
-    "top_ten_percent_day_contribution": 1.4915865263333996,
-    "total_costs": 157721.66,
-    "win_rate": 0.5579477782867613
+    "tail_ratio": 7.334881793762244,
+    "top_five_percent_day_contribution": 1.343568340621531,
+    "top_one_day_contribution": 0.07862265909182795,
+    "top_ten_percent_day_contribution": 1.4913719498426647,
+    "total_costs": 157721.75999999998,
+    "win_rate": 0.5585009140767825
   },
   "zoops-excellent-adventure-2026": {
-    "annualized_turnover": 45.358609606463666,
+    "annualized_turnover": 45.29637221677313,
     "backtest_floor": {
       "date": "2010-03-11",
       "dated": 6,
@@ -1580,7 +1580,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 6
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999997846518941,
+    "herfindahl_index": 0.9999997849472962,
     "holdings": {
       "SH": 23597023.137043826,
       "SOXL": 0.0,
@@ -1598,25 +1598,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "UPRO": "2009-06-25"
     },
     "k1_holdings": [],
-    "kurtosis": 33.94038662210903,
+    "kurtosis": 33.98913933903914,
     "oos_date": "2026-01-26",
-    "refresh_date": "2026-09-27",
-    "skewness": 2.409795752858495,
-    "sortino_ratio": 3.0589743940727074,
+    "refresh_date": "2026-10-04",
+    "skewness": 2.411657723213721,
+    "sortino_ratio": 3.0576363608080666,
     "spy_best_day_baseline": {
       "days": 3640,
       "top_five_percent_day_contribution": 1.910619
     },
     "symphony_id": "YIiBr33X4rRTVlOWhCNq",
-    "tail_ratio": 1.1451415132262648,
-    "top_five_percent_day_contribution": 1.2868432351877646,
-    "top_one_day_contribution": 0.03880442458482649,
-    "top_ten_percent_day_contribution": 1.9398760027580981,
+    "tail_ratio": 1.1458715101020729,
+    "top_five_percent_day_contribution": 1.2907383556145315,
+    "top_one_day_contribution": 0.03879257671459088,
+    "top_ten_percent_day_contribution": 1.9422857340911048,
     "total_costs": 50809491.88,
-    "win_rate": 0.5322890904094532
+    "win_rate": 0.5323819978046103
   },
   "zoops-frontrunner": {
-    "annualized_turnover": 27.358676686973926,
+    "annualized_turnover": 27.296156859087244,
     "backtest_floor": {
       "date": "2018-01-25",
       "dated": 5,
@@ -1632,7 +1632,7 @@ window.STRATEGY_EXTRAS_DATA = {
         "ticker": "VXX"
       }
     ],
-    "herfindahl_index": 0.9999997467889614,
+    "herfindahl_index": 0.9999997473340247,
     "holdings": {
       "SOXL": 0.0,
       "SPXL": 0.0,
@@ -1648,25 +1648,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "VXX": "2018-01-25"
     },
     "k1_holdings": [],
-    "kurtosis": 158.61867424943821,
+    "kurtosis": 158.95470936375523,
     "oos_date": "2026-09-01",
-    "refresh_date": "2026-09-27",
-    "skewness": 8.474175287207135,
-    "sortino_ratio": 3.8279732685980985,
+    "refresh_date": "2026-10-04",
+    "skewness": 8.482989229759728,
+    "sortino_ratio": 3.8215847807601637,
     "spy_best_day_baseline": {
       "days": 2186,
       "top_five_percent_day_contribution": 2.203183
     },
     "symphony_id": "zPBn8HkmTIQ5BEJdff0v",
-    "tail_ratio": 1.1643003084797665,
-    "top_five_percent_day_contribution": 1.2944416347411107,
-    "top_one_day_contribution": 0.08842471331861038,
-    "top_ten_percent_day_contribution": 1.7192687494098917,
+    "tail_ratio": 1.1646212943554666,
+    "top_five_percent_day_contribution": 1.2950247296186876,
+    "top_one_day_contribution": 0.08846454516270709,
+    "top_ten_percent_day_contribution": 1.7200432121388813,
     "total_costs": 73206.06000000001,
-    "win_rate": 0.5584058634906093
+    "win_rate": 0.5580438756855576
   },
   "zoops-holy-grail-2026": {
-    "annualized_turnover": 33.37839666966886,
+    "annualized_turnover": 33.33259755239434,
     "backtest_floor": {
       "date": "2010-03-11",
       "dated": 6,
@@ -1676,7 +1676,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 6
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999997804673597,
+    "herfindahl_index": 0.9999997807685019,
     "holdings": {
       "SH": 0.0,
       "SOXL": 0.0,
@@ -1694,25 +1694,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "UPRO": "2009-06-25"
     },
     "k1_holdings": [],
-    "kurtosis": 24.544851477419144,
+    "kurtosis": 24.55787577058711,
     "oos_date": "2026-01-26",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.8134197035464592,
-    "sortino_ratio": 2.6865209063522837,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.8132092613898005,
+    "sortino_ratio": 2.687676457111906,
     "spy_best_day_baseline": {
       "days": 3640,
       "top_five_percent_day_contribution": 1.910619
     },
     "symphony_id": "Y2xvfu7iFNyO6up77gBI",
-    "tail_ratio": 1.061038248886405,
-    "top_five_percent_day_contribution": 1.368623224084043,
-    "top_one_day_contribution": 0.04044226553471128,
-    "top_ten_percent_day_contribution": 2.1265136905716684,
+    "tail_ratio": 1.0605827031356714,
+    "top_five_percent_day_contribution": 1.371285689207912,
+    "top_one_day_contribution": 0.04037648457060379,
+    "top_ten_percent_day_contribution": 2.1266255804476017,
     "total_costs": 17008956.06,
-    "win_rate": 0.5468535311898873
+    "win_rate": 0.5472008781558727
   },
   "zoops-kmlm-switcher-2026": {
-    "annualized_turnover": 71.47998679199655,
+    "annualized_turnover": 71.3208850475813,
     "backtest_floor": {
       "date": "2015-05-28",
       "dated": 7,
@@ -1722,15 +1722,15 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 7
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.7644825987493815,
+    "herfindahl_index": 0.7635737238420662,
     "holdings": {
       "LABU": 0.0,
       "SH": 0.0,
-      "SOXL": 57806.85574905762,
-      "SPXL": 30056.16820715567,
+      "SOXL": 0.0,
+      "SPXL": 30001.795535231246,
       "SPXU": 0.0,
       "TECL": 0.0,
-      "TQQQ": 0.0
+      "TQQQ": 106901.03070902755
     },
     "holdings_inception": {
       "LABU": "2015-05-28",
@@ -1742,25 +1742,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "TQQQ": "2010-02-11"
     },
     "k1_holdings": [],
-    "kurtosis": 38.74772020028656,
+    "kurtosis": 38.78015902759565,
     "oos_date": "2026-01-26",
-    "refresh_date": "2026-09-27",
-    "skewness": 2.758355271970684,
-    "sortino_ratio": 4.767191708423631,
+    "refresh_date": "2026-10-04",
+    "skewness": 2.7577751225556613,
+    "sortino_ratio": 4.7456899756946385,
     "spy_best_day_baseline": {
       "days": 1450,
       "top_five_percent_day_contribution": 1.855483
     },
     "symphony_id": "4AuTagHMeiS4usdZEuDK",
-    "tail_ratio": 1.4284691343130538,
-    "top_five_percent_day_contribution": 0.9059331332640164,
-    "top_one_day_contribution": 0.05843301598055605,
-    "top_ten_percent_day_contribution": 1.3970323571120016,
-    "total_costs": 1153849.88,
-    "win_rate": 0.5472739820565907
+    "tail_ratio": 1.4319443584458305,
+    "top_five_percent_day_contribution": 0.9072553769921091,
+    "top_one_day_contribution": 0.058518301181038186,
+    "top_ten_percent_day_contribution": 1.404842867499892,
+    "total_costs": 1162572.05,
+    "win_rate": 0.547455295735901
   },
   "zoops-leveraged-tqqq-symphony-2026": {
-    "annualized_turnover": 35.109641754088685,
+    "annualized_turnover": 35.06146716331743,
     "backtest_floor": {
       "date": "2010-03-11",
       "dated": 6,
@@ -1770,7 +1770,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 6
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999997795884796,
+    "herfindahl_index": 0.9999997798908274,
     "holdings": {
       "SH": 0.0,
       "SOXL": 0.0,
@@ -1788,25 +1788,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "UPRO": "2009-06-25"
     },
     "k1_holdings": [],
-    "kurtosis": 26.923668968199593,
+    "kurtosis": 26.936504503977236,
     "oos_date": "2026-01-26",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.9395723254189097,
-    "sortino_ratio": 2.676363075389234,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.9392769643317005,
+    "sortino_ratio": 2.677589059186113,
     "spy_best_day_baseline": {
       "days": 3640,
       "top_five_percent_day_contribution": 1.910619
     },
     "symphony_id": "U6lT1G0PdE9fUxoy2opg",
-    "tail_ratio": 1.0905658913651062,
-    "top_five_percent_day_contribution": 1.39461539664917,
-    "top_one_day_contribution": 0.04163189133371849,
-    "top_ten_percent_day_contribution": 2.1620308886025392,
+    "tail_ratio": 1.0916592558101825,
+    "top_five_percent_day_contribution": 1.3973078286697418,
+    "top_one_day_contribution": 0.04156218683543713,
+    "top_ten_percent_day_contribution": 2.1620174698967283,
     "total_costs": 14172030.180000002,
-    "win_rate": 0.5430063204176971
+    "win_rate": 0.5433589462129528
   },
   "zoops-manhattan-project-2026": {
-    "annualized_turnover": 69.69280568293578,
+    "annualized_turnover": 69.70092652868054,
     "backtest_floor": {
       "date": "2011-06-15",
       "dated": 32,
@@ -1816,7 +1816,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 32
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.6973896983894842,
+    "herfindahl_index": 0.6971189305726668,
     "holdings": {
       "AGG": 0.0,
       "BIL": 0.0,
@@ -1835,7 +1835,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "SH": 0.0,
       "SHY": 0.0,
       "SOXL": 0.0,
-      "SOXS": 88619847.70886572,
+      "SOXS": 98706686.58458084,
       "SPXL": 0.0,
       "SPXS": 0.0,
       "SPXU": 0.0,
@@ -1845,7 +1845,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "TMF": 0.0,
       "TMV": 0.0,
       "TNA": 0.0,
-      "TQQQ": 36105701.6387345,
+      "TQQQ": 36201945.813833244,
       "UDOW": 0.0,
       "UPRO": 0.0,
       "USD": 0.0,
@@ -1886,25 +1886,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "XHB": "2006-02-06"
     },
     "k1_holdings": [],
-    "kurtosis": 33.73442787937777,
+    "kurtosis": 33.76648656812506,
     "oos_date": "2026-01-26",
-    "refresh_date": "2026-09-27",
-    "skewness": 2.4278072021558676,
-    "sortino_ratio": 3.6493942672210227,
+    "refresh_date": "2026-10-04",
+    "skewness": 2.4285191873585585,
+    "sortino_ratio": 3.6514188550478286,
     "spy_best_day_baseline": {
       "days": 3640,
       "top_five_percent_day_contribution": 1.910619
     },
     "symphony_id": "cCi1mupGsluFmre7HpOm",
-    "tail_ratio": 1.2257232123173856,
-    "top_five_percent_day_contribution": 1.0815888648129366,
-    "top_one_day_contribution": 0.03286623930139545,
-    "top_ten_percent_day_contribution": 1.6547599055696125,
-    "total_costs": 853418332.5500001,
-    "win_rate": 0.5507007419620775
+    "tail_ratio": 1.2258126793863828,
+    "top_five_percent_day_contribution": 1.083739601305097,
+    "top_one_day_contribution": 0.032816233137795504,
+    "top_ten_percent_day_contribution": 1.6548518979599225,
+    "total_costs": 862748809.27,
+    "win_rate": 0.5507683863885839
   },
   "zoops-safety-checks-2026": {
-    "annualized_turnover": 31.45476810130651,
+    "annualized_turnover": 31.411608430475955,
     "backtest_floor": {
       "date": "2010-03-11",
       "dated": 4,
@@ -1914,7 +1914,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 4
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9869323638849917,
+    "herfindahl_index": 0.9869502893117612,
     "holdings": {
       "SH": 0.0,
       "SOXL": 0.0,
@@ -1928,25 +1928,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "UPRO": "2009-06-25"
     },
     "k1_holdings": [],
-    "kurtosis": 24.965404817461433,
+    "kurtosis": 24.975346143848864,
     "oos_date": "2026-01-26",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.4808505830125769,
-    "sortino_ratio": 2.5589511690837785,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.4804462730796446,
+    "sortino_ratio": 2.5602998311311285,
     "spy_best_day_baseline": {
       "days": 3640,
       "top_five_percent_day_contribution": 1.910619
     },
     "symphony_id": "RLt1Rzz79I6Fa2X9QKqY",
-    "tail_ratio": 1.070458657241736,
-    "top_five_percent_day_contribution": 1.3541766095822685,
-    "top_one_day_contribution": 0.04340601819726371,
-    "top_ten_percent_day_contribution": 2.154473825014622,
+    "tail_ratio": 1.0699604107923073,
+    "top_five_percent_day_contribution": 1.3570004789485126,
+    "top_one_day_contribution": 0.043330251652685205,
+    "top_ten_percent_day_contribution": 2.1544658671137316,
     "total_costs": 8431187.51,
-    "win_rate": 0.5479527342676559
+    "win_rate": 0.5482985729967069
   },
   "zoops-sometimes-tqqq-2026": {
-    "annualized_turnover": 57.54648904228807,
+    "annualized_turnover": 57.46752843712584,
     "backtest_floor": {
       "date": "2010-03-11",
       "dated": 5,
@@ -1956,7 +1956,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 5
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.999998183806462,
+    "herfindahl_index": 0.999998186297747,
     "holdings": {
       "SH": 741787788.7418852,
       "SOXL": 0.0,
@@ -1972,25 +1972,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "UPRO": "2009-06-25"
     },
     "k1_holdings": [],
-    "kurtosis": 41.360977962308844,
+    "kurtosis": 41.418375128144646,
     "oos_date": "2026-01-26",
-    "refresh_date": "2026-09-27",
-    "skewness": 2.6826182802119085,
-    "sortino_ratio": 4.423211683645442,
+    "refresh_date": "2026-10-04",
+    "skewness": 2.6847282399718098,
+    "sortino_ratio": 4.421017457679099,
     "spy_best_day_baseline": {
       "days": 3640,
       "top_five_percent_day_contribution": 1.910619
     },
     "symphony_id": "uAaEkEq8cPOmGgfEWTOU",
-    "tail_ratio": 1.3723715157215406,
-    "top_five_percent_day_contribution": 0.9415633568578391,
-    "top_one_day_contribution": 0.029690472262955347,
-    "top_ten_percent_day_contribution": 1.4317786177522456,
-    "total_costs": 1857886201.0900002,
-    "win_rate": 0.5493267381148668
+    "tail_ratio": 1.371731002907472,
+    "top_five_percent_day_contribution": 0.9446010828022638,
+    "top_one_day_contribution": 0.02968353571958398,
+    "top_ten_percent_day_contribution": 1.4336657857053716,
+    "total_costs": 1857886201.14,
+    "win_rate": 0.5493962678375411
   },
   "zoops-soxl-growth-2026": {
-    "annualized_turnover": 41.688445341296166,
+    "annualized_turnover": 41.63124385207924,
     "backtest_floor": {
       "date": "2010-03-11",
       "dated": 8,
@@ -2000,7 +2000,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 8
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9608514385628601,
+    "herfindahl_index": 0.9609051402932229,
     "holdings": {
       "SH": 0.0,
       "SOXL": 0.0,
@@ -2022,25 +2022,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "UPRO": "2009-06-25"
     },
     "k1_holdings": [],
-    "kurtosis": 13.594539474297008,
+    "kurtosis": 13.61206420315167,
     "oos_date": "2026-01-27",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.1228774422693915,
-    "sortino_ratio": 2.8066428863614816,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.1238752775835903,
+    "sortino_ratio": 2.8029616855296267,
     "spy_best_day_baseline": {
       "days": 3640,
       "top_five_percent_day_contribution": 1.910619
     },
     "symphony_id": "wcEUcb13v7M8bEluRc1h",
-    "tail_ratio": 1.1842417156623795,
-    "top_five_percent_day_contribution": 1.4421425524497173,
-    "top_one_day_contribution": 0.03217327980125573,
-    "top_ten_percent_day_contribution": 2.2340259029521112,
+    "tail_ratio": 1.1858950637906258,
+    "top_five_percent_day_contribution": 1.4483761326629843,
+    "top_one_day_contribution": 0.032194834561503585,
+    "top_ten_percent_day_contribution": 2.2391355354573688,
     "total_costs": 361560375.49,
-    "win_rate": 0.5289914811761472
+    "win_rate": 0.528814489571899
   },
   "zoops-tqqq-200d-ma-3x-2026": {
-    "annualized_turnover": 32.547399144628386,
+    "annualized_turnover": 32.50274025447385,
     "backtest_floor": {
       "date": "2010-03-11",
       "dated": 5,
@@ -2050,7 +2050,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 5
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999997932640877,
+    "herfindahl_index": 0.9999997935476761,
     "holdings": {
       "SH": 0.0,
       "SOXL": 0.0,
@@ -2066,25 +2066,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "UPRO": "2009-06-25"
     },
     "k1_holdings": [],
-    "kurtosis": 25.570461213957984,
+    "kurtosis": 25.582697068566844,
     "oos_date": "2026-01-26",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.7688271881311053,
-    "sortino_ratio": 2.6542200455318206,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.768535173652451,
+    "sortino_ratio": 2.655441684372949,
     "spy_best_day_baseline": {
       "days": 3640,
       "top_five_percent_day_contribution": 1.910619
     },
     "symphony_id": "ZBpjzxS9RkLzft9NNWhO",
-    "tail_ratio": 1.0601906315489908,
-    "top_five_percent_day_contribution": 1.3611753117903855,
-    "top_one_day_contribution": 0.04143207445034312,
-    "top_ten_percent_day_contribution": 2.127509019881623,
+    "tail_ratio": 1.0603302427316137,
+    "top_five_percent_day_contribution": 1.3638593146196554,
+    "top_one_day_contribution": 0.04136303690119988,
+    "top_ten_percent_day_contribution": 2.1275721253843987,
     "total_costs": 13477234.209999999,
-    "win_rate": 0.5460291288815609
+    "win_rate": 0.546377607025247
   },
   "zoops-tqqq-long-term-2026": {
-    "annualized_turnover": 29.638908803404963,
+    "annualized_turnover": 29.598240706803146,
     "backtest_floor": {
       "date": "2010-03-11",
       "dated": 6,
@@ -2094,7 +2094,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 6
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999997520025139,
+    "herfindahl_index": 0.9999997523427024,
     "holdings": {
       "SH": 0.0,
       "SOXL": 0.0,
@@ -2112,25 +2112,25 @@ window.STRATEGY_EXTRAS_DATA = {
       "TQQQ": "2010-02-11"
     },
     "k1_holdings": [],
-    "kurtosis": 23.88150675050448,
+    "kurtosis": 23.894470905234247,
     "oos_date": "2026-01-26",
-    "refresh_date": "2026-09-27",
-    "skewness": 1.7573904949939843,
-    "sortino_ratio": 2.632433132705416,
+    "refresh_date": "2026-10-04",
+    "skewness": 1.7571932528644518,
+    "sortino_ratio": 2.6336202878361674,
     "spy_best_day_baseline": {
       "days": 3640,
       "top_five_percent_day_contribution": 1.910619
     },
     "symphony_id": "yIMvLUHfzAMATCpOKr9T",
-    "tail_ratio": 1.0701990243948531,
-    "top_five_percent_day_contribution": 1.3854381148360468,
-    "top_one_day_contribution": 0.04100536050032274,
-    "top_ten_percent_day_contribution": 2.159812461345375,
+    "tail_ratio": 1.070374473903721,
+    "top_five_percent_day_contribution": 1.3881539293155272,
+    "top_one_day_contribution": 0.04093773652114167,
+    "top_ten_percent_day_contribution": 2.159887563138354,
     "total_costs": 14838105.49,
-    "win_rate": 0.5465787304204451
+    "win_rate": 0.5469264544456641
   },
   "zoops-upro-ftlt-2026": {
-    "annualized_turnover": 30.816154441617243,
+    "annualized_turnover": 30.7738710244361,
     "backtest_floor": {
       "date": "2010-03-11",
       "dated": 6,
@@ -2140,7 +2140,7 @@ window.STRATEGY_EXTRAS_DATA = {
       "total": 6
     },
     "etn_holdings": [],
-    "herfindahl_index": 0.9999997645116451,
+    "herfindahl_index": 0.9999997648346743,
     "holdings": {
       "SH": 0.0,
       "SOXL": 0.0,
@@ -2158,21 +2158,21 @@ window.STRATEGY_EXTRAS_DATA = {
       "UPRO": "2009-06-25"
     },
     "k1_holdings": [],
-    "kurtosis": 46.31402574015474,
+    "kurtosis": 46.3479971989316,
     "oos_date": "2026-01-26",
-    "refresh_date": "2026-09-27",
-    "skewness": 3.043356942623004,
-    "sortino_ratio": 2.8229784303275762,
+    "refresh_date": "2026-10-04",
+    "skewness": 3.0442726858695335,
+    "sortino_ratio": 2.818156850887525,
     "spy_best_day_baseline": {
       "days": 3640,
       "top_five_percent_day_contribution": 1.910619
     },
     "symphony_id": "9ETFQi5cmSWq2mT4ZH2d",
-    "tail_ratio": 1.0665898088906887,
-    "top_five_percent_day_contribution": 1.3115293263000263,
-    "top_one_day_contribution": 0.045907908623719434,
-    "top_ten_percent_day_contribution": 1.9937305355903903,
+    "tail_ratio": 1.0660947733780435,
+    "top_five_percent_day_contribution": 1.3171535909282213,
+    "top_one_day_contribution": 0.045950065819738956,
+    "top_ten_percent_day_contribution": 1.9987882405068111,
     "total_costs": 6022084.899999999,
-    "win_rate": 0.5427315196482551
+    "win_rate": 0.5425356750823271
   }
 };
