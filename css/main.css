@@ -1551,6 +1551,23 @@ code.signal-ind {
    The left border is deliberately --color-border and not an accent. This block
    is a summary of the page below it, not a warning and not a value, and the one
    thing it must not do is read as more important than the guide it introduces. */
+/* Optional per-guide notice, shown above the takeaways. Yellow because
+   Section 2 assigns yellow to caution, which is exactly what this is. Pink
+   would read as a negative value and green is reserved. */
+.guide-disclaimer {
+  background: rgba(245, 197, 24, 0.06);
+  border: 1px solid rgba(245, 197, 24, 0.2);
+  border-left: 3px solid var(--color-yellow);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  color: var(--color-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.guide-disclaimer strong { color: var(--color-yellow); }
+
 .guide-takeaways {
   background: var(--color-surface);
   border: 1px solid var(--color-border);

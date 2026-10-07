@@ -11,9 +11,17 @@
       "Do every test that does not need the held-back window first: parameter sensitivity, logic review, branch isolation.",
       "The trades in a test window are not a forecast of future trades. Extremes get worse in both directions."
     ],
-    "related_terms": ["backtesting", "max-drawdown", "sharpe-ratio"],
+    "related_terms": [
+      "backtesting",
+      "max-drawdown",
+      "sharpe-ratio"
+    ],
     "related_tools": [
-      { "label": "Overfit Check", "href": "/overfit.html", "note": "Splits a real symphony into the era its author could tune against and the era nobody could." }
+      {
+        "label": "Overfit Check",
+        "href": "/overfit.html",
+        "note": "Splits a real symphony into the era its author could tune against and the era nobody could."
+      }
     ],
     "sections": [
       {
@@ -70,7 +78,6 @@
     ],
     "last_updated": "2026-10-07"
   },
-
   {
     "slug": "if-you-cannot-explain-it",
     "title": "If you cannot explain why it works, it probably does not",
@@ -83,9 +90,17 @@
       "A strategy that depends on trading at an exact minute is not implementable on Composer, whatever the backtest says.",
       "Testing and tweaking against the same history is itself the mechanism that produces overfitting."
     ],
-    "related_terms": ["backtesting", "momentum", "mean-reversion"],
+    "related_terms": [
+      "backtesting",
+      "momentum",
+      "mean-reversion"
+    ],
     "related_tools": [
-      { "label": "Overfit Check", "href": "/overfit.html", "note": "Measures whether a symphony's results survive outside the window its author could tune against." }
+      {
+        "label": "Overfit Check",
+        "href": "/overfit.html",
+        "note": "Measures whether a symphony's results survive outside the window its author could tune against."
+      }
     ],
     "sections": [
       {
@@ -126,7 +141,6 @@
     ],
     "last_updated": "2026-10-07"
   },
-
   {
     "slug": "test-one-branch-at-a-time",
     "title": "Test one branch at a time",
@@ -139,10 +153,21 @@
       "Never judge a change on the full backtest alone. Use the date range to look at six to twelve month windows.",
       "Keep an unmodified copy and plot it against the draft, so you are comparing two curves rather than remembering a number."
     ],
-    "related_terms": ["backtesting", "rsi", "200d-ma"],
+    "related_terms": [
+      "backtesting",
+      "rsi",
+      "200d-ma"
+    ],
     "related_tools": [
-      { "label": "Nodes", "href": "/nodes.html", "note": "Counts the branches in a symphony, which is a reasonable proxy for how much there is to isolate." },
-      { "label": "Overfit Check", "href": "/overfit.html" }
+      {
+        "label": "Nodes",
+        "href": "/nodes.html",
+        "note": "Counts the branches in a symphony, which is a reasonable proxy for how much there is to isolate."
+      },
+      {
+        "label": "Overfit Check",
+        "href": "/overfit.html"
+      }
     ],
     "sections": [
       {
@@ -189,7 +214,6 @@
     ],
     "last_updated": "2026-10-07"
   },
-
   {
     "slug": "live-trades-will-not-match-the-backtest",
     "title": "Your live trades will not match the backtest",
@@ -202,10 +226,20 @@
       "When a range of values all backtest about equally well, take the middle, not the best.",
       "Several baskets at staggered window lengths convert a single all-or-nothing decision into a vote."
     ],
-    "related_terms": ["rsi", "momentum", "200d-ma"],
+    "related_terms": [
+      "rsi",
+      "momentum",
+      "200d-ma"
+    ],
     "related_tools": [
-      { "label": "Signal Miner", "href": "/signal-miner.html" },
-      { "label": "RSI Signals", "href": "/rsi.html" }
+      {
+        "label": "Signal Miner",
+        "href": "/signal-miner.html"
+      },
+      {
+        "label": "RSI Signals",
+        "href": "/rsi.html"
+      }
     ],
     "sections": [
       {
@@ -261,7 +295,6 @@
     ],
     "last_updated": "2026-10-07"
   },
-
   {
     "slug": "sizing-a-symphony",
     "title": "How much to invest in a symphony",
@@ -274,9 +307,15 @@
       "Use a short date range. Over a long backtest the balance grows and you stop measuring the amount you actually started with.",
       "Turn off subscription fees for this test. They belong to your account, not to the strategy, and they distort small-balance runs."
     ],
-    "related_terms": ["leveraged-etfs", "annualized-return"],
+    "related_terms": [
+      "leveraged-etfs",
+      "annualized-return"
+    ],
     "related_tools": [
-      { "label": "Strategies", "href": "/strategies.html" }
+      {
+        "label": "Strategies",
+        "href": "/strategies.html"
+      }
     ],
     "sections": [
       {
@@ -314,7 +353,84 @@
     ],
     "last_updated": "2026-10-07"
   },
-
+  {
+    "slug": "clearing-wash-sales-before-year-end",
+    "title": "Clearing wash sales before year end",
+    "category": "execution",
+    "summary": "An automated strategy can repurchase a security days after you sold it at a loss, which voids the deduction without you ever seeing it happen. Here is the rule, the reason automation makes it harder, and the practice that works around it.",
+    "disclaimer": "This page explains a mechanic, not your tax situation. It is not tax advice and it is not investment advice. The wash sale rule has edges that are genuinely unsettled, and the consequences land on your return rather than on your backtest. Confirm anything here with someone qualified before you act on it.",
+    "takeaways": [
+      "A loss is disallowed if you buy a substantially identical security within 30 days before or after the sale. The window is 61 days around the trade, not the calendar year.",
+      "That window crosses the year boundary, which is where most of the damage happens. Selling in late December and buying back on 2 January is still a wash sale.",
+      "The Composer-specific risk is that the symphony does the repurchase for you, on its own rebalance schedule, and across two symphonies one can buy what the other just sold.",
+      "Collapsing the symphonies you run into a single one is what makes the holdings few enough to reason about before you harvest anything.",
+      "In a taxable account a disallowed loss is deferred rather than destroyed, because the basis adjusts. Repurchasing inside an IRA is the exception, and there the loss is simply gone."
+    ],
+    "related_terms": [
+      "annualized-turnover",
+      "leveraged-etfs"
+    ],
+    "related_tools": [
+      {
+        "label": "K1 Lookup",
+        "href": "/k1.html",
+        "note": "Funds that issue a K-1 are taxed on a different basis. Worth knowing which of your holdings do before you plan around any of this."
+      },
+      {
+        "label": "Database",
+        "href": "/database.html",
+        "note": "The Turnover column is a rough proxy for how many taxable events a strategy generates in a year."
+      }
+    ],
+    "sections": [
+      {
+        "title": "What the rule actually says",
+        "paragraphs": [
+          "If you sell a security at a loss and buy a substantially identical one within 30 days before or after that sale, the loss is disallowed for that tax year. The window runs in both directions, so it is 61 days wide with the sale in the middle. A purchase you made three weeks **before** selling can trigger it just as easily as one you make afterwards.",
+          "The rule applies to losses only. Selling at a gain and buying straight back is not a wash sale, it is just a taxable gain.",
+          "In a taxable account the disallowed loss is deferred rather than destroyed. The amount is added to the cost basis of the replacement shares, so you get it back when you eventually sell those. The usual misreading is that a wash sale costs you the loss outright. It normally costs you the **timing**, which still matters if you were harvesting against a realised gain this year.",
+          "The rule also follows you across accounts rather than applying per account, and that includes a spouse's accounts. Two brokerages do not give you two separate windows."
+        ]
+      },
+      {
+        "title": "Why automation makes this harder",
+        "paragraphs": [
+          "Ordinary tax-loss harvesting advice assumes a person decides every purchase. A live symphony does not work that way. It rebalances on its own schedule, and if its logic calls for a security you sold at a loss two weeks ago, it buys it. The wash sale happens without a decision, and nothing announces it.",
+          "The version of this that catches people out involves more than one symphony. If you run several, they frequently hold overlapping tickers. One symphony rotating out of TQQQ at a loss in the same week another rotates into it is a wash sale assembled from two strategies that have no knowledge of each other. You did not do anything wrong at either end, and you will not see it unless you are looking at your holdings across everything at once.",
+          "This is the real argument for consolidating before year end. It is not that one symphony is a better strategy than three. It is that one symphony has a holdings list short enough to check."
+        ]
+      },
+      {
+        "title": "The practice",
+        "paragraphs": [
+          "The approach that works around all of this is to take control of the holdings for the length of the window, rather than trying to predict what the automation will do.",
+          "Combine the symphonies you are running into a single one, so there is one set of holdings instead of several that can trade against each other. Then replace those holdings with securities that are not substantially identical to anything you sold at a loss, and that your strategies have not been trading. Leave it there until the window has fully closed, then move back.",
+          "Count the days rather than counting on the new year. The window closes 31 days after the sale, so a loss taken in the second half of December is not clear until some point in late January. Waiting for 1 January clears nothing, and a repurchase on 2 January is the mistake this whole exercise exists to avoid. Pushing the repurchase past the end of January puts you comfortably clear of anything sold in December.",
+          "A quieter benefit of picking replacement holdings you have not touched all year is that it also sidesteps the 30-days-**before** half of the rule, which is the half people forget. If you have not bought it recently, there is nothing behind you to collide with."
+        ]
+      },
+      {
+        "title": "Where this goes wrong",
+        "paragraphs": [
+          "**Substantially identical is the unsettled part, and nobody can tell you where the line is.** The same company's stock is clearly identical to itself. Two different ETFs tracking the same index are a genuine grey area that has never been cleanly ruled on, and the cautious reading is that swapping one S&P 500 fund for another is not a safe distance. Moving to a different asset class, or to a fund tracking a visibly different index, is a much easier position to defend. Treat confident answers on this with suspicion, including confident answers that say it is fine.",
+          "**Being out of your strategy for a month is a real cost.** This is the part that gets left out of the tax framing entirely. For 31 days you are holding something you did not choose for its returns, which means you are exposed to whatever the market does and your strategy does not get to respond. In a month that moves sharply, that cost can be larger than the tax it saved. The harvest is worth doing when you have gains to offset and the numbers justify it, not automatically.",
+          "**An IRA repurchase destroys the loss rather than deferring it.** If you sell at a loss in a taxable account and buy the same thing in an IRA inside the window, the loss is disallowed and there is no basis adjustment to recover it later. This catches people who think of their retirement account as a separate world.",
+          "**K-1 funds are taxed on a different basis.** Many of the leveraged, inverse and commodity products that appear in Composer strategies are partnerships rather than ordinary funds, and their tax treatment does not resemble a share sale. That is a reason to know which of your holdings issue a K-1 before you plan around any of this, not a reason to assume the rule does or does not reach them."
+        ]
+      },
+      {
+        "title": "Before you do it",
+        "paragraphs": [
+          "Look at your realised gains for the year first. Harvesting losses with nothing to offset them against is a lot of disruption for a deduction that may be capped.",
+          "List every holding across every symphony, not one at a time. The overlap between strategies is the thing you are looking for.",
+          "Write down the actual date each loss was realised, and add 31 days to each one. The window belongs to the sale, not to the calendar.",
+          "Check what your replacement holdings are, specifically, and whether any of them resemble something you just sold. A replacement chosen for being unrelated to your strategy is doing its job.",
+          "Then confirm it with someone who does this professionally. Everything above is the shape of the problem rather than advice about your return."
+        ]
+      }
+    ],
+    "last_updated": "2026-10-07"
+  },
   {
     "slug": "when-a-leveraged-product-disappears",
     "title": "When a leveraged product disappears",
@@ -327,10 +443,21 @@
       "A halt on new note issuance can break the link to the underlying index, and the note can trade at a large premium while it is broken.",
       "Low volume is itself a risk, because symphonies rebalance at market and thin books widen the spread you pay."
     ],
-    "related_terms": ["leveraged-etfs", "inverse-etfs", "volatility-decay"],
+    "related_terms": [
+      "leveraged-etfs",
+      "inverse-etfs",
+      "volatility-decay"
+    ],
     "related_tools": [
-      { "label": "Database", "href": "/database.html" },
-      { "label": "K1 Lookup", "href": "/k1.html", "note": "Fund structure and tax treatment for the tickers that appear in symphonies." }
+      {
+        "label": "Database",
+        "href": "/database.html"
+      },
+      {
+        "label": "K1 Lookup",
+        "href": "/k1.html",
+        "note": "Fund structure and tax treatment for the tickers that appear in symphonies."
+      }
     ],
     "sections": [
       {
@@ -372,7 +499,6 @@
     ],
     "last_updated": "2026-10-07"
   },
-
   {
     "slug": "the-bond-leg-is-not-one-thing",
     "title": "Why the bond leg failed in 2022",
@@ -385,10 +511,20 @@
       "In 2022 rates rose quickly, so the usual hedge fell at the same time as equities. The hedge did not fail, it did what it always does.",
       "Ultra-short treasury funds and long-dated treasury funds are both called bonds and behave almost nothing alike."
     ],
-    "related_terms": ["managed-futures", "max-drawdown", "standard-deviation"],
+    "related_terms": [
+      "managed-futures",
+      "max-drawdown",
+      "standard-deviation"
+    ],
     "related_tools": [
-      { "label": "Strategies", "href": "/strategies.html" },
-      { "label": "Database", "href": "/database.html" }
+      {
+        "label": "Strategies",
+        "href": "/strategies.html"
+      },
+      {
+        "label": "Database",
+        "href": "/database.html"
+      }
     ],
     "sections": [
       {

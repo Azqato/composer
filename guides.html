@@ -157,6 +157,14 @@
           { label: guide.title },
         ]);
 
+        // Optional, and only one guide uses it. The standard footer line covers the
+        // collection; a guide about tax mechanics needs a notice the reader meets
+        // before the content rather than after it.
+        const disclaimerHtml = guide.disclaimer
+          ? '<div class="guide-disclaimer"><strong>Read this first.</strong> ' +
+            mdInline(escapeHtml(guide.disclaimer)) + '</div>'
+          : '';
+
         const takeawaysHtml = (guide.takeaways || []).length
           ? '<div class="guide-takeaways" style="margin-bottom:28px">' +
               '<p class="hero-eyebrow" style="margin-bottom:10px">In short</p>' +
@@ -233,6 +241,7 @@
                 '<p style="color:var(--color-secondary);font-size:1rem;line-height:1.7">' +
                   escapeHtml(guide.summary) + '</p>' +
               '</div>' +
+              disclaimerHtml +
               takeawaysHtml +
               '<div class="prose">' + sectionsHtml + '</div>' +
               '<p style="color:var(--color-disabled);font-size:0.8125rem;margin-top:28px">' +

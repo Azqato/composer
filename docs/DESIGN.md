@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.28
+**Version:** 1.29
 **Status:** Active
 **Last Updated:** 2026-10-07
 
@@ -628,7 +628,7 @@ mobile and desktop without a media query on the row itself.
 
 ---
 
-### Guides (v1.28)
+### Guides (v1.28, disclaimer and markup rule v1.29)
 
 `guides.html` renders `data/guides.json` through **the same `.wiki-*` markup and CSS as the glossary
 listing**, with the same two views: a category-grouped index at the root and a detail view at
@@ -645,7 +645,7 @@ burden. Their *fields* differ for the same reason: a glossary entry wants a `for
 
 **Schema.** `slug`, `title`, `category`, `summary`, `takeaways[]`, `related_terms[]` (glossary
 slugs), `related_tools[]` (`{label, href, note?}`), `sections[{title, paragraphs[]}]`,
-`last_updated`. `sections` is deliberately identical to the glossary's so one renderer serves both.
+`last_updated`, and an optional `disclaimer`. `sections` is deliberately identical to the glossary's so one renderer serves both.
 
 **Categories and their badge colours**, which are not arbitrary:
 
@@ -657,6 +657,19 @@ slugs), `related_tools[]` (`{label, href, note?}`), `sections[{title, paragraphs
 
 **Green is deliberately not used for a guide badge.** Section 2 reserves it for positive values,
 primary actions and identity, and a category label is none of those.
+
+**`.guide-disclaimer` is optional and deliberately rare.** A guide carrying a `disclaimer`
+string renders it as a yellow callout **above** the takeaways, so the reader meets it before the
+content rather than in the footer after it. Only `clearing-wash-sales-before-year-end` uses it,
+because it is the only page where acting on a misunderstanding produces a letter from the IRS. The
+hue is yellow because Section 2 assigns yellow to caution, which is exactly what it is: pink would
+read as a negative value and green is reserved. **Do not add it to guides that merely feel
+important**, or it stops meaning anything.
+
+**All guide prose goes through `mdInline()`, which supports only `**bold**` and `` `code` ``.** A
+single-asterisk `*emphasis*` pair renders as literal asterisks. This is invisible in the json and
+**no render assertion catches it either**, because the text is all present and merely wrong, so
+`scripts/build_guides_twin.py` fails the build on it instead.
 
 **`.guide-takeaways` asks for `list-style: disc` explicitly**, because the global reset near the top
 of `css/main.css` sets `list-style: none` on every `ul`. Without it the takeaways render as indented

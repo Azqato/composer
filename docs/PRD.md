@@ -2617,7 +2617,7 @@ is really a definition belongs in the glossary instead.
 
 | # | Proposed guide | Category | Why it earns a slot | State of the source |
 |---|---|---|---|---|
-| 1 | **Clearing wash sales at year end** | `execution` | Directly requested by the owner, who runs the technique himself. Nothing else on the site touches tax mechanics, and this is the one topic where a Composer-specific failure mode is invisible: an automated symphony can repurchase a security on its own and silently void the harvested loss | Owner's own practice, recorded in full below. Needs the rule mechanics verified against IRS Publication 550 before publishing |
+| ~~1~~ | ~~**Clearing wash sales at year end**~~ | `execution` | **SHIPPED 2026-10-07** as `clearing-wash-sales-before-year-end`. Kept in this table rather than deleted, because the spec below is what the page has to keep being true to on review | Written. The spec below is now the **review checklist** for it |
 | 2 | **What the Signal Miner is doing to your p-value** | `testing` | The largest hole in the collection, and the only one on this list that is about **our own tooling** rather than about Composer. We ship a tool that searches thousands of signal combinations and ranks them, and nothing tells a reader that the best of 5,000 random signals is *expected* to look excellent. `overfit.html` measures the problem the Miner manufactures; this guide is the link between them | Needs writing from scratch. Pulls in multiple comparisons and sample size, both absent from the glossary |
 | 3 | **Permutation testing and the walk-forward knee** | `testing` | `permutation` and `walk-forward` are both absent from the glossary. Highest-value testing guide after #2 and the hardest of these to write honestly, because it is easy to make a judgement call read like a recipe | Ideas in hand from the ingested Masters material. Written in site voice, no verbatim text |
 | 4 | **The mean reversion death spiral and the volatility switch** | `testing` | The glossary's `mean-reversion` entry defines the rubber band. This covers the failure mode: a dip-buy ladder that averages into a trend instead of a reversion, and the switch that gets you out | Source material in hand. **Needs framing discipline** so it does not restate the glossary entry |
@@ -2631,7 +2631,13 @@ is really a definition belongs in the glossary instead.
 on the site they belong on a reading list page, not inside a guide. Recorded so it is not
 re-proposed as a guide.
 
-#### The Wash Sale Guide: Spec and the Owner's Technique
+#### The Wash Sale Guide: Spec, the Owner's Technique, and the Review Checklist
+
+**Status: shipped 2026-10-07** as `clearing-wash-sales-before-year-end`. Everything below was
+written as a spec before the guide existed and is retained as the **review checklist**. This is
+the page on the site most likely to go stale in a way that matters, because tax rules change
+and its errors land on someone's return. Re-read this list against the live page whenever its
+`last_updated` is refreshed.
 
 **The owner's year-end technique, in his own description, recorded 2026-10-07.** He combines all the
 symphonies he runs into a single symphony, replaces the holdings with securities he has not bought
@@ -8444,7 +8450,11 @@ not because they are weak but because `data/glossary.json` already covers them p
 `volatility-decay`, `leveraged-etfs` and `mean-reversion`, each with a "building this in Composer"
 section. Duplicating them would have created two places to maintain one explanation.
 
-**Nine further guides are proposed and prioritised in Section 14, "Guides Content Roadmap"**,
+**The wash sale guide shipped the same day**, as the eighth guide, and introduced the optional
+`disclaimer` field. It is the only guide that uses it: a page about tax mechanics needs a notice
+the reader meets *before* the content, not the standard footer line after it.
+
+**Eight further guides are proposed and prioritised in Section 14, "Guides Content Roadmap"**,
 along with the standing rule that the collection is capped at roughly a dozen. The highest-priority
 item is a year-end wash sale guide, requested by the owner, whose own technique and the five rule
 mechanics the guide must get right are recorded there.

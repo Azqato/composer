@@ -23,6 +23,18 @@ live, and on what the instruments inside a symphony can actually do.
 - **`scripts/build_guides_twin.py`**, which generates `data/guides.js` from the json **and validates
   the cross-links**. Every `related_terms` slug must exist in the glossary and every `related_tools`
   href must be a real page, so a dead link fails the build rather than rendering silently.
+- **An eighth guide, `clearing-wash-sales-before-year-end`**, the first roadmap item written.
+  Requested by the owner, whose own year-end technique it documents: collapse the symphonies you
+  run into one, swap the holdings for securities you have not bought that year, and rebuy after the
+  window closes. The point the guide exists for is Composer-specific: **a live symphony rebalances
+  on its own and can repurchase a security inside the window, voiding the loss with nobody
+  deciding anything**, and across two symphonies one can buy what the other just sold.
+- **An optional `disclaimer` field**, rendered as a yellow callout above the takeaways. Only the
+  wash sale guide uses it, and `docs/DESIGN.md` records that it should stay that way.
+- **`build_guides_twin.py` now rejects single-asterisk emphasis.** `mdInline()` supports only
+  `**bold**` and `` `code` ``, so `*this*` renders as literal asterisks. The first draft of the wash
+  sale guide contained three, and **no render assertion would have caught them**: all the text was
+  present, just wrong. The build fails on it now.
 - **Guides in the primary nav and the footer**, beside Glossary rather than inside the Tools
   dropdown, because it is reading rather than a tool.
 - **Guide detail pages in `sitemap.xml`**, via a new `collect_guides()`.
@@ -47,11 +59,11 @@ them would make the stable reference inherit the unstable thing's review burden.
 - **`.guide-takeaways` has to ask for `list-style: disc` back**, because a global reset sets
   `list-style: none` on every `ul`. The takeaways rendered as indented paragraphs until that was
   added, and **it was only visible in a screenshot**, not in the markup.
-- **Nine further guides are proposed and prioritised** in `docs/PRD.md` Section 14, "Guides
+- **A further eight guides are proposed and prioritised** in `docs/PRD.md` Section 14, "Guides
   Content Roadmap", with the standing rule that the collection stays capped at roughly a dozen
-  because each guide's `last_updated` is a recurring review commitment. The top item is a year-end
-  wash sale guide requested by the owner; his technique and the rule mechanics the guide has to get
-  right are recorded with it.
+  because each guide's `last_updated` is a recurring review commitment. The top item on that list,
+  the year-end wash sale guide, was written and shipped in this same release; its spec is retained
+  there as the page's review checklist.
 - The content was written in the site's own voice by owner ruling, with one acknowledgement line on
   the index. `docs/PRD.md` records the ruling, the reasoning, and the list of source material that
   was **deliberately not** ingested.

@@ -18,6 +18,7 @@ Python 3 standard library only, per the repo convention.
 """
 
 import json
+import re
 import os
 import sys
 
@@ -27,6 +28,12 @@ OUT = os.path.join(ROOT, 'data', 'guides.js')
 GLOSSARY = os.path.join(ROOT, 'data', 'glossary.json')
 
 CATEGORIES = {'testing', 'execution', 'instrument-risk'}
+
+# mdInline() in app.js supports **bold** and `code` and nothing else. A single
+# *asterisk* pair renders as literal asterisks on the page, which looks like a
+# typo and is invisible in the json. Checked here because no render assertion
+# would catch it either: the text is all present, just wrong.
+SINGLE_EMPH = re.compile(r'(?<!\*)\*(?!\*)([^*\n]+?)(?<!\*)\*(?!\*)')
 
 REQUIRED = ('slug', 'title', 'category', 'summary', 'takeaways',
             'sections', 'last_updated')
@@ -69,6 +76,17 @@ def main():
             if not s.get('title') or not s.get('paragraphs'):
                 fail('guide %r has a section missing a title or body' % g['slug'])
 
+        texts = [g['title'], g['summary']] + list(g['takeaways'])
+        if g.get('disclaimer'):
+            texts.append(g['disclaimer'])
+        texts += [s['title'] for s in g['sections']]
+        texts += [p for s in g['sections'] for p in s['paragraphs']]
+        for t in texts:
+            bad = SINGLE_EMPH.findall(t)
+            if bad:
+                fail('guide %r uses single-asterisk emphasis %s, which mdInline() '
+                     'does not support. Use **bold**.' % (g['slug'], bad))
+
         for term in g.get('related_terms', []):
             if term not in known_terms:
                 fail('guide %r links to glossary slug %r, which does not exist'
@@ -92,6 +110,7 @@ def main():
           % (len(guides),
              sum(len(g['sections']) for g in guides),
              words))
+    print('OK    no unsupported markup in any guide text')
     print('OK    every related_terms slug exists in the glossary')
     print('OK    every related_tools href is a real page')
     print('      wrote %s' % os.path.relpath(OUT, ROOT))
