@@ -139,8 +139,11 @@ function formatBacktestDays(days) {
 }
 
 function colorClass(n) {
-  if (n > 0) return 'text-green';
-  if (n < 0) return 'text-pink';
+  // Semantic roles, not hues. A loss is negative, which the palette now paints
+  // red; it was pink only because this function named the colour instead of
+  // the meaning.
+  if (n > 0) return 'text-positive';
+  if (n < 0) return 'text-negative';
   return 'text-primary';
 }
 
@@ -205,6 +208,41 @@ function badgeClass(category) {
 }
 
 // ---- Nav rendering ----
+/* Theme toggle. <html data-theme> is already set by the inline boot script in
+ * each page head, before first paint; this only handles the click and keeps
+ * the button's label honest.
+ *
+ * The emoji is aria-hidden and the button carries a real aria-label, because
+ * an emoji is a picture and rule 3 of the colour standard says a control may
+ * not rely on one alone. The label says what the button DOES rather than what
+ * mode you are in, which is the part that is most often backwards.
+ */
+function applyThemeButton(theme) {
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  const goingTo = theme === 'light' ? 'dark' : 'light';
+  const label = 'Switch to ' + goingTo + ' mode';
+  // The glyph shows the DESTINATION: sun offers light, moon offers dark.
+  btn.querySelector('span').textContent = goingTo === 'light' ? '☀️' : '🌙';
+  btn.setAttribute('aria-label', label);
+  btn.setAttribute('title', label);
+}
+
+function initThemeToggle() {
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  const current = () =>
+    document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  applyThemeButton(current());
+  btn.addEventListener('click', () => {
+    const next = current() === 'light' ? 'dark' : 'light';
+    if (next === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+    try { localStorage.setItem('ca-theme', next); } catch (e) { /* private mode */ }
+    applyThemeButton(next);
+  });
+}
+
 function renderNav() {
   const path = window.location.pathname;
   const search = window.location.search;
@@ -277,6 +315,10 @@ function renderNav() {
         ${desktopLinks}
       </div>
       <div class="nav-actions">
+        <button class="theme-toggle" id="theme-toggle" type="button"
+          aria-label="Switch to light mode" title="Switch to light mode">
+          <span aria-hidden="true">☀️</span>
+        </button>
         <a href="https://composer.trade" target="_blank" rel="noopener noreferrer"
           class="btn btn-outline-green nav-cta">Open Composer ↗</a>
         <button class="nav-hamburger" id="nav-toggle"
@@ -291,6 +333,8 @@ function renderNav() {
         class="btn btn-outline-green mobile-nav-cta">Open Composer ↗</a>
     </div>
   `;
+
+  initThemeToggle();
 
   const toggle = document.getElementById('nav-toggle');
   const menu = document.getElementById('mobile-menu');

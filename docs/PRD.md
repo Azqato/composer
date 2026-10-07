@@ -8416,6 +8416,40 @@ the brief did not specify either way, because a transparent favicon bakes one in
 
 ---
 
+### The Colour Audit and the Two-Theme Palette
+
+**Done 2026-10-07**, against the owner's own published **Template Interface Color Standard v1.0**
+(`wireframe/standards/color/`). Measured in headless Edge across 17 page states per theme, reading
+computed styles from the live DOM with every translucent layer composited down the chain.
+
+**Result: 346 text pairs and 190 controls across both themes, zero failures.**
+
+**What the audit found, and what it got wrong.** Two of its own first-pass findings were false and
+were discarded before anything was reported: 240 "border failures" came from measuring decorative
+borders on filled buttons, which are identified by their fill rather than their outline; and a focus
+ring read at 1.08:1 was an artefact of `outline-style: auto`, where the browser paints its own ring
+and the computed colour means nothing. A screenshot settled it. **A third artefact appeared later
+and was more dangerous**: 56 light-mode failures that did not exist, caused by setting `data-theme`
+from the parent frame, which does not force a style recalc inside an iframe under virtual time, so
+the probe read stale values. The audit was re-run through the page's real boot script instead. **All
+three would have produced confident, wrong remediation.**
+
+**The real findings were three**, and all are fixed: text entry fields had no 3:1 boundary; the
+footer's one running-text link was identified by colour alone at 1.60 against its surroundings,
+where WCAG G183 wants 3.0; and 54 `rgba()` literals were hardcoded copies of token colours.
+
+**Owner rulings, 2026-10-07, taken after being shown both sides:**
+
+| Question | Ruling |
+|---|---|
+| Brand green collides with the standard's "green means success only" | **Green serves both accent and positive.** One named deviation, documented rather than designed away |
+| Pink for negative values | **Adopt red.** The standard lists pink as a data colour and reserves red for danger |
+| Blue for info | **Adopt teal.** Freeing blue means it can never read as both informational and clickable |
+| Light mode | **Added, with dark as the default.** Sun and moon button in the nav |
+
+See `docs/DESIGN.md` Section 2 for the role table and Section 9 for the focus ring and control
+boundaries.
+
 ### The Guides Collection
 
 **Added 2026-10-07.** `guides.html` plus `data/guides.json`, seven guides across three categories,

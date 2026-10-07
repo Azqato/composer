@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.29
+**Version:** 1.30
 **Status:** Active
 **Last Updated:** 2026-10-07
 
@@ -120,6 +120,68 @@ The following color variants appear as inline `rgba()` values in `css/main.css` 
 - **Blue**: reserved for interactive states (links, focus rings, hover borders). Not used for data values.
 - **Yellow**: used for neutral/caution indicators (mean period return, median period return).
 
+### Themes (v1.30)
+
+**The site has two themes and dark is the default.** `:root` carries the dark values; a
+`:root[data-theme="light"]` block overrides them. **There is deliberately no
+`prefers-color-scheme` query**: the owner's instruction is that the site opens dark and the visitor
+chooses otherwise, so the system setting is not consulted at all.
+
+**The switch is a single button in the nav** showing a sun or a moon. The glyph names the
+**destination**, not the current state: a sun offers light, a moon offers dark. The emoji is
+`aria-hidden` and the button carries a real `aria-label` that says what the button does, because an
+emoji is a picture and rule 3 of the colour standard forbids a control that relies on one alone.
+
+**The theme is applied by a small inline script in every page's `<head>`, not by `js/app.js`.**
+`app.js` is deferred, so applying it there would paint a dark page first and flash to light on every
+single navigation. The boot script is small enough to inline and runs before the first paint. The
+choice is remembered in `localStorage` under `ca-theme`, wrapped in try/catch so private mode falls
+through to the dark default rather than throwing.
+
+**Light surfaces are the Template Interface Color Standard's**: canvas white, surface `gray-5`,
+raised `gray-10`, border `gray-20`, strong border `gray-50`. **The hardest pair inverts between the
+modes.** In dark mode it is the brightest surface, because light text loses contrast as the panel
+lightens; in light mode it is the darkest surface. Every light value is measured on
+`--color-surface-raised` `#d8dee5`.
+
+**Brand green is not `#00e676` in light mode, and that is not a change to the brand.** `#00e676`
+measures 1.67:1 on white: as link or button text it is illegible. The light accent is the same hue
+at `green-60`. The dark theme, which is what the site opens in and what every brand asset is drawn
+against, is untouched.
+
+### Colour channels, and why tints are not literals (v1.30)
+
+Every translucent wash in the stylesheet composes from an `--rgb-*` triple rather than a hardcoded
+`rgba(245, 197, 24, 0.1)`. **A literal is a copy of a token and does not follow when the token
+moves**, which was found sixteen times during the palette rebuild, and it is also what would have
+made a light theme impossible: every tint would have stayed a dark-mode colour on a white card.
+There are now **zero raw colour literals in any rule** in `css/main.css`.
+
+### Semantic roles after the colour audit (v1.30)
+
+| Role | Means | Dark | Light |
+|---|---|---|---|
+| `--color-accent` | Links, primary actions, identity | green | `green-60` |
+| `--color-positive` | A number went up | green | `green-60` |
+| `--color-negative` | A loss, a danger | **red** (was pink) | `red-60` |
+| `--color-caution` | A warning | yellow | `yellow-60` |
+| `--color-info` | A neutral notice | **teal** (was blue) | `teal-60` |
+| `--color-focus` | The focus ring | blue | `blue-60` |
+
+**Blue, pink and purple now carry no status meaning.** They are data and chart colours. Blue is the
+focus ring specifically because a focus ring must not be mistaken for a selected or positive state.
+
+**THE ONE DELIBERATE DEVIATION FROM THE STANDARD, owner ruling 2026-10-07.** The standard says a
+brand colour goes in the accent role, and separately that green means success and nothing else.
+**Both cannot hold when the brand is green.** Green therefore serves accent and positive at once.
+The three names are kept apart (`--color-accent`, `--color-positive`, `--color-brand`) because they
+are three jobs even where they are one colour, and they are not required to resolve the same way
+forever.
+
+**A value must never name a hue.** `colorClass()` returns `text-positive` and `text-negative`, not
+`text-green` and `text-pink`. Naming the colour is exactly why pink survived as the loss colour long
+after the palette gained a red: repointing the token could not chase every call site.
+
 ### Contrast Ratios (WCAG AA)
 
 **Quoted against `--color-surface-raised` (`#373c46`), the brightest surface and therefore the
@@ -136,6 +198,8 @@ on a card. Every value below also clears 4.5:1 on `--color-bg` and `--color-surf
 | `#68afff` (blue) | 4.83 | 5.77 | 7.68 |
 | `#f5c518` (yellow) | 6.79 | 8.12 | 10.80 |
 | `#b39dff` (purple) | 4.84 | 5.79 | 7.70 |
+| `#fe8786` (red, v1.30) | 4.77 | 5.70 | 7.58 |
+| `#00beba` (teal, v1.30) | 4.77 | 5.70 | 7.58 |
 
 `#16191f` used as dark text on a bright chip measures 10.55 on green and 10.80 on yellow.
 
@@ -152,6 +216,38 @@ that stops "brighter" from collapsing into "all one colour".
 AA on the raised surface once the base came up. That is the constraint that makes a dark theme
 impossible to lighten one token at a time: surfaces, greys and accents are one system, and moving one
 silently drops another under the line.
+
+**Red and teal were added at v1.30 and the standard's own dark grades could not be used.** The
+Template Interface Color Standard's `red-40` `#fe4745` and `teal-40` `#009c99` measure **3.27 and
+3.28** against this stylesheet's raised surface, because they are solved against a darker canvas than
+`#373c46`. They were re-solved in HLS holding hue and saturation, landing on the same 4.77 the
+existing pink carries. **Published values are not safe to copy across a different surface**, which is
+the same lesson as the paragraph above, arriving from the opposite direction.
+
+### Light theme contrast (v1.30)
+
+Measured on `--color-surface-raised` `#d8dee5`, the darkest light surface and therefore the hardest
+pair in that mode. The inversion is the point: dark mode's worst case is the brightest panel.
+
+| Token | Value | On raised |
+|---|---|---|
+| `--color-primary` | `#20252a` | 11.40 |
+| `--color-secondary` | `#454b53` | 6.50 |
+| `--color-disabled` | `#5c6168` | 4.61 |
+| `--color-green` | `#00712a` | 4.56 |
+| `--color-red` | `#c5001a` | 4.57 |
+| `--color-yellow` | `#795d00` | 4.59 |
+| `--color-teal` | `#006d6a` | 4.56 |
+| `--color-blue` | `#005bc7` | 4.57 worst case |
+| `--color-pink` | `#b4226d` | 4.57 |
+| `--color-purple` | `#7e3bcb` | 4.59 |
+| `--color-border-strong` | `#71767d` | 3.38 |
+
+**Blue and the zoop orange were solved against their composited chip tint, not the plain panel.** A
+chip background is a translucent wash, so the plain surface is the easy case and measuring it would
+have passed two pairs that fail in place. `blue-60` `#005cc9` came in at 4.49 on the blue chip, 0.01
+short, so it moved a grade step to `#005bc7`; zoop's `#a65500` read 4.13 on its own tag tint and was
+re-solved at `#954c00` against all five light backgrounds a tag can land on.
 
 ---
 
@@ -1682,12 +1778,37 @@ pages already do.
 
 ### Focus Management
 
-All interactive elements have visible focus rings:
+**A real focus ring is now defined, v1.30.** It used to be a target in this document and a browser
+default in practice:
 
 ```css
-/* Implemented via browser defaults + no focus suppression */
-/* Target: outline: 2px solid #68afff; outline-offset: 2px */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
 ```
+
+The audit measured the inherited default at an apparent 1.08:1 and that reading was **wrong**:
+`outline-style: auto` means the browser paints its own adaptive ring, so the computed colour says
+nothing about what lands on screen. A screenshot of a focused link showed Edge painting a clearly
+visible white ring. It was never a failure. **It was unspecified, which is a different problem**:
+an appearance nobody chose is not the same as one that is correct, and it varies by browser. The
+ring above is measured at 4.83 on the hardest dark surface and 4.66 on the hardest light one.
+
+### Control boundaries (v1.30)
+
+**The one unambiguous WCAG failure the colour audit found.** `--color-border` is 1.66:1 on surface
+and is decorative by design. A text entry field has no fill distinct from the panel behind it, so
+that border was the only thing marking where the field was, which is WCAG 1.4.11 at 3:1.
+
+`--color-border-strong` exists so controls can clear 3:1 without brightening every divider on the
+site. **It had to be applied in each tool page's own inline `<style>`**, not in `css/main.css`: the
+page-level block comes after the external stylesheet in the document and wins, so appending a rule
+to `main.css` could never have fixed it. That is why the first attempt measured as no change at all.
+
+**Checkboxes, radios and file inputs are deliberately excluded.** They are native controls the
+browser draws itself, and forcing a border on them changes something already legible.
 
 Tab order follows visual reading order. Mobile nav hamburger: `aria-expanded` attribute updates on open/close; `aria-controls="mobile-menu"`.
 

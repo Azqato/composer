@@ -5,6 +5,61 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Colour audit and light mode
+
+**The site has a light theme, and the palette was audited against the owner's own colour standard.**
+Dark remains the default.
+
+### Added
+
+- **Light mode**, as `:root[data-theme="light"]`, with a **sun and moon button in the nav**. The
+  glyph names the destination rather than the current state. **No `prefers-color-scheme` query**:
+  the site opens dark by instruction and the visitor chooses otherwise. The choice persists in
+  `localStorage`.
+- **A theme boot script inline in every page head.** It has to be inline: `app.js` is deferred, so
+  applying the theme there would paint dark and flash to light on every navigation.
+- **`--color-red` and `--color-teal`**, which did not exist. Both solved against the hardest dark
+  surface at 4.77:1. **The standard's own dark grades were not usable**: `red-40` and `teal-40`
+  measure 3.27 and 3.28 here because they are solved against a darker canvas than this stylesheet's
+  raised surface. Taking published values on trust would have shipped two failing hues.
+- **`--color-border-strong`**, and **`--color-accent`** and **`--color-focus`** as named roles.
+- **A real `:focus-visible` ring.** It was a target in DESIGN.md and a browser default in practice.
+
+### Fixed
+
+- **Text entry fields had no 3:1 boundary**, the one unambiguous WCAG 1.4.11 failure. Fixed in each
+  tool page's own inline `<style>`, because that block comes after `css/main.css` and wins; the
+  first attempt appended a rule to `main.css` and **measured as no change at all**.
+- **The footer's running-text link was identified by colour alone**, at 1.60 against the prose
+  around it where WCAG G183 wants 3.0. It is underlined now.
+- **54 `rgba()` literals were hardcoded copies of token colours.** They compose from `--rgb-*`
+  channels now. **There are zero raw colour literals left in any rule.**
+
+### Changed
+
+- **Negative values are red, not pink**, and **info is teal, not blue**, per the standard. Blue,
+  pink and purple now carry no status meaning; blue is the focus ring.
+- **`colorClass()` returns `text-positive` / `text-negative`** instead of naming hues. Naming the
+  colour is why pink survived as the loss colour long after the palette gained a red.
+- **The RSI tier ladder is tokenised.** It held the last raw hex in the file and was the only thing
+  that would have broken outright in light mode: `#52c98a` is 2.1:1 on a white card. The ladder's
+  **order** is preserved in both themes, which matters as much as the threshold, and intensity
+  inverts: an extreme tier is brighter than a mild one in dark mode and darker in light mode.
+
+### Notes
+
+- **Three of the audit's own findings were false and were discarded before being reported**: 240
+  phantom border failures from measuring decorative borders on filled buttons, a focus ring
+  "failure" that was an `outline: auto` artefact, and **56 light-mode failures that did not exist**,
+  caused by setting `data-theme` from a parent frame, which does not force a style recalc inside an
+  iframe under virtual time. The audit was re-run through the page's real boot script. All three
+  would have produced confident, wrong fixes.
+- **One deliberate deviation from the standard**, by owner ruling: green serves accent and positive
+  at once, because the standard puts a brand colour in the accent role and also reserves green for
+  success, and both cannot hold when the brand is green.
+
+---
+
 ## [Unreleased] - Guides
 
 **A new section, and the first content collection added since the glossary.** `guides.html` plus

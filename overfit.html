@@ -3,6 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Theme boot. Inline and first on purpose: this runs before the first
+       paint so a visitor who chose light mode never sees a dark page flash.
+       Putting it in app.js, which is deferred, would guarantee that flash on
+       every navigation. Dark is the default and stays the default when
+       nothing is stored; the system preference is deliberately NOT consulted,
+       per the owner's instruction that the site opens dark. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('ca-theme');
+        if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+      } catch (e) { /* private mode: fall through to the dark default */ }
+    })();
+  </script>
   <!-- Social sharing (PRD Section 27). Kept high in <head>, above the stylesheet
        and any inline CSS, because some scrapers read only the first few KB of a
        document. Text only by policy: no og:image, so twitter:card is "summary",
@@ -67,7 +81,7 @@
     #of-in {
       width: 100%; min-height: 74px; resize: vertical; box-sizing: border-box;
       background: var(--color-bg); color: var(--color-primary);
-      border: 1px solid var(--color-border); border-radius: 8px; padding: 12px 14px;
+      border: 1px solid var(--color-border-strong); border-radius: 8px; padding: 12px 14px;
       font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.6;
     }
     #of-in:focus { outline: 2px solid var(--color-blue); outline-offset: -1px; }
