@@ -1038,6 +1038,19 @@ git push origin main
 
 **Second run (v1.39.1, 2026-09-01).** 6,358 valid ids in the inbox; 142 new to `storage.csv`, 147 new to `database.json`. Appended the 142 URLs to storage, seeded the 147 skeleton rows directly (not via `sync_storage_to_database.py`, per the warning above), then backtested **only those 147** rows and left the rest of the database alone. Result: 144 OK, 3 transient `retry`, 0 dead/`excluded`. Database 6,669 -> 6,816; storage 7,714 -> 7,856; `check_database_keys.py` passed. **On the refresh step, prefer a scoped refresh over step 5's first option whenever any existing rows are stale:** 155 existing rows were past the 7-day cutoff that day, so an unscoped `refresh_full_database.py` run would have swept them in too, violating the "new ids only" scope. The scoped run imported `post`/`apply_backtest_result`/`write_js` from `refresh_full_database.py` and iterated only the newly-seeded rows, reusing the canonical schema logic without triggering the staleness sweep.
 
+**Third run (2026-10-07).** A single-id batch: `QH3TPPhXHg3cB9xhXUGF`, "Discover Slop". New to both
+stores. Appended to `storage.csv`, seeded as a skeleton, scoped-refresh of that one id, 1 OK and 0
+failures; database 6,816 -> 6,817, storage 7,856 -> 7,857. Mirror was a no-op, summary regenerated,
+`check_database_keys.py` passed, inbox cleared back to its header. **The runbook below held with no
+changes**, which is the point of having written it down: a one-row batch is the same five steps as a
+147-row one, and the temptation on a single id is to hand-edit the JSON instead, which is how a row
+ends up with a schema that does not match the other 6,816.
+
+**Its metrics are extreme and that is not a data error.** ARR 3.33 with a Calmar of 20.08 over
+**329 backtest days**. A sub-year backtest is exactly the regime the Overfit Detector exists to flag,
+and the database stores what the API returned without editorialising. Nothing here promotes it to a
+curated strategy, which is a separate workflow and a separate judgement.
+
 **Before clearing the inbox, retry anything that never returned a backtest.** Step 6 destroys
 the id list, so a row seeded but never successfully refreshed is easy to strand: it sits in
 `database.json` as a skeleton with `flag: "retry"` and no `backtest_days`, and once the inbox is

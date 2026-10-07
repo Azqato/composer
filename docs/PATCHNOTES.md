@@ -5,6 +5,33 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - AddSymphony ingest: 1 new symphony
+
+### Added
+
+- **`QH3TPPhXHg3cB9xhXUGF`, "Discover Slop"**, from the `data/AddSymphony.csv` inbox. New to both
+  stores. Database **6,816 -> 6,817**, storage.csv **7,856 -> 7,857**. 1 OK, 0 failures.
+- **Scoped exactly as the runbook requires**, which matters more on a one-row batch than a large
+  one. `sync_storage_to_database.py` was **not** run: its seed set is the deliberate ~1,040-id
+  archived-but-not-promoted backlog. `refresh_full_database.py` was **not** run unscoped: its
+  staleness sweep would have pulled in every other row past the 7-day cutoff. The fetch imported
+  `post` / `apply_backtest_result` / `write_js` from that script and iterated the one new id, so the
+  row was written by the same code that writes every other row rather than by hand.
+- Mirror was a no-op, `database_summary` regenerated, `check_database_keys.py` passed, inbox cleared
+  back to its `url` header.
+
+### Notes
+
+- **ARR 3.33, Calmar 20.08, over 329 backtest days.** Stored as returned. A sub-year backtest is the
+  regime the Overfit Detector exists to flag, and the database does not editorialise. This adds a
+  database row and nothing else; promoting a symphony to a curated strategy is a separate workflow.
+
+**Files changed:** `data/database.json`, `data/database.js`, `data/database_summary.json`,
+`data/database_summary.js`, `data/storage.csv`, `data/AddSymphony.csv`, `docs/PRD.md`,
+`docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Colour audit and light mode
 
 **The site has a light theme, and the palette was audited against the owner's own colour standard.**
