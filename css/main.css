@@ -773,6 +773,13 @@ p { color: var(--color-secondary); }
 .badge-risk-metric { background: rgba(255, 130, 172, 0.1); color: var(--color-pink); border-color: rgba(255, 130, 172, 0.2); }
 .badge-asset-class { background: rgba(245, 197, 24, 0.1); color: var(--color-yellow); border-color: rgba(245, 197, 24, 0.2); }
 .badge-strategy-concept { background: rgba(179, 157, 255, 0.1); color: var(--color-purple); border-color: rgba(179, 157, 255, 0.2); }
+/* Guide categories. The hue carries the meaning the site already assigns it:
+   blue is informational, yellow is caution, pink is risk. Green is NOT used
+   here; Section 2 reserves it for positive values, primary actions and
+   identity, and a category label is none of those. */
+.badge-testing { background: rgba(104, 175, 255, 0.1); color: var(--color-blue); border-color: rgba(104, 175, 255, 0.2); }
+.badge-execution { background: rgba(245, 197, 24, 0.1); color: var(--color-yellow); border-color: rgba(245, 197, 24, 0.2); }
+.badge-instrument-risk { background: rgba(255, 130, 172, 0.1); color: var(--color-pink); border-color: rgba(255, 130, 172, 0.2); }
 
 /* ---- Metrics Table ---- */
 .metrics-section {
@@ -1534,6 +1541,42 @@ code.signal-ind {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 20px 22px;
+}
+
+/* The "In short" panel at the top of a guide. Same container treatment as
+   .tldr, which is the site's existing summary-before-the-prose pattern, but a
+   separate class because the two sit on different pages and should be able to
+   move apart without one silently restyling the other.
+
+   The left border is deliberately --color-border and not an accent. This block
+   is a summary of the page below it, not a warning and not a value, and the one
+   thing it must not do is read as more important than the guide it introduces. */
+.guide-takeaways {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-border-hover);
+  border-radius: var(--radius-lg);
+  padding: 18px 22px;
+}
+
+.guide-takeaways ul {
+  margin: 0;
+  /* The global reset at the top of this file sets list-style: none on every ul,
+     so this has to ask for markers back explicitly. Without it the takeaways
+     render as indented paragraphs and stop reading as a list, which was only
+     visible in a screenshot. */
+  list-style: disc;
+  padding-left: 20px;
+  color: var(--color-secondary);
+  line-height: 1.7;
+}
+
+.guide-takeaways li {
+  margin-bottom: 8px;
+}
+
+.guide-takeaways li:last-child {
+  margin-bottom: 0;
 }
 
 .tldr-thesis {

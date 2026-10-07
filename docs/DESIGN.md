@@ -1,8 +1,8 @@
 # Composer Atlas: Design System
 
-**Version:** 1.27
+**Version:** 1.28
 **Status:** Active
-**Last Updated:** 2026-09-28
+**Last Updated:** 2026-10-07
 
 All values in this document are derived from `css/main.css` and `js/app.js`: the source files are the
 ground truth. Where this document and the CSS disagree, the CSS wins and the disagreement is marked
@@ -625,6 +625,50 @@ offset is derived from the nav token rather than typed, so it follows the nav.
 
 **Rows are a single-column grid that becomes three columns at 720px**, so the same markup serves
 mobile and desktop without a media query on the row itself.
+
+---
+
+### Guides (v1.28)
+
+`guides.html` renders `data/guides.json` through **the same `.wiki-*` markup and CSS as the glossary
+listing**, with the same two views: a category-grouped index at the root and a detail view at
+`?slug=`. Reusing the component was the point. Two collections that look different for no reason are
+two things to maintain.
+
+**Why it is a separate collection rather than more glossary entries.** The two have different
+*maintenance contracts*, which matters more than their shared shape. A glossary entry is a reference
+claim: the definition of Calmar does not expire, and it is edited only when it was wrong. A guide is
+a claim about a platform that keeps changing, so it carries a visible `last_updated` that actually
+means something. Mixing them would make the stable collection inherit the unstable one's review
+burden. Their *fields* differ for the same reason: a glossary entry wants a `formula`, a guide wants
+`takeaways` and links to the tool that measures the thing it describes.
+
+**Schema.** `slug`, `title`, `category`, `summary`, `takeaways[]`, `related_terms[]` (glossary
+slugs), `related_tools[]` (`{label, href, note?}`), `sections[{title, paragraphs[]}]`,
+`last_updated`. `sections` is deliberately identical to the glossary's so one renderer serves both.
+
+**Categories and their badge colours**, which are not arbitrary:
+
+| Category | Badge | Hue | Why |
+|---|---|---|---|
+| `testing` | `.badge-testing` | blue | Informational, matching `--color-info` |
+| `execution` | `.badge-execution` | yellow | Caution, matching `--color-caution` |
+| `instrument-risk` | `.badge-instrument-risk` | pink | Risk, matching `--color-negative` |
+
+**Green is deliberately not used for a guide badge.** Section 2 reserves it for positive values,
+primary actions and identity, and a category label is none of those.
+
+**`.guide-takeaways` asks for `list-style: disc` explicitly**, because the global reset near the top
+of `css/main.css` sets `list-style: none` on every `ul`. Without it the takeaways render as indented
+paragraphs and stop reading as a list. **This was only visible in a screenshot**, which is the
+standing argument for judging a component from a render rather than from its markup.
+
+**`data/guides.js` is GENERATED**, by `scripts/build_guides_twin.py`, and says so in its header. The
+glossary's twin is maintained by hand and its header says *that*. Generating this one closes a
+standing drift risk: a stale twin renders correct content over HTTP and silently stale content from
+the file system. The same script validates that every `related_terms` slug exists in the glossary and
+every `related_tools` href is a real page in the repo, so a dead cross-link fails the build instead
+of rendering a link that goes nowhere.
 
 ---
 

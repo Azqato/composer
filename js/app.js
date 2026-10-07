@@ -85,6 +85,19 @@ async function loadGlossary() {
   return res.json();
 }
 
+// The Guides collection. Same shape as the glossary on purpose, so both render
+// through the same markup and CSS, but kept in a separate file because the two
+// have different maintenance contracts: a definition is stable, a guide is a
+// claim about a platform that keeps changing. data/guides.js is GENERATED from
+// the json by scripts/build_guides_twin.py, unlike the glossary twin which is
+// maintained by hand.
+async function loadGuides() {
+  if (window.GUIDES_DATA) return window.GUIDES_DATA;
+  const res = await fetch(`${BASE}/data/guides.json`);
+  if (!res.ok) throw new Error('Failed to load guides.json');
+  return res.json();
+}
+
 // ---- Inline markdown for authored strategy content ----
 // The smallest thing that works: **bold** and `code`, nothing else. Curated
 // content in data/strategies.json is already inserted as HTML by every other
@@ -180,6 +193,11 @@ const CATEGORY_LABELS = {
   'risk-metric': 'Risk Metric',
   'asset-class': 'Asset Class',
   'strategy-concept': 'Strategy Concept',
+  // Guides. Separate vocabulary from the glossary's, sharing one map because
+  // both collections render through the same badge markup.
+  'testing': 'Testing',
+  'execution': 'Execution',
+  'instrument-risk': 'Instrument Risk',
 };
 
 function badgeClass(category) {
@@ -214,6 +232,7 @@ function renderNav() {
       { href: u('/k1.html'), label: 'K1 Lookup' },
       { href: u('/overfit.html'), label: 'Overfit Check' },
     ] },
+    { href: u('/guides.html'), label: 'Guides' },
     { href: u('/glossary.html'), label: 'Glossary' },
     { href: 'https://azqato.com/invests', label: 'Azqato Invests', external: true },
     { href: 'https://azqato.com/support.html', label: 'Support', external: true },
@@ -329,6 +348,7 @@ function renderFooter() {
       <a href="${u('/database.html')}">Database</a>
       <a href="${u('/rsi.html')}">RSI</a>
       <a href="${u('/signal-miner.html')}">Signal Miner</a>
+      <a href="${u('/guides.html')}">Guides</a>
       <a href="${u('/glossary.html')}">Glossary</a>
       <a href="${u('/converter.html')}">Converter</a>
       <a href="${u('/nodes.html')}">Nodes</a>

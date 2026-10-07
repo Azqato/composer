@@ -53,6 +53,7 @@ from xml.sax.saxutils import escape
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STRATEGIES_JSON_PATH = BASE_DIR / "data" / "strategies.json"
+GUIDES_JSON_PATH = BASE_DIR / "data" / "guides.json"
 SITEMAP_PATH = BASE_DIR / "sitemap.xml"
 
 SITE_URL = "https://composeratlas.com"
@@ -118,6 +119,37 @@ def collect_strategies():
     return urls
 
 
+def collect_guides():
+    """One URL per guide, as guides.html?slug=<slug>.
+
+    Same reasoning as collect_strategies(): guides.html sets a per-slug title
+    and meta description, so each slug is a distinct document to a crawler that
+    runs JavaScript. These are long-form pages and the whole point of them is
+    being findable.
+
+    NOTE, and it is a real gap rather than a decision: glossary.html?slug=
+    pages are NOT in this sitemap and never have been. There are 27 of them,
+    built the same way. Adding them is a separate change because it would alter
+    the sitemap for content that has been live for months, and that deserves
+    its own verification rather than riding along with a new section.
+    """
+    if not GUIDES_JSON_PATH.exists():
+        print("  skipped: data/guides.json not found")
+        return []
+    entries = json.loads(GUIDES_JSON_PATH.read_text(encoding="utf-8"))
+    urls = []
+    for entry in entries:
+        slug = entry.get("slug")
+        if not slug:
+            print(f"  skipped (no slug): {entry.get('title', '?')}")
+            continue
+        lastmod = entry.get("last_updated")
+        if not (isinstance(lastmod, str) and DATE_RE.match(lastmod)):
+            lastmod = None
+        urls.append((f"{SITE_URL}/guides.html?slug={slug}", lastmod))
+    return urls
+
+
 def build_entry(loc, lastmod):
     lines = ["  <url>", f"    <loc>{escape(loc)}</loc>"]
     if lastmod:
@@ -138,6 +170,9 @@ def main():
     urls.extend(collect_strategies())
     strategy_count = len(urls) - page_count
 
+    urls.extend(collect_guides())
+    guide_count = len(urls) - page_count - strategy_count
+
     body = "\n".join(build_entry(loc, lastmod) for loc, lastmod in urls)
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -150,6 +185,7 @@ def main():
     print(f"Wrote {len(urls)} URLs to {SITEMAP_PATH.name}")
     print(f"  {page_count} page(s)")
     print(f"  {strategy_count} strategy page(s)")
+    print(f"  {guide_count} guide page(s)")
     print(f"  {SITEMAP_PATH.stat().st_size / 1024:.1f} KB")
 
 

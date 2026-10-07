@@ -5,6 +5,61 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Guides
+
+**A new section, and the first content collection added since the glossary.** `guides.html` plus
+`data/guides.json`: seven long-form guides on testing a strategy, on what changes when it trades
+live, and on what the instruments inside a symphony can actually do.
+
+### Added
+
+- **`guides.html`**, rendering `data/guides.json` through **the same `.wiki-*` component as the
+  glossary listing**, with a category-grouped index and a `?slug=` detail view. Reusing the renderer
+  rather than forking it was the point.
+- **Seven guides**, roughly 4,700 words, across three categories. `testing`: out-of-sample data is
+  spent once, if you cannot explain it, test one branch at a time. `execution`: live trades will not
+  match the backtest, how much to invest in a symphony. `instrument-risk`: when a leveraged product
+  disappears, why the bond leg failed in 2022.
+- **`scripts/build_guides_twin.py`**, which generates `data/guides.js` from the json **and validates
+  the cross-links**. Every `related_terms` slug must exist in the glossary and every `related_tools`
+  href must be a real page, so a dead link fails the build rather than rendering silently.
+- **Guides in the primary nav and the footer**, beside Glossary rather than inside the Tools
+  dropdown, because it is reading rather than a tool.
+- **Guide detail pages in `sitemap.xml`**, via a new `collect_guides()`.
+
+### Changed
+
+- **`css/main.css`** gained three badge classes and `.guide-takeaways`. The badge hues follow the
+  meanings the site already assigns: blue informational, yellow caution, pink risk. **Green is not
+  used**, because Section 2 reserves it for positive values, primary actions and identity.
+- **`js/app.js`** gained `loadGuides()` and three entries in `CATEGORY_LABELS`.
+- **`docs/DESIGN.md` to v1.28**, documenting the component, the schema and the colour reasoning.
+
+### Why this is a separate collection and not more glossary entries
+
+The two have different maintenance contracts. A definition does not expire; a guide is a claim about
+a platform that keeps changing, and one of the source tips for this very collection was **already
+dead**, annotated by its own author to say the platform had shipped the feature natively. Mixing
+them would make the stable reference inherit the unstable thing's review burden.
+
+### Notes
+
+- **`.guide-takeaways` has to ask for `list-style: disc` back**, because a global reset sets
+  `list-style: none` on every `ul`. The takeaways rendered as indented paragraphs until that was
+  added, and **it was only visible in a screenshot**, not in the markup.
+- **Nine further guides are proposed and prioritised** in `docs/PRD.md` Section 14, "Guides
+  Content Roadmap", with the standing rule that the collection stays capped at roughly a dozen
+  because each guide's `last_updated` is a recurring review commitment. The top item is a year-end
+  wash sale guide requested by the owner; his technique and the rule mechanics the guide has to get
+  right are recorded with it.
+- The content was written in the site's own voice by owner ruling, with one acknowledgement line on
+  the index. `docs/PRD.md` records the ruling, the reasoning, and the list of source material that
+  was **deliberately not** ingested.
+- **No existing page changed behaviour.** The glossary was re-rendered and verified after the shared
+  `CATEGORY_LABELS` map was extended.
+
+---
+
 ## [Unreleased] - Brand identity
 
 **The brand build was not a site change. The token adoption that followed it is

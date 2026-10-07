@@ -2602,6 +2602,77 @@ reason, and each remains a legitimate future item.
 | Client-side search (Fuse.js or similar) | Backlog | Never started |
 | Strategy comparison view, per-strategy performance chart | Backlog | Never started |
 
+### Guides Content Roadmap
+
+**Added 2026-10-07**, when the Guides collection shipped with its first seven entries. See
+`docs/PRD.md` "The Guides Collection" in Section 6 for what the collection is and the owner's
+attribution ruling, and `docs/DESIGN.md` Section 7 for the component.
+
+**The standing rule for this collection: seven good guides beat fifteen thin ones.** Every guide
+carries a visible `last_updated` that has to mean something, so each one is a recurring review
+commitment rather than a one-time write. The collection is capped at roughly a dozen. Anything that
+is really a definition belongs in the glossary instead.
+
+**Priority order, highest first.**
+
+| # | Proposed guide | Category | Why it earns a slot | State of the source |
+|---|---|---|---|---|
+| 1 | **Clearing wash sales at year end** | `execution` | Directly requested by the owner, who runs the technique himself. Nothing else on the site touches tax mechanics, and this is the one topic where a Composer-specific failure mode is invisible: an automated symphony can repurchase a security on its own and silently void the harvested loss | Owner's own practice, recorded in full below. Needs the rule mechanics verified against IRS Publication 550 before publishing |
+| 2 | **What the Signal Miner is doing to your p-value** | `testing` | The largest hole in the collection, and the only one on this list that is about **our own tooling** rather than about Composer. We ship a tool that searches thousands of signal combinations and ranks them, and nothing tells a reader that the best of 5,000 random signals is *expected* to look excellent. `overfit.html` measures the problem the Miner manufactures; this guide is the link between them | Needs writing from scratch. Pulls in multiple comparisons and sample size, both absent from the glossary |
+| 3 | **Permutation testing and the walk-forward knee** | `testing` | `permutation` and `walk-forward` are both absent from the glossary. Highest-value testing guide after #2 and the hardest of these to write honestly, because it is easy to make a judgement call read like a recipe | Ideas in hand from the ingested Masters material. Written in site voice, no verbatim text |
+| 4 | **The mean reversion death spiral and the volatility switch** | `testing` | The glossary's `mean-reversion` entry defines the rubber band. This covers the failure mode: a dip-buy ladder that averages into a trend instead of a reversion, and the switch that gets you out | Source material in hand. **Needs framing discipline** so it does not restate the glossary entry |
+| 5 | **Swapping a K-1 ETF for a cleaner equivalent** | `instrument-risk` | `k1.html` flags 187 tickers and then leaves the reader there. The substitution logic is the missing half of a tool we already ship | Candidate substitutions noted (UGL to GLD, DIG to ERX, DBC to PDBC). **The volume and expense reasoning in the source is from 2022 and must be re-verified before anything is published** |
+| 6 | **Cash drag and the cost of being out** | `execution` | `cash drag` is absent from the glossary. When a risk-off leg should hold BIL or SHV rather than sit in cash, and what the difference costs across a backtest | Needs writing from scratch |
+| 7 | **Correlation is not diversification** | `instrument-risk` | The glossary covers correlation as a statistic. The guide covers 2022, when the diversifying legs stopped diversifying at the moment it mattered. Pairs with the shipped `the-bond-leg-is-not-one-thing` | Needs writing from scratch |
+| 8 | **Profit factor at fine granularity** | `testing` | Absent from the glossary. The smallest item here; **may be better folded into #3 than shipped alone** | Ideas in hand from the Masters material |
+| 9 | **Sizing across two symphonies** | `execution` | The shipped `sizing-a-symphony` handles one in isolation. The follow-on is what happens when two symphonies both hold TQQQ and the real exposure is double what either backtest implies | Needs writing from scratch |
+
+**Not a guide.** The ingested Composer blog momentum links are links rather than content. If they go
+on the site they belong on a reading list page, not inside a guide. Recorded so it is not
+re-proposed as a guide.
+
+#### The Wash Sale Guide: Spec and the Owner's Technique
+
+**The owner's year-end technique, in his own description, recorded 2026-10-07.** He combines all the
+symphonies he runs into a single symphony, replaces the holdings with securities he has not bought
+at any point during the year, and then rebuys the original holdings after January.
+
+**Why this is the right shape for a Composer guide, and not merely generic tax content.** Ordinary
+tax-loss harvesting advice assumes a human decides every purchase. Composer does not work that way.
+A live symphony rebalances on its own schedule, so **the automation itself can repurchase a security
+inside the wash sale window and void the loss without the owner doing anything or seeing it
+happen**. Collapsing many symphonies into one is what makes the set of holdings small enough to
+reason about, which is the insight the guide exists to convey. That is a platform-specific point
+that no general tax article will tell a Composer user.
+
+**What the guide must get right.** These are the points where a plausible-sounding version would be
+wrong, so they are recorded here rather than left to be rediscovered:
+
+- **The rule's window is 61 days around the sale, not the calendar year.** A loss is disallowed if a
+  substantially identical security is bought within 30 days *before or after* the sale. The owner's
+  "nothing bought during the year" test is therefore **stricter than the rule requires**, which is
+  safe, but the guide must state the actual rule rather than the proxy, or a reader will apply the
+  proxy somewhere it does not fit.
+- **The window crosses the year boundary, which is the whole trap.** Selling in late December and
+  repurchasing in early January is still a wash sale. "After January" clears a December sale; a
+  January 2nd repurchase does not. The guide must be explicit about counting 31 days forward from
+  the sale date rather than waiting for a new tax year.
+- **"Substantially identical" is the unsettled part.** The replacement holding has to not be
+  substantially identical to what was sold. Two ETFs tracking the same index are a genuine grey
+  area that the IRS has not ruled on cleanly, and the guide must say that it is unsettled rather
+  than pick a side and present it as settled.
+- **A repurchase in an IRA permanently disallows the loss**, rather than merely deferring it. Worth
+  naming because a reader running a taxable symphony and a retirement account will not expect the
+  two to interact.
+- **Disallowed losses are deferred, not destroyed**, in a taxable account: the basis adjusts. The
+  guide should say so, because the common misreading is that a wash sale costs you the loss
+  outright.
+
+**Disclaimer requirement, which is stricter than the rest of the collection.** Every guide carries
+"Not investment advice". This one additionally **must not read as tax advice**, and must tell the
+reader to confirm their own situation with someone qualified. It is the only page on the site where
+a reader could act on a misunderstanding and get a letter from the IRS for it.
+
 ### V1.0: MVP
 
 **Launched:** 2026-06-08 | **Status:** Complete
@@ -8338,6 +8409,50 @@ the brief did not specify either way, because a transparent favicon bakes one in
 
 
 ---
+
+### The Guides Collection
+
+**Added 2026-10-07.** `guides.html` plus `data/guides.json`, seven guides across three categories,
+sharing the glossary's renderer. See `docs/DESIGN.md` Section 7 for the component and the schema.
+
+**What it is for.** The glossary answers "what does this word mean". Nothing on the site answered
+"how do I build and test well", and the gap showed: the site had a tool that measures overfitting
+(`overfit.html`) and no page explaining why a reader should care.
+
+**Where the content came from, and the ruling on attribution.** The source was a body of posts from
+the Composer builder community, supplied by the owner. **Owner ruling, 2026-10-07: write every guide
+in the site's own voice with no inline credits, and carry one acknowledgement line on the Guides
+index.** The ruling was taken after being shown the argument on both sides. The reasoning recorded
+for the future: the general principles in the source material are common knowledge that nobody owns,
+inline credits would break the prose for claims that are not really anyone's, and a single quiet
+acknowledgement removes the one scenario that could sting, which is a builder recognising a specific
+technique on a site whose entire asset is being trusted.
+
+**What was deliberately NOT ingested**, because this matters more than what was:
+
+| Source material | Why it was left out |
+|---|---|
+| Two full Ray Dalio video transcripts | Verbatim copyrighted text, and macroeconomic history rather than anything a reader can apply to a symphony |
+| A full podcast transcript (Tim Masters, Better System Trader) | Verbatim copyrighted text. **The ideas were used**, rewritten in site voice, and they became the strongest guide in the collection |
+| A 2022 K-1 ETF ticker list | `data/k1.json` already holds 187 tickers refreshed from etfdb.com. The source was a self-described rough draft from 2022 built off a list its own author called incomplete. **Our data is strictly better**, so ingesting it would have been a downgrade |
+| A tip about pasting Composer code into the AI window to expand branches | Dead. The author annotated his own post to say Composer shipped the feature natively |
+| A bank CD estate-planning loophole | Off topic and distasteful |
+| Composer blog links on momentum | Links rather than content. Candidate for a reading list, not a guide |
+
+**Beta slippage, the mean reversion rubber band and leverage decay were also left out of the guides**,
+not because they are weak but because `data/glossary.json` already covers them properly under
+`volatility-decay`, `leveraged-etfs` and `mean-reversion`, each with a "building this in Composer"
+section. Duplicating them would have created two places to maintain one explanation.
+
+**Nine further guides are proposed and prioritised in Section 14, "Guides Content Roadmap"**,
+along with the standing rule that the collection is capped at roughly a dozen. The highest-priority
+item is a year-end wash sale guide, requested by the owner, whose own technique and the five rule
+mechanics the guide must get right are recorded there.
+
+**Open item: the sitemap does not list `glossary.html?slug=` pages.** It now lists
+`guides.html?slug=` pages, because `collect_guides()` was added alongside the collection. The 27
+glossary detail pages have never been in it. That is a real gap and a separate change, flagged in
+`scripts/build_sitemap.py` where someone will meet it.
 
 ### How the Brand Work Is Deployed, Which Is To Say It Is Not
 
