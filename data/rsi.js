@@ -1,147 +1,147 @@
 // RSI signals data - loaded as a script tag so the site works with file:// protocol.
 // To update: run scripts/refresh_rsi.py
 window.RSI_DATA = {
-  "refreshed_at": "2026-10-09T01:54:49Z",
+  "refreshed_at": "2026-10-09T20:03:18Z",
   "tickers": [
     {
       "symbol": "XLF",
       "name": "Financial Select Sector SPDR",
-      "rsi_10": 41.9,
-      "price": 54.23,
-      "price_date": "2026-10-08"
+      "rsi_10": 50.6,
+      "price": 54.73,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "SPYV",
       "name": "SPDR Portfolio S&P 500 Value",
-      "rsi_10": 53.9,
-      "price": 62.19,
-      "price_date": "2026-10-08"
+      "rsi_10": 57.4,
+      "price": 62.4,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "VTV",
       "name": "Vanguard Value ETF",
-      "rsi_10": 51.6,
-      "price": 219.63,
-      "price_date": "2026-10-08"
+      "rsi_10": 56.1,
+      "price": 220.54,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "SPY",
       "name": "SPDR S&P 500 ETF",
-      "rsi_10": 57.5,
-      "price": 773.93,
-      "price_date": "2026-10-08"
+      "rsi_10": 62.5,
+      "price": 778.54,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "IOO",
       "name": "iShares Global 100 ETF",
-      "rsi_10": 52.0,
-      "price": 145.13,
-      "price_date": "2026-10-08"
+      "rsi_10": 57.2,
+      "price": 146.02,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "UUP",
       "name": "Invesco DB US Dollar Index Bullish",
-      "rsi_10": 69.3,
-      "price": 28.98,
-      "price_date": "2026-10-08"
+      "rsi_10": 71.2,
+      "price": 29.02,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "FXI",
       "name": "iShares China Large-Cap ETF",
-      "rsi_10": 38.3,
-      "price": 33.45,
-      "price_date": "2026-10-08"
+      "rsi_10": 52.4,
+      "price": 34.25,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "QQQE",
       "name": "Direxion NASDAQ-100 Equal Weighted",
-      "rsi_10": 52.2,
-      "price": 121.03,
-      "price_date": "2026-10-08"
+      "rsi_10": 57.3,
+      "price": 121.92,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "XLK",
       "name": "Technology Select Sector SPDR",
-      "rsi_10": 58.2,
-      "price": 197.78,
-      "price_date": "2026-10-08"
+      "rsi_10": 60.5,
+      "price": 198.78,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "QQQ",
       "name": "Invesco QQQ Trust",
-      "rsi_10": 58.2,
-      "price": 747.58,
-      "price_date": "2026-10-08"
+      "rsi_10": 61.0,
+      "price": 751.27,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "XLE",
       "name": "Energy Select Sector SPDR",
-      "rsi_10": 67.9,
-      "price": 65.24,
-      "price_date": "2026-10-08"
+      "rsi_10": 66.5,
+      "price": 65.09,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "VOX",
       "name": "Vanguard Communication Services ETF",
-      "rsi_10": 53.5,
-      "price": 192.67,
-      "price_date": "2026-10-08"
+      "rsi_10": 46.2,
+      "price": 190.38,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "TECL",
       "name": "Direxion Daily Technology Bull 3x",
-      "rsi_10": 56.7,
-      "price": 238.72,
-      "price_date": "2026-10-08"
+      "rsi_10": 59.1,
+      "price": 242.15,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "SOXX",
       "name": "iShares Semiconductor ETF",
-      "rsi_10": 50.9,
-      "price": 563.28,
-      "price_date": "2026-10-08"
+      "rsi_10": 48.3,
+      "price": 559.4,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "RETL",
       "name": "Direxion Daily Retail Bull 3x",
-      "rsi_10": 53.5,
-      "price": 7.52,
-      "price_date": "2026-10-08"
+      "rsi_10": 55.5,
+      "price": 7.59,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "XLY",
       "name": "Consumer Discretionary Select Sector SPDR",
-      "rsi_10": 53.9,
-      "price": 111.71,
-      "price_date": "2026-10-08"
+      "rsi_10": 60.6,
+      "price": 112.86,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "EEM",
       "name": "iShares MSCI Emerging Markets ETF",
-      "rsi_10": 40.6,
-      "price": 66.1,
-      "price_date": "2026-10-08"
+      "rsi_10": 46.2,
+      "price": 66.81,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "GLD",
       "name": "SPDR Gold Shares",
-      "rsi_10": 38.3,
-      "price": 378.62,
-      "price_date": "2026-10-08"
+      "rsi_10": 47.0,
+      "price": 384.62,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "XLP",
       "name": "Consumer Staples Select Sector SPDR",
-      "rsi_10": 61.4,
-      "price": 83.42,
-      "price_date": "2026-10-08"
+      "rsi_10": 61.3,
+      "price": 83.41,
+      "price_date": "2026-10-09"
     },
     {
       "symbol": "TLT",
       "name": "iShares 20+ Year Treasury Bond ETF",
-      "rsi_10": 37.4,
-      "price": 77.87,
-      "price_date": "2026-10-08"
+      "rsi_10": 39.1,
+      "price": 77.98,
+      "price_date": "2026-10-09"
     }
   ]
 };
