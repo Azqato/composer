@@ -241,6 +241,7 @@
       { key: 'holding', label: 'Holding (Ticker)', type: 'holding' },
     ];
     const NUMBER_OPS = ['=', '>', '<', '>=', '<=', 'between'];
+    const HOLDING_OPS = ['contains', 'does not contain'];
 
     function fieldDef(key) { return FILTER_FIELDS.find(f => f.key === key) || FILTER_FIELDS[0]; }
 
@@ -259,10 +260,12 @@
       }
 
       if (def.type === 'holding') {
-        const holdings = e.last_market_days_holdings;
-        if (!holdings || typeof holdings !== 'object') return false;
         const ticker = String(filter.value).toUpperCase().trim();
-        return Object.keys(holdings).some(k => k.toUpperCase() === ticker && Number(holdings[k]) > 0);
+        if (!ticker) return true; // incomplete input, don't filter out yet
+        const holdings = e.last_market_days_holdings;
+        const present = holdings && typeof holdings === 'object'
+          && Object.keys(holdings).some(k => k.toUpperCase() === ticker && Number(holdings[k]) > 0);
+        return filter.operator === 'does not contain' ? !present : present;
       }
 
       // numeric
@@ -305,7 +308,7 @@
 
       function operatorOptionsHtml(fieldKey, selected) {
         const def = fieldDef(fieldKey);
-        const ops = def.type === 'number' ? NUMBER_OPS : ['contains'];
+        const ops = def.type === 'number' ? NUMBER_OPS : def.type === 'holding' ? HOLDING_OPS : ['contains'];
         return ops.map(op => `<option value="${op}"${op === selected ? ' selected' : ''}>${op}</option>`).join('');
       }
 

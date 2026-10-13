@@ -5,6 +5,29 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Leaderboard: "does not contain" holding filter
+
+### Added
+
+- **Holding (Ticker) filter gained a "does not contain" operator** on the Database page's
+  leaderboard/screener filters (`database.html`). It previously offered only `contains`; the holding
+  field now serves `['contains', 'does not contain']` via a new `HOLDING_OPS` list, while text fields
+  still show only `contains`. Requested by a site user who wanted to see which leaderboard symphonies
+  are not currently holding TQQQ.
+- The matcher computes whether the ticker is present in `last_market_days_holdings` (a weight > 0),
+  then negates that result for "does not contain". Matches on the current holdings snapshot, not on
+  whether a ticker appears anywhere in the logic tree.
+
+### Fixed
+
+- An **empty** Holding filter no longer hides every row; an unparseable/empty ticker is now treated
+  as "incomplete input, don't filter yet", matching the numeric filters' behaviour. "Does not
+  contain" keeps rows that have no holdings data at all (they demonstrably do not show the ticker).
+
+**Files changed:** `database.html`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - AddSymphony ingest: 1 new symphony
 
 ### Added
