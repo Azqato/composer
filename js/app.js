@@ -763,8 +763,9 @@ function renderReferralBanner() {
   slot.innerHTML = `
     <div class="ref-banner-inner">
       <span class="ref-banner-text">
-        <strong>Get $50 to start.</strong> New Composer accounts that sign up with code
-        <code class="ref-code-inline" data-referral-code></code> receive a $50 bonus.
+        New Composer accounts that sign up with code
+        <code class="ref-code-inline" data-referral-code></code> receive a
+        <strong>$50 bonus</strong>.
         <span class="ref-banner-terms">Composer's terms apply.</span>
       </span>
       <button type="button" class="btn btn-sm btn-outline-green" data-referral-copy>Copy code</button>
