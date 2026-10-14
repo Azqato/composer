@@ -115,7 +115,8 @@
           <p><strong>Total Costs</strong>: the actual dollar amount lost to trading fees, slippage, and related costs over the backtest.</p>
 
           <h2>Holdings</h2>
-          <p><strong>Currently Holding (Ticker)</strong>: matches a strategy only if it held that ticker with a position above zero on the last market day of its backtest, as of that row's refresh date. <strong>This is a snapshot, not a list of everything the strategy uses.</strong> A rotation strategy that was sitting in BIL on the day it was measured will not match a search for TQQQ, even when TQQQ is the position it exists to take. Use it to find what is held right now, not to find which strategies trade a given ticker.</p>
+          <p><strong>Currently Holding (Ticker)</strong>: matches a strategy only if it held that ticker with a position above zero on the last market day of its backtest, as of that row's refresh date. <strong>This is a snapshot, not a list of everything the strategy can hold.</strong> A rotation strategy that was sitting in BIL on the day it was measured will not match a search for TQQQ, even when TQQQ is the position it exists to take. Use it to find what is held right now.</p>
+          <p><strong>All Tickers (Held or Not)</strong>: matches a strategy if that ticker appears anywhere in its holdings record, including at a zero position. A zero means the strategy can hold the ticker and simply was not holding it that day, so this is the field that answers "which strategies trade TQQQ". <strong>It covers assets the strategy can hold, not tickers it only reads.</strong> A strategy that checks QQQ's RSI to decide whether to buy TQQQ will match TQQQ and not QQQ, because QQQ is a signal it never owns.</p>
 
           <h2>Longevity</h2>
           <p><strong>Backtest Days</strong>: the number of trading days the strategy has actual history for. A larger number of days is stronger evidence, the same way flipping a coin 1,000 times tells you more than flipping it 10 times.</p>
@@ -249,6 +250,12 @@
       // even though TQQQ is central to its logic. The label says "Currently"
       // so nobody reads it as the strategy's asset universe.
       { key: 'holding', label: 'Currently Holding (Ticker)', type: 'holding' },
+      // Same map, keys instead of values. Verified against the symphony tree
+      // from /score for two strategies: the key set is exactly the set of
+      // asset-node tickers, zeros included. Tickers that appear only in
+      // conditions (QQQ, SPY, UVXY as signals) are correctly absent, because
+      // the symphony cannot hold them.
+      { key: 'anyticker', label: 'All Tickers (Held or Not)', type: 'anyticker' },
     ];
     const NUMBER_OPS = ['=', '>', '<', '>=', '<=', 'between'];
     const HOLDING_OPS = ['contains', 'does not contain'];
@@ -269,12 +276,17 @@
         return val.toLowerCase().includes(String(filter.value).toLowerCase());
       }
 
-      if (def.type === 'holding') {
+      if (def.type === 'holding' || def.type === 'anyticker') {
         const ticker = String(filter.value).toUpperCase().trim();
         if (!ticker) return true; // incomplete input, don't filter out yet
         const holdings = e.last_market_days_holdings;
+        // 'holding' wants a live position, so it tests the value. 'anyticker'
+        // wants the symphony's whole asset universe, so it tests the key and
+        // deliberately keeps the zeros: a zero means "can hold this, just is
+        // not holding it today", which is the question this field answers.
         const present = holdings && typeof holdings === 'object'
-          && Object.keys(holdings).some(k => k.toUpperCase() === ticker && Number(holdings[k]) > 0);
+          && Object.keys(holdings).some(k => k.toUpperCase() === ticker
+            && (def.type === 'anyticker' || Number(holdings[k]) > 0));
         return filter.operator === 'does not contain' ? !present : present;
       }
 
@@ -318,7 +330,8 @@
 
       function operatorOptionsHtml(fieldKey, selected) {
         const def = fieldDef(fieldKey);
-        const ops = def.type === 'number' ? NUMBER_OPS : def.type === 'holding' ? HOLDING_OPS : ['contains'];
+        const ops = def.type === 'number' ? NUMBER_OPS
+          : (def.type === 'holding' || def.type === 'anyticker') ? HOLDING_OPS : ['contains'];
         return ops.map(op => `<option value="${op}"${op === selected ? ' selected' : ''}>${op}</option>`).join('');
       }
 

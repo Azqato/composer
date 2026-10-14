@@ -28,6 +28,44 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Database: "All Tickers" filter, and an honest name for the old one
+
+### Added
+
+- **An "All Tickers (Held or Not)" screener field.** It matches on the *keys* of
+  `last_market_days_holdings` rather than their values, so a ticker sitting at `0.0` still matches.
+  **A zero means "this symphony can hold this and simply was not holding it that day"**, which is
+  what makes this the field that answers "which strategies trade TQQQ".
+- Measured on the live data: **`TQQQ` returns 3,436 rows on All Tickers against 1,638 on Currently
+  Holding**, and zoop's 2026 Frontrunner appears in the first and not the second, because it was
+  parked in BIL on the day it was last measured.
+
+### Changed
+
+- **"Holding (Ticker)" renamed to "Currently Holding (Ticker)"**, and a Holdings section added to
+  the metric help panel. The old label read like the set of tickers a strategy trades, which it has
+  never been.
+
+### Notes
+
+- **The key set is the symphony's complete holdable universe, and this was verified rather than
+  assumed.** Comparing the holdings keys against the asset-node tickers pulled from
+  `/api/v0.1/symphonies/{id}/score` gave an exact match on both strategies tested: Sometimes TQQQ
+  (`SH, SOXL, TECL, TQQQ, UPRO`) and Frontrunner (`BIL, SOXL, SPXU, TQQQ, UPRO, VXX`).
+- **An earlier reading of this was wrong and nearly cost four hours.** Regexing tickers out of the
+  curated prose suggested the key set was missing holdable assets, which would have meant building
+  a real universe field from 6,817 API pulls. The tickers that looked missing (QQQ, SPY, UVXY,
+  SPXU-in-some-rows) are **signal-only**: read by conditions, never held. **Prose is not a schema.**
+  One API call against the actual symphony tree settled in seconds what the prose had muddied.
+- **The filter test harness over-reported until its selector was scoped.** `.db-table` matches the
+  Database, Leaderboard and Screener tables, so a nonsense ticker appeared to return 84 rows: two
+  full 42-row pages from the other two tabs plus zero from the one under test. Scoped to
+  `#tab-all`, it returns 0.
+
+**Files changed:** `database.html`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Referral copy: lead with the $50
 
 ### Changed
