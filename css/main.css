@@ -3231,3 +3231,70 @@ textarea,
 }
 
 .ref-disclosure strong { color: var(--color-primary); }
+
+/* ---- Referral CTA (v1.31.1) ---- */
+
+/* The offer block, directly under the disclosure. Marketing weight lives here
+   and in .ref-cta-strip; the body of the page stays reference material. */
+.ref-cta {
+  background: rgba(var(--rgb-green), 0.07);
+  border: 1px solid rgba(var(--rgb-green), 0.3);
+  border-radius: var(--radius-lg);
+  padding: 28px 28px 24px;
+  margin-bottom: 36px;
+}
+
+.ref-cta-head {
+  color: var(--color-primary);
+  font-size: clamp(1.375rem, 3vw, 1.875rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 8px;
+}
+
+.ref-amount { color: var(--color-accent); }
+
+.ref-cta-sub {
+  color: var(--color-secondary);
+  font-size: 1rem;
+  max-width: 62ch;
+  margin: 0;
+}
+
+.ref-cta-sub strong { color: var(--color-primary); }
+
+.ref-cta-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 16px 0 0;
+}
+
+.ref-cta-note {
+  color: var(--color-secondary);
+  font-size: 0.875rem;
+}
+
+/* Second CTA, for the reader who scrolled past the first. */
+.ref-cta-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: rgba(var(--rgb-green), 0.1);
+  border: 1px solid rgba(var(--rgb-green), 0.35);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin: 20px 0 28px;
+  color: var(--color-secondary);
+}
+
+.ref-cta-strip strong { color: var(--color-primary); }
+.ref-cta-strip span { flex: 1 1 240px; }
+
+/* Banner terms line: present, legible, not competing with the offer. */
+.ref-banner-terms {
+  color: var(--color-disabled);
+  font-size: 0.8125rem;
+}

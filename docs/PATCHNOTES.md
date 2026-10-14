@@ -28,6 +28,33 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Referral copy: lead with the $50
+
+### Changed
+
+- **Every referral surface now names the amount instead of saying "a sign-up bonus".** The banner,
+  the homepage card, the page title and the meta description all lead with **$50**, which is what
+  Composer's invite screen shows for the new account holder.
+- **A CTA block sits directly under the disclosure**, carrying the code, a copy button and a sign-up
+  link, so a reader who already knows what they want never scrolls for it. The code still appears in
+  its own section further down, in context, with a second CTA strip beside it.
+- **Section 2 states the offer in plain commercial terms** ("free money for opening an account you
+  were going to open anyway") while keeping the figures, the asymmetry and the "Composer's terms
+  govern this" paragraph intact.
+
+### Notes
+
+- **No invented urgency.** There is no countdown, no "limited time" and no implied expiry, because
+  Composer has announced no deadline and a fabricated one on a reference site costs more trust than
+  it earns. The urgency on the page is the true kind: **the referral field exists only during
+  signup and cannot be applied afterwards**, so hesitating really does cost the reader $50.
+- **The disclosure stays above the offer**, not below it and not in a footnote. The page asks people
+  to act on a code the author is paid for; that belongs before the ask.
+- **The banner carries a muted "Composer's terms apply" line.** The amount is conditional on
+  Composer's requirements, and a flat "get $50" with no qualifier would overstate it.
+
+---
+
 ## [Unreleased] - Referral page, nav entry and first-visit banner
 
 ### Added
