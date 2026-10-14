@@ -1,6 +1,6 @@
 # Composer Atlas: Design System
 
-**Version:** 1.30
+**Version:** 1.31
 **Status:** Active
 **Last Updated:** 2026-10-07
 
@@ -119,6 +119,27 @@ The following color variants appear as inline `rgba()` values in `css/main.css` 
 - **Purple**: reserved for momentum tags and strategy-concept glossary badges.
 - **Blue**: reserved for interactive states (links, focus rings, hover borders). Not used for data values.
 - **Yellow**: used for neutral/caution indicators (mean period return, median period return).
+
+### The referral surfaces (v1.31)
+
+Four components, all built from tokens with no raw colour literals, so they follow both themes.
+
+- **`.ref-banner`**, the first-visit strip. **It lives inside `.page`, not before it.** `.nav` is
+  `position: fixed; top: 0`, so anything first in normal flow renders at y=0 *behind* the nav;
+  `.page` already carries `padding-top: var(--nav-height)` for exactly this reason. A DOM probe will
+  report such an element visible, `display: block`, with a real height, and be correct: painted,
+  then covered. **Only a screenshot catches it.**
+- **`.ref-cta`**, the offer block under the disclosure, and **`.ref-cta-strip`**, the lighter repeat
+  further down the page. Both wash green at low alpha over whatever surface they sit on.
+- **`.ref-code-block`** and **`.ref-code-inline`**, the code itself. Mono, and the block form uses
+  `word-break: break-all` so a long code never pushes the copy button off a phone screen.
+- **`.ref-disclosure`**, caution-toned with a left bar. Caution rather than warning on purpose: it
+  is a notice the reader should not miss, not an error.
+
+**The code is never written into markup.** `REFERRAL_CODE` in `app.js` is the single definition and
+`renderReferral()` fills every `[data-referral-code]` element. The copy buttons fall back to a
+hidden textarea and `execCommand`, because `navigator.clipboard` is undefined on `file://` and on
+any insecure origin.
 
 ### Themes (v1.30)
 

@@ -8429,6 +8429,49 @@ the brief did not specify either way, because a transparent favicon bakes one in
 
 ---
 
+### Holdings Fields: What `last_market_days_holdings` Actually Is
+
+**Settled 2026-10-14, and the answer is not what the field name suggests.**
+
+`last_market_days_holdings` is a map of ticker to position value on the **last market day of the
+backtest**, captured at that row's `refresh_date`. It carries **every asset the symphony can hold,
+including the ones at `0.0`**. A zero is not padding: it means "this symphony can hold this and was
+not holding it that day".
+
+**The key set is the symphony's complete holdable universe.** This was verified against the symphony
+tree from `/api/v0.1/symphonies/{id}/score`, not inferred:
+
+| Strategy | Asset-node tickers in the tree | Holdings keys |
+|---|---|---|
+| zoop's Sometimes TQQQ | `SH, SOXL, TECL, TQQQ, UPRO` | identical |
+| zoop's 2026 Frontrunner | `BIL, SOXL, SPXU, TQQQ, UPRO, VXX` | identical |
+
+**Tickers used only as signals are absent, correctly.** A strategy that reads QQQ's RSI to decide
+whether to buy TQQQ carries TQQQ as a key and never QQQ, because it cannot hold QQQ. There is
+therefore **no field anywhere that lists a symphony's signal tickers**, and building one would mean
+parsing every symphony's condition nodes.
+
+Two screener fields read this map, and the distinction is the whole point:
+
+| Field | Tests | `TQQQ` on the live data |
+|---|---|---|
+| **Currently Holding (Ticker)** | the value, `> 0` | 1,638 rows |
+| **All Tickers (Held or Not)** | the key, zeros kept | 3,436 rows |
+
+**Currently Holding is a snapshot and goes stale.** Most rows share a refresh date but a tail does
+not, so it compares positions taken on different days. Use All Tickers to ask which strategies trade
+a ticker; use Currently Holding to ask what is held right now.
+
+**`active_asset_nodes` is not the universe field it sounds like.** It is keyed by node UUID with
+weights (`{'e101f5ef-...': 1.0}`), not by ticker, and `export_summary.py` drops it from the summary
+the site actually loads.
+
+**A warning for the next person who checks this.** An earlier pass regexed tickers out of the
+curated prose and concluded the key set was missing holdable assets, which implied a 6,817-call pull
+to build a real universe field. It was wrong: the "missing" tickers were signals. **Curated prose
+names signals and holdings in the same sentence and is not a schema.** One call against the
+symphony tree answers this definitively.
+
 ### The Referral Page and the First-Visit Banner
 
 **Added 2026-10-14.** `referral.html` explains Composer's referral programme and carries the owner's
@@ -8446,6 +8489,15 @@ breach the no-user-data rule**: nothing is collected, nothing is transmitted, an
 The honest limits are that it is per browser and per device, that private windows and cleared site
 data read as a first visit every time, and that a visitor whose storage predates the feature never
 sees it. All three are acceptable; the alternative is accounts, which are permanently ruled out.
+
+**The copy leads with the amount, and the urgency is real rather than manufactured.** Every surface
+names **$50** instead of saying "a sign-up bonus", and a CTA block carrying the code sits directly
+under the disclosure so a decided reader never scrolls for it. There is deliberately **no countdown,
+no "limited time" and no implied expiry**: Composer has announced no deadline, and inventing one on
+a site whose whole value is being accurate about numbers is a bad trade. The hook used instead is
+true and stronger: **the referral field exists only during signup and cannot be applied afterwards**,
+so hesitating genuinely costs the reader the money. The page body stays reference material; the
+marketing weight lives in the CTAs and in the section about the bonus.
 
 **Disclosure is on the page, above the fold, not in a footnote.** The author is paid for signups
 made with that code and the page says so before it says anything else. The page also instructs
