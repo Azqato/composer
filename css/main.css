@@ -3059,3 +3059,175 @@ textarea,
 .screener-filter-cell input {
   border-color: var(--color-border-strong);
 }
+
+/* =============================================
+   Referral (v1.31)
+   Tokens only, no raw colour literals: the palette is two themes now and a
+   literal here would stay a dark-mode colour on a white card.
+   ============================================= */
+
+/* The first-visit banner. [hidden] is respected explicitly because the
+   element ships hidden in the markup and app.js reveals it; without this,
+   display:flex below would beat the UA's [hidden] rule and it would flash. */
+.ref-banner[hidden] { display: none; }
+
+.ref-banner {
+  background: rgba(var(--rgb-green), 0.08);
+  border-bottom: 1px solid rgba(var(--rgb-green), 0.35);
+}
+
+.ref-banner-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ref-banner-text {
+  color: var(--color-secondary);
+  font-size: 0.875rem;
+  flex: 1 1 260px;
+}
+
+.ref-banner-text strong { color: var(--color-primary); }
+
+.ref-banner-link {
+  color: var(--color-accent);
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ref-banner-close {
+  background: none;
+  border: none;
+  color: var(--color-secondary);
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.ref-banner-close:hover { color: var(--color-primary); }
+
+/* The code itself, inline in prose and in the banner. */
+.ref-code-inline {
+  font-family: var(--font-mono);
+  color: var(--color-primary);
+  background: rgba(var(--rgb-green), 0.12);
+  border: 1px solid rgba(var(--rgb-green), 0.4);
+  border-radius: var(--radius-sm);
+  padding: 2px 7px;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+}
+
+/* The big copy block on the referral page. */
+.ref-code-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 20px 0 8px;
+  padding: 18px 20px;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.ref-code-block code {
+  font-family: var(--font-mono);
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  letter-spacing: 0.04em;
+  flex: 1 1 auto;
+  word-break: break-all;
+}
+
+/* Wikipedia-style contents box: a boxed, numbered list of the page's own
+   headings. The global reset strips list markers from every ul, so the
+   numbering here is an ol and the indent is set back by hand. */
+.ref-toc {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin: 0 0 32px;
+  display: inline-block;
+  min-width: min(100%, 340px);
+}
+
+.ref-toc h2 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin: 0 0 10px;
+}
+
+.ref-toc ol {
+  margin: 0;
+  padding-left: 22px;
+  list-style: decimal;
+  color: var(--color-secondary);
+}
+
+.ref-toc li { margin: 4px 0; }
+
+.ref-toc a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Numbered walkthrough steps. Same reason as above: the reset killed the
+   markers and these steps are meaningless out of order. */
+.ref-steps {
+  counter-reset: ref-step;
+  margin: 16px 0 24px;
+  padding: 0;
+}
+
+.ref-steps li {
+  counter-increment: ref-step;
+  position: relative;
+  padding: 0 0 0 40px;
+  margin: 0 0 16px;
+  color: var(--color-secondary);
+}
+
+.ref-steps li::before {
+  content: counter(ref-step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(var(--rgb-green), 0.15);
+  border: 1px solid rgba(var(--rgb-green), 0.45);
+  color: var(--color-accent);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Disclosure box. Caution-toned on purpose: it is a notice, not a warning. */
+.ref-disclosure {
+  background: rgba(var(--rgb-yellow), 0.08);
+  border: 1px solid rgba(var(--rgb-yellow), 0.35);
+  border-left: 3px solid var(--color-caution);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin: 28px 0;
+  color: var(--color-secondary);
+  font-size: 0.9375rem;
+}
+
+.ref-disclosure strong { color: var(--color-primary); }

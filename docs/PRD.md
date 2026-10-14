@@ -8429,6 +8429,36 @@ the brief did not specify either way, because a transparent favicon bakes one in
 
 ---
 
+### The Referral Page and the First-Visit Banner
+
+**Added 2026-10-14.** `referral.html` explains Composer's referral programme and carries the owner's
+code; a nav entry sits left of Azqato Invests, with a footer link and a homepage Explore card.
+
+**The code has exactly one definition**, `REFERRAL_CODE` in `js/app.js`, rendered into every
+`[data-referral-code]` element. Four surfaces show it. A literal copied into four files is one that
+eventually disagrees with itself, and **this particular failure is silent**: a wrong code does not
+break signup, Composer simply applies no credit, and the first sign of trouble is a bonus that never
+arrives. Changing the code is a one-line edit in one file, by design.
+
+**The banner is shown only during a visitor's first 30 minutes**, tracked with two `localStorage`
+keys (`ca-ref-first`, `ca-ref-dismissed`) written on the visitor's own device. **This does not
+breach the no-user-data rule**: nothing is collected, nothing is transmitted, and no account exists.
+The honest limits are that it is per browser and per device, that private windows and cleared site
+data read as a first visit every time, and that a visitor whose storage predates the feature never
+sees it. All three are acceptable; the alternative is accounts, which are permanently ruled out.
+
+**Disclosure is on the page, above the fold, not in a footnote.** The author is paid for signups
+made with that code and the page says so before it says anything else. The page also instructs
+anyone sharing a code publicly to disclose the same, which is what the FTC's endorsement guidance
+expects of a material connection.
+
+**A layout trap worth keeping.** The banner first rendered invisibly because `.nav` is
+`position: fixed; top: 0`, so the first element in normal flow sits behind it. The DOM probe
+reported `visible`, `display: block` and a 54px height, and every one of those was true: the element
+was painted and then covered. **Moving it after the nav in the markup fixes nothing**, since a fixed
+nav is out of flow entirely. Anything meant to appear below the nav belongs inside `.page`, which
+already carries `padding-top: var(--nav-height)`. Geometry could not catch this. The screenshot did.
+
 ### The Colour Audit and the Two-Theme Palette
 
 **Done 2026-10-07**, against the owner's own published **Template Interface Color Standard v1.0**

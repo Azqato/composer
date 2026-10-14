@@ -28,6 +28,46 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Referral page, nav entry and first-visit banner
+
+### Added
+
+- **`referral.html`**, a reference-style page on how Composer referral codes work: what they are,
+  what each side receives, a numbered walkthrough of redeeming one during signup, the owner's code
+  as a worked example, how to share your own, and the ways it goes wrong. Contents box, seven
+  sections, written in the site's own voice like the rest of the reference material.
+- **A "Referral" nav entry**, immediately left of Azqato Invests, plus a footer link and a card in
+  the homepage Explore grid.
+- **A first-visit banner**, shown only during a visitor's first 30 minutes on the site and never
+  again. Two `localStorage` keys on the visitor's own machine, nothing collected and no request
+  made, which keeps the no-accounts rule intact. A dismiss button persists.
+- **A disclosure box above the fold** on the referral page, stating plainly that the author is paid
+  for signups through that code. The page also tells anyone sharing a code publicly to disclose the
+  same thing, which is what the FTC's endorsement guidance expects.
+
+### Notes
+
+- **The code is defined once, in `app.js` as `REFERRAL_CODE`, and rendered into every surface.** It
+  appears in four places and two copy buttons; a literal pasted into four files eventually goes
+  wrong in one of them, and this failure is silent, because Composer completes the signup and simply
+  applies no credit. Nobody finds out until a bonus does not arrive.
+- **The copy button falls back to a hidden textarea and `execCommand`.** `navigator.clipboard` is
+  undefined on `file://` and on any insecure origin, and a copy button that silently does nothing is
+  worse than no button.
+- **The banner first rendered underneath the nav and was invisible.** `.nav` is `position: fixed`,
+  so the first element in normal flow starts at y=0 behind it. The DOM probe reported the banner as
+  visible with a height of 54px and it was right: it was painted, then covered. Moving the slot
+  after the nav in the markup changes nothing for the same reason. It belongs inside `.page`, which
+  already carries `padding-top: var(--nav-height)` for exactly this. **Geometry alone did not catch
+  this; the screenshot did.**
+- **Amounts are stated as $100 to the sharer and $50 to the new account**, as Composer's invite
+  screen showed them, with their conditions left to Composer rather than restated from memory.
+
+**Files changed:** `referral.html`, `js/app.js`, `css/main.css`, `index.html`, all 14 other pages
+(banner slot), `sitemap.xml`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - AddSymphony ingest: 1 new symphony
 
 ### Added

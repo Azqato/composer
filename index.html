@@ -38,6 +38,7 @@
   <nav class="nav" id="nav-root"></nav>
 
   <div class="page">
+    <div class="ref-banner" id="referral-banner" hidden></div>
     <!-- Hero -->
     <section class="hero">
       <div class="container">
@@ -139,6 +140,11 @@
             <h3 class="card-title">Overfit Check</h3>
             <p class="card-desc">How much of a backtest survives once its author stops editing it. Measured across thousands of symphonies, and lookup-able for any one of them.</p>
           </a>
+          <a href="#" class="card" id="explore-referral">
+            <div class="explore-icon">&#x1F39F;&#xFE0F;</div>
+            <h3 class="card-title">Referral Codes</h3>
+            <p class="card-desc">How a Composer referral code works, where the field hides during signup, and a code you can use.</p>
+          </a>
           <a href="#" class="card" id="explore-etf-cloner">
             <div class="explore-icon">&#x1F9EC;</div>
             <h3 class="card-title">ETF Cloner</h3>
@@ -165,6 +171,7 @@
       document.getElementById('explore-k1').href = u('/k1.html');
       document.getElementById('explore-overfit').href = u('/overfit.html');
       document.getElementById('explore-etf-cloner').href = u('/etf-cloner.html');
+      document.getElementById('explore-referral').href = u('/referral.html');
     })();
   </script>
 </body>

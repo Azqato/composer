@@ -272,6 +272,7 @@ function renderNav() {
     ] },
     { href: u('/guides.html'), label: 'Guides' },
     { href: u('/glossary.html'), label: 'Glossary' },
+    { href: u('/referral.html'), label: 'Referral' },
     { href: 'https://azqato.com/invests', label: 'Azqato Invests', external: true },
     { href: 'https://azqato.com/support.html', label: 'Support', external: true },
   ];
@@ -399,6 +400,7 @@ function renderFooter() {
       <a href="${u('/k1.html')}">K1 Lookup</a>
       <a href="${u('/overfit.html')}">Overfit Check</a>
       <a href="${u('/etf-cloner.html')}">ETF Cloner</a>
+      <a href="${u('/referral.html')}">Referral</a>
       <a href="${u('/about.html')}">About</a>
       <a href="https://azqato.com/support.html" target="_blank" rel="noopener noreferrer">Support</a>
       <a href="https://composer.trade" target="_blank" rel="noopener noreferrer">Composer.trade ↗</a>
@@ -672,8 +674,117 @@ function renderStrategyListItem(s) {
   `;
 }
 
+// ---- Referral ----
+// THE CODE LIVES HERE AND NOWHERE ELSE. Four surfaces show it and two buttons
+// copy it, and a literal duplicated across four files is one that eventually
+// goes wrong in one of them. This failure is silent: Composer accepts the
+// signup and simply applies no credit, so nobody finds out until the bonus
+// that was promised never arrives.
+const REFERRAL_CODE = 'fczMHII-TRADE';
+
+// Fills every [data-referral-code] element and wires every [data-referral-copy]
+// button. Copy falls back to a hidden textarea + execCommand because
+// navigator.clipboard is undefined on file:// and on any insecure origin, and
+// a copy button that does nothing is worse than one that is not there.
+function renderReferral() {
+  document.querySelectorAll('[data-referral-code]').forEach((el) => {
+    el.textContent = REFERRAL_CODE;
+  });
+
+  document.querySelectorAll('[data-referral-copy]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const done = (ok) => {
+        const prev = btn.dataset.label || btn.textContent;
+        btn.dataset.label = prev;
+        btn.textContent = ok ? 'Copied ✓' : 'Press Ctrl+C';
+        setTimeout(() => { btn.textContent = prev; }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(REFERRAL_CODE).then(() => done(true), () => done(false));
+        return;
+      }
+      const ta = document.createElement('textarea');
+      ta.value = REFERRAL_CODE;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      done(ok);
+    });
+  });
+}
+
+// ---- First-visit referral banner ----
+// Shown only during the visitor's first 30 minutes on the site, then never
+// again. Two keys in localStorage, both written on the visitor's own machine
+// and never read by anything but this function: no account, no collection, no
+// request leaves the page.
+//
+// What this CANNOT do, and the limits are worth stating because the numbers
+// will look lower than expected: localStorage is per browser and per device,
+// so the same person on a phone is a new first visit; a private window or
+// cleared site data reads as a first visit every time; and a visitor who first
+// arrived months ago with their storage intact never sees it again, which is
+// the whole point.
+const REFERRAL_FIRST_KEY = 'ca-ref-first';
+const REFERRAL_HIDE_KEY = 'ca-ref-dismissed';
+const REFERRAL_WINDOW_MS = 30 * 60 * 1000;
+
+function referralBannerDue() {
+  let store;
+  try {
+    store = window.localStorage;
+    // Probe it. Safari in private mode exposes localStorage and throws on
+    // write, so merely having the object is not proof that it works.
+    store.setItem('ca-probe', '1');
+    store.removeItem('ca-probe');
+  } catch (e) {
+    return false;   // no storage means no way to stop showing it, so never start
+  }
+  if (store.getItem(REFERRAL_HIDE_KEY)) return false;
+
+  const first = parseInt(store.getItem(REFERRAL_FIRST_KEY), 10);
+  if (!first) {
+    // This page view IS the first one. Stamp it and show.
+    store.setItem(REFERRAL_FIRST_KEY, String(Date.now()));
+    return true;
+  }
+  return Date.now() - first < REFERRAL_WINDOW_MS;
+}
+
+function renderReferralBanner() {
+  const slot = document.getElementById('referral-banner');
+  if (!slot || !referralBannerDue()) return;
+
+  slot.innerHTML = `
+    <div class="ref-banner-inner">
+      <span class="ref-banner-text">
+        <strong>New to Composer?</strong> Sign up with code
+        <code class="ref-code-inline" data-referral-code></code> for a sign-up bonus.
+      </span>
+      <button type="button" class="btn btn-sm btn-outline-green" data-referral-copy>Copy code</button>
+      <a class="ref-banner-link" href="${u('/referral.html')}">How it works</a>
+      <button type="button" class="ref-banner-close" id="ref-banner-close"
+        aria-label="Dismiss this notice">&times;</button>
+    </div>
+  `;
+  slot.hidden = false;
+  renderReferral();   // fills the code and wires the copy button inside the banner
+
+  document.getElementById('ref-banner-close').addEventListener('click', () => {
+    slot.hidden = true;
+    try { localStorage.setItem(REFERRAL_HIDE_KEY, '1'); } catch (e) { /* private mode */ }
+  });
+}
+
 // ---- Init ----
 document.addEventListener('DOMContentLoaded', () => {
   renderNav();
   renderFooter();
+  renderReferral();
+  renderReferralBanner();
 });
