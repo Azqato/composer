@@ -114,6 +114,9 @@
           <p><strong>Annualized Turnover</strong>: how often the strategy buys and sells positions over the course of a year. A higher number means more frequent trading, which tends to add more fees and tax drag.</p>
           <p><strong>Total Costs</strong>: the actual dollar amount lost to trading fees, slippage, and related costs over the backtest.</p>
 
+          <h2>Holdings</h2>
+          <p><strong>Currently Holding (Ticker)</strong>: matches a strategy only if it held that ticker with a position above zero on the last market day of its backtest, as of that row's refresh date. <strong>This is a snapshot, not a list of everything the strategy uses.</strong> A rotation strategy that was sitting in BIL on the day it was measured will not match a search for TQQQ, even when TQQQ is the position it exists to take. Use it to find what is held right now, not to find which strategies trade a given ticker.</p>
+
           <h2>Longevity</h2>
           <p><strong>Backtest Days</strong>: the number of trading days the strategy has actual history for. A larger number of days is stronger evidence, the same way flipping a coin 1,000 times tells you more than flipping it 10 times.</p>
           <p><strong>OOS Days</strong>: the number of days since the strategy's rules were last edited. A large number means it has run untouched for a long stretch, so its recent results reflect real performance rather than rules that were just tweaked to fit the recent past.</p>
@@ -239,7 +242,13 @@
       { key: 'top_ten_percent_day_contribution', label: 'Top 10% Contribution', type: 'number' },
       { key: 'backtest_days', label: 'Backtest Days', type: 'number' },
       { key: 'oos_days', label: 'OOS Days', type: 'number', derived: oosDaysValue },
-      { key: 'holding', label: 'Holding (Ticker)', type: 'holding' },
+      // Reads last_market_days_holdings, which is a snapshot of the positions
+      // held on the last market day of the backtest, as of this row's
+      // refresh_date. It is NOT every ticker the symphony can reach: a
+      // rotation strategy parked in BIL that day will not match a TQQQ filter
+      // even though TQQQ is central to its logic. The label says "Currently"
+      // so nobody reads it as the strategy's asset universe.
+      { key: 'holding', label: 'Currently Holding (Ticker)', type: 'holding' },
     ];
     const NUMBER_OPS = ['=', '>', '<', '>=', '<=', 'between'];
     const HOLDING_OPS = ['contains', 'does not contain'];
