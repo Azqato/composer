@@ -5,6 +5,46 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Screener: shareable links
+
+### Added
+
+- **A "Copy link" button in the Screener toolbar**, beside the two CSV exports (`database.html`).
+  It copies a URL that reopens the Database page on the Screener tab with the same filters, column
+  view, sort and page. Everything the Screener knows is already client-side, so the link needs no
+  backend and no saved-search store.
+- **State lives in the URL fragment**, not the query string: `database.html#screener&view=riskAdjusted&q=tqqq&sort=sharpe_ratio&dir=asc&page=3&f=calmar_ratio.5`.
+  A fragment is never sent to the host, and it keeps a filtered view from being indexed as a page
+  of its own. Only non-default state is written, so an untouched Screener yields a bare `#screener`.
+- **Bucket filters are encoded by option index, not by threshold.** The dropdown options are
+  deciles of the currently loaded dataset, so their thresholds move on every data refresh.
+  `calmar_ratio.5` therefore means "the fifth Calmar bucket", which still resolves after a refresh
+  and still matches an option the dropdown can show as selected. A pinned number would survive the
+  refresh as a filter the UI could no longer display. **A shared link tracks the decile, so the
+  numbers behind it will drift as the database grows.**
+- The URL is rewritten with `history.replaceState` on every Screener render, so the address bar
+  always matches what is on screen. `replaceState`, not `pushState`: the Screener re-renders on
+  every keystroke in the name box, and pushing would bury the back button. Switching to another
+  Database tab clears the fragment, so a link copied elsewhere never carries stale filters.
+
+### Changed
+
+- Tab activation was hoisted out of the tab-switching closure into an `activateDbTab(name)`
+  binding, so a shared link can open the Screener tab without repeating the DOM work.
+
+### Verified
+
+Headless Edge, against the local files: a shared link restores the tab, the name query, both
+bucket selections (and leaves untouched buckets on "Any"), the column view, the sort column and
+direction, and the page number, giving 485 results where the unfiltered pool gives 6,686. A
+deliberately corrupt fragment (`view=nope`, `tier=99`, `f=calmar_ratio.99,bogus_key.2,junk`,
+`sort=not_a_col`, `page=abc`) opens the Screener at its defaults rather than throwing. A load with
+no fragment is unchanged: All Strategies, nothing preselected.
+
+**Files changed:** `database.html`, `docs/PATCHNOTES.md`, `docs/PRD.md`
+
+---
+
 ## [Unreleased] - Leaderboard: "does not contain" holding filter
 
 ### Added

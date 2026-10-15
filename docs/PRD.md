@@ -2878,6 +2878,50 @@ a reader could act on a misunderstanding and get a letter from the IRS for it.
 - [x] Wired into All Strategies (`allFilterController`) and Screener (`screenerFilterController`); Leaderboard also got its own instance (`leaderboardFilterController`) for consistency, though not originally scoped as a V1.11 requirement
 - [x] `.filter-panel`, `.filter-row`, `.filter-empty` CSS added to `css/main.css`, documented in `docs/DESIGN.md`
 
+### Shareable Screener Links
+
+The Screener holds its whole state in module-scope variables, so a shareable link is just a
+serialisation of them. It goes in the **URL fragment**, not the query string: a fragment never
+reaches the host, and it stops a filtered view being indexed as a page of its own. Format:
+
+```
+database.html#screener&view=riskAdjusted&tier=2&q=tqqq&sort=sharpe_ratio&dir=asc&page=3&f=calmar_ratio.5,sharpe_ratio.3
+```
+
+Only non-default state is written, so an untouched Screener produces a bare `#screener`.
+
+**The one real decision here is how bucket filters are encoded.** The options in each dropdown are
+deciles of the dataset as currently loaded (`buildBucketOptions`), so their thresholds move every
+time the database is refreshed. Two encodings were available:
+
+- **By threshold** (`calmar_ratio.min=1.69`): reproduces the exact numeric filter forever, but after
+  a refresh that number is no longer one of the ten options, so the dropdown could not show it as
+  selected. The link would survive as a filter the UI cannot display.
+- **By option index** (`calmar_ratio.5`): means "the fifth Calmar bucket". The threshold behind it
+  drifts as the data grows, but it always resolves to an option that exists and that the dropdown
+  can display.
+
+Index won, because the index is the only thing the UI can actually express: the dropdown offers
+deciles, not free numeric entry. The consequence is deliberate and worth knowing: **a shared link
+tracks the decile, not the number.** A link to "top 10% Calmar" shared today still means top 10%
+next month, against different thresholds.
+
+Everything read from a fragment is validated against the live options (view name against
+`SCREENER_VIEWS`, tier and bucket indexes against their option lists, sort key against the chosen
+view's sortable columns), so a hand-edited or stale fragment degrades to the default rather than
+throwing.
+
+The URL is written by `writeScreenerHash()`, called from `renderScreenerPage()`. Every state
+change in that tab ends in a render, so that single hook covers all of them, and it no-ops when the
+Screener is not the visible tab, which is also what clears the fragment when you switch tabs. It
+uses `replaceState`, not `pushState`: the name search re-renders on every keystroke, and pushing
+would bury the back button under hundreds of entries.
+
+Reading happens once, in the loader, after `buildBucketOptions()` (it resolves option indexes
+against those options) and before the first `renderScreenerPage()` (which would otherwise overwrite
+the fragment with the default state). `applyScreenerHash()` returns whether the fragment was a
+Screener link, and the loader uses that to call `activateDbTab('screener')`.
+
 ### V1.12: Screener Tab
 
 **Status:** Complete (full multi-view switcher built now, per explicit user decision, not deferred to a later pass)

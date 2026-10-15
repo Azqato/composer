@@ -144,6 +144,10 @@
   <script src="data/oos.js"></script>
   <script src="js/app.js"></script>
   <script>
+    // Opens one of the four Database tabs. Assigned inside the tab-switching
+    // closure below; declared out here so the shared-link reader can call it.
+    let activateDbTab = () => { };
+
     (function () {
       renderBreadcrumb('breadcrumb-root', [
         { label: 'Home', href: u('/') },
@@ -158,12 +162,24 @@
         screener: document.getElementById('tab-screener'),
         metrics: document.getElementById('tab-metrics'),
       };
+      // Assigned into the module-scope binding above so a shared Screener link
+      // can open the Screener tab on load without repeating this DOM work.
+      // The selector is evaluated now, before any .db-tab button is rendered
+      // into a panel, so it holds these four and only these four.
+      activateDbTab = (name) => {
+        const target = Array.from(tabs).find(t => t.dataset.tab === name);
+        if (!target) return;
+        tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+        target.classList.add('active');
+        target.setAttribute('aria-selected', 'true');
+        Object.entries(panels).forEach(([key, panel]) => { panel.hidden = key !== name; });
+      };
       tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-          tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
-          tab.classList.add('active');
-          tab.setAttribute('aria-selected', 'true');
-          Object.entries(panels).forEach(([key, panel]) => { panel.hidden = key !== tab.dataset.tab; });
+          activateDbTab(tab.dataset.tab);
+          // Switching away from the Screener clears its state from the URL, so
+          // a link copied while on another tab never carries stale filters.
+          writeScreenerHash();
         });
       });
     })();
@@ -970,12 +986,125 @@
       return `<span class="db-sort-arrow active">${screenerSortDir === 'asc' ? '&#9650;' : '&#9660;'}</span>`;
     }
 
+    // ---- Shareable Screener links ------------------------------------------
+    // The Screener's entire state is client-side, so a link only has to carry
+    // it: no backend, no saved searches. It lives in the URL fragment rather
+    // than the query string, which keeps it off the wire and stops a filtered
+    // view being indexed as a page of its own.
+    //
+    // Bucket filters are encoded by OPTION INDEX, not by threshold. The options
+    // are deciles of the loaded dataset (buildBucketOptions), so their
+    // thresholds move on every data refresh. An index means "the top 30% on
+    // Calmar", which is the only thing the dropdown can express anyway, and it
+    // still resolves after a refresh. A pinned number would survive the refresh
+    // as a filter the UI could no longer show as selected.
+    const SCREENER_HASH_TAB = 'screener';
+
+    function screenerTabIsActive() {
+      const panel = document.getElementById('tab-screener');
+      return !!panel && !panel.hidden;
+    }
+
+    // Only non-default state is written, so an untouched Screener yields a bare
+    // "#screener" and the common link stays short.
+    function screenerStateHash() {
+      const parts = [SCREENER_HASH_TAB];
+      if (screenerView !== 'overview') parts.push('view=' + screenerView);
+      const tierIdx = tierFilterOptions().findIndex(o => o.max === screenerTierMax);
+      if (tierIdx > 0) parts.push('tier=' + tierIdx);
+      if (screenerNameQuery) parts.push('q=' + encodeURIComponent(screenerNameQuery));
+      if (screenerSortField) {
+        parts.push('sort=' + screenerSortField);
+        parts.push('dir=' + screenerSortDir);
+      }
+      if (screenerPage > 1) parts.push('page=' + screenerPage);
+      const buckets = [];
+      BUCKET_FIELDS.forEach(f => {
+        const sel = screenerBucketSelections[f.key];
+        if (!sel) return;
+        const idx = (BUCKET_OPTIONS[f.key] || []).findIndex(o => o.label === sel.label);
+        if (idx > 0) buckets.push(f.key + '.' + idx);
+      });
+      if (buckets.length) parts.push('f=' + buckets.join(','));
+      return '#' + parts.join('&');
+    }
+
+    function screenerShareUrl() {
+      // file:// has no usable origin, so there the address bar is the best we
+      // can offer; over http(s) the link is absolute and ready to paste.
+      if (location.protocol === 'file:') return location.href;
+      return location.origin + location.pathname + location.search + screenerStateHash();
+    }
+
+    // replaceState, not pushState: the Screener re-renders on every keystroke in
+    // the name box, and pushing would bury the back button under hundreds of
+    // entries.
+    function writeScreenerHash() {
+      if (!window.history || !history.replaceState) return;
+      const next = screenerTabIsActive() ? screenerStateHash() : '';
+      if ((location.hash || '') === next) return;
+      const base = location.pathname + location.search;
+      history.replaceState(null, '', next ? base + next : base);
+    }
+
+    // Returns true if the fragment held Screener state, which tells the caller
+    // to open that tab. Every value is validated against the live options, so a
+    // hand-edited or stale fragment degrades to the default and never throws.
+    function applyScreenerHash() {
+      const raw = (location.hash || '').replace(/^#/, '');
+      if (!raw) return false;
+      const parts = raw.split('&');
+      if (parts[0] !== SCREENER_HASH_TAB) return false;
+      const params = {};
+      parts.slice(1).forEach(part => {
+        const i = part.indexOf('=');
+        if (i > 0) params[part.slice(0, i)] = part.slice(i + 1);
+      });
+      if (params.view && SCREENER_VIEWS[params.view]) screenerView = params.view;
+      if (params.tier) {
+        const opt = tierFilterOptions()[parseInt(params.tier, 10)];
+        if (opt) screenerTierMax = opt.max;
+      }
+      if (params.q) {
+        try {
+          screenerNameQuery = decodeURIComponent(params.q).toLowerCase();
+        } catch (e) { /* malformed escape: leave the search empty */ }
+      }
+      if (params.f) {
+        params.f.split(',').forEach(token => {
+          const dot = token.lastIndexOf('.');
+          if (dot < 1) return;
+          const key = token.slice(0, dot);
+          const idx = parseInt(token.slice(dot + 1), 10);
+          const opts = BUCKET_OPTIONS[key];
+          if (!opts || !(idx > 0) || idx >= opts.length) return;
+          screenerBucketSelections[key] = opts[idx];
+        });
+      }
+      if (params.sort) {
+        // Accept only a sortable column of the view we ended up on, so a shared
+        // sort never points at a header that is not on screen.
+        const cols = SCREENER_VIEWS[screenerView].columns;
+        if (cols.some(c => c.key === params.sort && c.sortable !== false)) {
+          screenerSortField = params.sort;
+          screenerSortDir = params.dir === 'asc' ? 'asc' : 'desc';
+        }
+      }
+      const page = parseInt(params.page, 10);
+      if (page > 1) screenerPage = page; // renderScreenerPage clamps it
+      return true;
+    }
+
     function renderScreenerPage() {
       const columns = SCREENER_VIEWS[screenerView].columns;
       const totalPages = Math.max(1, Math.ceil(screenerFiltered.length / PAGE_SIZE));
       screenerPage = Math.min(Math.max(1, screenerPage), totalPages);
       const start = (screenerPage - 1) * PAGE_SIZE;
       const pageRows = screenerFiltered.slice(start, start + PAGE_SIZE);
+
+      // Every state change in this tab ends in a render, so this one call keeps
+      // the URL in step with the filters. It no-ops on the other tabs.
+      writeScreenerHash();
 
       const viewTabsHtml = Object.entries(SCREENER_VIEWS).map(([key, view]) =>
         `<button class="db-tab${key === screenerView ? ' active' : ''}" data-view="${key}" style="font-size:0.8125rem;padding:8px 14px">${view.label}</button>`
@@ -1019,6 +1148,7 @@
           <div class="db-export">
             <button class="btn btn-outline btn-sm" id="screener-export-view"${screenerFiltered.length ? '' : ' disabled'}>Export view .csv</button>
             <button class="btn btn-outline btn-sm" id="screener-export-all"${screenerFiltered.length ? '' : ' disabled'}>Export all fields .csv</button>
+            <button class="btn btn-outline btn-sm" id="screener-copy-link" title="Copy a link that reopens the Screener with these filters">Copy link</button>
           </div>
         </div>
         ${bucketGridHtml()}
@@ -1042,6 +1172,32 @@
 
       document.getElementById('screener-export-view').addEventListener('click', () => csvDownload('view'));
       document.getElementById('screener-export-all').addEventListener('click', () => csvDownload('all'));
+
+      const copyLinkBtn = document.getElementById('screener-copy-link');
+      copyLinkBtn.addEventListener('click', () => {
+        const url = screenerShareUrl();
+        const done = (ok) => {
+          copyLinkBtn.textContent = ok ? 'Link copied \u2713' : 'Press Ctrl+C';
+          setTimeout(() => { copyLinkBtn.textContent = 'Copy link'; }, 1600);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(() => done(true), () => done(false));
+          return;
+        }
+        // execCommand fallback, the same shape as the referral copy button: the
+        // async Clipboard API is unavailable on file:// and on old Safari.
+        const ta = document.createElement('textarea');
+        ta.value = url;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+        document.body.removeChild(ta);
+        done(ok);
+      });
 
       document.getElementById('screener-first').addEventListener('click', () => { screenerPage = 1; renderScreenerPage(); window.scrollTo({ top: 0 }); });
       document.getElementById('screener-prev').addEventListener('click', () => { screenerPage--; renderScreenerPage(); window.scrollTo({ top: 0 }); });
@@ -1761,7 +1917,14 @@
       // tier filter read the global ranking index this builds.
       recomputeGlobalRanking();
 
+      // A shared link is read here: after buildBucketOptions, because it
+      // resolves bucket option indexes against those options, and before the
+      // first render, which would otherwise overwrite the fragment with the
+      // default state.
+      if (applyScreenerHash()) activateDbTab('screener');
+
       recomputeScreenerEntries();
+      applyScreenerSort();
       renderScreenerPage();
 
       recomputeLeaderboard();
