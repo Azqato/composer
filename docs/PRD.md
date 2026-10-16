@@ -2878,6 +2878,184 @@ a reader could act on a misunderstanding and get a letter from the IRS for it.
 - [x] Wired into All Strategies (`allFilterController`) and Screener (`screenerFilterController`); Leaderboard also got its own instance (`leaderboardFilterController`) for consistency, though not originally scoped as a V1.11 requirement
 - [x] `.filter-panel`, `.filter-row`, `.filter-empty` CSS added to `css/main.css`, documented in `docs/DESIGN.md`
 
+### Overfit Method Audit (2026-10-15)
+
+**Status: research record, no code changed. The owner has not yet decided on the redesign below.**
+The owner asked for an "extreme analysis" of whether the Overfit Check defines and rates overfitting
+accurately, against academic research, competing tools and our own data. This section is the
+reference copy of that work so it does not need to be redone.
+
+#### Summary
+
+- **The measurement holds up.** The fitted-era split, the edit-date out-of-sample window and the
+  score's arithmetic are sound. The Overfit Score is exactly `100 x (1 - Pardo's walk-forward
+  efficiency)`, a standard industry quantity.
+- **The verdict does not.** The par-relative verdict (including the verdict box, `401d503`) mostly
+  reads noise, and par excuses the very thing the literature defines as overfitting.
+- **Recommendation:** keep the engine, rewrite the judgement layer as a self-referential cone test
+  against each symphony's own backtest (details below).
+
+#### Research findings (academic)
+
+1. **Overfitting is defined by selection, not intent.** Bailey, Borwein, Lopez de Prado and Zhu
+   define backtest overfitting as choosing a configuration because its backtest looked best among
+   many tries; the inflated backtest then reverts out of sample. The reversion is the symptom.
+   This contradicts par's premise above ("mean reversion guarantees a gap after an extreme backtest
+   whether or not anything was overfit").
+2. **Decay is the norm and its size is known.** Industry habit is to halve a backtested Sharpe;
+   Harvey and Liu show the correct haircut is nonlinear. Suhonen, Lennkh and Perez: bank-built
+   alternative beta strategies lost a median ~73% of their Sharpe live, more when complex; only
+   8.4% improved live and ~30% went negative. Falck, Rej and Thesmar: published strategies keep
+   about 50% of in-sample performance; outlier-sensitivity of the in-sample Sharpe and signal
+   complexity explain ~15% of decay variance, publication year ~30%.
+3. **Backtest Sharpe barely predicts live Sharpe.** Wiecki et al. (Quantopian, 888 algorithms):
+   R^2 < 0.025 for Sharpe; volatility and max drawdown do persist; more backtesting by the author
+   means a larger in-sample/out-of-sample gap; non-linear classifiers on many features reach R^2 0.17.
+4. **Formula tests need a trial count.** The Probabilistic and Deflated Sharpe Ratios correct for
+   luck and the number of variants tried; Arnott, Harvey and Markowitz's protocol asks researchers
+   to record that count. Nobody knows it for a Composer symphony.
+5. **The practical standard is live-versus-predicted with noise accounted for:** Pardo's
+   walk-forward efficiency (50% or better is commonly called robust) and pyfolio's Bayesian cone
+   (projects the backtest forward and checks whether live returns stay inside).
+
+#### Competitive findings
+
+| Platform | What it does about overfitting | Relevance to Atlas |
+|---|---|---|
+| Composer | Shows an "OOS Start Date" (last edit) on symphony pages; metrics are not split and no verdict is given | Atlas is already well ahead |
+| QuantConnect | Probabilistic Sharpe Ratio on backtests | Useless on our data: PSR = 1.000 for every fitted era, rank corr -0.28 with live Sharpe |
+| StrategyQuant | Re-runs on perturbed data and parameters: Monte Carlo, walk-forward matrix, multi-market | Needs full price data: our V2.4 Tier 3, still blocked on price coverage |
+| pyfolio / qf-lib | Backtest cone drawn against live returns | Closest precedent for the proposed design |
+| Allocate Smartly, Portfolio123, QuantMage | Nothing systematic found | None |
+
+#### Empirical findings on our data
+
+**Method.** 3,125 symphonies whose full backtest and OOS re-run end within 7 days of each other
+(of 3,472 scored); 2,622 of them past the 365-day gate. Fitted-era daily mean and volatility are
+backed out by moment decomposition. Composer's Sharpe is `mean_daily * 252 / sd_annual` with no
+risk-free rate (verified on a real row), so:
+
+```
+m_O   = SR_O * sd_O_annual / 252          s_O = sd_O_annual / sqrt(252)
+N_I   = backtest_days - N_O
+m_I   = (N_F m_F - N_O m_O) / N_I
+s_I^2 = (N_F (s_F^2 + m_F^2) - N_O (s_O^2 + m_O^2)) / N_I - m_I^2
+```
+
+This reproduces the shipped fitted rates independently (median ratio of log rates 0.999, p10
+0.992, p90 1.001; rank corr 1.000). All figures below are from the 2026-10 data snapshot.
+
+**1. The verdict mostly reads noise.**
+- Standard error of the score from OOS luck alone, `100 (1+d) sd_O / sqrt(T_O) / fitted`: median
+  22.9 points (p25 13.6, p75 35.4), against verdict thresholds of 5 and 15.
+- After removing the par-style size effect, the residual the verdict reads has reliability 0.14
+  (86% noise). Par alone explains 43% of score variance.
+- Only 43 of 352 "Overfit" calls (12%; 17% on the unclamped score) and 7 of 418 "Probably overfit"
+  (2%) are distinguishable from par at 95%. Across all eligible rows, 3.8% are significantly worse
+  than par versus 2.5% expected by chance.
+- The shipped "Overfit" rate falls as evidence grows: 24.1% (1-2 live years), 10.9% (2-3), 6.0%
+  (3+). A sound test should find more with more data.
+- Median width of a 95% range on "share kept": 110 points.
+
+**2. Par excuses overfitting.**
+- Self-referential test `z = (m_O - m_I) / sqrt(s_I^2/N_I + s_O^2/N_O)`: median z -2.11; 54.4%
+  below -1.96 (2.5% expected if backtests were honest forecasts), 27.1% below -3, 0.5% above +1.96.
+  On the log cone with OOS noise only (see proposal): 62%.
+- 946 of 1,852 "No overfitting signal" rows (51%) fell short of their own backtest beyond luck;
+  206 of 1,070 (19%) even among green boxes with no caution line. No "Overfit" row is consistent
+  with its backtest.
+- Failure rate by fitted-rate fifth: 36% (1-49%/yr), 48% (49-92%), 56% (92-164%), 71% (164-324%),
+  99% (325%+). Median share kept on the compounding scale: 56%, 39%, 36%, 27%, 8%.
+- `mlgAKFuUIPZiCT0aV7ho` (advertises "AR: 8962.9%"): fitted +9,655%/yr over 2.9 yrs, live +24%/yr
+  over 3.9 yrs; score 99.7 vs par 99.4 gives "No overfitting signal". Its cone: +4,171% to
+  +22,184%/yr.
+
+**3. Composer backtests behave like the literature's overfit populations.**
+- Sharpe: fitted median 2.36, live median 0.94, median haircut 63%. Live Sharpe at or above fitted:
+  4.6%. Negative live Sharpe: 4.1% (bull-market sample).
+- Persistence (rank corr, fitted to live): volatility +0.93, annualized return +0.17, **Sharpe
+  -0.31** (-0.32 where OOS is at most 30% of the window).
+- Walk-forward efficiency: median 22%; only 19.6% reach 50%.
+- Predictors of the shortfall z on low-contamination rows (rank corr): fitted Sharpe -0.73, fitted
+  return -0.47, turnover -0.50, tail ratio -0.50, tickers it can hold -0.50, fitted length +0.34,
+  top-5%-days share of return +0.57 (smooth curves decay more). Kurtosis, skew, best-day share:
+  weak. Max drawdown's apparent signal vanishes once contamination is limited.
+- PSR is 1.000 for every fitted era. A median 10.1-year Sharpe of 2.36 would need about 10^13
+  zero-skill variants to arise by luck (Bailey and Lopez de Prado expected-maximum formula), so
+  trial-count corrections cannot be applied.
+
+**4. Predictive validity (1,797 symphonies with 2+ live years; early window judged, outcome = raw
+last-12-month return, so no shared term):** early own-backtest z +0.256 (+0.296 partial on fitted);
+early score minus par +0.184; raw early return +0.168. Flagged early by z: median +7.0% next year
+versus +20.2%; par "Overfit" versus "No signal": +12.4% versus +17.3%. (Early z versus shortfall
+against the promise, +0.686, is a shared-term artifact and must not be quoted.)
+
+**5. Page caveats that are now factually wrong.**
+- "+0.93 with annualized excess return over SPY, ~80% tail shared": measured 0.53 (eligible) to 0.58
+  (all decomposed), 67-73% of the worst fifth shared; the pre-split score gives 0.57-0.62.
+- "rank correlation -0.56" for how much a backtest gives up versus its size: wrong sign. Score vs
+  fitted rate is +0.574 (all scored), +0.658 (eligible).
+
+**6. Limits.**
+- Every live window is 2022-2026; SPY ran +17 to +20%/yr in every vintage. Score versus SPY return in
+  the window: -0.01. No method here has been seen in a bear market.
+- Survivorship: score minus par is +2.3 for 365-548 untouched days and -4.3 for 1,095+ (partial corr
+  -0.197 on fitted). z is flat across lengths and vintages, score minus par drifts ~5-7 points.
+- Simple-rate scale exaggerates decay at the top: top fitted tenth median score 99.3 (26% at 100)
+  versus 95.5 on the compounding scale; all eligible 77.7 versus 70.0.
+
+#### Proposed redesign (pending owner decision)
+
+1. **Verdict = cone test against the symphony's own backtest.** No population, no weights:
+   ```
+   kept  = ln(1 + live rate) / ln(1 + fitted rate)
+   range = kept +/- 1.96 * (live volatility / sqrt(live years)) / ln(1 + fitted rate)
+   Fell short of its backtest    whole range below 100%
+   Beat its backtest             whole range above 100%
+   Too early to tell             range covers both 0% and 100%
+   Consistent with its backtest  otherwise
+   ```
+   Eligible mix: Fell short 62%, Consistent 9%, Too early 29%, Beat 0.5% (54% fall short if the
+   backtest's own noise is also counted). By live length, Fell short 59.6% / 61.2% / 65.1% and Too
+   early 35.8% / 32.9% / 16.9% for 1-2 / 2-3 / 3+ years: it gains power as data accrues.
+   Reader line: "If it really had its backtest's edge, 95% of N-year live records would land between
+   A% and B% a year. It made C%."
+2. **Retire par as the yardstick;** optionally recast it as a base rate ("of backtests this size,
+   71% fell short of their own promise").
+3. **Score on the compounding scale with its range,** whole numbers only.
+4. **Replace the 365-day gate with the noise rule** plus a ~63-trading-day floor: 183 of the 500
+   testable gated rows fall short decisively.
+5. **Fix the two caveats; add an SPY-in-each-era line;** guard cash-like strategies
+   (`JhjdVrxpOpQlAqxAH08P` "beats" +1% with +5% only because T-bill rates rose).
+6. **Optional:** show the warning signs individually with base rates, never combined.
+
+Cost: one new index field (OOS volatility, from `oos.json`) in `scripts/build_overfit.py`, a
+rewrite of the verdict and caveats in `overfit.html`, docs.
+
+**Worked examples (shipped call / proposed call):** `iM4mdWcn3DPeUNZPsYNW` TQQQ FTLT 2.0, +192% to
++30% over 2.2 yrs, cone +37% to +525%: No signal / Fell short. `C8QUEQBKayzmaSBz7MAZ`, +43% to +33%:
+No signal / Consistent. `Xc7QRMe6sawhO6pKkp7S`, +81% to +30% over 2.8 yrs: No signal / Too early.
+
+**Why this is the owner's call:** it overturns the par doctrine recorded above. The proposed test is
+purely self-referential, which matches the "against its own promise" framing and the 2026-08-28
+rejection of peer ranking more closely than par does.
+
+#### Sources
+
+- Bailey, Borwein, Lopez de Prado, Zhu, The Probability of Backtest Overfitting: https://papers.ssrn.com/abstract=2326253
+- Bailey, Lopez de Prado, The Deflated Sharpe Ratio: https://papers.ssrn.com/abstract=2460551
+- Harvey, Liu, Backtesting: https://people.duke.edu/~charvey/Research/Published_Papers/P120_Backtesting.PDF
+- Arnott, Harvey, Markowitz, A Backtesting Protocol in the Era of Machine Learning: https://papers.ssrn.com/abstract=3275654
+- Falck, Rej, Thesmar, Why and how systematic strategies decay: https://arxiv.org/pdf/2105.01380 (summary: https://cfm.com/why-and-how-systematic-strategies-decay/)
+- Wiecki et al., Quantopian 888-algorithm study: https://quantpedia.com/quantopians-academic-paper-about-in-vs-out-of-sample-performance-of-trading-alg/ , https://www.cxoadvisory.com/big-ideas/in-sample-vs-out-of-sample-performance-of-888-trading-strategies , https://hedgefundalpha.com/strategies/comparing-backtest-sample-performance-large-cohort-trading-algorithms/
+- Suhonen, Lennkh, Perez: https://hedgefundalpha.com/strategies/alternative-beta-strategies-complexity-magical-backtests/
+- pyfolio Bayesian tear sheet: https://nbviewer.jupyter.org/github/quantopian/pyfolio/blob/master/pyfolio/examples/bayesian.ipynb
+- qf-lib AnalyticalCone: https://qf-lib.readthedocs.io/en/stable/_autosummary/qf_lib.common.utils.confidence_interval.analytical_cone.AnalyticalCone.html
+- QuantConnect PSR: https://quantconnect.com/forum/discussion/6483/probabilistic-sharpe-ratio/p2/comment-31723
+- StrategyQuant robustness cross-checks: https://strategyquant.com/doc/strategyquant/cross-checks-automated-strategy-robustness-tests
+- Composer backtests: https://help.composer.trade/article/215-7-how-do-backtests-work-in-composer
+- Pardo, The Evaluation and Optimization of Trading Strategies (2008)
+
 ### The Overfit Verdict Box
 
 The Overfit Check renders a score, a band label and a par mark, and a reader still had to assemble
