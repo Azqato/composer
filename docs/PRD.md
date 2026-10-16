@@ -2878,6 +2878,34 @@ a reader could act on a misunderstanding and get a letter from the IRS for it.
 - [x] Wired into All Strategies (`allFilterController`) and Screener (`screenerFilterController`); Leaderboard also got its own instance (`leaderboardFilterController`) for consistency, though not originally scoped as a V1.11 requirement
 - [x] `.filter-panel`, `.filter-row`, `.filter-empty` CSS added to `css/main.css`, documented in `docs/DESIGN.md`
 
+### The Overfit Verdict Box
+
+The Overfit Check renders a score, a band label and a par mark, and a reader still had to assemble
+"is this one overfit?" out of them. The verdict box states it, above the score, because the call is
+the answer and the score is the working.
+
+**The call is the distance from par, not the score.** This follows the page's own doctrine: the
+score contains no population data at all, par is the only place the population enters, and an
+extreme backtest reverts whether or not anyone fitted it. So 15 or more points above par is
+"Overfit", 5 to 15 is "Probably overfit", within 5 either way is "No overfitting signal". The
+5-point band is the one the prose verdict already used; they share it deliberately so the box and
+the paragraph below it can never contradict each other.
+
+**Two guards keep the label honest.**
+
+1. **The caution line.** A score of 75 or more that still sits within 5 points of par is labelled
+   "No overfitting signal", which on its own reads as "this one is fine" about a strategy that kept
+   almost nothing. The box says so in the same breath, and gives up its green styling, so colour
+   does not say "fine" next to a pink "Did not survive".
+2. **The days gate runs first.** 674 of 3,472 scored rows have had a logic edit inside the
+   365-day window. They carry a score because the backtest can still be split, but the window is
+   too short for this test, and the prose verdict already told the reader there is no verdict yet.
+   The box therefore checks `days` before it looks at the score, says "No verdict", and explains
+   why a number is on screen underneath it anyway.
+
+"No verdict" is treated as a result rather than an absence: it always names which reason applies,
+rather than leaving the question the reader arrived with unanswered.
+
 ### Shareable Screener Links
 
 The Screener holds its whole state in module-scope variables, so a shareable link is just a

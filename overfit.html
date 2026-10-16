@@ -78,6 +78,24 @@
     .of-bar .par { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--color-primary); }
     .of-bar-key { display: flex; justify-content: space-between; font-size: 0.6875rem; color: var(--color-disabled); }
 
+    /* The verdict box. It answers "is it overfit?" in words before the score
+       appears, because the score alone does not answer that question: the call
+       is score against par, and a reader who takes the big number at face value
+       gets it wrong in both directions. */
+    .of-call { border: 1px solid var(--color-border); border-left-width: 3px; border-radius: 6px;
+               padding: 12px 16px; margin: 16px 0 4px; background: var(--color-surface-raised); }
+    .of-call .of-call-label { font-size: 1.125rem; font-weight: 600; margin-bottom: 4px; }
+    .of-call .of-call-line { font-size: 0.875rem; line-height: 1.6; color: var(--color-secondary); }
+    .of-call .of-call-line strong { color: var(--color-primary); }
+    .of-call.yes { border-left-color: var(--color-pink); }
+    .of-call.yes .of-call-label { color: var(--color-pink); }
+    .of-call.maybe { border-left-color: var(--color-yellow); }
+    .of-call.maybe .of-call-label { color: var(--color-yellow); }
+    .of-call.no { border-left-color: var(--color-green); }
+    .of-call.no .of-call-label { color: var(--color-green); }
+    .of-call.none { border-left-color: var(--color-border-strong); }
+    .of-call.none .of-call-label { color: var(--color-secondary); }
+
     #of-in {
       width: 100%; min-height: 74px; resize: vertical; box-sizing: border-box;
       background: var(--color-bg); color: var(--color-primary);
@@ -385,6 +403,56 @@
         return ys[ys.length - 1];
       }
 
+      // ---- the overfit call ------------------------------------------------
+      // The question a reader actually arrives with is "is this one overfit?",
+      // and the score on its own cannot answer it. Par is the only place the
+      // population enters: a 95 against a par of 97 is unremarkable and a 60
+      // against a par of 30 is damning, so the call is the DISTANCE FROM PAR,
+      // not the score. The 5-point band for "no signal" is the same one the
+      // prose verdict below already uses, kept identical on purpose so the box
+      // and the paragraph can never disagree.
+      //
+      // The caution line matters as much as the label. A strategy can be "not
+      // overfit" and still have kept almost nothing, because a backtest that
+      // extreme reverts whether or not anyone fitted it. Printing "Not overfit"
+      // without that sentence would be the single most misleading thing on
+      // this page.
+      function overfitCall(score, par) {
+        if (typeof score !== 'number' || typeof par !== 'number') return null;
+        var d = score - par;
+        var a = Math.abs(d).toFixed(0);
+        var against = 'It scored <strong>' + scoreText(score) + '</strong> against a par of ' +
+          '<strong>' + par.toFixed(0) + '</strong> for a backtest its size';
+        var call;
+        if (d >= 15) {
+          call = { cls: 'yes', label: 'Overfit',
+            line: against + ', giving up <strong>' + a + ' more points</strong> than backtests ' +
+                  'that size usually do. That gap is the part par cannot explain away.' };
+        } else if (d >= 5) {
+          call = { cls: 'maybe', label: 'Probably overfit',
+            line: against + ', ' + a + ' points worse. Enough to lean on, not enough to lean ' +
+                  'hard: a single strategy is one sample against a curve drawn from thousands.' };
+        } else if (d > -5) {
+          call = { cls: 'no', label: 'No overfitting signal',
+            line: against + ', within the ' + a + '-point range that counts as ordinary. It gave ' +
+                  'up about what a backtest that size gives up anyway.' };
+        } else {
+          call = { cls: 'no', label: 'No overfitting signal',
+            line: against + ', <strong>' + a + ' points better</strong> than backtests that size ' +
+                  'usually manage. It held more of its backtest than par expects.' };
+        }
+        // Said out loud wherever the label could be read as "this one is fine",
+        // and the box drops out of green with it: a green rule beside a pink
+        // "Did not survive" lets colour contradict the sentence next to it.
+        if (d < 5 && score >= 75) {
+          call.cls = 'maybe';
+          call.line += ' <strong>Read that narrowly.</strong> It still kept almost none of its ' +
+            'backtested rate. A backtest this extreme reverts whether or not anyone fitted it, ' +
+            'so the honest reading is "not unusually overfit", not "held up".';
+        }
+        return call;
+      }
+
       var BANDS = [
         { max: 25, cls: 'of-s0', label: 'Held its backtest' },
         { max: 50, cls: 'of-s1', label: 'Mild decay' },
@@ -632,6 +700,48 @@
         html += '<div class="of-panel">' +
           '<div class="of-name">' + esc(r.name || 'Unnamed symphony') +
             '<span class="sub">' + esc(r.id) + '</span></div>';
+
+        // The call goes above the score, not below it: it is the answer, and the
+        // score is the working. Every path renders one, including the paths
+        // that cannot reach a verdict, so the question is never left hanging.
+        //
+        // The days gate comes FIRST, before the score is consulted. 674 of the
+        // scored rows have had a logic edit inside the last year: the pipeline
+        // can still split their backtest, so they carry a score, but the window
+        // is too short for this test and the prose verdict below already says
+        // so. Reading the score here would print "Overfit" directly above a
+        // paragraph saying there is no verdict yet.
+        var gated = typeof r.days !== 'number' || r.days < D.min_oos_days;
+        var call = (!gated && scored) ? overfitCall(r.score, par) : null;
+        if (call) {
+          html += '<div class="of-call ' + call.cls + '">' +
+            '<div class="of-call-label">' + call.label + '</div>' +
+            '<div class="of-call-line">' + call.line + '</div></div>';
+        } else {
+          var why;
+          if (typeof r.days !== 'number') {
+            why = 'There is no recorded date for its last logic edit, so its backtest cannot be ' +
+              'split into a fitted era and an untouched one.';
+          } else if (r.days < D.min_oos_days) {
+            why = 'Its logic was edited ' + n(r.days) + ' days ago. This test needs ' +
+              n(D.min_oos_days) + ' days of untouched record, so ask again in ' +
+              n(D.min_oos_days - r.days) + ' days.' +
+              (scored
+                ? ' A score is shown below because the backtest can still be split, but it rests ' +
+                  'on those ' + n(r.days) + ' days alone and is too short to call either way.'
+                : '');
+          } else if (!scored) {
+            why = 'Its fitted era is too short to annualize cleanly, so there is no score to ' +
+              'compare against par.';
+          } else {
+            why = 'No par exists for a backtest this size, so there is nothing to measure the ' +
+              'score against.';
+          }
+          html += '<div class="of-call none">' +
+            '<div class="of-call-label">No verdict</div>' +
+            '<div class="of-call-line">' + why + ' That is the honest answer rather than a ' +
+            'weaker one dressed up as a result.</div></div>';
+        }
 
         if (scored) {
           var band = bandFor(r.score);

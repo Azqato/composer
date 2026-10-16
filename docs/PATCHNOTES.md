@@ -5,6 +5,47 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Overfit Check: a stated verdict above the score
+
+### Added
+
+- **A verdict box at the top of every lookup result** (`overfit.html`), answering "is this one
+  overfit?" in words before the score appears. Four labels: **Overfit**, **Probably overfit**,
+  **No overfitting signal**, **No verdict**.
+- **The call is the distance from par, not the score.** Par is the only place the population
+  enters, and the page already says never to read the score without it: a 97 against a par of 99 is
+  unremarkable, a 89 against a par of 70 is damning. Thresholds: 15 or more points above par is
+  "Overfit", 5 to 15 is "Probably overfit", within 5 either way is "No overfitting signal". The
+  5-point band is the same one the prose verdict already used, kept identical so the box and the
+  paragraph cannot disagree.
+- **A caution line where the label could be misread.** A strategy scoring 75 or more that is still
+  within 5 points of par is labelled "No overfitting signal" and told, in the same box, that it
+  kept almost none of its backtested rate and that the honest reading is "not unusually overfit",
+  not "held up". The box also drops out of green in that case, so colour does not contradict the
+  sentence beside it.
+- **"No verdict" is a real outcome, not a blank.** Where no call can be made it says which of the
+  reasons applies: no recorded edit date, the window is too short, or the fitted era cannot be
+  annualized.
+
+### Fixed
+
+- **A scored symphony inside the 365-day window no longer gets a verdict.** The days gate is now
+  checked before the score is consulted. **674 of the 3,472 scored rows have had a logic edit
+  inside the last year**: the pipeline can still split their backtest, so they carry a score, but
+  the prose verdict already said "there is no verdict here yet". Reading the score would have
+  printed "Overfit" directly above that sentence. The box now says "No verdict" and explains why a
+  score is nonetheless shown below it. Caught by a screenshot, not by an assertion.
+
+### Verified
+
+Headless Edge drove the real lookup against seven symphonies, one per branch, with 44 assertions:
+each label and its colour, the caution line firing only where it should, the gated case refusing a
+call, the unscored case giving a reason, and an unknown ID still producing an error and no panel.
+
+**Files changed:** `overfit.html`, `docs/PATCHNOTES.md`, `docs/PRD.md`
+
+---
+
 ## [Unreleased] - Screener: shareable links
 
 ### Added
