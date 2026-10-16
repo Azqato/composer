@@ -268,6 +268,7 @@ function renderNav() {
       { href: u('/converter.html'), label: 'Converter' },
       { href: u('/nodes.html'), label: 'Nodes' },
       { href: u('/k1.html'), label: 'K1 Lookup' },
+      { href: u('/rsi-backtest.html'), label: 'RSI Backtester' },
       { href: u('/overfit.html'), label: 'Overfit Check' },
     ] },
     { href: u('/guides.html'), label: 'Guides' },
@@ -398,6 +399,7 @@ function renderFooter() {
       <a href="${u('/converter.html')}">Converter</a>
       <a href="${u('/nodes.html')}">Nodes</a>
       <a href="${u('/k1.html')}">K1 Lookup</a>
+      <a href="${u('/rsi-backtest.html')}">RSI Backtester</a>
       <a href="${u('/overfit.html')}">Overfit Check</a>
       <a href="${u('/etf-cloner.html')}">ETF Cloner</a>
       <a href="${u('/referral.html')}">Referral</a>
