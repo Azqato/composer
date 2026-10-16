@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://composeratlas.com/</loc>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-16</lastmod>
   </url>
   <url>
     <loc>https://composeratlas.com/about.html</loc>
@@ -46,10 +46,11 @@
   </url>
   <url>
     <loc>https://composeratlas.com/rsi-backtest.html</loc>
+    <lastmod>2026-10-16</lastmod>
   </url>
   <url>
     <loc>https://composeratlas.com/rsi.html</loc>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-16</lastmod>
   </url>
   <url>
     <loc>https://composeratlas.com/signal-miner.html</loc>
