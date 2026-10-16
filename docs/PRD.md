@@ -2880,7 +2880,7 @@ a reader could act on a misunderstanding and get a letter from the IRS for it.
 
 ### Overfit Method Audit (2026-10-15)
 
-**Status: research record, no code changed. The owner has not yet decided on the redesign below.**
+**Status: the redesign below was approved by the owner and shipped 2026-10-15 (see PATCHNOTES, "Overfit Check: the cone test"). Par is retired.**
 The owner asked for an "extreme analysis" of whether the Overfit Check defines and rates overfitting
 accurately, against academic research, competing tools and our own data. This section is the
 reference copy of that work so it does not need to be redone.
@@ -3004,7 +3004,7 @@ against the promise, +0.686, is a shared-term artifact and must not be quoted.)
 - Simple-rate scale exaggerates decay at the top: top fitted tenth median score 99.3 (26% at 100)
   versus 95.5 on the compounding scale; all eligible 77.7 versus 70.0.
 
-#### Proposed redesign (pending owner decision)
+#### The redesign (shipped 2026-10-15)
 
 1. **Verdict = cone test against the symphony's own backtest.** No population, no weights:
    ```

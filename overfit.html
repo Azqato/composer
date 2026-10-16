@@ -27,9 +27,9 @@
   <meta property="og:site_name" content="Composer Atlas">
   <meta property="og:url" content="https://composeratlas.com/overfit.html">
   <meta property="og:title" content="Overfit Check: Does the Backtest Survive?">
-  <meta property="og:description" content="Paste a symphony and see how much of its backtest survived after its author stopped editing it, scored against what a backtest that size usually gives up.">
+  <meta property="og:description" content="Paste a symphony and see whether its live record kept the promise of its own backtest, or fell short by more than luck explains.">
   <meta name="twitter:card" content="summary">
-  <meta name="description" content="Paste a symphony and see how much of its backtest survived after its author stopped editing it, scored against what a backtest that size usually gives up.">
+  <meta name="description" content="Paste a symphony and see whether its live record kept the promise of its own backtest, or fell short by more than luck explains.">
   <title>Overfit Check: Does the Backtest Survive: Composer Atlas</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/main.css">
@@ -62,7 +62,7 @@
     .of-col .tag.unbiased { background: var(--color-surface-raised); color: var(--color-green); border: 1px solid var(--color-border); }
     .of-col .tag.biased { background: var(--color-surface-raised); color: var(--color-yellow); border: 1px solid var(--color-border); }
 
-    /* The score. One number, big, with par beside it so it is never read alone. */
+    /* The score. One number, big, with its 95% range so it is never read as exact. */
     .of-score { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
     .of-score .num { font-family: var(--font-mono); font-size: 3.5rem; line-height: 1; font-weight: 600; }
     .of-score .of-band { font-size: 1.125rem; font-weight: 600; margin-bottom: 4px; }
@@ -75,13 +75,15 @@
     .of-bar { position: relative; height: 8px; border-radius: 4px; background: var(--color-surface-raised);
               border: 1px solid var(--color-border); margin: 14px 0 6px; overflow: visible; }
     .of-bar .fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 4px; background: currentColor; }
-    .of-bar .par { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--color-primary); }
+    /* The 95% range on the score: the honest width of what one live record can say. */
+    .of-bar .range { position: absolute; top: -4px; bottom: -4px; border: 1px solid var(--color-primary);
+                     border-radius: 3px; background: transparent; }
     .of-bar-key { display: flex; justify-content: space-between; font-size: 0.6875rem; color: var(--color-disabled); }
 
     /* The verdict box. It answers "is it overfit?" in words before the score
-       appears, because the score alone does not answer that question: the call
-       is score against par, and a reader who takes the big number at face value
-       gets it wrong in both directions. */
+       appears. The call is a cone test against the symphony's own backtest:
+       did the live record fall short of what that backtest predicts by more
+       than luck explains? No other symphony enters it. */
     .of-call { border: 1px solid var(--color-border); border-left-width: 3px; border-radius: 6px;
                padding: 12px 16px; margin: 16px 0 4px; background: var(--color-surface-raised); }
     .of-call .of-call-label { font-size: 1.125rem; font-weight: 600; margin-bottom: 4px; }
@@ -240,22 +242,37 @@
               correlation is near zero and its sign is unstable. Over 80% of all symphonies get more
               than their entire return from their best 5% of days, so as a flag it fires on four
               strategies in five and tells you nothing.</li>
+            <li><strong>The verdict uses nothing but the symphony's own record.</strong> It asks
+              whether the live record fell short of what its own backtest predicts by more than luck
+              explains. No other symphony enters it. An earlier version judged each symphony by its
+              distance from par, the typical score of backtests the same size; on this data that
+              distance was mostly noise, and it excused the very fall-back from an extreme backtest
+              that the research literature defines as overfitting. Other symphonies now appear only
+              as base rates, which warn rather than excuse.</li>
+            <li><strong>One live record is a noisy measurement.</strong> A typical score's 95% range
+              is wider than half the scale, which is why every score is printed with its range and
+              in whole numbers, and why "Too early to tell" is a real answer.</li>
             <li><strong>The score has no weights, and that is what makes it checkable.</strong>
-              It is one measured ratio, <code>100 x (1 - delivered / fitted)</code>, not a blend of
-              metrics. A composite would invite the exact optimisation this page exists to detect
-              and its weights could never be falsified; a single ratio has nothing to tune, and both
-              of its inputs are printed beside it so you can recover it yourself.</li>
-            <li><strong>Never read the score without par.</strong> How much a backtest gives up is
-              itself strongly tied to how big it was (rank correlation -0.56), because anything
-              extreme reverts whether or not it was overfit. A score of 95 is damning against a par
-              of 60 and unremarkable against a par of 97. The score itself contains no population
-              data at all; par is the only place the population enters, and it is kept deliberately
-              outside the number.</li>
-            <li><strong>The score largely agrees with simply beating the market.</strong> Ranked
-              against annualized excess return over SPY the two correlate at +0.93, with about 80%
-              of each tail shared. It is not a fundamentally new signal. What it adds is that it
-              answers the question actually asked, whether a strategy kept its own promise, rather
-              than a proxy for it, and it separates them exactly where the promise was largest.</li>
+              It is one measured ratio, <code>100 x (1 - ln(1 + delivered) / ln(1 + fitted))</code>,
+              not a blend of metrics. A composite would invite the exact optimisation this page
+              exists to detect and its weights could never be falsified; a single ratio has nothing
+              to tune, and both of its inputs are printed beside it so you can recover it
+              yourself.</li>
+            <li><strong>Bigger backtests give up more.</strong> How much a backtest gives up rises
+              with how big it was (rank correlation <span id="of-chk-size">+0.48</span> between
+              fitted rate and score). That is not an excuse: in the biggest fifth almost every
+              symphony fell short of its own promise.</li>
+            <li><strong>The score partly restates beating the market.</strong> Ranked against
+              annualized excess return over SPY in the same window, the two correlate at
+              <span id="of-chk-excess">0.70</span>, a higher score going with a worse result against
+              the market. Related, not the same: the score asks whether a strategy kept its own
+              promise, not whether it beat SPY.</li>
+            <li><strong>Every live window so far is a bull market.</strong> They all fall between
+              2022 and 2026, with SPY up strongly throughout. Nothing on this page has yet been seen
+              through a bear market, which is why SPY is printed for both eras.</li>
+            <li><strong>Long-untouched symphonies are survivors.</strong> An author who watches a
+              strategy fail may edit it, which resets its clock, or delete it. Symphonies left alone
+              for years are therefore flattered under any method.</li>
             <li><strong>This page rates overfitting using measures chosen by the same people who
               chose which measures to keep.</strong> That is a version of the problem it reports.
               Saying so is cheap, so it is said.</li>
@@ -382,75 +399,108 @@
         ' against ' + pct(T.median_actual, 1) + ', which is the honest other half of that sentence.';
 
       // ---- the score ----
-      var PAR = D.par || { fitted: [], score: [] };
       var SD = D.score_distribution || {};
+      var K = D.cone || { z: 1.96, min_trading_days: 63, cash_like_sd: 0.03 };
 
-      // Par: what a backtest THIS BIG typically gives up. Linear interpolation
-      // between the sampled points, flat outside their range rather than
-      // extrapolated, because an extrapolated par would be an invention at
-      // exactly the end of the scale where readers care most.
-      function parFor(fitted) {
-        var xs = PAR.fitted, ys = PAR.score;
-        if (typeof fitted !== 'number' || !xs.length) return null;
-        if (fitted <= xs[0]) return ys[0];
-        if (fitted >= xs[xs.length - 1]) return ys[ys.length - 1];
-        for (var i = 1; i < xs.length; i++) {
-          if (fitted <= xs[i]) {
-            var t = (fitted - xs[i - 1]) / (xs[i] - xs[i - 1] || 1);
-            return ys[i - 1] + t * (ys[i] - ys[i - 1]);
-          }
+      // ---- the overfit call: a cone test against its own backtest ------------
+      // docs/PRD.md, "Overfit Method Audit". If the symphony really had the edge
+      // its fitted era shows, its live compounding rate would land inside the
+      // cone 95% of the time. Mirrors cone() in scripts/build_overfit.py; change
+      // both or neither. Par, a median of OTHER symphonies' scores, is retired:
+      // the distance from it was mostly noise, and it excused the very reversion
+      // the research defines as overfitting.
+      function coneCall(r) {
+        if (typeof r.oosArr !== 'number' || typeof r.fitted !== 'number' || r.fitted <= 0 ||
+            r.oosArr <= -1 || typeof r.oosSd !== 'number' || typeof r.oosTdays !== 'number') {
+          return { lab: 'unscored' };
         }
-        return ys[ys.length - 1];
+        if (r.oosTdays < K.min_trading_days) return { lab: 'short' };
+        if (r.oosSd < K.cash_like_sd) return { lab: 'cash' };
+        var years = r.oosTdays / 252;
+        var gi = Math.log(1 + r.fitted), go = Math.log(1 + r.oosArr);
+        var se = r.oosSd / Math.sqrt(years);
+        var lo = (go - K.z * se) / gi, mid = go / gi, hi = (go + K.z * se) / gi;
+        return {
+          lab: hi < 1 ? 'fell_short' : (lo > 1 ? 'beat' : (lo <= 0 ? 'too_early' : 'consistent')),
+          lo: lo, mid: mid, hi: hi, years: years,
+          coneLo: Math.exp(gi - K.z * se) - 1, coneHi: Math.exp(gi + K.z * se) - 1
+        };
+      }
+      function volText(v) { return typeof v === 'number' ? (100 * v).toFixed(1) + '%' : null; }
+      function keptText(v) { return (100 * v).toFixed(0) + '%'; }
+
+      // Base rates: what par became. Of backtests this size, how many fell short
+      // of their own promise. A prior that warns, not a yardstick that excuses.
+      function fifthOf(table, v) {
+        if (!table || typeof v !== 'number' || !table.fifths.length) return null;
+        var i = 0;
+        while (i < table.bounds.length && v > table.bounds[i]) i++;
+        return i;
       }
 
-      // ---- the overfit call ------------------------------------------------
-      // The question a reader actually arrives with is "is this one overfit?",
-      // and the score on its own cannot answer it. Par is the only place the
-      // population enters: a 95 against a par of 97 is unremarkable and a 60
-      // against a par of 30 is damning, so the call is the DISTANCE FROM PAR,
-      // not the score. The 5-point band for "no signal" is the same one the
-      // prose verdict below already uses, kept identical on purpose so the box
-      // and the paragraph can never disagree.
-      //
-      // The caution line matters as much as the label. A strategy can be "not
-      // overfit" and still have kept almost nothing, because a backtest that
-      // extreme reverts whether or not anyone fitted it. Printing "Not overfit"
-      // without that sentence would be the single most misleading thing on
-      // this page.
-      function overfitCall(score, par) {
-        if (typeof score !== 'number' || typeof par !== 'number') return null;
-        var d = score - par;
-        var a = Math.abs(d).toFixed(0);
-        var against = 'It scored <strong>' + scoreText(score) + '</strong> against a par of ' +
-          '<strong>' + par.toFixed(0) + '</strong> for a backtest its size';
-        var call;
-        if (d >= 15) {
-          call = { cls: 'yes', label: 'Overfit',
-            line: against + ', giving up <strong>' + a + ' more points</strong> than backtests ' +
-                  'that size usually do. That gap is the part par cannot explain away.' };
-        } else if (d >= 5) {
-          call = { cls: 'maybe', label: 'Probably overfit',
-            line: against + ', ' + a + ' points worse. Enough to lean on, not enough to lean ' +
-                  'hard: a single strategy is one sample against a curve drawn from thousands.' };
-        } else if (d > -5) {
-          call = { cls: 'no', label: 'No overfitting signal',
-            line: against + ', within the ' + a + '-point range that counts as ordinary. It gave ' +
-                  'up about what a backtest that size gives up anyway.' };
+      function callBox(r, c) {
+        var cone = '';
+        if (c.coneLo !== undefined) {
+          cone = 'If it really had the edge its backtest shows (<strong>' + pctBig(r.fitted) +
+            ' a year</strong>), 95% of ' + c.years.toFixed(1) + '-year live records would land ' +
+            'between <strong>' + pctBig(c.coneLo) + '</strong> and <strong>' + pctBig(c.coneHi) +
+            '</strong> a year. It made <strong>' + pct(r.oosArr) + '</strong>. ';
+        }
+        var range = 'It kept about <strong>' + keptText(c.mid) + '</strong> of its backtest\'s ' +
+          'compounding rate (95% range ' + keptText(c.lo) + ' to ' + keptText(c.hi) + ').';
+        var weaker = typeof r.spyFitted === 'number' && typeof r.spyLive === 'number' &&
+          r.spyLive < r.spyFitted - 0.05;
+        var stronger = typeof r.spyFitted === 'number' && typeof r.spyLive === 'number' &&
+          r.spyLive > r.spyFitted + 0.05;
+        var mkt = ' SPY ran ' + pct(r.spyFitted) + ' a year during its backtest and ' +
+          pct(r.spyLive) + ' a year live';
+        if (c.lab === 'fell_short') {
+          return { cls: 'yes', label: 'Overfit: fell short of its own backtest',
+            line: cone + 'That shortfall is <strong>more than luck explains</strong>. ' + range +
+              ' Nobody outside can see how many variants its author tried; what shows from ' +
+              'outside is a backtest that overstated the future, which is what overfitting looks ' +
+              'like.' + (weaker ? mkt + ', so a weaker market is part of this story.' : '') };
+        }
+        if (c.lab === 'consistent') {
+          return { cls: 'no', label: 'Consistent with its backtest so far',
+            line: cone + range + ' Keeping all of it is still within luck, and keeping none of ' +
+              'it is ruled out. That is a record so far, not a promise about what comes next.' +
+              (stronger ? mkt + ', so a stronger market may be flattering it.' : '') };
+        }
+        if (c.lab === 'too_early') {
+          return { cls: 'none', label: 'Too early to tell',
+            line: cone + range + ' That range covers both keeping all of its backtest and ' +
+              'keeping none of it, so this record cannot yet tell the two apart. A longer or ' +
+              'calmer record narrows it.' };
+        }
+        if (c.lab === 'beat') {
+          return { cls: 'no', label: 'Beat its backtest',
+            line: cone + range + ' It did better than its own backtest by more than luck ' +
+              'explains, which is rare.' + (stronger ? mkt + ', so check how much of that was ' +
+              'the market.' : '') };
+        }
+        var why;
+        if (c.lab === 'short') {
+          why = 'Only ' + n(r.oosTdays) + ' trading days have passed since its last logic edit. ' +
+            'The test needs at least ' + n(K.min_trading_days) + ' before even a large shortfall ' +
+            'can be told from a bad stretch.';
+        } else if (c.lab === 'cash') {
+          why = 'It behaves like cash (live volatility ' + volText(r.oosSd) + ' a year), so its ' +
+            'return is mostly the interest rate of the era. Beating or missing its backtest says ' +
+            'nothing about its logic.';
+        } else if (typeof r.days !== 'number') {
+          why = 'There is no recorded date for its last logic edit, so its backtest cannot be ' +
+            'split into a fitted era and an untouched one.';
+        } else if (typeof r.oosArr !== 'number') {
+          why = 'No out-of-sample re-run exists for it. Those are computed weekly for the ' +
+            'strategies that could reach the top of the Leaderboard, so an absence is not a ' +
+            'judgement about it.';
         } else {
-          call = { cls: 'no', label: 'No overfitting signal',
-            line: against + ', <strong>' + a + ' points better</strong> than backtests that size ' +
-                  'usually manage. It held more of its backtest than par expects.' };
+          why = 'Its fitted era is too short to annualize cleanly, or it promised nothing to ' +
+            'keep, so there is no backtest to test it against.';
         }
-        // Said out loud wherever the label could be read as "this one is fine",
-        // and the box drops out of green with it: a green rule beside a pink
-        // "Did not survive" lets colour contradict the sentence next to it.
-        if (d < 5 && score >= 75) {
-          call.cls = 'maybe';
-          call.line += ' <strong>Read that narrowly.</strong> It still kept almost none of its ' +
-            'backtested rate. A backtest this extreme reverts whether or not anyone fitted it, ' +
-            'so the honest reading is "not unusually overfit", not "held up".';
-        }
-        return call;
+        return { cls: 'none', label: 'No verdict', line: why + ' That is the honest answer ' +
+          'rather than a weaker one dressed up as a result.' };
       }
 
       var BANDS = [
@@ -460,15 +510,9 @@
         { max: 95, cls: 'of-s3', label: 'Severe decay' },
         { max: 101, cls: 'of-s4', label: 'Did not survive' },
       ];
-      // The two ends of this scale are claims, not roundings: 0 says a strategy
-      // kept its whole fitted rate and 100 says it kept none of it. Rounding
-      // 99.7 to "100" would print the stronger claim, so near either end the
-      // number carries a decimal instead.
-      function scoreText(v) {
-        if (v > 0 && v < 0.5) return v.toFixed(1);
-        if (v < 100 && v >= 99.5) return v.toFixed(1);
-        return v.toFixed(0);
-      }
+      // Whole numbers only. A typical 95% range on this score is wider than half
+      // the scale, so a decimal would claim precision the record does not have.
+      function scoreText(v) { return Math.round(v).toFixed(0); }
 
       function bandFor(score) {
         for (var i = 0; i < BANDS.length; i++) if (score < BANDS[i].max) return BANDS[i];
@@ -523,16 +567,28 @@
 
       document.getElementById('of-meta2').innerHTML =
         '<strong>How the score is calculated.</strong> ' +
-        '<code>100 x (1 - delivered / fitted)</code>, clamped to 0 and 100, where both are ' +
-        'annualized rates over their own eras. 0 means it kept the whole rate its author was ' +
-        'looking at, 100 means it kept none of it. Across ' + n(SD.n) + ' scored strategies the ' +
+        '<code>100 x (1 - ln(1 + delivered) / ln(1 + fitted))</code>, clamped to 0 and 100, ' +
+        'where both are annualized rates over their own eras. Comparing compounding rates rather ' +
+        'than simple ones stops extreme backtests piling up against 100. 0 means it kept the whole ' +
+        'rate its author was looking at, 100 means it kept none of it. Across ' + n(SD.n) +
+        ' scored strategies the ' +
         'median is <strong>' + SD.p50 + '</strong>, a quarter score below ' + SD.p25 +
         ', a quarter above ' + SD.p75 + ', and ' + SD.at_hundred +
         '% score 100 because they lost money over the untouched window.';
+      var CH = D.checks || {};
+      if (typeof CH.score_vs_fitted === 'number') {
+        document.getElementById('of-chk-size').textContent =
+          (CH.score_vs_fitted >= 0 ? '+' : '') + CH.score_vs_fitted.toFixed(2);
+      }
+      if (typeof CH.score_vs_excess === 'number') {
+        document.getElementById('of-chk-excess').textContent = Math.abs(CH.score_vs_excess).toFixed(2);
+      }
       document.getElementById('of-meta').innerHTML =
         'Measured across ' + n(D.pool) + ' usable database rows on ' + esc(D.reference_date) +
         '. A symphony counts as untouched once its logic has gone ' + n(D.min_oos_days) +
-        ' days without an edit. Refreshed weekly with the database.';
+        ' days without an edit for the two population cohorts above; a single symphony\'s ' +
+        'verdict needs only ' + n(K.min_trading_days) + ' trading days, because its cone says ' +
+        'on its own when the record is too short. Refreshed weekly with the database.';
 
       // ---- the lookup ----
       var idx = D.index, pos = null;
@@ -557,7 +613,13 @@
           oosSpy: idx.true_oos_spy[i],
           fitted: idx.fitted_arr[i],
           fittedYears: idx.fitted_years[i],
-          score: idx.score[i]
+          score: idx.score[i],
+          oosSd: idx.oos_sd[i],
+          oosTdays: idx.oos_trading_days[i],
+          spyFitted: idx.spy_fitted[i],
+          spyLive: idx.spy_live[i],
+          fittedSharpe: idx.fitted_sharpe[i],
+          universe: idx.universe[i]
         };
       }
 
@@ -627,34 +689,22 @@
         // The fitted era is the honest comparator: the FULL backtest runs
         // through today, so it already contains the untouched window inside it
         // and comparing the two compares a period against a superset of itself.
-        var par = parFor(r.fitted);
+        var c = coneCall(r);
         var scored = typeof r.score === 'number' && typeof r.fitted === 'number';
 
         if (typeof r.days !== 'number') {
           verdict = 'This symphony has no recorded date for its last logic edit, so the only ' +
             'test on this page cannot be run against it.';
-        } else if (r.days < D.min_oos_days) {
-          verdict = 'Its logic was edited <strong>' + n(r.days) + ' days ago</strong>, less than ' +
-            'the year this test needs. There is no verdict here yet, and that is the honest ' +
-            'answer rather than a weaker one dressed up. Come back after ' +
-            n(D.min_oos_days - r.days) + ' more days.';
-
-        } else if (scored) {
+        } else if (scored && c.lab !== 'short') {
           // The full case: a real re-run, and enough fitted history to split.
           verdict = untouched + '. Over the years its author could tune against it returned ' +
             '<strong>' + pctBig(r.fitted) + ' a year</strong>; over the untouched window since, ' +
             '<strong>' + pct(r.oosArr) + ' a year</strong> (' + pctBig(r.oosCum) +
             ' cumulative). ' + versusBacktest(r.oosArr);
-          if (typeof par === 'number') {
-            var d = r.score - par;
-            verdict += Math.abs(d) < 5
-              ? ' That decay is <strong>about what a backtest that size usually shows</strong>.'
-              : (d < 0
-                 ? ' It gave up <strong>less than a backtest that size usually does</strong>, by ' +
-                   Math.abs(d).toFixed(0) + ' points of score.'
-                 : ' It gave up <strong>more than a backtest that size usually does</strong>, by ' +
-                   d.toFixed(0) + ' points of score.');
-          }
+        } else if (r.days < D.min_oos_days) {
+          verdict = 'Its logic was edited <strong>' + n(r.days) + ' days ago</strong>. That is ' +
+            'too recent for a reading of any kind here yet, and that is the honest answer rather ' +
+            'than a weaker one dressed up.';
         } else if (typeof r.oosArr === 'number') {
           // Re-run exists, but the fitted era is too short to annualize.
           verdict = untouched + '. Measured over that whole untouched window it returned ' +
@@ -704,63 +754,34 @@
         // The call goes above the score, not below it: it is the answer, and the
         // score is the working. Every path renders one, including the paths
         // that cannot reach a verdict, so the question is never left hanging.
-        //
-        // The days gate comes FIRST, before the score is consulted. 674 of the
-        // scored rows have had a logic edit inside the last year: the pipeline
-        // can still split their backtest, so they carry a score, but the window
-        // is too short for this test and the prose verdict below already says
-        // so. Reading the score here would print "Overfit" directly above a
-        // paragraph saying there is no verdict yet.
-        var gated = typeof r.days !== 'number' || r.days < D.min_oos_days;
-        var call = (!gated && scored) ? overfitCall(r.score, par) : null;
-        if (call) {
-          html += '<div class="of-call ' + call.cls + '">' +
-            '<div class="of-call-label">' + call.label + '</div>' +
-            '<div class="of-call-line">' + call.line + '</div></div>';
-        } else {
-          var why;
-          if (typeof r.days !== 'number') {
-            why = 'There is no recorded date for its last logic edit, so its backtest cannot be ' +
-              'split into a fitted era and an untouched one.';
-          } else if (r.days < D.min_oos_days) {
-            why = 'Its logic was edited ' + n(r.days) + ' days ago. This test needs ' +
-              n(D.min_oos_days) + ' days of untouched record, so ask again in ' +
-              n(D.min_oos_days - r.days) + ' days.' +
-              (scored
-                ? ' A score is shown below because the backtest can still be split, but it rests ' +
-                  'on those ' + n(r.days) + ' days alone and is too short to call either way.'
-                : '');
-          } else if (!scored) {
-            why = 'Its fitted era is too short to annualize cleanly, so there is no score to ' +
-              'compare against par.';
-          } else {
-            why = 'No par exists for a backtest this size, so there is nothing to measure the ' +
-              'score against.';
-          }
-          html += '<div class="of-call none">' +
-            '<div class="of-call-label">No verdict</div>' +
-            '<div class="of-call-line">' + why + ' That is the honest answer rather than a ' +
-            'weaker one dressed up as a result.</div></div>';
-        }
+        var call = callBox(r, c);
+        html += '<div class="of-call ' + call.cls + '">' +
+          '<div class="of-call-label">' + call.label + '</div>' +
+          '<div class="of-call-line">' + call.line + '</div></div>';
 
         if (scored) {
           var band = bandFor(r.score);
+          var hasRange = c.lo !== undefined;
+          var sLo = hasRange ? Math.max(0, Math.min(100, 100 * (1 - c.hi))) : null;
+          var sHi = hasRange ? Math.max(0, Math.min(100, 100 * (1 - c.lo))) : null;
+          var bi = fifthOf(D.base_rates, r.fitted);
+          var br = bi === null ? null : D.base_rates.fifths[bi];
           html += '<div class="of-score ' + band.cls + '" style="margin:18px 0 4px">' +
             '<span class="num">' + scoreText(r.score) + '</span>' +
             '<span><span class="of-band">' + esc(band.label) + '</span><br>' +
             '<span class="of-par">Overfit Score, 0 to 100. ' +
-            (typeof par === 'number'
-              ? 'Par for a backtest this size is <strong>' + par.toFixed(0) + '</strong>.'
-              : '') +
-            ' Median across all ' + n(SD.n) + ' scored strategies is ' + SD.p50 + '.</span></span>' +
+            (hasRange ? '95% range <strong>' + scoreText(sLo) + ' to ' + scoreText(sHi) +
+              '</strong>: one live record cannot pin it closer than that. ' : '') +
+            (br ? 'Of backtests this size, <strong>' + br.fell_short + '%</strong> fell short ' +
+              'of their own promise.' : '') + '</span></span>' +
             '</div>' +
             '<div class="of-bar ' + band.cls + '">' +
               '<span class="fill" style="width:' + Math.max(1, r.score).toFixed(0) + '%"></span>' +
-              (typeof par === 'number'
-                ? '<span class="par" style="left:' + par.toFixed(0) + '%" title="par"></span>' : '') +
+              (hasRange ? '<span class="range" style="left:' + sLo.toFixed(0) + '%;width:' +
+                Math.max(1, sHi - sLo).toFixed(0) + '%" title="95% range"></span>' : '') +
             '</div>' +
             '<div class="of-bar-key"><span>0, kept everything</span>' +
-            '<span>the vertical mark is par</span><span>100, kept nothing</span></div>';
+            '<span>the outline is the 95% range</span><span>100, kept nothing</span></div>';
         }
 
         html += '<p class="of-verdict" style="margin-top:16px">' + verdict + '</p></div>';
@@ -776,15 +797,21 @@
           '<h3>The fitted era, which its author could tune against</h3>' +
           (scored
             ? row('Annualized return', pctBig(r.fitted)) +
-              row('Length', r.fittedYears.toFixed(1) + ' years')
+              row('Length', r.fittedYears.toFixed(1) + ' years') +
+              row('SPY over the same era, annualized', pct(r.spyFitted))
             : '<p class="of-note">Could not be separated for this symphony.</p>') +
           '<h3>The untouched era, which nobody could fit to</h3>' +
           row('Annualized return', pct(r.oosArr),
               typeof r.oosArr === 'number' ? (r.oosArr >= 0 ? 'pos' : 'neg') : 'none') +
           row('Length', typeof r.oosDays === 'number'
               ? (r.oosDays / 365.25).toFixed(1) + ' years' : null) +
+          row('Volatility, annualized', volText(r.oosSd)) +
+          row('SPY over the same window, annualized', pct(r.spyLive)) +
           row('Actual return, last twelve months', pct(r.t1y),
               typeof r.t1y === 'number' ? (r.t1y >= 0 ? 'pos' : 'neg') : 'none') +
+          '<p class="of-note">SPY is printed for both eras so you can see when the market ' +
+          'changed rather than the strategy. Every live window on this site so far falls in the ' +
+          '2022 to 2026 bull market.</p>' +
           '</div>';
 
         // The true out-of-sample re-run, when this symphony has one.
@@ -820,6 +847,31 @@
             'half of the database, so an absence here is not a judgement about it.</p>';
         }
         html += '</div>';
+
+        // Warning signs, one at a time. Never added up: a combined score would
+        // need weights, and weights here could never be checked.
+        var signVals = { fitted_sharpe: r.fittedSharpe, turnover: r.turnover,
+                         universe: r.universe, fitted_years: r.fittedYears };
+        var signRows = '';
+        Object.keys(D.signs || {}).forEach(function (k) {
+          var t = D.signs[k], v = signVals[k], i = fifthOf(t, v);
+          if (i === null) {
+            signRows += row(t.label, null);
+            return;
+          }
+          var f = t.fifths[i];
+          signRows += '<div class="of-row"><span class="k">' + esc(t.label) + ': <strong>' +
+            esc(k === 'universe' ? String(v) : v.toFixed(k === 'turnover' ? 1 : 2)) +
+            '</strong> (fifth ' + (i + 1) + ' of 5)</span><span class="v">' + f.fell_short +
+            '% fell short</span></div>';
+        });
+        html += '<div class="of-panel"><h2>Warning signs, one at a time</h2>' +
+          '<p class="of-note" style="margin-top:0">Measured before a symphony goes live, these ' +
+          'predicted falling short across this database: a higher backtest Sharpe, more turnover, ' +
+          'more tickers it can hold and a shorter backtest all went with bigger shortfalls. Each ' +
+          'row places this symphony in its fifth and says how often symphonies in that fifth fell ' +
+          'short of their own backtest. <strong>They are not added up.</strong> A combined score ' +
+          'would need weights, and weights here could never be checked.</p>' + signRows + '</div>';
 
         // Turnover placement.
         html += '<div class="of-panel"><h2>Turnover</h2>';

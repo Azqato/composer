@@ -5,6 +5,59 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Overfit Check: the cone test
+
+Implements every recommendation of the 2026-10-15 method audit (docs/PRD.md, "Overfit Method
+Audit"). The audit found the par-relative verdict was mostly noise (reliability 0.14) and that par
+excused the very reversion the research defines as overfitting.
+
+### Changed
+
+- **The verdict is now a cone test against the symphony's own backtest.** If it really had the edge
+  its fitted era shows, 95% of live records of the same length land inside a cone; the box prints
+  that cone and where the symphony landed. Labels: **Overfit: fell short of its own backtest**,
+  **Consistent with its backtest so far**, **Too early to tell**, **Beat its backtest**, or **No
+  verdict** with its reason. No other symphony enters the call and nothing is weighted.
+- **Par is retired.** Its place is taken by a base rate that warns rather than excuses: "Of
+  backtests this size, X% fell short of their own promise" (fifths of fitted rate, symphonies with a
+  year or more live).
+- **The score moved to the compounding scale**, `100 x (1 - ln(1 + delivered) / ln(1 + fitted))`,
+  printed in whole numbers with its 95% range, shown as an outline on the bar.
+- **The 365-day gate no longer applies to a single symphony's verdict.** A floor of 63 trading days
+  remains; below that, and wherever the range is too wide, the cone answers "Too early to tell" on
+  its own. The two population cohorts keep the one-year definition.
+
+### Added
+
+- **SPY's annualized rate in both eras** (fitted and live), plus live volatility, in the three
+  windows panel, and a market note in the verdict where SPY changed by more than 5 points a year.
+- **A cash-like guard:** live volatility under 3% a year gets "No verdict", since its return is the
+  interest rate of the era.
+- **A warning-signs panel:** backtest Sharpe (by moment decomposition), turnover, tickers it can
+  hold and backtest length, each with the symphony's fifth and that fifth's fell-short rate. Never
+  combined.
+- **New `data/overfit.json` fields:** index `oos_sd`, `oos_trading_days`, `spy_fitted`, `spy_live`,
+  `fitted_sharpe`, `universe`; top-level `cone`, `base_rates`, `signs`, `verdict_mix`, `checks`.
+  `par` is gone.
+
+### Fixed
+
+- **Two caveats quoted stale figures**: "+0.93 with excess return over SPY" and "rank correlation
+  -0.56" (wrong sign). Both now read from `checks`, computed on every build.
+
+### Verified
+
+Headless Edge drove the lookup against 13 inputs covering every branch, including the audit's worked
+examples (`mlgAKFuUIPZiCT0aV7ho` now "Overfit", `C8QUEQBKayzmaSBz7MAZ` "Consistent",
+`Xc7QRMe6sawhO6pKkp7S` "Too early", `JhjdVrxpOpQlAqxAH08P` cash-like, a 62-day record below the
+floor). Base rates reproduce the audit: 37 / 47 / 56 / 72 / 99% fell short across fitted-rate
+fifths.
+
+**Files changed:** `overfit.html`, `scripts/build_overfit.py`, `data/overfit.json`,
+`data/overfit.js`, `docs/PATCHNOTES.md`, `docs/PRD.md`
+
+---
+
 ## [Unreleased] - Overfit Check: a stated verdict above the score
 
 ### Added
