@@ -5,6 +5,23 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - RSI Backtester
+
+### Added
+- `rsi-backtest.html`: test one Composer rule (IF a ticker's N-day RSI is below or above a level, buy a
+  fund, else hold a fallback or cash) against `data/prices.json`, entirely client-side. Shows the RSI
+  chart with signal days shaded, stat tiles, growth of $1 against buy and hold, a level sweep with the
+  median of the levels within 2 points and first/second-half results, forward returns after each first
+  crossing, and automatic notes on small samples, spikes, disagreeing halves and best-day dependence.
+  Settings live in the URL so a rule can be shared.
+- RSI is Wilder's, seeded per ticker from its first close; the next-close method matched a Composer
+  backtest within about 2 points a year.
+
+### Changed
+- Linked from `rsi.html`, the Tools menu, the footer and a home page card; sitemap regenerated.
+
+---
+
 ## [Unreleased] - Overfit Check: the cone test
 
 Implements every recommendation of the 2026-10-15 method audit (docs/PRD.md, "Overfit Method
