@@ -210,7 +210,7 @@
         S.buy = t(q.get('buy')) || DEF.buy;
         S.dir = q.get('dir') === 'gt' ? 'gt' : 'lt';
         const l = parseFloat(q.get('lvl')); S.lvl = isFinite(l) && l > 0 && l < 100 ? l : (S.dir === 'gt' ? 79 : DEF.lvl);
-        const w = parseInt(q.get('win'), 10); S.win = w >= 2 && w <= 255 ? w : DEF.win;
+        const w = parseInt(q.get('win'), 10); S.win = w >= 2 && w <= 252 ? w : DEF.win;
         const e = q.get('else'); S.els = e === 'cash' ? 'cash' : (t(e) || DEF.els);
         S.range = ['ytd', '1y', '3y', '5y', 'all'].includes(q.get('range')) ? q.get('range') : DEF.range;
       }
@@ -223,8 +223,8 @@
         if (window.history && history.replaceState) history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
       }
 
-      // Dropdown choices for the RSI level; the window is typed (2 to 255, as in Composer)
-      const clampWin = v => Math.min(255, Math.max(2, Math.round(v)));
+      // Dropdown choices for the RSI level; the window is typed (2 to 252, as in Composer)
+      const clampWin = v => Math.min(252, Math.max(2, Math.round(v)));
       const lvlOptions = sel => Array.from({ length: 99 }, (_, k) => k + 1)
         .map(l => `<option value="${l}"${l === +sel ? ' selected' : ''}>${l}</option>`).join('');
 
@@ -403,7 +403,7 @@
             <div class="rb-chips"><span>Start from an example:</span>${PRESETS.map((p, k) => `<button type="button" class="rb-chip" data-p="${k}">${p.label}</button>`).join('')}</div>
             <p class="rb-sentence">
               When <select id="rb-sig" aria-label="Signal ticker">${tickerOptions(S.sig)}</select>'s
-              <input id="rb-win" type="number" min="2" max="255" step="1" value="${S.win}" aria-label="RSI window in days, 2 to 255" title="2 to 255 days">-day RSI
+              <input id="rb-win" type="number" min="2" max="252" step="1" value="${S.win}" aria-label="RSI window in days, 2 to 252" title="2 to 252 days">-day RSI
               <select id="rb-dir" aria-label="Condition"><option value="lt"${S.dir === 'lt' ? ' selected' : ''}>is below</option><option value="gt"${S.dir === 'gt' ? ' selected' : ''}>is above</option></select>
               <select id="rb-lvl" aria-label="RSI level">${lvlOptions(S.lvl)}</select>,
               hold <select id="rb-buy" aria-label="Fund to buy">${tickerOptions(S.buy)}</select> the next day.
@@ -581,7 +581,7 @@
           const [t, dir, lvl, win, buy] = s.split(':');
           const ts = (t || '').split('.').map(x => x.toUpperCase()).filter(x => P.tickers[x]);
           const B = (buy || '').toUpperCase(), l = parseFloat(lvl), w = parseInt(win, 10);
-          if (ts.length && P.tickers[B] && l > 0 && l < 100) C.br.push({ t: ts, dir: dir === 'gt' ? 'gt' : 'lt', lvl: l, win: w >= 2 && w <= 255 ? w : 10, buy: B });
+          if (ts.length && P.tickers[B] && l > 0 && l < 100) C.br.push({ t: ts, dir: dir === 'gt' ? 'gt' : 'lt', lvl: l, win: w >= 2 && w <= 252 ? w : 10, buy: B });
         }
         if (!C.br.length) C.br = JSON.parse(JSON.stringify(CDEF.br));
       }
@@ -635,7 +635,7 @@
             <span>${k ? `<button type="button" class="rc-x" data-act="up" title="Move up">&uarr;</button>` : ''}${C.br.length > 1 ? `<button type="button" class="rc-x" data-act="del" title="Remove rule">&times;</button>` : ''}</span></div>
           <div class="rb-params">
             <div class="rb-field rc-wide"><label>Any of these tickers (space separated)</label><input data-f="t" type="text" value="${escapeHtml(b.t.join(' '))}" spellcheck="false" autocomplete="off"><div class="rc-bad" data-bad></div></div>
-            <div class="rb-field"><label>RSI days</label><input data-f="win" type="number" min="2" max="255" step="1" value="${b.win}" title="2 to 255 days"></div>
+            <div class="rb-field"><label>RSI days</label><input data-f="win" type="number" min="2" max="252" step="1" value="${b.win}" title="2 to 252 days"></div>
             <div class="rb-field"><label>RSI</label><select data-f="dir"><option value="lt"${b.dir === 'lt' ? ' selected' : ''}>is below</option><option value="gt"${b.dir === 'gt' ? ' selected' : ''}>is above</option></select></div>
             <div class="rb-field"><label>Level</label><select data-f="lvl">${lvlOptions(b.lvl)}</select></div>
             <div class="rb-field"><label>Hold</label><select data-f="buy">${tickerOptions(b.buy)}</select></div>

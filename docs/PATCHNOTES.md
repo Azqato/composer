@@ -19,7 +19,7 @@ Format: `[VERSION] - YYYY-MM-DD`
   moved one or two points) and "Time in each fund" (days held, shares, per year, typical and longest
   stint, compounded), with figures over held days only.
 - The two pages link to each other and carry the current rule across.
-- The RSI window is typed and accepts 2 to 255 days, as Composer does; anything outside is pulled
+- The RSI window is typed and accepts 2 to 252 days, as Composer does; anything outside is pulled
   to the nearest limit and shown. The old box silently ignored windows above 50. The level is a
   dropdown from 1 to 99.
 
