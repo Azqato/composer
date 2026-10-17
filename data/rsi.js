@@ -1,7 +1,7 @@
 // RSI signals data - loaded as a script tag so the site works with file:// protocol.
 // To update: run scripts/refresh_rsi.py
 window.RSI_DATA = {
-  "refreshed_at": "2026-10-17T04:15:48Z",
+  "refreshed_at": "2026-10-17T04:19:15Z",
   "tickers": [
     {
       "symbol": "XLF",
@@ -141,6 +141,20 @@ window.RSI_DATA = {
       "name": "iShares 20+ Year Treasury Bond ETF",
       "rsi_10": 65.9,
       "price": 80.05,
+      "price_date": "2026-10-16"
+    },
+    {
+      "symbol": "IWM",
+      "name": "iShares Russell 2000 ETF",
+      "rsi_10": 30.5,
+      "price": 270.44,
+      "price_date": "2026-10-16"
+    },
+    {
+      "symbol": "DIA",
+      "name": "SPDR Dow Jones Industrial Average ETF",
+      "rsi_10": 55.8,
+      "price": 519.1,
       "price_date": "2026-10-16"
     }
   ]

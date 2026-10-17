@@ -30,7 +30,7 @@ API_CALL_DELAY_SECONDS = 1
 
 USER_AGENT = "Mozilla/5.0 (compatible; composer-atlas-rsi-updater/1.0)"
 
-# Frontrunner signal universe (locked per docs/PRD.md V2.1)
+# Frontrunner signal universe (locked per docs/PRD.md V2.1), plus IWM and DIA
 TICKERS = [
     ("XLF", "Financial Select Sector SPDR"),
     ("SPYV", "SPDR Portfolio S&P 500 Value"),
@@ -52,6 +52,9 @@ TICKERS = [
     ("GLD", "SPDR Gold Shares"),
     ("XLP", "Consumer Staples Select Sector SPDR"),
     ("TLT", "iShares 20+ Year Treasury Bond ETF"),
+    # broad index funds, added at the owner's request 2026-10-16
+    ("IWM", "iShares Russell 2000 ETF"),
+    ("DIA", "SPDR Dow Jones Industrial Average ETF"),
 ]
 
 
