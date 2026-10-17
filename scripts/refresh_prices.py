@@ -72,6 +72,9 @@ TICKERS = [
     ("SCHD", "Schwab US Dividend Equity ETF",            "Value & Dividend"),
     ("SCHG", "Schwab US Large-Cap Growth ETF",           "Value & Dividend"),
     ("SPHB", "Invesco S&P 500 High Beta ETF",            "Value & Dividend"),
+    ("VTV",  "Vanguard Value ETF",                       "Value & Dividend"),
+    ("VOOV", "Vanguard S&P 500 Value ETF",               "Value & Dividend"),
+    ("VOOG", "Vanguard S&P 500 Growth ETF",              "Value & Dividend"),
     # --- Sector ---
     ("XLK",  "Technology Select Sector SPDR",            "Sector"),
     ("XLE",  "Energy Select Sector SPDR",                "Sector"),

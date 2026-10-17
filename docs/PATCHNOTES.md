@@ -5,6 +5,19 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - RSI Backtester: cascades
+
+### Added
+- Cascade mode on `rsi-backtest.html` (`?mode=cascade`): an ordered IF / ELSE IF list where each
+  branch fires when any of its tickers' RSI crosses its level, with a fallback fund or cash and a
+  benchmark. Shows yearly return, total, worst drop, Sharpe, volatility and time in market; days and
+  returns per branch; a table nudging each level by up to 2 points (and all levels together); year by
+  year results; and notes on halves, spiky levels and best-day dependence. The whole cascade is
+  encoded in the URL so it can be shared.
+- VTV, VOOV and VOOG added to the `data/prices.json` universe (`scripts/refresh_prices.py`).
+
+---
+
 ## [Unreleased] - RSI Backtester
 
 ### Added

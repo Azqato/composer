@@ -526,7 +526,7 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/glossary.html?slug=foo` | `glossary.html` | Detail view for `foo` |
 | `/composer/database.html` | `database.html` | Tabs: All Strategies, Leaderboard (V1.13/V1.17 scoring), and Screener (bucket filters + 3 column views, plus Leaderboard Rank/Tier/Score columns and a tier filter as of v1.17.0). All three are built and live |
 | `/composer/rsi.html` | `rsi.html` | Sortable RSI signals table (V2.1) |
-| `/composer/rsi-backtest.html` | `rsi-backtest.html` | RSI Backtester: one IF RSI rule, level sweep, robustness notes |
+| `/composer/rsi-backtest.html` | `rsi-backtest.html` | RSI Backtester: single IF RSI rule or an IF / ELSE IF cascade (`?mode=cascade`), level sweeps, robustness notes |
 | `/composer/signal-miner.html` | `signal-miner.html` | Tool: IF/THEN signal miner + backtester, runs fully client-side. In the nav **Tools** dropdown, footer sitemap, and homepage Explore card; indexable. Renamed from "Signal Lab" at v1.16.6 (v1.15.2) |
 | `/composer/signal-lab.html` | `signal-lab.html` | Redirect stub → `signal-miner.html` (preserves query string); `noindex`. Kept so old Signal Lab links do not break (v1.16.6) |
 | `/composer/converter.html` | `converter.html` | Tool: Symphony → JSON converter + logic tree. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.16.3) |
