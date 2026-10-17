@@ -96,6 +96,7 @@
       border-radius: 8px; padding: 4px 8px; margin: 0 2px; font-family: var(--font-mono); font-size: 0.9375rem;
     }
     .rb-sentence input { width: 4.2em; }
+    .rb-sentence select#rb-win, .rb-sentence select#rb-lvl { min-width: 4.6em; }
     .rb-sentence select:focus, .rb-sentence input:focus { outline: 2px solid var(--color-blue); outline-offset: -1px; }
     .rb-slider { display: flex; align-items: center; gap: 12px; max-width: 520px; margin: 4px 0 6px; }
     .rb-slider label { font-size: 0.75rem; color: var(--color-disabled); white-space: nowrap; }
@@ -203,7 +204,7 @@
         S.buy = t(q.get('buy')) || DEF.buy;
         S.dir = q.get('dir') === 'gt' ? 'gt' : 'lt';
         const l = parseFloat(q.get('lvl')); S.lvl = isFinite(l) && l > 0 && l < 100 ? l : (S.dir === 'gt' ? 79 : DEF.lvl);
-        const w = parseInt(q.get('win'), 10); S.win = w >= 2 && w <= 50 ? w : DEF.win;
+        const w = parseInt(q.get('win'), 10); S.win = w >= 2 && w <= 200 ? w : DEF.win;
         const e = q.get('else'); S.els = e === 'cash' ? 'cash' : (t(e) || DEF.els);
         S.range = ['ytd', '1y', '3y', '5y', 'all'].includes(q.get('range')) ? q.get('range') : DEF.range;
       }
@@ -215,6 +216,13 @@
         const qs = q.toString();
         if (window.history && history.replaceState) history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
       }
+
+      // Dropdown choices for the RSI window and level
+      const WINS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 21, 25, 30, 40, 45, 50, 60, 70, 100, 200];
+      const winOptions = sel => (WINS.includes(+sel) ? WINS : [...WINS, +sel].sort((a, b) => a - b))
+        .map(w => `<option value="${w}"${w === +sel ? ' selected' : ''}>${w}</option>`).join('');
+      const lvlOptions = sel => Array.from({ length: 99 }, (_, k) => k + 1)
+        .map(l => `<option value="${l}"${l === +sel ? ' selected' : ''}>${l}</option>`).join('');
 
       // ---------- formatting ----------
       const MINUS = '−';
@@ -481,9 +489,9 @@
             <div class="rb-chips"><span>Start from an example:</span>${PRESETS.map((p, k) => `<button type="button" class="rb-chip" data-p="${k}">${p.label}</button>`).join('')}</div>
             <p class="rb-sentence">
               When <select id="rb-sig" aria-label="Signal ticker">${tickerOptions(S.sig, true)}</select>'s
-              <input id="rb-win" type="number" min="2" max="50" step="1" value="${S.win}" aria-label="RSI window in days">-day RSI
+              <select id="rb-win" aria-label="RSI window in days">${winOptions(S.win)}</select>-day RSI
               <select id="rb-dir" aria-label="Condition"><option value="lt"${S.dir === 'lt' ? ' selected' : ''}>drops below</option><option value="gt"${S.dir === 'gt' ? ' selected' : ''}>rises above</option></select>
-              <input id="rb-lvl" type="number" min="1" max="99" step="1" value="${S.lvl}" aria-label="RSI level">,
+              <select id="rb-lvl" aria-label="RSI level">${lvlOptions(S.lvl)}</select>,
               buy <select id="rb-buy" aria-label="Fund to buy">${tickerOptions(S.buy, true)}</select> for the next day.
               Otherwise hold <select id="rb-els" aria-label="Fund held otherwise"><option value="cash"${S.els === 'cash' ? ' selected' : ''}>cash</option>${tickerOptions(S.els, true)}</select>.
             </p>
@@ -545,7 +553,7 @@
         });
         on('rb-lvl', 'change', e => { const v = parseFloat(e.target.value); if (v > 0 && v < 100) { S.lvl = v; update(); } });
         on('rb-lvl-range', 'input', e => { S.lvl = parseFloat(e.target.value); update(); });
-        on('rb-win', 'change', e => { const v = parseInt(e.target.value, 10); if (v >= 2 && v <= 50) { S.win = v; update(); } });
+        on('rb-win', 'change', e => { const v = parseInt(e.target.value, 10); if (v >= 2 && v <= 200) { S.win = v; update(); } });
         document.querySelector('.rb-chips').addEventListener('click', e => {
           const b = e.target.closest('[data-p]'); if (!b) return;
           Object.assign(S, PRESETS[+b.dataset.p], { win: 10, els: 'BIL' }); delete S.label;
@@ -720,7 +728,7 @@
           const [t, dir, lvl, win, buy] = s.split(':');
           const ts = (t || '').split('.').map(x => x.toUpperCase()).filter(x => P.tickers[x]);
           const B = (buy || '').toUpperCase(), l = parseFloat(lvl), w = parseInt(win, 10);
-          if (ts.length && P.tickers[B] && l > 0 && l < 100) C.br.push({ t: ts, dir: dir === 'gt' ? 'gt' : 'lt', lvl: l, win: w >= 2 && w <= 50 ? w : 10, buy: B });
+          if (ts.length && P.tickers[B] && l > 0 && l < 100) C.br.push({ t: ts, dir: dir === 'gt' ? 'gt' : 'lt', lvl: l, win: w >= 2 && w <= 200 ? w : 10, buy: B });
         }
         if (!C.br.length) C.br = JSON.parse(JSON.stringify(CDEF.br));
         const e = q.get('else'); C.els = e === 'cash' ? 'cash' : (e && P.tickers[e.toUpperCase()] ? e.toUpperCase() : CDEF.els);
@@ -778,9 +786,9 @@
             <span>${k ? `<button type="button" class="rc-x" data-act="up" title="Move up">&uarr;</button>` : ''}${C.br.length > 1 ? `<button type="button" class="rc-x" data-act="del" title="Remove branch">&times;</button>` : ''}</span></div>
           <div class="rb-params">
             <div class="rb-field rc-wide"><label>If any of these tickers (space separated)</label><input data-f="t" type="text" value="${escapeHtml(b.t.join(' '))}" spellcheck="false" autocomplete="off"><div class="rc-bad" data-bad></div></div>
-            <div class="rb-field"><label>RSI window</label><input data-f="win" type="number" min="2" max="50" value="${b.win}"></div>
+            <div class="rb-field"><label>RSI window</label><select data-f="win">${winOptions(b.win)}</select></div>
             <div class="rb-field"><label>RSI</label><select data-f="dir"><option value="lt"${b.dir === 'lt' ? ' selected' : ''}>drops below</option><option value="gt"${b.dir === 'gt' ? ' selected' : ''}>rises above</option></select></div>
-            <div class="rb-field"><label>Level</label><input data-f="lvl" type="number" min="1" max="99" value="${b.lvl}"></div>
+            <div class="rb-field"><label>Level</label><select data-f="lvl">${lvlOptions(b.lvl)}</select></div>
             <div class="rb-field"><label>Then buy</label><select data-f="buy">${tickerOptions(b.buy, true)}</select></div>
           </div></div>`;
       }
@@ -851,7 +859,7 @@
             if (!ok.length) return;
             b.t = [...new Set(ok)];
           } else if (f === 'lvl') { const l = parseFloat(v); if (!(l > 0 && l < 100)) return; b.lvl = l; }
-          else if (f === 'win') { const w = parseInt(v, 10); if (!(w >= 2 && w <= 50)) return; b.win = w; }
+          else if (f === 'win') { const w = parseInt(v, 10); if (!(w >= 2 && w <= 200)) return; b.win = w; }
           else b[f] = v;
           cUpdate();
         });
