@@ -2570,6 +2570,66 @@ Long windows need that much price history before the indicator has a value, so t
 built on `data/prices.json` (which starts 2010-01-01). Tools should show the tested date range so the
 shortening is visible.
 
+### Composer Symphony JSON: Writing and Cleanup
+
+The owner's rules for any symphony JSON the site writes (the RSI Backtester's **Copy JSON**, any
+future export) and for cleaning up a symphony downloaded from Composer. Set 2026-10-16; the cleanup
+below was run on zoop's Wash Sale Symphony and the owner confirmed the result backtests identically
+in Composer.
+
+**Writing a symphony**
+
+- **One signal for a holding is a standard condition:** flat fields only (`lhs-fn`, `lhs-val`,
+  `lhs-fn-params`, `comparator`, `rhs-fixed-value?`, `rhs-val`) and no `condition` block. This is
+  exactly how Composer saves a plain rule. Wrapping a single signal in "any of" was tried and
+  rejected.
+- **Several signals for the same holding become one IF on "any of":** `condition` is
+  `{"condition-type": "compound", "operator": "any", "conditions": [...]}`, one `binary` condition
+  per signal, each keeping its own ticker, window and level. The flat fields describe the first
+  signal. Only rules next to each other in the IF / ELSE IF order are merged; merging across a rule
+  that holds something else would change which rule wins.
+- **Structure:** root, one `wt-cash-equal`, then nested `if` steps. Every `if` has exactly two
+  children (the rule and an ELSE) and the next rule sits inside the ELSE. Rebalance daily.
+- **Copy to clipboard only.** No download button.
+- **Short description:** "Built with the Composer Atlas RSI Backtester." plus the link that reloads
+  the setup.
+
+**Cleaning up a downloaded symphony**
+
+Any public symphony can be read from
+`https://api.composer.trade/api/v0.1/symphonies/<id>/score?score_version=v1` (the Converter uses
+the same endpoint). The cleanup must never change what the symphony holds on any day.
+
+1. **Strip editor leftovers:** `collapsed?`, `exchange`, `price`, `dollar_volume`, `has_marketcap`,
+   `suppress_incomplete_warnings`, `name` on assets, and the window on `current-price` (it takes
+   none).
+2. **Remove structure that cannot matter:** a `wt-cash-equal` with one child (except the one under
+   root), a filter or weight whose children are all identical (it picks the same thing whatever it
+   ranks), an IF whose two branches hold the same thing, a group around a lone asset.
+3. **Keep:** every named group, since those are the author's labels; and duplicated sub-strategies
+   under a filter, because removing a copy changes what the filter picks.
+4. **Group by holding:** merge an IF and the ELSE IF directly inside it when both hold the same single
+   asset, into one "any of" rule as above. Never fold an `all` compound into `any`. List a repeated
+   signal once. Repeat until nothing changes.
+5. **Verify before handing over.** Run the original and the result through a random-scenario
+   evaluator: each binary condition gets a seeded random truth, and each filter ranks its children
+   by a seeded hash of the child's own allocation, so identical behaviour scores identically. Every
+   scenario must give the same allocation. Two checker traps produced false mismatches the first
+   time: number formatting (`1` against `1.0`) in the ranking key, and `current-price` windows in the
+   condition key.
+6. **Deliver** minified, to the owner's Downloads folder, with before and after counts.
+
+| zoop's Wash Sale Symphony | Original | Cleaned | Grouped |
+|---|---|---|---|
+| Size | 425 KB | 318 KB | 302 KB |
+| IF blocks | 462 | 460 | 400 |
+| Weight wrappers | 436 | 5 | 5 |
+| Holdings | 528 | 511 | 451 |
+| Nesting depth | 42 | 39 | 35 |
+| Named groups | 143 | 143 | 143 |
+
+5,000 random scenarios matched across all three versions, and the Composer backtest matched.
+
 ---
 
 ## 14. Roadmap
