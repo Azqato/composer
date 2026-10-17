@@ -703,7 +703,7 @@
         return {
           id: cShortId(), step: 'root', name: 'RSI cascade: ' + C.br.map(b => `${brName(b)} ${cmpOf(b.dir)} ${b.lvl} ${b.buy}`).join(', '),
           children: [{ id: cUid(), step: 'wt-cash-equal', name: 'Weight', suppress_incomplete_warnings: true, children: [cIf(cGroups(C.br), 0)] }],
-          description: 'Built with the Composer Atlas RSI Backtester. Rules are checked in order; the first true one picks the fund; BIL otherwise. ' + location.href,
+          description: 'Built with the Composer Atlas RSI Backtester. ' + location.href,
           rebalance: 'daily',
         };
       }
