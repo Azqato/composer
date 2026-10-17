@@ -420,11 +420,9 @@
           <div class="rb-panel">
             <h2 id="rb-bt-title">Backtest</h2>
             <p class="rb-sub" id="rb-bt-sub"></p>
-            <h3 class="rb-h3" id="rb-t1-title"></h3>
-            <div class="db-table-wrap"><table class="db-table rb-table" id="rb-cross"></table></div>
-            <h3 class="rb-h3" id="rb-t2-title" style="margin-top:22px"></h3>
+            <h3 class="rb-h3" id="rb-t2-title"></h3>
             <div class="db-table-wrap"><table class="db-table rb-table" id="rb-sweep"></table></div>
-            <p class="rb-sub" style="margin-top:8px">Click a row to use that level, or a header to sort.</p>
+            <p class="rb-sub" style="margin-top:8px">Sharpe scores the whole rule: the fund on signal days, BIL on the rest, with no risk-free rate subtracted. <em>Every day</em> is holding the fund all the time. Click a row to use that level, or a header to sort.</p>
             <ul class="rb-notes" id="rb-notes"></ul>
           </div>`;
 
@@ -454,7 +452,6 @@
         on('rb-copy-link', 'click', copyLink);
         const pickRow = e => { const tr = e.target.closest('tr[data-l]'); if (!tr) return; S.lvl = parseFloat(tr.dataset.l); update(); };
         on('rb-sweep', 'click', pickRow);
-        on('rb-cross', 'click', pickRow);
       }
 
       // RSI stats for the chart's visible range, as in the original analysis
@@ -495,7 +492,6 @@
         const from = DATES[sm.idx[0]], to = DATES[sm.idx[sm.idx.length - 1] + 1], yrs = sm.idx.length / 252;
         document.getElementById('rb-bt-title').textContent = `Backtest: hold ${S.buy} when ${S.sig}'s ${S.win}-day RSI is ${S.dir === 'lt' ? 'oversold' : 'overbought'}`;
         document.getElementById('rb-bt-sub').textContent = `${fmtDate(from)} to ${fmtDate(to)}, ${yrs.toFixed(1)} years.`;
-        document.getElementById('rb-t1-title').textContent = `What ${S.buy} did after RSI first crossed ${word} each level`;
         document.getElementById('rb-t2-title').textContent = `The Composer rule: hold ${S.buy} the day after any close where ${S.sig}'s RSI is ${word} the level`;
 
         const levels = levelList();
@@ -507,29 +503,30 @@
           for (const i of sm.idx) if (i + h < N && sm.b[i + h] != null) a.push(sm.b[i + h] / sm.b[i] - 1);
           base[h] = avg(a);
         }
-        const crs = new Map(levels.map(l => [l, crossings(sm, l)]));
-        document.getElementById('rb-cross').innerHTML =
-          `<thead><tr><th>Level</th><th>Times</th><th>Next day</th><th>5 days</th><th>10 days</th><th>20 days</th><th>Up after 5 days</th><th>Worst next day</th></tr></thead><tbody>` +
-          levels.map(l => {
-            const c = crs.get(l), f5 = c.f[5];
-            return c.n
-              ? `<tr data-l="${l}"${sel(l)}><td>${cmp} ${l}</td><td>${c.n}</td>${[1, 5, 10, 20].map(h => `<td>${signed(avg(c.f[h]))}</td>`).join('')}<td>${f5.length ? Math.round(100 * f5.filter(x => x > 0).length / f5.length) + '%' : '—'}</td><td>${signed(Math.min(...c.f[1]))}</td></tr>`
-              : `<tr data-l="${l}"${sel(l)}><td>${cmp} ${l}</td><td>0</td><td colspan="6" style="text-align:left">never crossed</td></tr>`;
-          }).join('') +
-          `<tr class="is-base"><td>any day</td><td></td>${[1, 5, 10, 20].map(h => `<td>${pct(base[h])}</td>`).join('')}<td></td><td></td></tr></tbody>`;
-
+        // whole-rule Sharpe: the fund on signal days, BIL otherwise (cash where
+        // BIL has no price), no risk-free rate subtracted; matches the advanced view
+        const bil = P.tickers.BIL ? P.tickers.BIL.closes : null;
+        const elseRet = sm.idx.map(i => (bil && bil[i] != null && bil[i + 1] != null ? bil[i + 1] / bil[i] - 1 : 0));
+        const sharpeOf = pick => {
+          let s = 0, s2 = 0; const n = sm.idx.length;
+          for (let j = 0; j < n; j++) { const x = pick(j) ? sm.buyRet[j] : elseRet[j]; s += x; s2 += x * x; }
+          const m = s / n, sd = Math.sqrt(Math.max(0, s2 / n - m * m));
+          return sd ? m / sd * Math.sqrt(252) : NaN;
+        };
+        const shTxt = v => `<span class="${v < 0 ? 'rb-neg' : ''}">${isFinite(v) ? v.toFixed(2) : '—'}</span>`;
         const hsBy = new Map(levels.map(l => [l, heldStats(sm, l)]));
         document.getElementById('rb-sweep').innerHTML =
-          `<thead><tr><th>Level</th><th>Days held</th><th>Avg per day held</th><th>Up days</th><th>Worst day held</th><th>Compounded over held days</th></tr></thead><tbody>` +
+          `<thead><tr><th>Level</th><th>Days held</th><th>Avg per day held</th><th>Up days</th><th>Worst day held</th><th>Compounded over held days</th><th>Sharpe</th></tr></thead><tbody>` +
           levels.map(l => {
             const a = hsBy.get(l);
             return a.n
-              ? `<tr data-l="${l}"${sel(l)}><td>${cmp} ${l}</td><td>${a.n}</td><td>${signed(a.avg, 2)}</td><td>${Math.round(a.up * 100)}%</td><td>${signed(a.worst)}</td><td>${signed(a.comp)}</td></tr>`
-              : `<tr data-l="${l}"${sel(l)}><td>${cmp} ${l}</td><td>0</td><td colspan="4" style="text-align:left">never held</td></tr>`;
-          }).join('') + '</tbody>';
+              ? `<tr data-l="${l}"${sel(l)}><td>${cmp} ${l}</td><td>${a.n}</td><td>${signed(a.avg, 2)}</td><td>${Math.round(a.up * 100)}%</td><td>${signed(a.worst)}</td><td>${signed(a.comp)}</td><td>${shTxt(sharpeOf(j => fires(sm.rv[j], l)))}</td></tr>`
+              : `<tr data-l="${l}"${sel(l)}><td>${cmp} ${l}</td><td>0</td><td colspan="5" style="text-align:left">never held</td></tr>`;
+          }).join('') + (bh => `<tr class="is-base"><td>every day</td><td>${bh.n}</td><td>${pct(bh.avg, 2)}</td><td>${Math.round(bh.up * 100)}%</td><td>${pct(bh.worst)}</td><td>${pct(bh.comp)}</td><td>${isFinite(bh.sh) ? bh.sh.toFixed(2) : '—'}</td></tr>`)(
+            Object.assign(heldStats(sm, S.dir === 'lt' ? 101 : -1), { sh: sharpeOf(() => true) })) + '</tbody>';
 
         // notes, written from the numbers
-        const hs = hsBy.get(S.lvl), cr = crs.get(S.lvl), notes = [];
+        const hs = hsBy.get(S.lvl), cr = crossings(sm, S.lvl), notes = [];
         if (hs.n) {
           const H2 = Math.floor(sm.idx.length / 2), h1 = heldStats(sm, S.lvl, 0, H2), h2 = heldStats(sm, S.lvl, H2);
           const near = []; for (let d = -2; d <= 2; d++) if (d && hsBy.has(S.lvl + d) && hsBy.get(S.lvl + d).n) near.push(hsBy.get(S.lvl + d).lg);
@@ -758,7 +755,8 @@
       // ---------- sortable tables ----------
       // Tables re-render on every change, so each table's chosen sort is kept
       // by id and reapplied. Clicks cycle high-to-low, low-to-high, original.
-      const sortBy = {};
+      // the Composer-rule table opens sorted by Sharpe, highest first
+      const sortBy = { 'rb-sweep': { c: 6, dir: -1 } };
       const cellNum = td => { const v = parseFloat(td.textContent.replace(/−/g, '-').replace(/[^0-9.\-]/g, '')); return isFinite(v) ? v : null; };
       function applySort(tbl) {
         const st = sortBy[tbl.id], heads = tbl.querySelectorAll('thead th');

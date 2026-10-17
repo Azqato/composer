@@ -13,9 +13,9 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ### Changed
 - `rsi-backtest.html` is now the simple view, laid out like the original analysis: the rule as a
-  sentence, the RSI chart with latest/high/low and days past the level, then "what the fund did after
-  RSI first crossed each level" and "the Composer rule" tables for levels 20 to 40 (60 to 90 when
-  overbought). Cascade mode shows "How the options compare" (your setup, each rule removed, all levels
+  sentence, the RSI chart with latest/high/low and days past the level, then one Composer-rule table
+  for levels 20 to 40 (60 to 90 when overbought) with a whole-rule Sharpe column (BIL otherwise) and an
+  "every day" buy-and-hold row, sorted by Sharpe, highest first. Cascade mode shows "How the options compare" (your setup, each rule removed, all levels
   moved one or two points) and "Time in each fund" (days held, shares, per year, typical and longest
   stint, compounded), with figures over held days only.
 - The two pages link to each other and carry the current rule across.
