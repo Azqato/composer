@@ -136,7 +136,7 @@ window.STRATEGY_EXTRAS_DATA = {
     "sortino_ratio": 5.151022377810025,
     "spy_best_day_baseline": {
       "days": 1732,
-      "top_five_percent_day_contribution": 2.107155
+      "top_five_percent_day_contribution": 2.107153
     },
     "symphony_id": "mlgAKFuUIPZiCT0aV7ho",
     "tail_ratio": 1.4720366150231365,
@@ -663,7 +663,7 @@ window.STRATEGY_EXTRAS_DATA = {
     "sortino_ratio": 6.632876077291644,
     "spy_best_day_baseline": {
       "days": 1463,
-      "top_five_percent_day_contribution": 1.910583
+      "top_five_percent_day_contribution": 1.910584
     },
     "symphony_id": "sEUgeRfSayPbBh8mJxSy",
     "tail_ratio": 1.5730208960574055,
@@ -788,7 +788,7 @@ window.STRATEGY_EXTRAS_DATA = {
     "sortino_ratio": 5.174906764090988,
     "spy_best_day_baseline": {
       "days": 637,
-      "top_five_percent_day_contribution": 1.554181
+      "top_five_percent_day_contribution": 1.554182
     },
     "symphony_id": "K8ql2SKFd4VDBemIstEr",
     "tail_ratio": 1.3181096480695003,
@@ -1010,7 +1010,7 @@ window.STRATEGY_EXTRAS_DATA = {
     "sortino_ratio": 2.2111974943282666,
     "spy_best_day_baseline": {
       "days": 3926,
-      "top_five_percent_day_contribution": 2.051727
+      "top_five_percent_day_contribution": 2.051725
     },
     "symphony_id": "CW8oWU12S6vEvn2Hh7jD",
     "tail_ratio": 1.1956508328288211,
@@ -1231,7 +1231,7 @@ window.STRATEGY_EXTRAS_DATA = {
     "sortino_ratio": 3.0000240213638527,
     "spy_best_day_baseline": {
       "days": 3700,
-      "top_five_percent_day_contribution": 1.898336
+      "top_five_percent_day_contribution": 1.898337
     },
     "symphony_id": "zTV33nu3o0h5fKpT6IqL",
     "tail_ratio": 1.214738878796195,
@@ -1294,7 +1294,7 @@ window.STRATEGY_EXTRAS_DATA = {
     "sortino_ratio": 2.7105378198279184,
     "spy_best_day_baseline": {
       "days": 2858,
-      "top_five_percent_day_contribution": 2.097164
+      "top_five_percent_day_contribution": 2.097165
     },
     "symphony_id": "wadbe3IfwvSES5vk6yiu",
     "tail_ratio": 1.4317449071632105,
@@ -1507,7 +1507,7 @@ window.STRATEGY_EXTRAS_DATA = {
     "sortino_ratio": 3.693193945194261,
     "spy_best_day_baseline": {
       "days": 1114,
-      "top_five_percent_day_contribution": 1.711794
+      "top_five_percent_day_contribution": 1.711793
     },
     "symphony_id": "kl2dR0Rlp4RgZUHAJY2k",
     "tail_ratio": 1.3349355549239548,
@@ -1559,7 +1559,7 @@ window.STRATEGY_EXTRAS_DATA = {
     "sortino_ratio": 5.635697288248451,
     "spy_best_day_baseline": {
       "days": 2194,
-      "top_five_percent_day_contribution": 2.232762
+      "top_five_percent_day_contribution": 2.232764
     },
     "symphony_id": "4aI4kVT5cEc0XJpTLei3",
     "tail_ratio": 7.4013315813878995,
@@ -1655,7 +1655,7 @@ window.STRATEGY_EXTRAS_DATA = {
     "sortino_ratio": 3.8251113206495475,
     "spy_best_day_baseline": {
       "days": 2197,
-      "top_five_percent_day_contribution": 2.215716
+      "top_five_percent_day_contribution": 2.215717
     },
     "symphony_id": "zPBn8HkmTIQ5BEJdff0v",
     "tail_ratio": 1.1649431347368993,
@@ -1749,7 +1749,7 @@ window.STRATEGY_EXTRAS_DATA = {
     "sortino_ratio": 4.689395302654866,
     "spy_best_day_baseline": {
       "days": 1460,
-      "top_five_percent_day_contribution": 1.89067
+      "top_five_percent_day_contribution": 1.890671
     },
     "symphony_id": "4AuTagHMeiS4usdZEuDK",
     "tail_ratio": 1.4172614429930201,
