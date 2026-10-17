@@ -646,6 +646,42 @@
       }
       let cVariants = [];
 
+      // ---------- Composer symphony JSON ----------
+      // Same schema as the Signal Miner's export (a real Composer export):
+      // root -> wt-cash-equal -> if, where each `if` holds exactly two
+      // children (the rule and an else) and the next rule nests inside the
+      // else. A rule on several tickers is one "any of" condition, which is
+      // what this page tests. The deepest else holds BIL, as the backtest does.
+      const cUid = () => (window.crypto && crypto.randomUUID ? crypto.randomUUID()
+        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, ch => { const r = Math.random() * 16 | 0; return (ch === 'x' ? r : (r & 3 | 8)).toString(16); }));
+      const cShortId = () => { const cs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; let s = ''; for (let i = 0; i < 20; i++) s += cs[Math.random() * cs.length | 0]; return s; };
+      const cAsset = tk => ({ id: cUid(), step: 'asset', suppress_incomplete_warnings: false, ticker: tk });
+      function cIf(br, k) {
+        const b = br[k], cmp = b.dir === 'gt' ? 'gt' : 'lt';
+        const cond = { 'condition-type': 'binary-compound', operator: 'any', tickers: b.t.slice(),
+          lhs: { fn: 'relative-strength-index', ticker: '%', params: { window: b.win } }, comparator: cmp, rhs: { constant: b.lvl } };
+        const then = {
+          id: cUid(), step: 'if-child', name: 'If', suppress_incomplete_warnings: false,
+          children: [cAsset(b.buy)], 'is-else-condition?': false,
+          condition: { 'condition-type': 'compound', operator: 'all', conditions: [cond] },
+          'lhs-fn': 'relative-strength-index', 'lhs-val': b.t[0], 'lhs-fn-params': { window: b.win },
+          comparator: cmp, 'rhs-fixed-value?': true, 'rhs-val': String(b.lvl),
+        };
+        const rest = k + 1 < br.length ? cIf(br, k + 1) : cAsset('BIL');
+        return {
+          id: cUid(), step: 'if', name: 'Condition', suppress_incomplete_warnings: false, weight: { num: 100, den: 100 },
+          children: [then, { id: cUid(), step: 'if-child', name: 'Else', suppress_incomplete_warnings: true, children: [rest], 'is-else-condition?': true }],
+        };
+      }
+      function cSymphony() {
+        return {
+          id: cShortId(), step: 'root', name: 'RSI cascade: ' + C.br.map(b => `${brName(b)} ${cmpOf(b.dir)} ${b.lvl} ${b.buy}`).join(', '),
+          children: [{ id: cUid(), step: 'wt-cash-equal', name: 'Weight', suppress_incomplete_warnings: true, children: [cIf(C.br, 0)] }],
+          description: 'Built with the Composer Atlas RSI Backtester. Rules are checked in order; the first true one picks the fund; BIL otherwise. ' + location.href,
+          rebalance: 'daily',
+        };
+      }
+
       function brRow(b, k) {
         return `<div class="rc-row" data-b="${k}">
           <div class="rc-head"><span>${k ? 'ELSE IF' : 'IF'}</span>
@@ -667,7 +703,7 @@
             <div id="rc-br"></div>
             <button class="btn btn-outline btn-sm" id="rc-add" type="button">+ Add a rule</button>
             ${RSI_HELP}
-            <div class="rb-logic"><code id="rb-code"></code><button class="btn btn-outline btn-sm" id="rb-copy-link" type="button">Copy link</button><span class="rb-copied" id="rb-copied"></span></div>
+            <div class="rb-logic"><code id="rb-code"></code><button class="btn btn-outline btn-sm" id="rb-copy-link" type="button">Copy link</button><button class="btn btn-outline btn-sm" id="rc-json-copy" type="button" title="Paste into the Composer editor">Copy Composer JSON</button><button class="btn btn-outline btn-sm" id="rc-json-dl" type="button">Download .json</button><span class="rb-copied" id="rb-copied"></span></div>
           </div>
 
           <div class="rb-panel">
@@ -712,6 +748,17 @@
           C.br.push({ t: ['SPY'], dir: 'lt', lvl: 30, win: 10, buy: 'SPXL' }); drawRows(); cUpdate();
         });
         document.getElementById('rb-copy-link').addEventListener('click', copyLink);
+        document.getElementById('rc-json-copy').addEventListener('click', () => {
+          const done = ok => { const c = document.getElementById('rb-copied'); c.textContent = ok ? 'JSON copied: paste it into Composer' : 'Copy failed'; setTimeout(() => (c.textContent = ''), 2400); };
+          const json = JSON.stringify(cSymphony(), null, 2);
+          if (navigator.clipboard) navigator.clipboard.writeText(json).then(() => done(true), () => done(false)); else done(false);
+        });
+        document.getElementById('rc-json-dl').addEventListener('click', () => {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([JSON.stringify(cSymphony(), null, 2)], { type: 'application/json' }));
+          a.download = 'rsi-cascade.json'; document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        });
         // clicking a setup row makes it the cascade, as a level row does in One Rule
         document.getElementById('rc-compare').addEventListener('click', e => {
           const tr = e.target.closest('tr[data-v]'); if (!tr) return;
@@ -729,7 +776,7 @@
       function cUpdate() {
         cWrite();
         document.getElementById('rb-code').textContent = C.br.map((b, k) =>
-          `${k ? 'ELSE IF' : 'IF'} ${b.t.length > 1 ? 'any of ' + b.t.join(' ') : b.t[0]} ${b.win}d RSI ${cmpOf(b.dir)} ${b.lvl}  ->  ${b.buy}`).join('\n') + '\nELSE  ->  your existing fallback';
+          `${k ? 'ELSE IF' : 'IF'} ${b.t.length > 1 ? 'any of ' + b.t.join(' ') : b.t[0]} ${b.win}d RSI ${cmpOf(b.dir)} ${b.lvl}  ->  ${b.buy}`).join('\n') + '\nELSE  ->  BIL (in the Composer JSON export)';
 
         const sm = cSample(C.br), n = sm.idx.length;
         if (n < 60) { document.getElementById('rc-sub').textContent = 'These tickers do not share enough price history to test.'; return; }
