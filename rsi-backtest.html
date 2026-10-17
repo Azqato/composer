@@ -114,6 +114,7 @@
     .rb-h3 { font-size: 0.75rem; color: var(--color-disabled); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin: 16px 0 8px; }
     .rb-tiles-sm .rb-tile b { font-size: 1rem; }
     .rb-more summary { cursor: pointer; color: var(--color-primary); font-weight: 600; font-size: 1rem; }
+    .rb-table thead th { cursor: pointer; user-select: none; }
     .rb-note { font-size: 0.75rem; color: var(--color-disabled); margin-top: 8px; line-height: 1.6; }
   </style>
 </head>
@@ -660,6 +661,7 @@
           `<span><i style="background:var(--color-green)"></i>Rule ${pct(fr.total)}</span><span><i style="background:var(--color-blue)"></i>${sym(S.buy)} held ${pct(fr.bhTotal)}</span>` +
           (S.els === 'cash' ? '' : `<span><i style="background:var(--color-disabled)"></i>${sym(S.els)} only ${pct(fr.elTotal)}</span>`);
         drawEquity(fr, { b: S.buy, e: S.els === 'cash' ? null : S.els });
+        resortAll();
       }
 
       // ---------- cascade mode ----------
@@ -956,7 +958,47 @@
         document.getElementById('rb-eq-legend').innerHTML =
           `<span><i style="background:var(--color-green)"></i>Cascade ${pct(res.total)}</span><span><i style="background:var(--color-blue)"></i>${escapeHtml(C.bench)} ${pct(bh - 1)}</span>`;
         drawEquity({ curve }, { b: C.bench, e: null, rule: 'cascade' });
+        resortAll();
       }
+
+      // ---------- sortable tables ----------
+      // Results tables re-render on every change, so each table's chosen sort
+      // is kept by id and reapplied after each render. Clicks cycle
+      // high-to-low, low-to-high, then back to the original order.
+      const sortBy = {};
+      const cellNum = td => { const v = parseFloat(td.textContent.replace(/−/g, '-').replace(/[^0-9.\-]/g, '')); return isFinite(v) ? v : null; };
+      function applySort(tbl) {
+        const st = sortBy[tbl.id], heads = tbl.querySelectorAll('thead th');
+        heads.forEach((th, c) => {
+          th.classList.add('sortable');
+          let a = th.querySelector('.db-sort-arrow');
+          if (!a) { a = document.createElement('span'); a.className = 'db-sort-arrow'; th.append(' ', a); }
+          const on = st && st.c === c;
+          a.classList.toggle('active', !!on);
+          a.innerHTML = on ? (st.dir > 0 ? '&#9650;' : '&#9660;') : '&#8597;';
+        });
+        const body = tbl.tBodies[0]; if (!body) return;
+        const rows = [...body.rows];
+        rows.forEach((r, k) => { if (r.dataset.o == null) r.dataset.o = k; });
+        // rows that span columns ("never fired") or are a baseline stay at the bottom
+        const live = rows.filter(r => r.cells.length === heads.length && !r.classList.contains('is-base'));
+        const rest = rows.filter(r => !live.includes(r)).sort((a, b) => a.dataset.o - b.dataset.o);
+        let keyed;
+        if (!st) keyed = live.map(r => ({ r, v: +r.dataset.o })).sort((a, b) => a.v - b.v);
+        else {
+          const nums = live.map(r => cellNum(r.cells[st.c]));
+          const numeric = nums.filter(v => v != null).length >= live.length / 2;
+          keyed = live.map((r, k) => ({ r, o: +r.dataset.o, v: numeric ? nums[k] : r.cells[st.c].textContent.trim() }));
+          keyed.sort((a, b) => {
+            if (a.v == null || a.v === '') return 1;
+            if (b.v == null || b.v === '') return -1;
+            return (numeric ? a.v - b.v : a.v.localeCompare(b.v)) * st.dir || a.o - b.o;
+          });
+        }
+        keyed.forEach(x => body.appendChild(x.r));
+        rest.forEach(r => body.appendChild(r));
+      }
+      const resortAll = () => document.querySelectorAll('#rb-root table.rb-table').forEach(applySort);
 
       function startMode(m) {
         document.querySelectorAll('#rb-mode button').forEach(x => x.classList.toggle('is-on', x.dataset.m === m));
@@ -974,6 +1016,12 @@
           const b = e.target.closest('button'); if (!b || b.classList.contains('is-on')) return;
           if (window.history && history.replaceState) history.replaceState(null, '', location.pathname + (b.dataset.m === 'cascade' ? '?mode=cascade' : ''));
           startMode(b.dataset.m);
+        });
+        document.getElementById('rb-root').addEventListener('click', e => {
+          const th = e.target.closest('table.rb-table thead th'); if (!th) return;
+          const tbl = th.closest('table'), c = th.cellIndex, st = sortBy[tbl.id];
+          sortBy[tbl.id] = !st || st.c !== c ? { c, dir: -1 } : st.dir < 0 ? { c, dir: 1 } : null;
+          applySort(tbl);
         });
         startMode(new URLSearchParams(location.search).get('mode') === 'cascade' ? 'cascade' : 'single');
       })().catch(err => {

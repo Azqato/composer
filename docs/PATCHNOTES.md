@@ -13,6 +13,8 @@ Format: `[VERSION] - YYYY-MM-DD`
 - A plain-English verdict (Holds up, Fragile, No edge, Lost money, Never fired) now leads the results,
   with what $10,000 would have become, followed by four headline figures. Signal-day detail sits
   below them, and the first-signal table moved into a collapsible section.
+- Every results table sorts by clicking a column header (high to low, low to high, then the
+  original order); the sort survives the table recalculating.
 - Cascade mode gets example presets, "Rule 1, 2, ..." wording, the same verdict box and an
   explainer on RSI and how the test works.
 
