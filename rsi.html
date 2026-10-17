@@ -151,9 +151,13 @@
       (async function () {
         const payload = await loadRsi();
         tickers = payload.tickers;
+        // the close the values come from: a refresh time alone can look current
+        // while the data is a day behind
+        const closeDate = tickers.map(t => t.price_date).filter(Boolean).sort().pop();
+        const closeStr = closeDate ? new Date(closeDate + 'T12:00:00').toLocaleDateString('en-US', { dateStyle: 'medium' }) : '';
         const refreshedStr = new Date(payload.refreshed_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
         document.getElementById('rsi-refreshed').innerHTML =
-          `<span class="updated-badge"><span class="updated-badge-dot"></span>Last refreshed: ${refreshedStr}</span>`;
+          `<span class="updated-badge"><span class="updated-badge-dot"></span>${closeStr ? `As of ${closeStr} close &middot; ` : ''}refreshed ${refreshedStr}</span>`;
         applySort();
         render();
       })().catch(err => {

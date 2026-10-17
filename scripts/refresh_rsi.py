@@ -23,7 +23,9 @@ RSI_JSON = BASE_DIR / "data" / "rsi.json"
 RSI_JS = BASE_DIR / "data" / "rsi.js"
 
 RSI_PERIOD = 10
-LOOKBACK_DAYS = 45
+# ~1 trading year: enough for Wilder smoothing to settle, so values match
+# Composer and the RSI Backtester, which use the full price history.
+LOOKBACK_DAYS = 250
 API_CALL_DELAY_SECONDS = 1
 
 USER_AGENT = "Mozilla/5.0 (compatible; composer-atlas-rsi-updater/1.0)"
@@ -57,7 +59,7 @@ def fetch_daily_closes(symbol):
     """Returns (dates, adjusted_closes) for the last LOOKBACK_DAYS trading days."""
     url = (
         f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
-        f"?range={LOOKBACK_DAYS + 20}d&interval=1d&events=div,splits"
+        f"?range=2y&interval=1d&events=div,splits"
     )
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=30) as resp:
@@ -67,9 +69,16 @@ def fetch_daily_closes(symbol):
     timestamps = result["timestamp"]
     quote = result["indicators"]["quote"][0]
     adjclose = result["indicators"].get("adjclose", [{}])[0].get("adjclose", quote["close"])
+    raw = quote.get("close") or [None] * len(timestamps)
 
     dates, closes = [], []
-    for ts, close in zip(timestamps, adjclose):
+    for k, (ts, close) in enumerate(zip(timestamps, adjclose)):
+        # In the evening Yahoo can leave the newest day's adjusted close blank
+        # while it processes the day; skipping it silently rolled the page back
+        # a day (2026-10-16). The newest day has no pending adjustment, so its
+        # plain close is the right value.
+        if close is None and k == len(timestamps) - 1:
+            close = raw[k]
         if close is None:
             continue
         dates.append(datetime.fromtimestamp(ts, tz=timezone.utc).date().isoformat())
@@ -132,6 +141,22 @@ def refresh():
     return rows
 
 
+def keep_newer(rows):
+    """Never replace a ticker's saved row with one from an earlier close."""
+    try:
+        old = {r["symbol"]: r for r in json.loads(RSI_JSON.read_text(encoding="utf-8"))["tickers"]}
+    except (OSError, ValueError, KeyError):
+        return rows
+    out = []
+    for r in rows:
+        prev = old.get(r["symbol"])
+        if prev and prev.get("price_date", "") > r["price_date"]:
+            print(f"  {r['symbol']}: fetched {r['price_date']} is older than saved {prev['price_date']}; keeping saved")
+            r = prev
+        out.append(r)
+    return out
+
+
 def write_output(rows):
     payload = {
         "refreshed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -155,5 +180,5 @@ if __name__ == "__main__":
     rows = refresh()
     if not rows:
         raise SystemExit("No tickers succeeded; refusing to write empty output.")
-    write_output(rows)
+    write_output(keep_newer(rows))
     print("\nDone.")
