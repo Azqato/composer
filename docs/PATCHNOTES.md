@@ -31,6 +31,8 @@ Format: `[VERSION] - YYYY-MM-DD`
   Composer editor). Same schema as the Signal Miner export; each IF nests in the previous one's ELSE.
   Rules in a row that hold the same fund become one IF on "any of" their signals; a fund with a single
   signal gets a standard condition, as Composer writes it. The last ELSE holds BIL.
+- One Rule gets **Copy JSON** next to Copy link: the rule as a Composer symphony (standard condition,
+  the fund when true, BIL otherwise).
 - SDS (ProShares UltraShort S&P500, 2x inverse) added to the `data/prices.json` universe, so it can be
   picked as a fund or signal in the RSI Backtester.
 - `rsi-backtest-advanced.html`: everything the backtester had (verdict, Sharpe, equity curve, level

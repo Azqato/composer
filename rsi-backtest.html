@@ -379,6 +379,10 @@
           `<optgroup label="${escapeHtml(g)}">` + groups[g].sort().map(s => `<option value="${s}"${s === sel ? ' selected' : ''}>${s}</option>`).join('') + '</optgroup>'
         ).join('');
       }
+      const copyJson = sym => {
+        const done = ok => { const c = document.getElementById('rb-copied'); c.textContent = ok ? 'JSON copied: paste it into Composer' : 'Copy failed'; setTimeout(() => (c.textContent = ''), 2400); };
+        if (navigator.clipboard) navigator.clipboard.writeText(JSON.stringify(sym, null, 2)).then(() => done(true), () => done(false)); else done(false);
+      };
       const copyLink = () => {
         const done = ok => { const c = document.getElementById('rb-copied'); c.textContent = ok ? 'Copied' : 'Copy failed'; setTimeout(() => (c.textContent = ''), 1800); };
         if (navigator.clipboard) navigator.clipboard.writeText(location.href).then(() => done(true), () => done(false)); else done(false);
@@ -410,7 +414,7 @@
             </p>
             <p class="rb-names" id="rb-names"></p>
             ${RSI_HELP}
-            <div class="rb-logic"><code id="rb-code"></code><button class="btn btn-outline btn-sm" id="rb-copy-link" type="button">Copy link</button><span class="rb-copied" id="rb-copied"></span></div>
+            <div class="rb-logic"><code id="rb-code"></code><button class="btn btn-outline btn-sm" id="rb-copy-link" type="button">Copy link</button><button class="btn btn-outline btn-sm" id="rb-json-copy" type="button" title="Paste into the Composer editor">Copy JSON</button><span class="rb-copied" id="rb-copied"></span></div>
           </div>
 
           <div class="rb-panel">
@@ -456,6 +460,13 @@
           writeUrl(); drawRsi(buildSample()); rsiStats(buildSample());
         });
         on('rb-copy-link', 'click', copyLink);
+        on('rb-json-copy', 'click', () => copyJson({
+          id: cShortId(), step: 'root', name: `IF ${S.sig} ${S.win}d RSI ${S.dir === 'lt' ? '<' : '>'} ${S.lvl} THEN ${S.buy}`,
+          children: [{ id: cUid(), step: 'wt-cash-equal', name: 'Weight', suppress_incomplete_warnings: true,
+            children: [cIf([{ buy: S.buy, sig: [{ t: S.sig, dir: S.dir, lvl: S.lvl, win: S.win }] }], 0)] }],
+          description: 'Built with the Composer Atlas RSI Backtester: holds ' + S.buy + ' the day after the rule is true, BIL otherwise. ' + location.href,
+          rebalance: 'daily',
+        }));
         const pickRow = e => { const tr = e.target.closest('tr[data-l]'); if (!tr) return; S.lvl = parseFloat(tr.dataset.l); update(); };
         on('rb-sweep', 'click', pickRow);
       }
@@ -763,11 +774,7 @@
           C.br.push({ t: ['SPY'], dir: 'lt', lvl: 30, win: 10, buy: 'SPXL' }); drawRows(); cUpdate();
         });
         document.getElementById('rb-copy-link').addEventListener('click', copyLink);
-        document.getElementById('rc-json-copy').addEventListener('click', () => {
-          const done = ok => { const c = document.getElementById('rb-copied'); c.textContent = ok ? 'JSON copied: paste it into Composer' : 'Copy failed'; setTimeout(() => (c.textContent = ''), 2400); };
-          const json = JSON.stringify(cSymphony(), null, 2);
-          if (navigator.clipboard) navigator.clipboard.writeText(json).then(() => done(true), () => done(false)); else done(false);
-        });
+        document.getElementById('rc-json-copy').addEventListener('click', () => copyJson(cSymphony()));
         // clicking a setup row makes it the cascade, as a level row does in One Rule
         document.getElementById('rc-compare').addEventListener('click', e => {
           const tr = e.target.closest('tr[data-v]'); if (!tr) return;
