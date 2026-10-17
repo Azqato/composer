@@ -5,6 +5,19 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - RSI Backtester: easier to use
+
+### Changed
+- The single rule is now a fill-in sentence ("When QQQ's 10-day RSI drops below 30, buy TQQQ for the
+  next day"), with a level slider, one-click examples and the tickers' full names underneath.
+- A plain-English verdict (Holds up, Fragile, No edge, Lost money, Never fired) now leads the results,
+  with what $10,000 would have become, followed by four headline figures. Signal-day detail sits
+  below them, and the first-signal table moved into a collapsible section.
+- Cascade mode gets example presets, "Rule 1, 2, ..." wording, the same verdict box and an
+  explainer on RSI and how the test works.
+
+---
+
 ## [Unreleased] - RSI Backtester: cascades
 
 ### Added

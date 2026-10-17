@@ -84,6 +84,36 @@
     .rc-bad { color: var(--color-red); font-size: 0.75rem; margin-top: 4px; }
     .rb-table.rc-static tbody tr { cursor: default; }
     @media (max-width: 520px) { .rc-wide { grid-column: auto; } }
+    .rb-modebar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .rb-modebar .rb-mode { margin-bottom: 0; }
+    .rb-modehint { font-size: 0.8125rem; color: var(--color-secondary); }
+    .rb-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0 16px; font-size: 0.8125rem; color: var(--color-secondary); }
+    .rb-chip { background: var(--color-bg); border: 1px solid var(--color-border-strong); color: var(--color-primary); border-radius: 999px; padding: 5px 12px; font-size: 0.8125rem; cursor: pointer; }
+    .rb-chip:hover { border-color: var(--color-blue); }
+    .rb-sentence { font-size: 1.0625rem; line-height: 2.5; color: var(--color-primary); margin: 0 0 4px; }
+    .rb-sentence select, .rb-sentence input {
+      background: var(--color-bg); color: var(--color-primary); border: 1px solid var(--color-border-strong);
+      border-radius: 8px; padding: 4px 8px; margin: 0 2px; font-family: var(--font-mono); font-size: 0.9375rem;
+    }
+    .rb-sentence input { width: 4.2em; }
+    .rb-sentence select:focus, .rb-sentence input:focus { outline: 2px solid var(--color-blue); outline-offset: -1px; }
+    .rb-slider { display: flex; align-items: center; gap: 12px; max-width: 520px; margin: 4px 0 6px; }
+    .rb-slider label { font-size: 0.75rem; color: var(--color-disabled); white-space: nowrap; }
+    .rb-slider input { flex: 1; accent-color: var(--color-yellow); }
+    .rb-names { font-size: 0.75rem; color: var(--color-disabled); margin: 6px 0 10px; }
+    .rb-names b { color: var(--color-secondary); font-family: var(--font-mono); }
+    .rb-help { font-size: 0.8125rem; color: var(--color-secondary); line-height: 1.6; margin: 6px 0 4px; }
+    .rb-help summary { cursor: pointer; color: var(--color-blue); }
+    .rb-help p { margin: 8px 0 0; max-width: 760px; }
+    .rb-help strong { color: var(--color-primary); }
+    .rb-verdict { display: flex; gap: 14px; align-items: baseline; background: var(--color-bg); border: 1px solid var(--color-border); border-left: 4px solid var(--vc); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+    .rb-badge { color: var(--vc); font-weight: 700; font-size: 1.0625rem; white-space: nowrap; }
+    .rb-verdict p { margin: 0; color: var(--color-secondary); line-height: 1.6; font-size: 0.9375rem; }
+    .rb-verdict strong { color: var(--color-primary); }
+    @media (max-width: 520px) { .rb-verdict { flex-direction: column; gap: 4px; } }
+    .rb-h3 { font-size: 0.75rem; color: var(--color-disabled); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin: 16px 0 8px; }
+    .rb-tiles-sm .rb-tile b { font-size: 1rem; }
+    .rb-more summary { cursor: pointer; color: var(--color-primary); font-weight: 600; font-size: 1rem; }
     .rb-note { font-size: 0.75rem; color: var(--color-disabled); margin-top: 8px; line-height: 1.6; }
   </style>
 </head>
@@ -98,12 +128,12 @@
       <div style="max-width:680px;margin-bottom:28px">
         <h1 style="color:var(--color-primary);margin-bottom:8px">RSI Backtester</h1>
         <p style="color:var(--color-secondary);font-size:1.0625rem">
-          Test a Composer RSI rule before you build it: one IF, or a full cascade of IF / ELSE IF branches. See what it returned and whether nearby levels agree, so you are not picking a lucky number.
+          Test a Composer RSI rule before you build it. Pick a ticker, a level and a fund to buy, and see what it would have earned and whether your level is a lucky number.
         </p>
         <div id="rb-refreshed" style="margin-top:12px"></div>
       </div>
 
-      <div class="rb-seg rb-mode" id="rb-mode"><button type="button" data-m="single">Single rule</button><button type="button" data-m="cascade">Cascade</button></div>
+      <div class="rb-modebar"><div class="rb-seg rb-mode" id="rb-mode"><button type="button" data-m="single">One rule</button><button type="button" data-m="cascade">Several rules (cascade)</button></div><span class="rb-modehint" id="rb-modehint"></span></div>
 
       <div id="rb-root"><div class="loading"><div class="spinner"></div></div></div>
     </div>
@@ -397,42 +427,57 @@
       }
 
       // ---------- render ----------
-      function tickerOptions(sel) {
+      function tickerOptions(sel, short) {
         const groups = {};
         for (const [sym, t] of Object.entries(P.tickers)) (groups[t.group || 'Other'] = groups[t.group || 'Other'] || []).push(sym);
         return Object.keys(groups).map(g =>
           `<optgroup label="${escapeHtml(g)}">` + groups[g].sort().map(s =>
-            `<option value="${s}"${s === sel ? ' selected' : ''}>${s} · ${escapeHtml(P.tickers[s].name)}</option>`).join('') + '</optgroup>'
+            `<option value="${s}"${s === sel ? ' selected' : ''}>${short ? s : s + ' \u00b7 ' + escapeHtml(P.tickers[s].name)}</option>`).join('') + '</optgroup>'
         ).join('');
       }
+
+      const PRESETS = [
+        { label: 'QQQ dips, buy TQQQ', sig: 'QQQ', dir: 'lt', lvl: 30, buy: 'TQQQ' },
+        { label: 'SMH dips, buy SOXL', sig: 'SMH', dir: 'lt', lvl: 32, buy: 'SOXL' },
+        { label: 'SPY dips, buy SPXL', sig: 'SPY', dir: 'lt', lvl: 29, buy: 'SPXL' },
+        { label: 'QQQ overheats, buy UVXY', sig: 'QQQ', dir: 'gt', lvl: 80, buy: 'UVXY' },
+      ];
+      const money = v => '$' + Math.round(v).toLocaleString('en-US');
+      const verdictBox = (label, col, text) =>
+        `<div class="rb-verdict" style="--vc:var(${col})"><span class="rb-badge">${label}</span><p>${text}</p></div>`;
+      const copyLink = () => {
+        const done = ok => { const c = document.getElementById('rb-copied'); c.textContent = ok ? 'Copied' : 'Copy failed'; setTimeout(() => (c.textContent = ''), 1800); };
+        if (navigator.clipboard) navigator.clipboard.writeText(location.href).then(() => done(true), () => done(false)); else done(false);
+      };
+      const RSI_HELP = `<details class="rb-help"><summary>What is RSI, and how is this tested?</summary>
+        <p><strong>RSI</strong> (relative strength index) scores how hard a price has moved over the last few days, from 0 to 100. A low reading, under about 30, means it has fallen fast (oversold). A high reading, over about 70 to 80, means it has risen fast (overbought). Composer strategies often buy a leveraged fund when RSI is low, betting on a bounce, or buy a hedge when it is high.</p>
+        <p><strong>The test:</strong> at every close in the price history, the page checks the rule. If it is true, it buys the fund and sells at the next close; if not, it holds the fallback. The result is what following the rule exactly would have earned, before costs.</p></details>`;
 
       function shell() {
         document.getElementById('rb-root').innerHTML = `
           <div class="rb-panel">
-            <h2>Your rule</h2>
-            <p class="rb-sub">Checked at each close. When the condition is true the fund is held for the next day; otherwise the fallback is held.</p>
-            <div class="rb-params">
-              <div class="rb-field"><label for="rb-sig">Signal ticker</label><select id="rb-sig">${tickerOptions(S.sig)}</select></div>
-              <div class="rb-field"><label for="rb-win">RSI window (days)</label><input id="rb-win" type="number" min="2" max="50" step="1" value="${S.win}"></div>
-              <div class="rb-field"><label for="rb-dir">Condition</label><select id="rb-dir">
-                <option value="lt"${S.dir === 'lt' ? ' selected' : ''}>RSI is less than (oversold)</option>
-                <option value="gt"${S.dir === 'gt' ? ' selected' : ''}>RSI is greater than (overbought)</option></select></div>
-              <div class="rb-field"><label for="rb-lvl">Level</label><input id="rb-lvl" type="number" min="1" max="99" step="1" value="${S.lvl}"></div>
-              <div class="rb-field"><label for="rb-buy">Then buy</label><select id="rb-buy">${tickerOptions(S.buy)}</select></div>
-              <div class="rb-field"><label for="rb-els">Otherwise hold</label><select id="rb-els"><option value="cash"${S.els === 'cash' ? ' selected' : ''}>Cash (0%)</option>${tickerOptions(S.els)}</select></div>
-            </div>
+            <h2>1. Build your rule</h2>
+            <div class="rb-chips"><span>Start from an example:</span>${PRESETS.map((p, k) => `<button type="button" class="rb-chip" data-p="${k}">${p.label}</button>`).join('')}</div>
+            <p class="rb-sentence">
+              When <select id="rb-sig" aria-label="Signal ticker">${tickerOptions(S.sig, true)}</select>'s
+              <input id="rb-win" type="number" min="2" max="50" step="1" value="${S.win}" aria-label="RSI window in days">-day RSI
+              <select id="rb-dir" aria-label="Condition"><option value="lt"${S.dir === 'lt' ? ' selected' : ''}>drops below</option><option value="gt"${S.dir === 'gt' ? ' selected' : ''}>rises above</option></select>
+              <input id="rb-lvl" type="number" min="1" max="99" step="1" value="${S.lvl}" aria-label="RSI level">,
+              buy <select id="rb-buy" aria-label="Fund to buy">${tickerOptions(S.buy, true)}</select> for the next day.
+              Otherwise hold <select id="rb-els" aria-label="Fund held otherwise"><option value="cash"${S.els === 'cash' ? ' selected' : ''}>cash</option>${tickerOptions(S.els, true)}</select>.
+            </p>
+            <div class="rb-slider"><label for="rb-lvl-range">Drag to try other levels</label><input id="rb-lvl-range" type="range" min="5" max="95" step="1" value="${S.lvl}"></div>
+            <p class="rb-names" id="rb-names"></p>
+            ${RSI_HELP}
             <div class="rb-logic"><code id="rb-code"></code><button class="btn btn-outline btn-sm" id="rb-copy-link" type="button">Copy link</button><span class="rb-copied" id="rb-copied"></span></div>
           </div>
 
           <div class="rb-panel">
-            <h2 id="rb-res-title">Result</h2>
+            <h2>2. What it would have done</h2>
             <p class="rb-sub" id="rb-res-sub"></p>
+            <div id="rb-verdict"></div>
             <div class="rb-tiles" id="rb-tiles"></div>
-          </div>
-
-          <div class="rb-panel" id="rb-honesty-panel">
-            <h2>How much to trust this level</h2>
-            <div id="rb-honesty" class="rb-honesty" style="margin-top:10px"></div>
+            <div id="rb-tiles2-wrap"><h3 class="rb-h3">On signal days only</h3><div class="rb-tiles rb-tiles-sm" id="rb-tiles2"></div></div>
           </div>
 
           <div class="rb-panel">
@@ -440,8 +485,9 @@
               <h2 id="rb-rsi-title">RSI</h2>
               <div class="rb-seg" id="rb-range">${['ytd', '1y', '3y', '5y', 'all'].map(k => `<button type="button" data-r="${k}"${S.range === k ? ' class="is-on"' : ''}>${k === 'ytd' ? 'YTD' : k.toUpperCase()}</button>`).join('')}</div>
             </div>
+            <p class="rb-sub">Green bands are the days the rule was true, so the fund was held the following day.</p>
             <div class="rb-chart" id="rb-rsi-chart"></div>
-            <div class="rb-legend"><span><i style="background:var(--color-blue)"></i>RSI</span><span><i style="background:var(--color-yellow)"></i>Level</span><span><i style="background:var(--color-green);opacity:.4;height:10px"></i>Signal days (fund held next day)</span></div>
+            <div class="rb-legend"><span><i style="background:var(--color-blue)"></i>RSI</span><span><i style="background:var(--color-yellow)"></i>Your level</span><span><i style="background:var(--color-green);opacity:.4;height:10px"></i>Rule true</span></div>
           </div>
 
           <div class="rb-panel">
@@ -452,17 +498,18 @@
           </div>
 
           <div class="rb-panel">
-            <h2>Every nearby level</h2>
-            <p class="rb-sub">Days the fund was held, compounded over those days only. <strong>Neighbours</strong> is the median of the levels within 2 points either side: a level that only looks good alone is probably luck. Click a row to switch to that level.</p>
+            <h2>3. Is your level a lucky number?</h2>
+            <div id="rb-honesty" class="rb-honesty" style="margin:10px 0 16px"></div>
+            <p class="rb-sub">Each row is the same rule at a different level. Look for a run of similar numbers around yours: a level that beats its neighbours by a lot is probably luck. <strong>Click a row</strong> to use that level.</p>
             <div class="db-table-wrap"><table class="db-table rb-table" id="rb-sweep"></table></div>
           </div>
 
-          <div class="rb-panel">
-            <h2>After the first day it fires</h2>
-            <p class="rb-sub">What the fund did over the following days, counting only the first day of each run, against any day at all.</p>
+          <details class="rb-panel rb-more">
+            <summary>More detail: what happened after the first signal</summary>
+            <p class="rb-sub" style="margin-top:12px">What the fund did over the following days, counting only the first day of each run, against any day at all.</p>
             <div class="db-table-wrap"><table class="db-table rb-table" id="rb-cross"></table></div>
-            <p class="rb-note">Assumptions: buy at the signal day's close and sell at a later close; no costs, slippage or taxes; dividend-adjusted daily prices, refreshed weekly. Composer trades near the close, and this method matched a Composer backtest of the same rules within about 2 points a year. Past results do not predict future returns.</p>
-          </div>`;
+          </details>
+          <p class="rb-note">Assumptions: buy at the signal day's close and sell at a later close; no costs, slippage or taxes; dividend-adjusted daily prices, refreshed weekly. This method matched a Composer backtest of the same rules within about 2 points a year. Past results do not predict future returns.</p>`;
 
         const on = (id, ev, fn) => document.getElementById(id).addEventListener(ev, fn);
         on('rb-sig', 'change', e => { S.sig = e.target.value; update(); });
@@ -472,23 +519,26 @@
           S.dir = e.target.value;
           if (S.dir === 'gt' && S.lvl < 50) S.lvl = 79;
           if (S.dir === 'lt' && S.lvl > 50) S.lvl = 30;
-          document.getElementById('rb-lvl').value = S.lvl; update();
+          update();
         });
         on('rb-lvl', 'change', e => { const v = parseFloat(e.target.value); if (v > 0 && v < 100) { S.lvl = v; update(); } });
+        on('rb-lvl-range', 'input', e => { S.lvl = parseFloat(e.target.value); update(); });
         on('rb-win', 'change', e => { const v = parseInt(e.target.value, 10); if (v >= 2 && v <= 50) { S.win = v; update(); } });
+        document.querySelector('.rb-chips').addEventListener('click', e => {
+          const b = e.target.closest('[data-p]'); if (!b) return;
+          Object.assign(S, PRESETS[+b.dataset.p], { win: 10, els: 'BIL' }); delete S.label;
+          shell(); update();
+        });
         document.getElementById('rb-range').addEventListener('click', e => {
           const b = e.target.closest('button'); if (!b) return;
           S.range = b.dataset.r;
           document.querySelectorAll('#rb-range button').forEach(x => x.classList.toggle('is-on', x === b));
           writeUrl(); drawRsi(buildSample());
         });
-        on('rb-copy-link', 'click', () => {
-          const done = ok => { const c = document.getElementById('rb-copied'); c.textContent = ok ? 'Copied' : 'Copy failed'; setTimeout(() => (c.textContent = ''), 1800); };
-          if (navigator.clipboard) navigator.clipboard.writeText(location.href).then(() => done(true), () => done(false)); else done(false);
-        });
+        on('rb-copy-link', 'click', copyLink);
         on('rb-sweep', 'click', e => {
           const tr = e.target.closest('tr[data-l]'); if (!tr) return;
-          S.lvl = parseFloat(tr.dataset.l); document.getElementById('rb-lvl').value = S.lvl; update();
+          S.lvl = parseFloat(tr.dataset.l); update();
         });
       }
 
@@ -496,12 +546,18 @@
         writeUrl();
         const sym = s => escapeHtml(s);
         const cmp = S.dir === 'lt' ? '<' : '>';
-        document.getElementById('rb-code').textContent =
-          `IF ${S.win}d RSI of ${S.sig} ${cmp} ${S.lvl}  ->  ${S.buy}\nELSE  ->  ${S.els === 'cash' ? 'cash' : S.els}`;
+        const elsName = S.els === 'cash' ? 'cash' : S.els;
+        document.getElementById('rb-code').textContent = `IF ${S.win}d RSI of ${S.sig} ${cmp} ${S.lvl}  ->  ${S.buy}\nELSE  ->  ${elsName}`;
+        document.getElementById('rb-lvl').value = S.lvl;
+        document.getElementById('rb-lvl-range').value = S.lvl;
+        document.getElementById('rb-dir').value = S.dir;
+        document.getElementById('rb-names').innerHTML = [...new Set([S.sig, S.buy].concat(S.els === 'cash' ? [] : [S.els]))]
+          .map(s => `<b>${sym(s)}</b> ${sym(P.tickers[s].name)}`).join(' &middot; ');
 
         const sm = buildSample();
         if (sm.idx.length < 60) {
-          document.getElementById('rb-tiles').innerHTML = '<p class="rb-sub">Not enough overlapping price history for these tickers.</p>';
+          document.getElementById('rb-verdict').innerHTML = verdictBox('No data', '--color-disabled', 'These tickers do not share enough price history to test.');
+          document.getElementById('rb-tiles').innerHTML = '';
           return;
         }
         const from = DATES[sm.idx[0]], to = DATES[sm.idx[sm.idx.length - 1] + 1];
@@ -509,29 +565,10 @@
         const hs = heldStats(sm, S.lvl);
         const fr = fullRule(sm, S.lvl);
 
-        document.getElementById('rb-res-title').textContent = `${S.sig} ${S.win}d RSI ${cmp} ${S.lvl}, buy ${S.buy}`;
-        document.getElementById('rb-res-sub').textContent = `${fmtDate(from)} to ${fmtDate(to)}, ${yrs.toFixed(1)} years of overlapping history. The first five figures count only the days ${S.buy} is held.`;
-        const tile = (v, l) => `<div class="rb-tile"><b>${v}</b><span>${l}</span></div>`;
-        document.getElementById('rb-tiles').innerHTML = hs.n === 0
-          ? '<p class="rb-sub">This level never fired in the sample. Try a less extreme level.</p>'
-          : [
-            tile(hs.n.toLocaleString('en-US'), `days held (${(hs.n / yrs).toFixed(1)} a year)`),
-            tile(pct(hs.avg, 2), 'average day held'),
-            tile(Math.round(hs.up * 100) + '%', 'up days'),
-            tile(pct(hs.worst), 'worst day held'),
-            tile(pct(hs.comp), 'compounded over days held'),
-            tile(pct(fr.cagr), `whole rule per year, with ${S.els === 'cash' ? 'cash' : sym(S.els)} otherwise`),
-            tile(pct(fr.dd, 0), 'whole rule worst drop'),
-            tile(pct(fr.bhCagr), `${sym(S.buy)} held every day, per year (worst drop ${pct(fr.bhDd, 0)})`),
-          ].join('');
-
-        // sweep
+        // level sweep, used by the table and by the trust checks
         const levels = sweepLevels();
         const H2 = Math.floor(sm.idx.length / 2);
-        const rows = levels.map(l => {
-          const a = heldStats(sm, l);
-          return { l, a, h1: heldStats(sm, l, 0, H2), h2: heldStats(sm, l, H2) };
-        });
+        const rows = levels.map(l => ({ l, a: heldStats(sm, l), h1: heldStats(sm, l, 0, H2), h2: heldStats(sm, l, H2) }));
         const lgBy = new Map(rows.map(x => [x.l, x.a.lg]));
         const neigh = l => {
           const v = [];
@@ -539,15 +576,8 @@
           v.sort((a, b) => a - b);
           return v.length ? Math.exp(v[Math.floor(v.length / 2)]) - 1 : NaN;
         };
-        const lgOf = l => (lgBy.has(l) ? lgBy.get(l) : heldStats(sm, l).lg);
-        document.getElementById('rb-sweep').innerHTML =
-          `<thead><tr><th>Level</th><th>Days held</th><th>Avg day</th><th>Up days</th><th>Worst day</th><th>Compounded</th><th>Worst drop</th><th>Neighbours</th><th>First half</th><th>Second half</th></tr></thead><tbody>` +
-          rows.map(({ l, a, h1, h2 }) => a.n === 0
-            ? `<tr data-l="${l}"${l === S.lvl ? ' class="is-sel"' : ''}><td>${cmp} ${l}</td><td>0</td><td colspan="8" style="text-align:left">never fired</td></tr>`
-            : `<tr data-l="${l}"${l === S.lvl ? ' class="is-sel"' : ''}><td>${cmp} ${l}</td><td>${a.n}</td><td>${signed(a.avg, 2)}</td><td>${Math.round(a.up * 100)}%</td><td>${signed(a.worst)}</td><td>${signed(a.comp)}</td><td>${signed(a.dd, 0)}</td><td>${signed(neigh(l))}</td><td>${h1.n ? signed(h1.comp) : '—'}</td><td>${h2.n ? signed(h2.comp) : '—'}</td></tr>`
-          ).join('') + '</tbody>';
 
-        // crossings
+        // crossings and the any-day baseline
         const cr = crossings(sm, S.lvl);
         const avg = a => (a.length ? a.reduce((s, x) => s + x, 0) / a.length : NaN);
         const base = {};
@@ -556,48 +586,81 @@
           for (const i of sm.idx) if (i + h < N && sm.b[i + h] != null) a.push(sm.b[i + h] / sm.b[i] - 1);
           base[h] = avg(a);
         }
+
+        // trust checks: notes for section 3, short reasons for the verdict
+        const notes = [], why = [];
+        const edge = hs.avg - base[1];
+        if (hs.n) {
+          const nb = neigh(S.lvl);
+          if (cr.n < 20) { why.push(`it only fired ${cr.n} separate time${cr.n === 1 ? '' : 's'}`); notes.push(`<strong>Small sample.</strong> It first fired only ${cr.n} time${cr.n === 1 ? '' : 's'} in ${yrs.toFixed(0)} years, too few to separate an edge from luck.`); }
+          if (isFinite(nb) && hs.lg - Math.log1p(nb) > Math.log(1.5)) { why.push('nearby levels did much worse'); notes.push(`<strong>A spike, not a plateau.</strong> This level grows ${pct(hs.comp)} on its signal days, but the levels within 2 points have a median of ${pct(nb)}. Small changes in the market would likely move you off it.`); }
+          else if (isFinite(nb)) notes.push(`<strong>Neighbours agree.</strong> Levels within 2 points have a median of ${pct(nb)}, close to this level's ${pct(hs.comp)}.`);
+          const h1 = heldStats(sm, S.lvl, 0, H2), h2 = heldStats(sm, S.lvl, H2);
+          const mid = fmtDate(DATES[sm.idx[H2]]);
+          if (h1.n && h2.n && (h1.comp < 0) !== (h2.comp < 0)) { why.push('it lost money in one half of the history'); notes.push(`<strong>The halves disagree.</strong> Before ${mid}: ${pct(h1.comp)}; after: ${pct(h2.comp)}. It worked in one era and not the other.`); }
+          else if (h1.n && h2.n) notes.push(`<strong>Both halves positive.</strong> Before ${mid}: ${pct(h1.comp)}; after: ${pct(h2.comp)}.`);
+          if (hs.n >= 10) {
+            const sorted = hs.rets.slice().sort((a, b) => b - a);
+            const without = Math.exp(hs.lg - sorted.slice(0, 3).reduce((s, x) => s + Math.log1p(x), 0)) - 1;
+            if (without < hs.comp / 3 || without < 0) why.push('most of the gain came from its 3 best days');
+            notes.push(`<strong>Best days.</strong> Without its 3 best days, the growth on signal days falls from ${pct(hs.comp)} to ${pct(without)}.`);
+          }
+          if (edge <= 0) notes.push(`<strong>No edge.</strong> The average signal day (${pct(hs.avg, 2)}) is no better than any day (${pct(base[1], 2)}).`);
+        }
+        notes.push('Any level picked from this table is fit to the same history it is scored on. Expect live results to come in below it.');
+        const hon = document.getElementById('rb-honesty');
+        hon.className = 'rb-honesty' + (why.length || edge <= 0 ? ' is-warn' : '');
+        hon.innerHTML = `<ul>${notes.map(n => `<li>${n}</li>`).join('')}</ul>`;
+
+        // verdict
+        const summary = `Since ${fmtDate(from)}, $10,000 following this rule would have grown to <strong>${money(10000 * (1 + fr.total))}</strong> (${pct(fr.cagr)} a year), against ${money(10000 * (1 + fr.bhTotal))} for holding ${sym(S.buy)} every day. It held ${sym(S.buy)} on ${hs.n.toLocaleString('en-US')} days, about ${Math.round(hs.n / yrs)} a year.`;
+        let v;
+        if (!hs.n) v = verdictBox('Never fired', '--color-disabled', `${sym(S.sig)}'s RSI never got that far in this history, so the rule never bought anything. Try a less extreme level.`);
+        else if (hs.comp <= 0) v = verdictBox('Lost money', '--color-red', `${sym(S.buy)} lost money on the days this rule picked. ${summary}`);
+        else if (edge <= 0) v = verdictBox('No edge', '--color-red', `On signal days ${sym(S.buy)} averaged ${pct(hs.avg, 2)}, no better than its ${pct(base[1], 2)} on any day. ${summary}`);
+        else if (why.length) v = verdictBox('Fragile', '--color-yellow', `It made money, but ${why.join(', and ')}. Treat this level with caution. ${summary}`);
+        else v = verdictBox('Holds up', '--color-green', `Signal days beat an average ${sym(S.buy)} day, nearby levels agree and both halves of the history made money. ${summary}`);
+        document.getElementById('rb-verdict').innerHTML = v;
+
+        document.getElementById('rb-res-sub').textContent = `${fmtDate(from)} to ${fmtDate(to)}, ${yrs.toFixed(1)} years of price history that these tickers share.`;
+        const tile = (val, l) => `<div class="rb-tile"><b>${val}</b><span>${l}</span></div>`;
+        document.getElementById('rb-tiles').innerHTML = [
+          tile(pct(fr.cagr), 'a year, following the rule'),
+          tile(pct(fr.bhCagr), `a year, just holding ${sym(S.buy)}`),
+          tile(pct(fr.dd, 0), `rule's worst drop (${sym(S.buy)} alone: ${pct(fr.bhDd, 0)})`),
+          tile((hs.n / yrs).toFixed(1), `signal days a year (${hs.n.toLocaleString('en-US')} in total)`),
+        ].join('');
+        document.getElementById('rb-tiles2-wrap').hidden = !hs.n;
+        if (hs.n) document.getElementById('rb-tiles2').innerHTML = [
+          tile(pct(hs.avg, 2), `average day (any day: ${pct(base[1], 2)})`),
+          tile(Math.round(hs.up * 100) + '%', 'of days were up'),
+          tile(pct(hs.worst), 'worst day'),
+          tile(pct(hs.comp), 'growth from signal days alone'),
+        ].join('');
+
+        // sweep table
+        document.getElementById('rb-sweep').innerHTML =
+          `<thead><tr><th>Level</th><th>Signal days</th><th>Avg day</th><th>Up days</th><th>Worst day</th><th>Growth</th><th>Worst drop</th><th>Nearby median</th><th>First half</th><th>Second half</th></tr></thead><tbody>` +
+          rows.map(({ l, a, h1, h2 }) => a.n === 0
+            ? `<tr data-l="${l}"${l === S.lvl ? ' class="is-sel"' : ''}><td>${cmp} ${l}</td><td>0</td><td colspan="8" style="text-align:left">never fired</td></tr>`
+            : `<tr data-l="${l}"${l === S.lvl ? ' class="is-sel"' : ''}><td>${cmp} ${l}</td><td>${a.n}</td><td>${signed(a.avg, 2)}</td><td>${Math.round(a.up * 100)}%</td><td>${signed(a.worst)}</td><td>${signed(a.comp)}</td><td>${signed(a.dd, 0)}</td><td>${signed(neigh(l))}</td><td>${h1.n ? signed(h1.comp) : '—'}</td><td>${h2.n ? signed(h2.comp) : '—'}</td></tr>`
+          ).join('') + '</tbody>';
+
+        // crossings table
         const f5 = cr.f[5];
         document.getElementById('rb-cross').innerHTML =
           `<thead><tr><th></th><th>Times</th><th>Next day</th><th>5 days</th><th>10 days</th><th>20 days</th><th>Up after 5 days</th><th>Worst next day</th></tr></thead><tbody>` +
           (cr.n ? `<tr class="is-sel"><td>first day ${cmp} ${S.lvl}</td><td>${cr.n}</td>${[1, 5, 10, 20].map(h => `<td>${signed(avg(cr.f[h]))}</td>`).join('')}<td>${f5.length ? Math.round(100 * f5.filter(x => x > 0).length / f5.length) + '%' : '—'}</td><td>${signed(Math.min(...cr.f[1]))}</td></tr>` : `<tr><td>first day ${cmp} ${S.lvl}</td><td>0</td><td colspan="6" style="text-align:left">never fired</td></tr>`) +
           `<tr class="is-base"><td>any day</td><td></td>${[1, 5, 10, 20].map(h => `<td>${pct(base[h])}</td>`).join('')}<td></td><td></td></tr></tbody>`;
 
-        // honesty
-        const notes = [];
-        let warn = false;
-        if (hs.n) {
-          const nb = neigh(S.lvl);
-          const ratio = lgOf(S.lvl) - Math.log1p(nb);
-          if (cr.n < 20) { warn = true; notes.push(`<strong>Small sample.</strong> It first fired only ${cr.n} time${cr.n === 1 ? '' : 's'} in ${yrs.toFixed(0)} years, too few to separate an edge from luck.`); }
-          if (isFinite(nb) && ratio > Math.log(1.5)) { warn = true; notes.push(`<strong>A spike, not a plateau.</strong> This level compounds ${pct(hs.comp)}, but its neighbours' median is ${pct(nb)}. Small changes in the market would likely move you off it.`); }
-          else if (isFinite(nb)) notes.push(`<strong>Neighbours agree.</strong> Levels within 2 points have a median of ${pct(nb)}, close to this level's ${pct(hs.comp)}.`);
-          const h1 = heldStats(sm, S.lvl, 0, H2), h2 = heldStats(sm, S.lvl, H2);
-          const mid = fmtDate(DATES[sm.idx[H2]]);
-          if (h1.n && h2.n && (h1.comp < 0) !== (h2.comp < 0)) { warn = true; notes.push(`<strong>The halves disagree.</strong> Before ${mid}: ${pct(h1.comp)}; after: ${pct(h2.comp)}. It worked in one era and not the other.`); }
-          else if (h1.n && h2.n) notes.push(`<strong>Both halves positive.</strong> Before ${mid}: ${pct(h1.comp)}; after: ${pct(h2.comp)}.`);
-          if (hs.n >= 10) {
-            const sorted = hs.rets.slice().sort((a, b) => b - a);
-            const without = Math.exp(hs.lg - sorted.slice(0, 3).reduce((s, x) => s + Math.log1p(x), 0)) - 1;
-            if (without < hs.comp / 3 || without < 0) warn = true;
-            notes.push(`<strong>Best days.</strong> Without its 3 best days, the compounded result falls from ${pct(hs.comp)} to ${pct(without)}.`);
-          }
-          const edge = hs.avg - base[1];
-          if (edge <= 0) { warn = true; notes.push(`<strong>No edge.</strong> The average day held (${pct(hs.avg, 2)}) is no better than any day (${pct(base[1], 2)}).`); }
-        }
-        notes.push('Any level picked from this table is fit to the same history it is scored on. Expect live results to come in below it.');
-        const hon = document.getElementById('rb-honesty');
-        hon.className = 'rb-honesty' + (warn ? ' is-warn' : '');
-        hon.innerHTML = `<ul>${notes.map(n => `<li>${n}</li>`).join('')}</ul>`;
-
         document.getElementById('rb-rsi-title').textContent = `${S.sig} ${S.win}-day RSI`;
         drawRsi(sm);
-        document.getElementById('rb-eq-sub').textContent = `The whole rule (${S.buy} on signal days, ${S.els === 'cash' ? 'cash' : S.els} otherwise) against holding ${S.buy} every day, ${fmtDate(from)} to ${fmtDate(to)}.`;
+        document.getElementById('rb-eq-sub').textContent = `The whole rule (${S.buy} on signal days, ${elsName} otherwise) against holding ${S.buy} every day, ${fmtDate(from)} to ${fmtDate(to)}.`;
         document.getElementById('rb-eq-legend').innerHTML =
           `<span><i style="background:var(--color-green)"></i>Rule ${pct(fr.total)}</span><span><i style="background:var(--color-blue)"></i>${sym(S.buy)} held ${pct(fr.bhTotal)}</span>` +
           (S.els === 'cash' ? '' : `<span><i style="background:var(--color-disabled)"></i>${sym(S.els)} only ${pct(fr.elTotal)}</span>`);
         drawEquity(fr, { b: S.buy, e: S.els === 'cash' ? null : S.els });
       }
-
 
       // ---------- cascade mode ----------
       // An ordered IF / ELSE IF list. Each branch fires when ANY of its tickers'
@@ -613,6 +676,11 @@
         ],
         els: 'BIL', bench: 'SPY',
       };
+      const CPRESETS = [
+        { label: 'Dip buys + overbought hedge', br: CDEF.br },
+        { label: 'Dip buys only', br: CDEF.br.slice(0, 3) },
+        { label: 'Overbought hedge only', br: CDEF.br.slice(3) },
+      ];
       let C;
       const cmpOf = d => (d === 'lt' ? '<' : '>');
       const encBr = b => [b.t.join('.'), b.dir, b.lvl, b.win, b.buy].join(':');
@@ -679,39 +747,42 @@
 
       function brRow(b, k) {
         return `<div class="rc-row" data-b="${k}">
-          <div class="rc-head"><span>${k ? 'ELSE IF' : 'IF'} &middot; branch ${k + 1}</span>
+          <div class="rc-head"><span>Rule ${k + 1}${k ? ' &middot; only if the rules above are false' : ''}</span>
             <span>${k ? `<button type="button" class="rc-x" data-act="up" title="Move up">&uarr;</button>` : ''}${C.br.length > 1 ? `<button type="button" class="rc-x" data-act="del" title="Remove branch">&times;</button>` : ''}</span></div>
           <div class="rb-params">
-            <div class="rb-field rc-wide"><label>Any of these tickers (space separated)</label><input data-f="t" type="text" value="${escapeHtml(b.t.join(' '))}" spellcheck="false" autocomplete="off"><div class="rc-bad" data-bad></div></div>
+            <div class="rb-field rc-wide"><label>If any of these tickers (space separated)</label><input data-f="t" type="text" value="${escapeHtml(b.t.join(' '))}" spellcheck="false" autocomplete="off"><div class="rc-bad" data-bad></div></div>
             <div class="rb-field"><label>RSI window</label><input data-f="win" type="number" min="2" max="50" value="${b.win}"></div>
-            <div class="rb-field"><label>Condition</label><select data-f="dir"><option value="lt"${b.dir === 'lt' ? ' selected' : ''}>RSI less than</option><option value="gt"${b.dir === 'gt' ? ' selected' : ''}>RSI greater than</option></select></div>
+            <div class="rb-field"><label>RSI</label><select data-f="dir"><option value="lt"${b.dir === 'lt' ? ' selected' : ''}>drops below</option><option value="gt"${b.dir === 'gt' ? ' selected' : ''}>rises above</option></select></div>
             <div class="rb-field"><label>Level</label><input data-f="lvl" type="number" min="1" max="99" value="${b.lvl}"></div>
-            <div class="rb-field"><label>Then buy</label><select data-f="buy">${tickerOptions(b.buy)}</select></div>
+            <div class="rb-field"><label>Then buy</label><select data-f="buy">${tickerOptions(b.buy, true)}</select></div>
           </div></div>`;
       }
 
       function cShell() {
         document.getElementById('rb-root').innerHTML = `
           <div class="rb-panel">
-            <h2>Your cascade</h2>
-            <p class="rb-sub">Checked top to bottom at each close. The first branch where any listed ticker crosses its level picks the fund for the next day; if none fires, the fallback is held. Loaded with an example: three oversold dip buys and an overbought volatility hedge.</p>
+            <h2>1. Build your cascade</h2>
+            <p class="rb-sub">Rules are checked from the top at each close. The first one that is true picks the fund for the next day; if none is, the fallback is held. A rule can watch several tickers and is true when any of them crosses its level.</p>
+            <div class="rb-chips"><span>Start from an example:</span>${CPRESETS.map((p, k) => `<button type="button" class="rb-chip" data-cp="${k}">${p.label}</button>`).join('')}</div>
+            ${RSI_HELP}
             <div id="rc-br"></div>
             <div class="rb-params" style="margin-top:4px">
               <div class="rb-field"><label for="rc-els">Otherwise hold</label><select id="rc-els"><option value="cash"${C.els === 'cash' ? ' selected' : ''}>Cash (0%)</option>${tickerOptions(C.els)}</select></div>
               <div class="rb-field"><label for="rc-bench">Compare against</label><select id="rc-bench">${tickerOptions(C.bench)}</select></div>
-              <div class="rb-field" style="align-self:end"><button class="btn btn-outline btn-sm" id="rc-add" type="button">+ Add branch</button></div>
+              <div class="rb-field" style="align-self:end"><button class="btn btn-outline btn-sm" id="rc-add" type="button">+ Add a rule</button></div>
             </div>
             <div class="rb-logic"><code id="rb-code"></code><button class="btn btn-outline btn-sm" id="rb-copy-link" type="button">Copy link</button><span class="rb-copied" id="rb-copied"></span></div>
           </div>
 
           <div class="rb-panel">
-            <h2>Result</h2>
+            <h2>2. What it would have done</h2>
             <p class="rb-sub" id="rc-sub"></p>
+            <div id="rb-verdict"></div>
             <div class="rb-tiles" id="rc-tiles"></div>
           </div>
 
           <div class="rb-panel">
-            <h2>How much to trust these levels</h2>
+            <h2>3. Are the levels lucky numbers?</h2>
             <div id="rc-honesty" class="rb-honesty" style="margin-top:10px"></div>
           </div>
 
@@ -723,14 +794,14 @@
           </div>
 
           <div class="rb-panel">
-            <h2>What each branch did</h2>
-            <p class="rb-sub">Days each branch was the one in charge. A branch further down only gets the days the branches above it pass on.</p>
+            <h2>What each rule did</h2>
+            <p class="rb-sub">Days each rule was the one in charge. A rule further down only gets the days the rules above it pass on.</p>
             <div class="db-table-wrap"><table class="db-table rb-table rc-static" id="rc-branches"></table></div>
           </div>
 
           <div class="rb-panel">
             <h2>Nudging each level</h2>
-            <p class="rb-sub">Return per year (and worst drop) when one branch's level moves and everything else stays put. A good level sits on a plateau; if the row jumps around, the current number is fitted to history. The last row moves every level the same way: looser means more signal days.</p>
+            <p class="rb-sub">Return per year (and worst drop) when one rule's level moves and everything else stays put. A good level sits on a plateau; if the row jumps around, the current number is fitted to history. The last row moves every level the same way: looser means more signal days.</p>
             <div class="db-table-wrap"><table class="db-table rb-table rc-static" id="rc-sens"></table></div>
           </div>
 
@@ -769,9 +840,11 @@
         });
         document.getElementById('rc-els').addEventListener('change', e => { C.els = e.target.value; cUpdate(); });
         document.getElementById('rc-bench').addEventListener('change', e => { C.bench = e.target.value; cUpdate(); });
-        document.getElementById('rb-copy-link').addEventListener('click', () => {
-          const done = ok => { const c = document.getElementById('rb-copied'); c.textContent = ok ? 'Copied' : 'Copy failed'; setTimeout(() => (c.textContent = ''), 1800); };
-          if (navigator.clipboard) navigator.clipboard.writeText(location.href).then(() => done(true), () => done(false)); else done(false);
+        document.getElementById('rb-copy-link').addEventListener('click', copyLink);
+        document.querySelector('.rb-chips').addEventListener('click', e => {
+          const b = e.target.closest('[data-cp]'); if (!b) return;
+          C.br = JSON.parse(JSON.stringify(CPRESETS[+b.dataset.cp].br)); C.els = 'BIL';
+          cShell(); cUpdate();
         });
       }
 
@@ -783,7 +856,8 @@
 
         const sm = cSample(), n = sm.idx.length;
         if (n < 60) {
-          document.getElementById('rc-tiles').innerHTML = '<p class="rb-sub">Not enough overlapping price history for these tickers.</p>';
+          document.getElementById('rb-verdict').innerHTML = verdictBox('No data', '--color-disabled', 'These tickers do not share enough price history to test.');
+          document.getElementById('rc-tiles').innerHTML = '';
           return;
         }
         const lv = C.br.map(b => b.lvl);
@@ -855,16 +929,16 @@
           [...yr].map(([y, o]) => { if (o.a < 0) neg++; return `<tr><td>${y}</td><td>${signed(Math.expm1(o.a))}</td><td>${signed(Math.expm1(o.b))}</td></tr>`; }).join('') + '</tbody>';
 
         // honesty
-        const notes = []; let warn = false;
+        const notes = [], why = []; let warn = false;
         const H2 = Math.floor(n / 2), c1 = cagrOf(res.r, 0, H2), c2 = cagrOf(res.r, H2, n), mid = fmtDate(DATES[sm.idx[H2]]);
-        if ((c1 < 0) !== (c2 < 0) || Math.min(c1, c2) < Math.max(c1, c2) / 3) { warn = true; notes.push(`<strong>The halves differ a lot.</strong> Before ${mid}: ${pct(c1)} a year; after: ${pct(c2)}.`); }
+        if ((c1 < 0) !== (c2 < 0) || Math.min(c1, c2) < Math.max(c1, c2) / 3) { warn = true; why.push('the two halves of the history differ a lot'); notes.push(`<strong>The halves differ a lot.</strong> Before ${mid}: ${pct(c1)} a year; after: ${pct(c2)}.`); }
         else notes.push(`<strong>Both halves hold up.</strong> Before ${mid}: ${pct(c1)} a year; after: ${pct(c2)}.`);
-        if (spikes.length) { warn = true; notes.push(`<strong>Spiky level${spikes.length > 1 ? 's' : ''}.</strong> ${spikes.join('; ')}. Nearby levels do noticeably worse, so ${spikes.length > 1 ? 'these are' : 'this one is'} probably fitted.`); }
+        if (spikes.length) { warn = true; why.push('nearby levels do noticeably worse'); notes.push(`<strong>Spiky level${spikes.length > 1 ? 's' : ''}.</strong> ${spikes.join('; ')}. Nearby levels do noticeably worse, so ${spikes.length > 1 ? 'these are' : 'this one is'} probably fitted.`); }
         else notes.push('<strong>Levels sit on plateaus.</strong> For every branch, the current level is within 5 points a year of the median across moves of up to 2 points.');
         const sorted = Array.from(res.r).sort((a, b) => b - a);
         let lgTop = 0; for (let j = 0; j < 5; j++) lgTop += Math.log1p(sorted[j]);
         const wo = Math.exp((Math.log(res.eq) - lgTop) * 252 / n) - 1;
-        if (wo < res.cagr / 2) warn = true;
+        if (wo < res.cagr / 2) { warn = true; why.push('a handful of days carry the result'); }
         notes.push(`<strong>Best days.</strong> Without its 5 best days, the yearly return falls from ${pct(res.cagr)} to ${pct(wo)}.`);
         if (neg) notes.push(`${neg} of ${yr.size} calendar years lost money.`);
         notes.push('Every level here was chosen with this same history in view. Expect live results to come in below the backtest.');
@@ -872,6 +946,12 @@
         hon.className = 'rb-honesty' + (warn ? ' is-warn' : '');
         hon.innerHTML = `<ul>${notes.map(x => `<li>${x}</li>`).join('')}</ul>`;
 
+        const csum = `Since ${fmtDate(from)}, $10,000 would have grown to <strong>${money(10000 * res.eq)}</strong> (${pct(res.cagr)} a year), against ${money(10000 * bh)} in ${escapeHtml(C.bench)}. Its worst drop was ${pct(res.dd, 0)}.`;
+        document.getElementById('rb-verdict').innerHTML = res.total <= 0
+          ? verdictBox('Lost money', '--color-red', csum)
+          : why.length
+            ? verdictBox('Fragile', '--color-yellow', `It made money, but ${why.join(', and ')}. Treat these levels with caution. ${csum}`)
+            : verdictBox('Holds up', '--color-green', `Both halves of the history made money, every level sits on a plateau and no handful of days carries the result. ${csum}`);
         document.getElementById('rb-eq-sub').textContent = `The cascade against holding ${C.bench} every day, ${fmtDate(from)} to ${fmtDate(to)}.`;
         document.getElementById('rb-eq-legend').innerHTML =
           `<span><i style="background:var(--color-green)"></i>Cascade ${pct(res.total)}</span><span><i style="background:var(--color-blue)"></i>${escapeHtml(C.bench)} ${pct(bh - 1)}</span>`;
@@ -880,6 +960,7 @@
 
       function startMode(m) {
         document.querySelectorAll('#rb-mode button').forEach(x => x.classList.toggle('is-on', x.dataset.m === m));
+        document.getElementById('rb-modehint').textContent = m === 'cascade' ? 'Several IF / ELSE IF rules checked in order, like a full symphony.' : 'One IF rule: when a ticker\'s RSI crosses a level, buy a fund.';
         if (m === 'cascade') { cRead(); cShell(); cUpdate(); }
         else { readUrl(); shell(); update(); }
       }
