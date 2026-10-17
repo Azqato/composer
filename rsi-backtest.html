@@ -650,8 +650,8 @@
       // Same schema as the Signal Miner's export (a real Composer export):
       // root -> wt-cash-equal -> if, where each `if` holds exactly two
       // children (the rule and an else) and the next rule nests inside the
-      // else. A rule on several tickers is one "any of" condition, which is
-      // what this page tests. The deepest else holds BIL, as the backtest does.
+      // else. A one-ticker rule is a standard condition; a rule on several
+      // tickers is one "any of" condition, which is what this page tests. The deepest else holds BIL, as the backtest does.
       const cUid = () => (window.crypto && crypto.randomUUID ? crypto.randomUUID()
         : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, ch => { const r = Math.random() * 16 | 0; return (ch === 'x' ? r : (r & 3 | 8)).toString(16); }));
       const cShortId = () => { const cs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; let s = ''; for (let i = 0; i < 20; i++) s += cs[Math.random() * cs.length | 0]; return s; };
@@ -663,10 +663,12 @@
         const then = {
           id: cUid(), step: 'if-child', name: 'If', suppress_incomplete_warnings: false,
           children: [cAsset(b.buy)], 'is-else-condition?': false,
-          condition: { 'condition-type': 'compound', operator: 'all', conditions: [cond] },
           'lhs-fn': 'relative-strength-index', 'lhs-val': b.t[0], 'lhs-fn-params': { window: b.win },
           comparator: cmp, 'rhs-fixed-value?': true, 'rhs-val': String(b.lvl),
         };
+        // one ticker: a standard condition, exactly as Composer writes it (flat
+        // fields only); several tickers: the "any of" block on top of them
+        if (b.t.length > 1) then.condition = { 'condition-type': 'compound', operator: 'all', conditions: [cond] };
         const rest = k + 1 < br.length ? cIf(br, k + 1) : cAsset('BIL');
         return {
           id: cUid(), step: 'if', name: 'Condition', suppress_incomplete_warnings: false, weight: { num: 100, den: 100 },
