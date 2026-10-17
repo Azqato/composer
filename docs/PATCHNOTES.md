@@ -27,6 +27,8 @@ Format: `[VERSION] - YYYY-MM-DD`
 ## [Unreleased] - RSI Backtester: simple and advanced views
 
 ### Added
+- SDS (ProShares UltraShort S&P500, 2x inverse) added to the `data/prices.json` universe, so it can be
+  picked as a fund or signal in the RSI Backtester.
 - `rsi-backtest-advanced.html`: everything the backtester had (verdict, Sharpe, equity curve, level
   sweep with halves and neighbours, level-nudge and year-by-year cascade tables).
 

@@ -137,6 +137,7 @@ TICKERS = [
     ("PSQ",  "ProShares Short QQQ",                      "Inverse"),
     ("SPXU", "ProShares UltraPro Short S&P500 3x",       "Inverse"),
     ("SH",   "ProShares Short S&P500",                   "Inverse"),
+    ("SDS",  "ProShares UltraShort S&P500",              "Inverse"),
     ("SOXS", "Direxion Daily Semiconductor Bear 3x",     "Inverse"),
     ("TMV",  "Direxion Daily 20+ Year Treasury Bear 3x", "Inverse"),
     ("GDXD", "MicroSectors Gold Miners -3x Inverse",     "Inverse"),
