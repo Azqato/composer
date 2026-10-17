@@ -624,10 +624,27 @@
 
       // Figures over held days only, as in the original analysis.
       function heldOnly(run, lo, hi) {
-        let eq = 1, pk = 1, dd = 0, d = 0;
-        for (let j = lo; j < hi; j++) if (run.pick[j] >= 0) { d++; eq *= 1 + run.r[j]; pk = Math.max(pk, eq); dd = Math.min(dd, eq / pk - 1); }
-        return { d, comp: eq - 1, dd };
+        let eq = 1, pk = 1, dd = 0, d = 0, s = 0, up = 0, worst = Infinity;
+        for (let j = lo; j < hi; j++) if (run.pick[j] >= 0) {
+          const x = run.r[j]; d++; s += x; if (x > 0) up++; worst = Math.min(worst, x);
+          eq *= 1 + x; pk = Math.max(pk, eq); dd = Math.min(dd, eq / pk - 1);
+        }
+        return { d, comp: eq - 1, dd, avg: d ? s / d : NaN, up: d ? up / d : NaN, worst };
       }
+      // whole-strategy Sharpe: the picked fund on rule days, BIL on ELSE days
+      // (cash where BIL has no price), no risk-free rate subtracted
+      function cSharpe(run, sm) {
+        const bil = P.tickers.BIL ? P.tickers.BIL.closes : null, n = sm.idx.length;
+        let s = 0, s2 = 0;
+        for (let j = 0; j < n; j++) {
+          const i = sm.idx[j];
+          const x = run.pick[j] >= 0 ? run.r[j] : (bil && bil[i] != null && bil[i + 1] != null ? bil[i + 1] / bil[i] - 1 : 0);
+          s += x; s2 += x * x;
+        }
+        const m = s / n, sd = Math.sqrt(Math.max(0, s2 / n - m * m));
+        return sd ? m / sd * Math.sqrt(252) : NaN;
+      }
+      let cVariants = [];
 
       function brRow(b, k) {
         return `<div class="rc-row" data-b="${k}">
@@ -654,15 +671,11 @@
           </div>
 
           <div class="rb-panel">
-            <h2>How the options compare</h2>
+            <h2>Backtest</h2>
             <p class="rb-sub" id="rc-sub"></p>
-            <div class="db-table-wrap"><table class="db-table rb-table rc-static" id="rc-compare"></table></div>
+            <h3 class="rb-h3">Your cascade and the setups around it</h3>
+            <div class="db-table-wrap"><table class="db-table rb-table" id="rc-compare"></table></div>
             <p class="rb-sub" style="margin-top:8px" id="rc-compare-note"></p>
-          </div>
-
-          <div class="rb-panel">
-            <h2>Time in each fund</h2>
-            <div class="db-table-wrap"><table class="db-table rb-table rc-static" id="rc-time"></table></div>
             <ul class="rb-notes" id="rc-notes"></ul>
           </div>`;
 
@@ -694,6 +707,13 @@
           C.br.push({ t: ['SPY'], dir: 'lt', lvl: 30, win: 10, buy: 'SPXL' }); drawRows(); cUpdate();
         });
         document.getElementById('rb-copy-link').addEventListener('click', copyLink);
+        // clicking a setup row makes it the cascade, as a level row does in One Rule
+        document.getElementById('rc-compare').addEventListener('click', e => {
+          const tr = e.target.closest('tr[data-v]'); if (!tr) return;
+          const v = cVariants[+tr.dataset.v]; if (!v || v.mine) return;
+          C.br = v.br.map((b, k) => Object.assign(JSON.parse(JSON.stringify(b)), { lvl: Math.min(99, Math.max(1, v.lv[k])) }));
+          drawRows(); cUpdate();
+        });
         document.querySelector('.rb-chips').addEventListener('click', e => {
           const b = e.target.closest('[data-cp]'); if (!b) return;
           C.br = JSON.parse(JSON.stringify(CPRESETS[+b.dataset.cp].br));
@@ -717,35 +737,20 @@
         const variants = [{ label: 'Your setup', br: C.br, lv, mine: true }];
         if (C.br.length > 1) C.br.forEach((b, k) => variants.push({ label: `Without rule ${brLabel(b, k)}`, br: C.br.filter((_, m) => m !== k), lv: lv.filter((_, m) => m !== k) }));
         for (const d of [1, -1, 2, -2]) variants.push({ label: `All levels ${Math.abs(d)} point${Math.abs(d) > 1 ? 's' : ''} ${d > 0 ? 'looser' : 'tighter'}`, br: C.br, lv: C.br.map(b => b.lvl + (b.dir === 'lt' ? d : -d)) });
-        const rowsHtml = variants.map(v => {
+        cVariants = variants;
+        const shTxt = v => `<span class="${v < 0 ? 'rb-neg' : ''}">${isFinite(v) ? v.toFixed(2) : '—'}</span>`;
+        const rowsHtml = variants.map((v, vi) => {
           const rr = v.br === C.br ? (v.mine ? run : cRun(C.br, sm, v.lv)) : cRun(v.br, { idx: sm.idx, rs: v.br.map(b => sm.rs[C.br.indexOf(b)]) }, v.lv);
-          const all = heldOnly(rr, 0, n), a = heldOnly(rr, 0, H2), b = heldOnly(rr, H2, n);
-          return `<tr${v.mine ? ' class="is-sel"' : ''}><td>${v.label}</td><td>${signed(all.comp)}</td><td>${all.d.toLocaleString('en-US')}</td><td>${signed(all.dd, 0)}</td><td>${signed(a.comp)} / ${signed(b.comp)}</td></tr>`;
+          const h = heldOnly(rr, 0, n);
+          return h.d
+            ? `<tr data-v="${vi}"${v.mine ? ' class="is-sel"' : ''}><td>${v.label}</td><td>${h.d.toLocaleString('en-US')}</td><td>${signed(h.avg, 2)}</td><td>${Math.round(h.up * 100)}%</td><td>${signed(h.worst)}</td><td>${signed(h.comp)}</td><td>${shTxt(cSharpe(rr, sm))}</td></tr>`
+            : `<tr data-v="${vi}"${v.mine ? ' class="is-sel"' : ''}><td>${v.label}</td><td>0</td><td colspan="5" style="text-align:left">never held</td></tr>`;
         });
         document.getElementById('rc-compare').innerHTML =
-          '<thead><tr><th>Setup</th><th>Compounded</th><th>Days held</th><th>Worst drop</th><th>First half / second half</th></tr></thead><tbody>' + rowsHtml.join('') + '</tbody>';
-        document.getElementById('rc-compare-note').textContent = `Worst drop is the largest peak-to-trough fall across the held days. The halves split at ${fmtDate(DATES[sm.idx[H2]])}. Looser means more signal days (higher oversold levels, lower overbought ones).`;
+          '<thead><tr><th>Setup</th><th>Days held</th><th>Avg per day held</th><th>Up days</th><th>Worst day held</th><th>Compounded over held days</th><th>Sharpe</th></tr></thead><tbody>' + rowsHtml.join('') + '</tbody>';
+        document.getElementById('rc-compare-note').textContent = `Sharpe scores the whole cascade: the picked fund on rule days, BIL on ELSE days, with no risk-free rate subtracted. Looser means more signal days (higher oversold levels, lower overbought ones). Click a row to use that setup, or a header to sort.`;
 
-        // time in each fund
         const inMkt = run.pick.reduce((s, k) => s + (k >= 0 ? 1 : 0), 0);
-        const stat = k => {
-          let d = 0, lg = 0, len = 0; const st = [];
-          for (let j = 0; j < n; j++) {
-            if (run.pick[j] === k) { d++; if (k >= 0) lg += Math.log1p(run.r[j]); len++; }
-            else if (len) { st.push(len); len = 0; }
-          }
-          if (len) st.push(len);
-          return { d, comp: Math.exp(lg) - 1, typ: median(st), long: st.length ? Math.max(...st) : 0 };
-        };
-        const days = v => `${v} day${v === 1 ? '' : 's'}`;
-        const perYr = d => { const v = d / yrs; return v < 1 ? 'under 1 day' : `~${Math.round(v)} days`; };
-        document.getElementById('rc-time').innerHTML =
-          '<thead><tr><th>Fund</th><th>Days held</th><th>Share of cascade days</th><th>Share of all days</th><th>Per year</th><th>Typical stint</th><th>Longest stint</th><th>Compounded</th></tr></thead><tbody>' +
-          C.br.map((b, k) => { const s = stat(k); return s.d
-            ? `<tr><td>${brLabel(b, k)}</td><td>${s.d.toLocaleString('en-US')}</td><td>${Math.round(100 * s.d / inMkt)}%</td><td>${(100 * s.d / n).toFixed(1)}%</td><td>${perYr(s.d)}</td><td>${days(s.typ)}</td><td>${days(s.long)}</td><td>${signed(s.comp)}</td></tr>`
-            : `<tr><td>${brLabel(b, k)}</td><td>0</td><td colspan="6" style="text-align:left">never held: a rule above always got there first, or it never fired</td></tr>`; }).join('') +
-          (s => `<tr class="is-base"><td>none (falls to ELSE)</td><td>${s.d.toLocaleString('en-US')}</td><td></td><td>${Math.round(100 * s.d / n)}%</td><td>${perYr(s.d)}</td><td></td><td></td><td></td></tr>`)(stat(-1)) + '</tbody>';
-
         const all = heldOnly(run, 0, n), a = heldOnly(run, 0, H2), b = heldOnly(run, H2, n);
         const notes = [
           `<b>Your setup</b> held a fund on ${all.d.toLocaleString('en-US')} days and compounded ${pct(all.comp)} over them, with a worst drop of ${pct(all.dd, 0)}.`,
@@ -761,8 +766,8 @@
       // ---------- sortable tables ----------
       // Tables re-render on every change, so each table's chosen sort is kept
       // by id and reapplied. Clicks cycle high-to-low, low-to-high, original.
-      // the Composer-rule table opens sorted by Sharpe, highest first
-      const sortBy = { 'rb-sweep': { c: 6, dir: -1 } };
+      // the main tables open sorted by Sharpe, highest first
+      const sortBy = { 'rb-sweep': { c: 6, dir: -1 }, 'rc-compare': { c: 6, dir: -1 } };
       const cellNum = td => { const v = parseFloat(td.textContent.replace(/−/g, '-').replace(/[^0-9.\-]/g, '')); return isFinite(v) ? v : null; };
       function applySort(tbl) {
         const st = sortBy[tbl.id], heads = tbl.querySelectorAll('thead th');
