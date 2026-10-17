@@ -2549,22 +2549,22 @@ Use these IDs with `/backtest`, `/score`, `/versions`, and portfolio endpoints.
 
 ### Composer Indicator Window Limits
 
-The lookback windows Composer's editor accepts, as reported by the owner on 2026-10-17. Any site tool that
+The lookback windows Composer's editor accepts, as reported by the owner on 2026-10-16. Any site tool that
 takes an indicator window (the RSI Backtester today, anything built on other indicators later) must accept
 exactly this range and no narrower: a box that silently rejects a value Composer allows is a bug (the RSI
 Backtester's first version ignored windows above 50). Out-of-range input is pulled to the nearest limit and
 shown, never dropped.
 
-| Indicator | Composer name | Window (days) |
-|---|---|---|
-| Cumulative return | Cumulative Return | 1 to 1,000 |
-| Exponential moving average of price | EMA | 2 to 252 |
-| Max drawdown | Max Drawdown | 2 to 1,000 |
-| Moving average of price | MAP | 2 to 1,000 |
-| Moving average of return | MAR | 2 to 1,000 |
-| Relative strength index | RSI | 2 to 252 |
-| Standard deviation of price | SDP | 2 to 1,000 |
-| Standard deviation of return | SDR | 2 to 1,000 |
+| Indicator | Window (days) |
+| --- | --- |
+| Cumulative Return | 1 to 1,000 |
+| Exponential Moving Average | 2 to 252 |
+| Max Drawdown | 2 to 1,000 |
+| Moving Average of Price | 2 to 1,000 |
+| Moving Average of Return | 2 to 1,000 |
+| Relative Strength Index | 2 to 252 |
+| Standard Deviation of Price | 2 to 1,000 |
+| Standard Deviation of Return | 2 to 1,000 |
 
 Long windows need that much price history before the indicator has a value, so they shorten any backtest
 built on `data/prices.json` (which starts 2010-01-01). Tools should show the tested date range so the
