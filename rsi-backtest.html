@@ -820,7 +820,7 @@
 
           <div class="rb-panel">
             <h2>What each rule did</h2>
-            <p class="rb-sub">Days each rule was the one in charge. A rule further down only gets the days the rules above it pass on.</p>
+            <p class="rb-sub">Days each rule was the one in charge. <em>Share of cascade days</em> counts only days some rule fired; a <em>stint</em> is a run of back-to-back days held. A rule further down only gets the days the rules above it pass on.</p>
             <div class="db-table-wrap"><table class="db-table rb-table rc-static" id="rc-branches"></table></div>
           </div>
 
@@ -915,20 +915,28 @@
         ].join('');
 
         // branches
+        // stints are runs of consecutive test days held by the same rule
         const brStats = k => {
-          let d = 0, sum = 0, up = 0, worst = Infinity, lg = 0;
-          for (let j = 0; j < n; j++) if (res.pick[j] === k) { const x = res.r[j]; d++; sum += x; if (x > 0) up++; worst = Math.min(worst, x); lg += Math.log1p(x); }
-          return { d, avg: d ? sum / d : NaN, up: d ? up / d : NaN, worst: d ? worst : NaN, comp: d ? Math.exp(lg) - 1 : NaN };
+          let d = 0, sum = 0, up = 0, worst = Infinity, lg = 0, run = 0;
+          const stints = [];
+          for (let j = 0; j < n; j++) {
+            if (res.pick[j] === k) { const x = res.r[j]; d++; sum += x; if (x > 0) up++; worst = Math.min(worst, x); lg += Math.log1p(x); run++; }
+            else if (run) { stints.push(run); run = 0; }
+          }
+          if (run) stints.push(run);
+          return { d, avg: d ? sum / d : NaN, up: d ? up / d : NaN, worst: d ? worst : NaN, comp: d ? Math.exp(lg) - 1 : NaN,
+            typ: median(stints), long: stints.length ? Math.max(...stints) : 0 };
         };
         const brName = b => (b.t.length > 1 ? 'any of ' + b.t.length : b.t[0]);
         const brLabel = (b, k) => `${k + 1}. ${brName(b)} ${cmpOf(b.dir)} ${b.lvl} &rarr; ${escapeHtml(b.buy)}`;
-        const brRowHtml = (lab, s) => s.d
-          ? `<tr><td>${lab}</td><td>${s.d.toLocaleString('en-US')}</td><td>${(100 * s.d / n).toFixed(1)}%</td><td>${signed(s.avg, 2)}</td><td>${Math.round(s.up * 100)}%</td><td>${signed(s.worst)}</td><td>${signed(s.comp)}</td></tr>`
-          : `<tr><td>${lab}</td><td>0</td><td colspan="5" style="text-align:left">never in charge</td></tr>`;
+        const dayWord = v => `${v} day${v === 1 ? '' : 's'}`;
+        const brRowHtml = (lab, s, inCascade) => s.d
+          ? `<tr><td>${lab}</td><td>${s.d.toLocaleString('en-US')}</td><td>${inCascade ? (100 * s.d / inMkt).toFixed(1) + '%' : '—'}</td><td>${(100 * s.d / n).toFixed(1)}%</td><td>${(s.d / (n / 252)).toFixed(1)}</td><td>${dayWord(s.typ)}</td><td>${dayWord(s.long)}</td><td>${signed(s.avg, 2)}</td><td>${Math.round(s.up * 100)}%</td><td>${signed(s.worst)}</td><td>${signed(s.comp)}</td></tr>`
+          : `<tr><td>${lab}</td><td>0</td><td colspan="9" style="text-align:left">never in charge</td></tr>`;
         document.getElementById('rc-branches').innerHTML =
-          '<thead><tr><th>Branch</th><th>Days</th><th>Share</th><th>Avg day</th><th>Up days</th><th>Worst day</th><th>Compounded</th></tr></thead><tbody>' +
-          C.br.map((b, k) => brRowHtml(brLabel(b, k), brStats(k))).join('') +
-          brRowHtml(`otherwise &rarr; ${escapeHtml(elsName)}`, brStats(-1)) + '</tbody>';
+          '<thead><tr><th>Rule</th><th>Days held</th><th>Share of cascade days</th><th>Share of all days</th><th>Days a year</th><th>Typical stint</th><th>Longest stint</th><th>Avg day</th><th>Up days</th><th>Worst day</th><th>Compounded</th></tr></thead><tbody>' +
+          C.br.map((b, k) => brRowHtml(brLabel(b, k), brStats(k), true)).join('') +
+          brRowHtml(`otherwise &rarr; ${escapeHtml(elsName)}`, brStats(-1), false) + '</tbody>';
 
         // sensitivity
         const D = [-2, -1, 0, 1, 2];
