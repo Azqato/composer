@@ -399,7 +399,8 @@ composer/
 ├── glossary.html                # Glossary listing + concept detail (?slug=X), single file. Listing rebuilt as a grouped directory at v1.83.0
 ├── database.html                # Full-database tabs: All Strategies / Leaderboard / Screener (v1.9.0)
 ├── rsi.html                     # Live RSI signals table, 20-ticker Frontrunner universe (V2.1)
-├── rsi-backtest.html            # RSI Backtester: single-rule RSI backtest from data/prices.json
+├── rsi-backtest.html            # RSI Backtester, simple view (data/prices.json, client-side)
+├── rsi-backtest-advanced.html   # RSI Backtester, advanced view; links both ways keep the settings
 ├── signal-miner.html            # Tool: client-side IF/THEN signal miner + backtester; nav Tools dropdown + footer + home (renamed from Signal Lab v1.16.6) (v1.15.2)
 ├── signal-lab.html              # Redirect stub → signal-miner.html (noindex); preserves old Signal Lab links (v1.16.6)
 ├── converter.html               # Tool: Symphony → JSON converter + logic tree; nav Tools dropdown + footer + homepage card (v1.16.3)
@@ -526,7 +527,8 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/glossary.html?slug=foo` | `glossary.html` | Detail view for `foo` |
 | `/composer/database.html` | `database.html` | Tabs: All Strategies, Leaderboard (V1.13/V1.17 scoring), and Screener (bucket filters + 3 column views, plus Leaderboard Rank/Tier/Score columns and a tier filter as of v1.17.0). All three are built and live |
 | `/composer/rsi.html` | `rsi.html` | Sortable RSI signals table (V2.1) |
-| `/composer/rsi-backtest.html` | `rsi-backtest.html` | RSI Backtester: single IF RSI rule or an IF / ELSE IF cascade (`?mode=cascade`), level sweeps, robustness notes |
+| `/composer/rsi-backtest.html` | `rsi-backtest.html` | RSI Backtester, simple view: first-crossing and Composer-rule tables across levels; cascade comparison and time-in-fund tables (`?mode=cascade`) |
+| `/composer/rsi-backtest-advanced.html` | `rsi-backtest-advanced.html` | RSI Backtester, advanced view: verdict, Sharpe, equity curve, level-nudge and year-by-year tables; same URL parameters |
 | `/composer/signal-miner.html` | `signal-miner.html` | Tool: IF/THEN signal miner + backtester, runs fully client-side. In the nav **Tools** dropdown, footer sitemap, and homepage Explore card; indexable. Renamed from "Signal Lab" at v1.16.6 (v1.15.2) |
 | `/composer/signal-lab.html` | `signal-lab.html` | Redirect stub → `signal-miner.html` (preserves query string); `noindex`. Kept so old Signal Lab links do not break (v1.16.6) |
 | `/composer/converter.html` | `converter.html` | Tool: Symphony → JSON converter + logic tree. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.16.3) |
@@ -7460,6 +7462,7 @@ Everything with a URL a stranger could hold. Removing or renaming any of these r
 | `/database.html` | Stable | Tabs are selected by in-page state, not by URL, so tab links are not deep-linkable and never were |
 | `/rsi.html` | Stable | |
 | `/rsi-backtest.html` | Stable | |
+| `/rsi-backtest-advanced.html` | Stable | |
 | `/signal-miner.html` | Stable | |
 | `/signal-lab.html` | **Retired, shim kept permanently** | Redirects to `signal-miner.html`, `noindex`, query string preserved |
 | `/converter.html` | Stable | Indexable since v1.15.4 |
