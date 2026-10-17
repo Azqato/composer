@@ -7,7 +7,7 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ## [Unreleased] - RSI Backtester: simple and advanced views
 
-- **RSI Backtester, simple view: Several Rules matches One Rule.** One main table lists your cascade and the setups around it (each rule removed, every level moved one or two points) with Days held, Avg per day held, Up days, Worst day held, Compounded over held days and Sharpe, sorted by Sharpe. Click a row to use that setup. Time in each fund stays in the advanced view.
+- **RSI Backtester, simple view: Several Rules matches One Rule.** One main table lists your cascade and the setups around it (each rule removed, every level moved one or two points) with Days held, Avg per day held, Up days, Worst day held, Compounded over held days and Sharpe, sorted by Sharpe. Click a row to use that setup. The Time in each fund table stays below it.
 
 ### Added
 - `rsi-backtest-advanced.html`: everything the backtester had (verdict, Sharpe, equity curve, level

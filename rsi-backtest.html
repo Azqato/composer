@@ -676,6 +676,11 @@
             <h3 class="rb-h3">Your cascade and the setups around it</h3>
             <div class="db-table-wrap"><table class="db-table rb-table" id="rc-compare"></table></div>
             <p class="rb-sub" style="margin-top:8px" id="rc-compare-note"></p>
+          </div>
+
+          <div class="rb-panel">
+            <h2>Time in each fund</h2>
+            <div class="db-table-wrap"><table class="db-table rb-table rc-static" id="rc-time"></table></div>
             <ul class="rb-notes" id="rc-notes"></ul>
           </div>`;
 
@@ -751,6 +756,24 @@
         document.getElementById('rc-compare-note').textContent = `Sharpe scores the whole cascade: the picked fund on rule days, BIL on ELSE days, with no risk-free rate subtracted. Looser means more signal days (higher oversold levels, lower overbought ones). Click a row to use that setup, or a header to sort.`;
 
         const inMkt = run.pick.reduce((s, k) => s + (k >= 0 ? 1 : 0), 0);
+        const stat = k => {
+          let d = 0, lg = 0, len = 0; const st = [];
+          for (let j = 0; j < n; j++) {
+            if (run.pick[j] === k) { d++; if (k >= 0) lg += Math.log1p(run.r[j]); len++; }
+            else if (len) { st.push(len); len = 0; }
+          }
+          if (len) st.push(len);
+          return { d, comp: Math.exp(lg) - 1, typ: median(st), long: st.length ? Math.max(...st) : 0 };
+        };
+        const days = v => `${v} day${v === 1 ? '' : 's'}`;
+        const perYr = d => { const v = d / yrs; return v < 1 ? 'under 1 day' : `~${Math.round(v)} days`; };
+        document.getElementById('rc-time').innerHTML =
+          '<thead><tr><th>Fund</th><th>Days held</th><th>Share of cascade days</th><th>Share of all days</th><th>Per year</th><th>Typical stint</th><th>Longest stint</th><th>Compounded</th></tr></thead><tbody>' +
+          C.br.map((b, k) => { const s = stat(k); return s.d
+            ? `<tr><td>${brLabel(b, k)}</td><td>${s.d.toLocaleString('en-US')}</td><td>${Math.round(100 * s.d / inMkt)}%</td><td>${(100 * s.d / n).toFixed(1)}%</td><td>${perYr(s.d)}</td><td>${days(s.typ)}</td><td>${days(s.long)}</td><td>${signed(s.comp)}</td></tr>`
+            : `<tr><td>${brLabel(b, k)}</td><td>0</td><td colspan="6" style="text-align:left">never held: a rule above always got there first, or it never fired</td></tr>`; }).join('') +
+          (s => `<tr class="is-base"><td>none (falls to ELSE)</td><td>${s.d.toLocaleString('en-US')}</td><td></td><td>${Math.round(100 * s.d / n)}%</td><td>${perYr(s.d)}</td><td></td><td></td><td></td></tr>`)(stat(-1)) + '</tbody>';
+
         const all = heldOnly(run, 0, n), a = heldOnly(run, 0, H2), b = heldOnly(run, H2, n);
         const notes = [
           `<b>Your setup</b> held a fund on ${all.d.toLocaleString('en-US')} days and compounded ${pct(all.comp)} over them, with a worst drop of ${pct(all.dd, 0)}.`,
