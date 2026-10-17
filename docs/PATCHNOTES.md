@@ -13,10 +13,10 @@ Format: `[VERSION] - YYYY-MM-DD`
 - A plain-English verdict (Holds up, Fragile, No edge, Lost money, Never fired) now leads the results,
   with what $10,000 would have become, followed by four headline figures. Signal-day detail sits
   below them, and the first-signal table moved into a collapsible section.
-- Sharpe, Sortino and Calmar for the whole rule: as tiles (with the bought fund alone for
-  comparison), as five new whole-rule columns in the level table (per year, worst drop and the three
-  ratios), on the cascade tiles, and as Sharpe in the cascade's level-nudge table. No risk-free rate
-  is subtracted.
+- Sharpe and volatility for the whole rule, as tiles with the bought fund alone for comparison;
+  three new whole-rule columns in the level table (per year, worst drop, Sharpe); Sharpe in the
+  cascade's level-nudge table. No risk-free rate is subtracted. (Sortino and Calmar were tried and
+  removed at the owner's request.)
 - Every results table sorts by clicking a column header (high to low, low to high, then the
   original order); the sort survives the table recalculating.
 - Cascade mode gets example presets, "Rule 1, 2, ..." wording, the same verdict box and an

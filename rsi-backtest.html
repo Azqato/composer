@@ -272,26 +272,25 @@
         return out;
       }
 
-      // Risk-adjusted ratios from running sums of daily returns. No risk-free
-      // rate is subtracted; Sortino's downside deviation is taken over all
-      // days (zero on up days); Calmar is yearly return over worst drop.
-      function ratios(s, s2, neg2, n, cagr, dd) {
-        const m = s / n, sd = Math.sqrt(Math.max(0, s2 / n - m * m)), dn = Math.sqrt(neg2 / n), k = Math.sqrt(252);
-        return { vol: sd * k, sharpe: sd ? m / sd * k : NaN, sortino: dn ? m / dn * k : NaN, calmar: dd < 0 ? cagr / -dd : NaN };
+      // Volatility and Sharpe from running sums of daily returns. No
+      // risk-free rate is subtracted.
+      function ratios(s, s2, n) {
+        const m = s / n, sd = Math.sqrt(Math.max(0, s2 / n - m * m)), k = Math.sqrt(252);
+        return { vol: sd * k, sharpe: sd ? m / sd * k : NaN };
       }
       const ratioTxt = v => (isFinite(v) ? v.toFixed(2) : '\u2014');
       const ratioCell = v => `<td class="${v < 0 ? 'rb-neg' : ''}">${ratioTxt(v)}</td>`;
 
       function fullRule(sm, lvl) {
         let eq = 1, pk = 1, dd = 0, bh = 1, bpk = 1, bdd = 0, el = 1;
-        let s = 0, s2 = 0, n2 = 0, bs = 0, bs2 = 0, bn2 = 0;
+        let s = 0, s2 = 0, bs = 0, bs2 = 0;
         const curve = [];
         for (let j = 0; j < sm.idx.length; j++) {
           const x = fires(sm.rv[j], lvl) ? sm.buyRet[j] : sm.elseRet[j];
           eq *= 1 + x; pk = Math.max(pk, eq); dd = Math.min(dd, eq / pk - 1);
           const y = sm.buyRet[j];
-          s += x; s2 += x * x; if (x < 0) n2 += x * x;
-          bs += y; bs2 += y * y; if (y < 0) bn2 += y * y;
+          s += x; s2 += x * x;
+          bs += y; bs2 += y * y;
           bh *= 1 + sm.buyRet[j]; bpk = Math.max(bpk, bh); bdd = Math.min(bdd, bh / bpk - 1);
           el *= 1 + sm.elseRet[j];
           curve.push([sm.idx[j] + 1, eq, bh, el]);
@@ -300,7 +299,7 @@
         const n = sm.idx.length, cagr = Math.pow(eq, 1 / yrs) - 1, bhCagr = Math.pow(bh, 1 / yrs) - 1;
         return {
           total: eq - 1, cagr, dd, bhTotal: bh - 1, bhCagr, bhDd: bdd, elTotal: el - 1, curve, yrs,
-          ...ratios(s, s2, n2, n, cagr, dd), bh: ratios(bs, bs2, bn2, n, bhCagr, bdd),
+          ...ratios(s, s2, n), bh: ratios(bs, bs2, n),
         };
       }
 
@@ -497,7 +496,7 @@
             <p class="rb-sub" id="rb-res-sub"></p>
             <div id="rb-verdict"></div>
             <div class="rb-tiles" id="rb-tiles"></div>
-            <h3 class="rb-h3">Risk-adjusted, whole rule</h3><div class="rb-tiles rb-tiles-sm" id="rb-tiles3"></div>
+            <h3 class="rb-h3">Risk, whole rule</h3><div class="rb-tiles rb-tiles-sm" id="rb-tiles3"></div>
             <div id="rb-tiles2-wrap"><h3 class="rb-h3">On signal days only</h3><div class="rb-tiles rb-tiles-sm" id="rb-tiles2"></div></div>
           </div>
 
@@ -530,7 +529,7 @@
             <p class="rb-sub" style="margin-top:12px">What the fund did over the following days, counting only the first day of each run, against any day at all.</p>
             <div class="db-table-wrap"><table class="db-table rb-table" id="rb-cross"></table></div>
           </details>
-          <p class="rb-note">Assumptions: buy at the signal day's close and sell at a later close; no costs, slippage or taxes; dividend-adjusted daily prices, refreshed weekly. Sharpe and Sortino use daily returns with no risk-free rate subtracted; Calmar is yearly return divided by worst drop. This method matched a Composer backtest of the same rules within about 2 points a year. Past results do not predict future returns.</p>`;
+          <p class="rb-note">Assumptions: buy at the signal day's close and sell at a later close; no costs, slippage or taxes; dividend-adjusted daily prices, refreshed weekly. Sharpe uses daily returns with no risk-free rate subtracted. This method matched a Composer backtest of the same rules within about 2 points a year. Past results do not predict future returns.</p>`;
 
         const on = (id, ev, fn) => document.getElementById(id).addEventListener(ev, fn);
         on('rb-sig', 'change', e => { S.sig = e.target.value; update(); });
@@ -660,17 +659,15 @@
         ].join('');
         document.getElementById('rb-tiles3').innerHTML = [
           tile(ratioTxt(fr.sharpe), `Sharpe (${sym(S.buy)} alone: ${ratioTxt(fr.bh.sharpe)})`),
-          tile(ratioTxt(fr.sortino), `Sortino (${sym(S.buy)} alone: ${ratioTxt(fr.bh.sortino)})`),
-          tile(ratioTxt(fr.calmar), `Calmar (${sym(S.buy)} alone: ${ratioTxt(fr.bh.calmar)})`),
           tile(pct(fr.vol, 0).replace('+', ''), `yearly volatility (${sym(S.buy)} alone: ${pct(fr.bh.vol, 0).replace('+', '')})`),
         ].join('');
 
         // sweep table
         document.getElementById('rb-sweep').innerHTML =
-          `<thead><tr><th>Level</th><th>Signal days</th><th>Avg day</th><th>Up days</th><th>Worst day</th><th>Growth</th><th>Nearby median</th><th>First half</th><th>Second half</th><th class="rb-gstart">Per year</th><th>Worst drop</th><th>Sharpe</th><th>Sortino</th><th>Calmar</th></tr></thead><tbody>` +
+          `<thead><tr><th>Level</th><th>Signal days</th><th>Avg day</th><th>Up days</th><th>Worst day</th><th>Growth</th><th>Nearby median</th><th>First half</th><th>Second half</th><th class="rb-gstart">Per year</th><th>Worst drop</th><th>Sharpe</th></tr></thead><tbody>` +
           rows.map(({ l, a, h1, h2 }) => a.n === 0
-            ? `<tr data-l="${l}"${l === S.lvl ? ' class="is-sel"' : ''}><td>${cmp} ${l}</td><td>0</td><td colspan="12" style="text-align:left">never fired</td></tr>`
-            : `<tr data-l="${l}"${l === S.lvl ? ' class="is-sel"' : ''}><td>${cmp} ${l}</td><td>${a.n}</td><td>${signed(a.avg, 2)}</td><td>${Math.round(a.up * 100)}%</td><td>${signed(a.worst)}</td><td>${signed(a.comp)}</td><td>${signed(neigh(l))}</td><td>${h1.n ? signed(h1.comp) : '—'}</td><td>${h2.n ? signed(h2.comp) : '—'}</td>${(f => `<td class="rb-gstart">${signed(f.cagr)}</td><td>${signed(f.dd, 0)}</td>${ratioCell(f.sharpe)}${ratioCell(f.sortino)}${ratioCell(f.calmar)}`)(fullRule(sm, l))}</tr>`
+            ? `<tr data-l="${l}"${l === S.lvl ? ' class="is-sel"' : ''}><td>${cmp} ${l}</td><td>0</td><td colspan="10" style="text-align:left">never fired</td></tr>`
+            : `<tr data-l="${l}"${l === S.lvl ? ' class="is-sel"' : ''}><td>${cmp} ${l}</td><td>${a.n}</td><td>${signed(a.avg, 2)}</td><td>${Math.round(a.up * 100)}%</td><td>${signed(a.worst)}</td><td>${signed(a.comp)}</td><td>${signed(neigh(l))}</td><td>${h1.n ? signed(h1.comp) : '—'}</td><td>${h2.n ? signed(h2.comp) : '—'}</td>${(f => `<td class="rb-gstart">${signed(f.cagr)}</td><td>${signed(f.dd, 0)}</td>${ratioCell(f.sharpe)}`)(fullRule(sm, l))}</tr>`
           ).join('') + '</tbody>';
 
         // crossings table
@@ -765,10 +762,10 @@
           }
           pick[j] = k; r[j] = dayRet(k < 0 ? C.els : C.br[k].buy, i);
         }
-        let eq = 1, pk = 1, dd = 0, s = 0, s2 = 0, n2 = 0;
-        for (let j = 0; j < n; j++) { const x = r[j]; eq *= 1 + x; pk = Math.max(pk, eq); dd = Math.min(dd, eq / pk - 1); s += x; s2 += x * x; if (x < 0) n2 += x * x; }
+        let eq = 1, pk = 1, dd = 0, s = 0, s2 = 0;
+        for (let j = 0; j < n; j++) { const x = r[j]; eq *= 1 + x; pk = Math.max(pk, eq); dd = Math.min(dd, eq / pk - 1); s += x; s2 += x * x; }
         const cagr = Math.pow(eq, 252 / n) - 1;
-        return { pick, r, eq, total: eq - 1, cagr, dd, ...ratios(s, s2, n2, n, cagr, dd) };
+        return { pick, r, eq, total: eq - 1, cagr, dd, ...ratios(s, s2, n) };
       }
       const cagrOf = (r, lo, hi) => { let lg = 0; for (let j = lo; j < hi; j++) lg += Math.log1p(r[j]); return Math.exp(lg * 252 / (hi - lo)) - 1; };
       const median = a => { const v = a.filter(isFinite).sort((x, y) => x - y); return v.length ? v[Math.floor(v.length / 2)] : NaN; };
@@ -836,7 +833,7 @@
           <div class="rb-panel">
             <h2>Year by year</h2>
             <div class="db-table-wrap"><table class="db-table rb-table rc-static" id="rc-years"></table></div>
-            <p class="rb-note">Assumptions: signals read at each close, the chosen fund held to the next close; no costs, slippage or taxes; dividend-adjusted daily prices, refreshed weekly. Sharpe and Sortino use daily returns with no risk-free rate subtracted; Calmar is yearly return divided by worst drop. This method matched a Composer backtest of a similar cascade within about 2 points a year. Past results do not predict future returns.</p>
+            <p class="rb-note">Assumptions: signals read at each close, the chosen fund held to the next close; no costs, slippage or taxes; dividend-adjusted daily prices, refreshed weekly. Sharpe uses daily returns with no risk-free rate subtracted. This method matched a Composer backtest of a similar cascade within about 2 points a year. Past results do not predict future returns.</p>
           </div>`;
 
         const brBox = document.getElementById('rc-br');
@@ -900,9 +897,9 @@
           curve.push([sm.idx[j] + 1, eq, bh, bh]);
         }
         const bCagr = Math.pow(bh, 252 / n) - 1;
-        let bs = 0, bs2 = 0, bn2 = 0;
-        for (const i of sm.idx) { const y = dayRet(C.bench, i); bs += y; bs2 += y * y; if (y < 0) bn2 += y * y; }
-        const bR = ratios(bs, bs2, bn2, n, bCagr, bdd);
+        let bs = 0, bs2 = 0;
+        for (const i of sm.idx) { const y = dayRet(C.bench, i); bs += y; bs2 += y * y; }
+        const bR = ratios(bs, bs2, n);
         const inMkt = res.pick.reduce((s, k) => s + (k >= 0 ? 1 : 0), 0);
 
         document.getElementById('rc-sub').textContent = `${fmtDate(from)} to ${fmtDate(to)}, ${(n / 252).toFixed(1)} years. The test starts once every ticker has data; ${sm.lim} is the latest to arrive.`;
@@ -912,8 +909,6 @@
           tile(pct(res.total), 'total'),
           tile(pct(res.dd, 0), 'worst drop'),
           tile(ratioTxt(res.sharpe), 'Sharpe'),
-          tile(ratioTxt(res.sortino), 'Sortino'),
-          tile(ratioTxt(res.calmar), 'Calmar'),
           tile(pct(res.vol, 0).replace('+', ''), 'yearly volatility'),
           tile(Math.round(100 * inMkt / n) + '%', `of days in a branch fund, not ${escapeHtml(elsName)}`),
           tile(pct(bCagr), `${escapeHtml(C.bench)} per year (worst drop ${pct(bdd, 0)}, Sharpe ${ratioTxt(bR.sharpe)})`),
