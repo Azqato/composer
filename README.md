@@ -37,7 +37,8 @@ backtest has somewhere to be caught. An **ETF Cloner** that turns any ETF's hold
 symphony. A **Converter** that turns any symphony URL into clean, readable JSON. A **Node Counter**
 for checking a symphony against Composer's own complexity limits, and a **K-1 Lookup** that answers
 whether holding a given ticker means a Schedule K-1 instead of a 1099. Plus a **live RSI page**
-tracking the signal universe the popular Frontrunner-style strategies watch.
+tracking the signal universe the popular Frontrunner-style strategies watch, and an **RSI
+Backtester** that tests any RSI rule, or a cascade of them, against real price history.
 
 Everything runs in your browser. Nothing you type, select or mine is sent anywhere.
 
@@ -64,7 +65,7 @@ It runs no ads and sells nothing. If it is useful to you, there is a voluntary d
 ## Current Status
 
 Live and actively maintained. The curated library, the glossary, the full community database with
-its leaderboard and screener, and all six tools are built and public. Strategy metrics and the
+its leaderboard and screener, and all the tools are built and public. Strategy metrics and the
 community database refresh on an automated schedule, and the RSI page refreshes several times each
 weekday.
 

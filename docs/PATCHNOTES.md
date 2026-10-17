@@ -5,9 +5,26 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
-## [Unreleased] - RSI Backtester: simple and advanced views
+## [Unreleased] - RSI Signals: never a day behind; IWM and DIA
 
-- **RSI Backtester, simple view: Several Rules matches One Rule.** One main table lists your cascade and the setups around it (each rule removed, every level moved one or two points) with Days held, Avg per day held, Up days, Worst day held, Compounded over held days and Sharpe, sorted by Sharpe. Click a row to use that setup. The Time in each fund table stays below it.
+### Added
+- IWM (Russell 2000) and DIA (Dow) on `rsi.html`, alongside the Frontrunner signal universe.
+
+### Fixed
+- The page could roll back a day. On 2026-10-16 the 8:14 PM ET refresh got a blank adjusted close
+  for the newest day from Yahoo, skipped it, and overwrote the correct Oct 16 values with Oct 15's.
+  `scripts/refresh_rsi.py` now uses the plain close when the newest adjusted close is blank, and
+  never replaces a ticker's row with one from an earlier close.
+- RSI was computed from 45 days of closes, so Wilder's smoothing had not settled and values ran 0.1
+  to 0.6 points off Composer and the RSI Backtester. It now uses about a year of history.
+
+### Changed
+- The badge shows which close the values come from ("As of Oct 16, 2026 close · refreshed ..."),
+  not just when the job ran. The intro no longer states a ticker count.
+
+---
+
+## [Unreleased] - RSI Backtester: simple and advanced views
 
 ### Added
 - `rsi-backtest-advanced.html`: everything the backtester had (verdict, Sharpe, equity curve, level
@@ -17,9 +34,11 @@ Format: `[VERSION] - YYYY-MM-DD`
 - `rsi-backtest.html` is now the simple view, laid out like the original analysis: the rule as a
   sentence, the RSI chart with latest/high/low and days past the level, then one Composer-rule table
   for levels 20 to 40 (60 to 90 when overbought) with a whole-rule Sharpe column (BIL otherwise) and an
-  "every day" buy-and-hold row, sorted by Sharpe, highest first. Cascade mode shows "How the options compare" (your setup, each rule removed, all levels
-  moved one or two points) and "Time in each fund" (days held, shares, per year, typical and longest
-  stint, compounded), with figures over held days only.
+  "every day" buy-and-hold row, sorted by Sharpe, highest first. Cascade mode follows the same layout: one main table of your
+  setup and the setups around it (each rule removed, all levels moved one or two points) with Days
+  held, Avg per day held, Up days, Worst day held, Compounded over held days and a whole-cascade
+  Sharpe (BIL on ELSE days), sorted by Sharpe; click a row to use that setup. "Time in each fund"
+  (days held, shares, per year, typical and longest stint, compounded) sits below it.
 - The two pages link to each other and carry the current rule across.
 - The RSI window is typed and accepts 2 to 252 days, as Composer does; anything outside is pulled
   to the nearest limit and shown. The old box silently ignored windows above 50. The level is a
