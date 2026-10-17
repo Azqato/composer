@@ -27,9 +27,10 @@ Format: `[VERSION] - YYYY-MM-DD`
 ## [Unreleased] - RSI Backtester: simple and advanced views
 
 ### Added
-- Cascade mode exports the cascade as a Composer symphony: **Copy Composer JSON** (paste into the
-  Composer editor) and **Download .json**. Same schema as the Signal Miner export; each rule nests in
-  the previous one's ELSE, a one-ticker rule is a standard condition (as Composer writes it), a multi-ticker rule is one "any of" condition, and the last ELSE holds BIL.
+- Cascade mode exports the cascade as a Composer symphony with **Copy Composer JSON** (paste into the
+  Composer editor). Same schema as the Signal Miner export; each IF nests in the previous one's ELSE.
+  Rules in a row that hold the same fund become one IF on "any of" their signals; a fund with a single
+  signal gets a standard condition, as Composer writes it. The last ELSE holds BIL.
 - SDS (ProShares UltraShort S&P500, 2x inverse) added to the `data/prices.json` universe, so it can be
   picked as a fund or signal in the RSI Backtester.
 - `rsi-backtest-advanced.html`: everything the backtester had (verdict, Sharpe, equity curve, level

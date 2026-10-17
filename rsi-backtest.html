@@ -656,20 +656,33 @@
         : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, ch => { const r = Math.random() * 16 | 0; return (ch === 'x' ? r : (r & 3 | 8)).toString(16); }));
       const cShortId = () => { const cs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; let s = ''; for (let i = 0; i < 20; i++) s += cs[Math.random() * cs.length | 0]; return s; };
       const cAsset = tk => ({ id: cUid(), step: 'asset', suppress_incomplete_warnings: false, ticker: tk });
-      function cIf(br, k) {
-        const b = br[k], cmp = b.dir === 'gt' ? 'gt' : 'lt';
-        const cond = { 'condition-type': 'binary-compound', operator: 'any', tickers: b.t.slice(),
-          lhs: { fn: 'relative-strength-index', ticker: '%', params: { window: b.win } }, comparator: cmp, rhs: { constant: b.lvl } };
+      // Rules in a row that hold the same fund become one IF whose condition is
+      // "any of" their signals (order is unchanged, so the result is too). A
+      // group with a single signal is a standard condition, flat fields only,
+      // exactly as Composer writes one; several signals use Composer's compound
+      // "any" block of binary conditions, each with its own ticker and level.
+      function cGroups(br) {
+        const g = [];
+        for (const b of br) {
+          const sig = b.t.map(t => ({ t, dir: b.dir, lvl: b.lvl, win: b.win }));
+          if (g.length && g[g.length - 1].buy === b.buy) g[g.length - 1].sig.push(...sig);
+          else g.push({ buy: b.buy, sig });
+        }
+        return g;
+      }
+      function cIf(gs, k) {
+        const g = gs[k], s0 = g.sig[0];
         const then = {
           id: cUid(), step: 'if-child', name: 'If', suppress_incomplete_warnings: false,
-          children: [cAsset(b.buy)], 'is-else-condition?': false,
-          'lhs-fn': 'relative-strength-index', 'lhs-val': b.t[0], 'lhs-fn-params': { window: b.win },
-          comparator: cmp, 'rhs-fixed-value?': true, 'rhs-val': String(b.lvl),
+          children: [cAsset(g.buy)], 'is-else-condition?': false,
+          'lhs-fn': 'relative-strength-index', 'lhs-val': s0.t, 'lhs-fn-params': { window: s0.win },
+          comparator: s0.dir, 'rhs-fixed-value?': true, 'rhs-val': String(s0.lvl),
         };
-        // one ticker: a standard condition, exactly as Composer writes it (flat
-        // fields only); several tickers: the "any of" block on top of them
-        if (b.t.length > 1) then.condition = { 'condition-type': 'compound', operator: 'all', conditions: [cond] };
-        const rest = k + 1 < br.length ? cIf(br, k + 1) : cAsset('BIL');
+        if (g.sig.length > 1) then.condition = {
+          'condition-type': 'compound', operator: 'any',
+          conditions: g.sig.map(s => ({ 'condition-type': 'binary', lhs: { fn: 'relative-strength-index', ticker: s.t, params: { window: s.win } }, comparator: s.dir, rhs: { constant: s.lvl } })),
+        };
+        const rest = k + 1 < gs.length ? cIf(gs, k + 1) : cAsset('BIL');
         return {
           id: cUid(), step: 'if', name: 'Condition', suppress_incomplete_warnings: false, weight: { num: 100, den: 100 },
           children: [then, { id: cUid(), step: 'if-child', name: 'Else', suppress_incomplete_warnings: true, children: [rest], 'is-else-condition?': true }],
@@ -678,7 +691,7 @@
       function cSymphony() {
         return {
           id: cShortId(), step: 'root', name: 'RSI cascade: ' + C.br.map(b => `${brName(b)} ${cmpOf(b.dir)} ${b.lvl} ${b.buy}`).join(', '),
-          children: [{ id: cUid(), step: 'wt-cash-equal', name: 'Weight', suppress_incomplete_warnings: true, children: [cIf(C.br, 0)] }],
+          children: [{ id: cUid(), step: 'wt-cash-equal', name: 'Weight', suppress_incomplete_warnings: true, children: [cIf(cGroups(C.br), 0)] }],
           description: 'Built with the Composer Atlas RSI Backtester. Rules are checked in order; the first true one picks the fund; BIL otherwise. ' + location.href,
           rebalance: 'daily',
         };
@@ -705,7 +718,7 @@
             <div id="rc-br"></div>
             <button class="btn btn-outline btn-sm" id="rc-add" type="button">+ Add a rule</button>
             ${RSI_HELP}
-            <div class="rb-logic"><code id="rb-code"></code><button class="btn btn-outline btn-sm" id="rb-copy-link" type="button">Copy link</button><button class="btn btn-outline btn-sm" id="rc-json-copy" type="button" title="Paste into the Composer editor">Copy Composer JSON</button><button class="btn btn-outline btn-sm" id="rc-json-dl" type="button">Download .json</button><span class="rb-copied" id="rb-copied"></span></div>
+            <div class="rb-logic"><code id="rb-code"></code><button class="btn btn-outline btn-sm" id="rb-copy-link" type="button">Copy link</button><button class="btn btn-outline btn-sm" id="rc-json-copy" type="button" title="Paste into the Composer editor">Copy Composer JSON</button><span class="rb-copied" id="rb-copied"></span></div>
           </div>
 
           <div class="rb-panel">
@@ -754,12 +767,6 @@
           const done = ok => { const c = document.getElementById('rb-copied'); c.textContent = ok ? 'JSON copied: paste it into Composer' : 'Copy failed'; setTimeout(() => (c.textContent = ''), 2400); };
           const json = JSON.stringify(cSymphony(), null, 2);
           if (navigator.clipboard) navigator.clipboard.writeText(json).then(() => done(true), () => done(false)); else done(false);
-        });
-        document.getElementById('rc-json-dl').addEventListener('click', () => {
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(new Blob([JSON.stringify(cSymphony(), null, 2)], { type: 'application/json' }));
-          a.download = 'rsi-cascade.json'; document.body.appendChild(a); a.click(); a.remove();
-          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
         });
         // clicking a setup row makes it the cascade, as a level row does in One Rule
         document.getElementById('rc-compare').addEventListener('click', e => {
