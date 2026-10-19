@@ -2617,6 +2617,13 @@ the same endpoint). The cleanup must never change what the symphony holds on any
    scenario must give the same allocation. Two checker traps produced false mismatches the first
    time: number formatting (`1` against `1.0`) in the ranking key, and `current-price` windows in the
    condition key.
+   A third trap shipped a broken symphony (2026-10-19, "Bad function parameter -
+   relative-strength-index" in Composer): older symphonies keep a flat rule's window in
+   `lhs-window-days` / `rhs-window-days` instead of `lhs-fn-params` / `rhs-fn-params`. Grouping
+   read only the `-fn-params` fields, so the merged binaries had no `params` window, and the
+   checker read the same wrong field on both sides and passed. Read the window from either field
+   when converting, key a missing window as missing (never as blank), and before delivery scan
+   every binary for a non-price function without `params`.
 6. **Deliver** minified, to the owner's Downloads folder, with before and after counts.
 
 | zoop's Wash Sale Symphony | Original | Cleaned | Grouped |

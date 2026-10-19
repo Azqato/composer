@@ -20,6 +20,9 @@ Format: `[VERSION] - YYYY-MM-DD`
   Worked example: the owner's wash sale symphony went from 22,430 nodes (refused) to 3,450, and
   imported and backtested in Composer.
 - Roadmap backlog item: price data for UPRO, AGG, CORP and STIP, signal tickers the price set lacks.
+- PRD cleanup step 5 gains a third checker trap: windows stored in `lhs-window-days` /
+  `rhs-window-days` were dropped when grouping rules, which Composer rejected as "Bad function
+  parameter". Found flattening zoop's Manhattan Project (1,676 to 1,256 nodes).
 
 ---
 
