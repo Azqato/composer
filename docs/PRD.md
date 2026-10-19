@@ -136,7 +136,7 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 - Strategy card titles are clickable links
 
 **Concept Glossary**
-- Index page listing every glossary concept. **Rebuilt as a grouped directory at v1.83.0**: four category groups with headings and counts, one row per concept, and a jump strip at the top, replacing 27 identical cards. **27 concepts as of 2026-09-28**
+- Index page listing every glossary concept. **Rebuilt as a grouped directory at v1.83.0**: four category groups with headings and counts, one row per concept, and a jump strip at the top, replacing 27 identical cards. **28 concepts as of 2026-10-19**
 - Each concept has a dedicated page with: definition, how it works, in practice examples, limitations, formula (when applicable), and a "Building with..." essay section
 - Concepts cross-link back to strategies that use them
 
@@ -2767,6 +2767,7 @@ reason, and each remains a legitimate future item.
 | Client-side search (Fuse.js or similar) | Backlog | Never started |
 | Strategy comparison view, per-strategy performance chart | Backlog | Never started |
 | Price data for UPRO, AGG, CORP and STIP (`refresh_prices.py`) | **Backlog, requested 2026-10-19** | Signal tickers in the owner's Wash Sale Symphony that the price set lacks (UPRO is used 41 times). Needed before the RSI Backtester or any full-symphony simulation can evaluate that symphony end to end |
+| Twitch Check (compare live trading to the backtest) | **Backlog, requested 2026-10-19, data source TBD** | A sibling of Overfit Check. It would line up a symphony's live daily returns against the backtest's daily returns over the same days and report the share of days that match within a tolerance, the share where live beat the backtest, and the share where it fell short. The user sets the tolerance (default 0.25 percentage points per day). Blocked on data: live returns are account-scoped in Composer's API (`portfolio/accounts/{acct}/symphonies/{id}` needs auth) and are not public, so the source is open (pasted data or a local script are the candidates). Distinct from Overfit Check, whose OOS is a backtest re-run after the last logic edit, not real fills |
 
 ### Guides Content Roadmap
 

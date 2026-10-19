@@ -128,7 +128,7 @@ def collect_guides():
     being findable.
 
     NOTE, and it is a real gap rather than a decision: glossary.html?slug=
-    pages are NOT in this sitemap and never have been. There are 27 of them,
+    pages are NOT in this sitemap and never have been. There are 28 of them,
     built the same way. Adding them is a separate change because it would alter
     the sitemap for content that has been live for months, and that deserves
     its own verification rather than riding along with a new section.

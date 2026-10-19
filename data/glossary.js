@@ -1575,6 +1575,42 @@ window.GLOSSARY_DATA = [
     ]
   },
   {
+    "slug": "out-of-sample",
+    "name": "Out Of Sample (OOS)",
+    "category": "strategy-concept",
+    "description": "Data a strategy was not tuned on. Performance out of sample is the honest test of whether a backtest's edge is real or was fitted to the past.",
+    "formula": null,
+    "related_tags": [
+      "backtesting"
+    ],
+    "last_updated": "2026-10-19",
+    "sections": [
+      {
+        "title": "Definition",
+        "paragraphs": [
+          "Out of sample (OOS) means data the strategy never saw while it was being built. Every choice in a strategy, which indicator, which window, which threshold, is made by looking at some stretch of history. That stretch is the in-sample period. Anything outside it is out of sample.",
+          "The distinction matters because a strategy can always be made to look good on the data it was tuned against. Add enough conditions and almost any history can be explained after the fact. Out-of-sample results are the check: if the edge was real, it should survive on data the builder could not have fitted to."
+        ]
+      },
+      {
+        "title": "How It Works",
+        "paragraphs": [
+          "The classic method is a holdout. Split the history in two, tune the strategy on the first part, then run it unchanged on the second. If the second part looks roughly like the first, the strategy has passed. If returns collapse, the first result was mostly fitting.",
+          "Time itself is the cleanest holdout. Any day after the strategy's logic was last changed is out of sample by construction, because nobody could have tuned against a day that had not happened yet. The longer that window, the more weight the comparison carries.",
+          "A short out-of-sample window proves little either way. A few weeks of strong results can be luck, and a few weeks of weak results can be an unfavourable regime. Treat the comparison as evidence that accumulates, not a verdict on day one."
+        ]
+      },
+      {
+        "title": "In Practice",
+        "paragraphs": [
+          "On Composer.trade, a symphony's factsheet shows a backtest across its full history, including the years it was tuned on. That number is in sample and will usually flatter the strategy.",
+          "This site's Overfit Check measures out-of-sample performance from the date of a symphony's last logic edit and compares it with what the backtest promised over its fitted history. A large gap between the two is the signature of overfitting.",
+          "There is a second, stricter sense of the term: live trading. A backtest re-run over recent days still uses simulated fills. Real trades meet real spreads, rebalance timing and slippage. Comparing live daily returns against the backtest over the same days shows how faithfully the simulation tracks reality, which is what the planned Twitch Check tool is designed to measure."
+        ]
+      }
+    ]
+  },
+  {
     "slug": "original",
     "name": "Original Strategies",
     "category": "strategy-concept",

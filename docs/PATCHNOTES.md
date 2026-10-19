@@ -10,6 +10,18 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Glossary: Out Of Sample (OOS); roadmap: Twitch Check
+
+- **New glossary concept, Out Of Sample (OOS).** Strategy concept, placed after Backtesting. Covers the
+  holdout method, why time since the last logic edit is the cleanest holdout, how Overfit Check uses it,
+  and the stricter live-trading sense. The glossary now has 28 concepts.
+- **Roadmap item, Twitch Check.** A planned sibling of Overfit Check that compares live daily returns
+  with the backtest over the same days and reports the share that match within a user-set tolerance
+  (default 0.25 points per day), beat it, or fall short. Recorded in PRD Section 14 with its data source
+  open, because live returns are account-scoped and not public.
+
+---
+
 ## [Unreleased] - Documentation: flattening symphonies, Composer's node limit
 
 ### Documentation
