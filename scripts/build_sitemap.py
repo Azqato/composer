@@ -115,7 +115,7 @@ def collect_strategies():
         lastmod = entry.get("last_updated")
         if not (isinstance(lastmod, str) and DATE_RE.match(lastmod)):
             lastmod = None
-        urls.append((f"{SITE_URL}/strategies.html?slug={slug}", lastmod))
+        urls.append((f"{SITE_URL}/strategies?slug={slug}", lastmod))
     return urls
 
 
@@ -146,7 +146,7 @@ def collect_guides():
         lastmod = entry.get("last_updated")
         if not (isinstance(lastmod, str) and DATE_RE.match(lastmod)):
             lastmod = None
-        urls.append((f"{SITE_URL}/guides.html?slug={slug}", lastmod))
+        urls.append((f"{SITE_URL}/guides?slug={slug}", lastmod))
     return urls
 
 
@@ -162,8 +162,12 @@ def main():
     urls = []
 
     for page in collect_pages():
-        # index.html is served at the bare root; every other page keeps its name.
-        loc = SITE_URL + "/" + ("" if page.name == "index.html" else page.name)
+        # index.html is served at the bare root. Every other page is listed
+        # without ".html": Cloudflare's default asset HTML handling answers
+        # /page.html with a 307 to /page, and a sitemap must list the final URL
+        # or Search Console reports each one as "Page with redirect" (found
+        # 2026-10-18 while setting up Search Console).
+        loc = SITE_URL + "/" + ("" if page.name == "index.html" else page.stem)
         urls.append((loc, git_last_modified(page)))
     page_count = len(urls)
 

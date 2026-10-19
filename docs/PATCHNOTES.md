@@ -5,6 +5,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Sitemap lists the URLs pages are served at
+
+### Fixed
+- Every sitemap URL except the homepage redirected: Cloudflare's default HTML handling answers
+  `/page.html` with a 307 to `/page`, so Search Console would have reported all 47 as "Page with
+  redirect". `scripts/build_sitemap.py` now lists `/page`, `/strategies?slug=...` and
+  `/guides?slug=...`; all 48 URLs return 200 directly. Found while setting up Google Search Console.
+
+---
+
 ## [Unreleased] - RSI Signals: never a day behind; IWM and DIA
 
 ### Added
