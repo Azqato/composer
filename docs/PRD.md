@@ -2701,6 +2701,7 @@ reason, and each remains a legitimate future item.
 | User accounts, saved strategies | **Removed permanently** | Will never be built. Not iceboxed |
 | Client-side search (Fuse.js or similar) | Backlog | Never started |
 | Strategy comparison view, per-strategy performance chart | Backlog | Never started |
+| Price data for UPRO, AGG, CORP and STIP (`refresh_prices.py`) | **Backlog, requested 2026-10-19** | Signal tickers in the owner's Wash Sale Symphony that the price set lacks (UPRO is used 41 times). Needed before the RSI Backtester or any full-symphony simulation can evaluate that symphony end to end |
 
 ### Guides Content Roadmap
 
