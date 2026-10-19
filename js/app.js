@@ -26,6 +26,17 @@ function u(path) {
   return rel + (qs ? '?' + qs : '');
 }
 
+// ---- Per-document URL ----
+// strategies.html and guides.html render one document per ?slug=. Their static
+// canonical and og:url name the listing, so a slug view repoints both at its
+// own sitemap URL (extensionless, the address Cloudflare serves without a 307).
+function setPageUrl(url) {
+  const link = document.querySelector('link[rel="canonical"]');
+  if (link) link.setAttribute('href', url);
+  const og = document.querySelector('meta[property="og:url"]');
+  if (og) og.setAttribute('content', url);
+}
+
 // ---- HTML escaping ----
 // Promoted here at v1.83.0 on its third use. Two local copies still exist, in
 // database.html and signal-miner.html; both pages load this file first and then

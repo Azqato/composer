@@ -25,7 +25,8 @@
        in these descriptions is read from a data file. -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Composer Atlas">
-  <meta property="og:url" content="https://composeratlas.com/guides.html">
+  <meta property="og:url" content="https://composeratlas.com/guides">
+  <link rel="canonical" href="https://composeratlas.com/guides">
   <meta property="og:title" content="Guides to Building and Testing Symphonies">
   <meta property="og:description" content="Practical guides on testing a strategy before you trust it, on the gap between live trading and the backtest, and on what the instruments inside a symphony can actually do.">
   <meta name="twitter:card" content="summary">
@@ -165,6 +166,9 @@
 
         document.title = guide.title + ': Composer Atlas Guides';
         document.querySelector('meta[name="description"]').setAttribute('content', guide.summary);
+        // each guide is its own document: point canonical and og:url at its
+        // sitemap URL, not the bare listing
+        setPageUrl('https://composeratlas.com/guides?slug=' + encodeURIComponent(guide.slug));
 
         renderBreadcrumb('breadcrumb-root', [
           { label: 'Home', href: u('/') },

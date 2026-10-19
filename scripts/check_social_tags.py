@@ -12,6 +12,7 @@ What it asserts, per docs/PRD.md Section 27:
   - og:site_name at most 20
   - og:title does not repeat og:site_name
   - og:url absolute, https, and unique across the site
+  - og:url and <link rel="canonical"> both equal the page's sitemap URL
   - og:* uses property=, twitter:* uses name=
   - with no og:image, twitter:card is "summary"
   - the tag block sits above any inline <style>
@@ -52,9 +53,13 @@ def sitemap_pages():
         path = loc.split('composeratlas.com/', 1)[-1]
         if '?' in path:
             continue
-        fn = path if path else 'index.html'
-        if os.path.exists(os.path.join(REPO, fn)):
-            out.append((fn, loc))
+        # sitemap URLs are extensionless (Cloudflare 307s /page.html to /page),
+        # so /about is about.html. A page that cannot be found is an error, not
+        # a skip: silently skipping is how this check once passed on nothing.
+        fn = (path + '.html') if path else 'index.html'
+        if not os.path.exists(os.path.join(REPO, fn)):
+            raise SystemExit('sitemap entry %r has no file %s' % (loc, fn))
+        out.append((fn, loc))
     return out
 
 
@@ -128,6 +133,11 @@ def main():
             seen_urls[url] = fn
         if url and url != loc:
             bad('og:url %r does not match its sitemap entry %r' % (url, loc))
+        canon = re.search(r'<link\s+rel="canonical"\s+href="([^"]*)"', src)
+        if not canon:
+            bad('no <link rel="canonical">')
+        elif canon.group(1) != loc:
+            bad('canonical %r does not match its sitemap entry %r' % (canon.group(1), loc))
 
         # Text-only policy: no image, so the card must be the small one. A
         # summary_large_image with no image renders as a blank slab.

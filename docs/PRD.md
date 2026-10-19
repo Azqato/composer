@@ -6217,6 +6217,15 @@ so old Signal Lab links resolve.
 3. **`og:url` is absolute, per page, and unique.** Copying a head block between pages and forgetting
    to change the URL is the most common failure and the most silent: every card still renders, and
    every one of them links to whichever page was copied from.
+   **It is also the extensionless address, and a `<link rel="canonical">` beside it carries the same
+   value** (2026-10-18). Cloudflare's default asset HTML handling answers `/page.html` with a 307 to
+   `/page`, so `og:url`, the canonical and the sitemap `<loc>` all name `/page` (the homepage is
+   `/`). `strategies.html` and `guides.html` repoint both per slug at render time through
+   `setPageUrl()` in `js/app.js`, to `/strategies?slug=...` and `/guides?slug=...`. Internal links
+   keep `.html`, because the site must also work from `file://`. `scripts/check_social_tags.py`
+   asserts `og:url` and the canonical both equal the sitemap entry, and fails, rather than skips, a
+   sitemap entry with no file: it silently checked nothing for one commit after the sitemap went
+   extensionless.
 4. **Escape the attribute.** A stray `&` or a straight quote in a description truncates the tag
    mid-attribute.
 

@@ -12,6 +12,11 @@ Format: `[VERSION] - YYYY-MM-DD`
   `/page.html` with a 307 to `/page`, so Search Console would have reported all 47 as "Page with
   redirect". `scripts/build_sitemap.py` now lists `/page`, `/strategies?slug=...` and
   `/guides?slug=...`; all 48 URLs return 200 directly. Found while setting up Google Search Console.
+- `og:url` on every page now names that same extensionless address, and every page gained a
+  matching `<link rel="canonical">`; strategy and guide views repoint both to their own `?slug=` URL.
+- `scripts/check_social_tags.py` read each sitemap URL as a file name, so after the change above it
+  skipped every page and still reported PASS. It now maps `/page` to `page.html`, fails on a missing
+  file, and also checks the canonical.
 
 ---
 
