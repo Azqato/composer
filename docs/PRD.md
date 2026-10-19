@@ -2,7 +2,7 @@
 
 **Version:** 1.83.2
 **Status:** Active
-**Last Updated:** 2026-09-28
+**Last Updated:** 2026-10-19
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -2629,6 +2629,62 @@ the same endpoint). The cleanup must never change what the symphony holds on any
 | Named groups | 143 | 143 | 143 |
 
 5,000 random scenarios matched across all three versions, and the Composer backtest matched.
+
+**Composer's size limit: 10,000 nodes.** The editor shows the count (for example "22,430/10,000
+nodes") and will not save a symphony over it. A node is every step except the `if` wrapper: each
+`if-child` (rule and ELSE), asset, group, filter and weight counts once; the `if` that holds a rule
+and its ELSE does not, and neither do the conditions inside a rule. Count it locally before handing
+over: walk the JSON and count every object with a `step` other than `if`. That count matched
+Composer exactly (22,430) the first time it was checked, 2026-10-19.
+
+### Flattening a Symphony Under the Node Limit
+
+Set 2026-10-19, when "zoop's wash sale monstrosity" (the Wash Sale Symphony with an 8-regime
+SPY 200/100/50-day frontrunner) came out at 22,430 nodes. Flattened, it was 3,450, imported and
+backtested in Composer.
+
+**Why it blows up.** A gate tree (IF SPY > 200d MA, then > 100d, then > 50d) has one leaf per
+regime, and every leaf ends in its own ELSE. When that ELSE is a large sub-strategy, it is copied
+once per leaf. Eight regimes times two trees put sixteen copies of a 1,394-node block in one file.
+
+**The fix: move the gates into the rules, and the big ELSE out of the tree.** Each tree becomes one
+straight IF / ELSE IF chain, and the large block appears once, at the very end.
+
+- **Every rule carries its regime as an "all of" condition:**
+  `{"condition-type": "compound", "operator": "all", "conditions": [...]}` with one `binary` per
+  gate plus the rule's own signal, for example
+  `SPY price > SPY 200d MA, SPY price > SPY 100d MA, SPY price < SPY 50d MA, QQQ RSI(10) < 31 → SSO`.
+- **Gate binary format:** `{"lhs": {"fn": "current-price", "ticker": "SPY"}, "condition-type":
+  "binary", "comparator": "gt", "rhs": {"fn": "moving-average-price", "ticker": "SPY", "params":
+  {"window": 200}}}`. Above the line is `gt`, below is `lt`. (The tree's ELSE is "not above", so the
+  two differ only on a day the close equals the average exactly.)
+- **An "any of" inside a regime cannot nest inside the "all of"**, because Composer conditions are
+  one level deep. Split it: one rule per signal, each with the full gate list. A regime with three
+  dip signals and twelve overbought signals becomes up to fifteen rules. They are tiny next to the
+  block they replace.
+- **Order:** within a regime, keep the original rule order (dips before overbought). Regimes are
+  mutually exclusive, so the order of the regimes in the chain does not matter.
+- **Omit switched-off rungs** (a dip level of 0, an overbought level above 100) instead of writing
+  them.
+- **Flat fields on an "all of" rule describe the first gate** (`lhs-fn: current-price`,
+  `rhs-fn: moving-average-price`, window). Composer decides on `condition`, not the flat fields.
+- **New ids everywhere.** Every copied block gets fresh uuids; check that no id repeats.
+
+**Verify before handing over**, as with cleanup: evaluate the flattened file and the original tree
+on the same history and require a 0.0 difference in daily returns. The evaluator must read
+`condition` before the flat fields: the first check read the flat gate fields of an "all of" rule,
+ignored the RSI signal, and reported a false mismatch.
+
+| zoop's wash sale monstrosity | Nested gate tree | Flattened |
+|---|---|---|
+| Composer nodes | 22,430 (refused) | 3,450 |
+| Size | 5.35 MB | 937 KB |
+| Copies of the 10-strategy block | 16 | 2 |
+| Rules per tree | 7 gates, 8 leaf cascades | 109 in one chain |
+
+Composer backtest of the flattened file, 2020-12-16 to 2026-10-18 with fees and 1 bp slippage:
+118.7% a year, -15.9% max drawdown, Sharpe 3.1, against the original Wash Sale Symphony's 102.4%,
+-17.7% and 2.9 on the same settings.
 
 ---
 
