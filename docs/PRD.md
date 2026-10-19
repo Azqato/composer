@@ -2624,7 +2624,9 @@ the same endpoint). The cleanup must never change what the symphony holds on any
    checker read the same wrong field on both sides and passed. Read the window from either field
    when converting, key a missing window as missing (never as blank), and before delivery scan
    every binary for a non-price function without `params`.
-6. **Deliver** minified, to the owner's Downloads folder, with before and after counts.
+6. **Deliver** minified, to the owner's Downloads folder, with before and after counts. **Size is
+   always stated in Composer nodes** (owner, 2026-10-19), never characters or kilobytes, including
+   when confirming a clipboard copy: read the clipboard back and count its nodes.
 
 | zoop's Wash Sale Symphony | Original | Cleaned | Grouped |
 |---|---|---|---|
