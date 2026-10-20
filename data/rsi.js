@@ -1,7 +1,7 @@
 // RSI signals data - loaded as a script tag so the site works with file:// protocol.
 // To update: run scripts/refresh_rsi.py
 window.RSI_DATA = {
-  "refreshed_at": "2026-10-19T20:29:42Z",
+  "refreshed_at": "2026-10-20T00:59:55Z",
   "tickers": [
     {
       "symbol": "XLF",
