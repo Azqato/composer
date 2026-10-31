@@ -20,6 +20,9 @@ Format: `[VERSION] - YYYY-MM-DD`
   and before 1990 the edge disappears.
 - **New rule:** simulated history is used only back to the real start of the index it stands in for,
   for example 1985 for the Nasdaq-100.
+- **New PRD subsection, "Full Performance Breakdown of a Symphony".** A full breakdown means three
+  backtests: available real data, since the underlying index began (latest inception across holdings),
+  and all synthetic data, each against holding the main fund, run through the owner's Backtester.
 
 ---
 

@@ -2733,6 +2733,30 @@ only used back to the real start of the index it stands in for, for example 1985
 (TQQQ, QQQ), not the 1938 stand-in the Backtester offers. Earlier rows are a model of a different
 market, so they are not a tuning or testing sample. Say which start date a result uses.
 
+### Full Performance Breakdown of a Symphony
+
+When the owner asks for a **full breakdown** of a symphony's performance, give all three of these,
+each with CAGR, max drawdown and Sharpe, the exact start and end dates, and holding the main fund (or
+the symphony's benchmark) over the same window for comparison:
+
+1. **Full backtest on available data.** Real prices only, from the first day every ticker in the
+   symphony trades (and its longest indicator window has filled) to the latest close. This is what
+   Composer itself can show.
+2. **Full backtest since the underlying index began.** Simulated prices back to the real start of each
+   holding's underlying index, for example 1985-01-31 for the Nasdaq-100 behind TQQQ and QQQ, and
+   1957-03-04 for the S&P 500 behind SPY, SSO and SH. With several underlyings, start at the latest of
+   their inception dates, so every holding is backed by a real index on every day. Look up any other
+   index's inception date and state it.
+3. **Full backtest on all synthetic data.** The longest history the simulation offers (the
+   Backtester's Synthetic mode reaches 1938 for TQQQ), labelled as a model of an older market, not a
+   sample of the fund.
+
+Run all three through the owner's Backtester project (Standard mode for 1, Synthetic mode with a start
+date for 2 and 3), with the scratch runner described in "Tuning Regime Symphonies" above, and say
+which engine produced the numbers. If a ticker has no simulated history, 2 and 3 equal 1; say so
+instead of leaving them out. Mark which windows the symphony was tuned on, because a tuned window is
+in-sample and flatters it.
+
 ---
 
 ## 14. Roadmap
