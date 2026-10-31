@@ -2,7 +2,7 @@
 
 **Version:** 1.83.2
 **Status:** Active
-**Last Updated:** 2026-10-19
+**Last Updated:** 2026-10-31
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -2694,6 +2694,44 @@ ignored the RSI signal, and reported a false mismatch.
 Composer backtest of the flattened file, 2020-12-16 to 2026-10-18 with fees and 1 bp slippage:
 118.7% a year, -15.9% max drawdown, Sharpe 3.1, against the original Wash Sale Symphony's 102.4%,
 -17.7% and 2.9 on the same settings.
+
+### Tuning Regime Symphonies: What the Out-of-Sample Tests Showed
+
+Recorded 2026-10-31 from the TQQQ-only regime symphony (TQQQ price against its own 200, 100 and
+50-day moving averages, eight regimes, TQQQ RSI(10) bands holding TQQQ, 75/25 TQQQ/SH or SH). The
+symphony is the owner's; these are the takeaways for tuning any symphony like it.
+
+**Full-sample numbers are mostly fit.** Tuned on 2010-2026, the shipped blend shows 81.7% a year,
+-37.8% max drawdown and Sharpe 1.71. Tuned on one half and run on the other, the same pipeline kept
+about half the return and Sharpe 1.0 to 1.2. Quote the held-out number when describing a tuned
+symphony, never the in-sample one.
+
+**Finer weight steps add fit, not edge.** Letting every band choose its TQQQ/SH split in 25% or 10%
+steps raised in-sample Sharpe to as much as 1.99, and scored 1.22 to 1.28 out of sample, the same as the
+coarser version. The 75/25 bands the owner prefers are as good as anything finer.
+
+**UVXY as the hedge failed the holdout.** With UVXY in place of SH the backtest rose to 113.8% a year,
+but tuned on 2012-2019 and run on 2019-2026 it scored Sharpe 0.63 to 0.71 with drawdowns past -80%,
+worse than holding TQQQ.
+
+**A second engine and a longer history.** The owner's separate Backtester project runs symphony JSON
+headless with Crescendo's formulas. On real prices it matched this project's Python results exactly,
+and its Synthetic mode simulates TQQQ and SH before they existed. That allowed the cleanest test so
+far: tuned only on simulated 1990-2010, the blend made 45.1% a year, -36.9% and Sharpe 1.20 on real
+2010-2026, against 40.8%, -81.7% and 0.87 for holding TQQQ. Tuned on 1990-2026 it shows 72.7% a year,
+-59.9% and 1.35. Use the Backtester from a scratch runner only: nothing in that repository is changed
+from this project.
+
+**Before 1990 the edge disappears.** Tuned on 1938-1990 the blend matched holding TQQQ on 1990-2026
+(Sharpe 0.55 each), and the 1990 version lost 3.3% a year on 1938-1990 (16.4% a year in 1970-1989).
+The best single fit across 1938-2026 reached only Sharpe 0.99, though it did beat holding TQQQ in every
+era. Either the dip-buying edge belongs to the post-1990 market, or simulated data that old does not
+represent a leveraged growth fund. The data cannot separate the two.
+
+**Start simulated history when the underlying index began.** The owner's rule: a simulated series is
+only used back to the real start of the index it stands in for, for example 1985 for the Nasdaq-100
+(TQQQ, QQQ), not the 1938 stand-in the Backtester offers. Earlier rows are a model of a different
+market, so they are not a tuning or testing sample. Say which start date a result uses.
 
 ---
 

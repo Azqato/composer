@@ -10,6 +10,19 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Documentation: out-of-sample takeaways for tuned regime symphonies
+
+- **New PRD subsection** in Section 13, "Tuning Regime Symphonies: What the Out-of-Sample Tests
+  Showed". Records, from the TQQQ-only regime symphony: full-sample numbers are mostly fit (held-out
+  Sharpe about 1.0 to 1.2 against 1.71 in sample); finer weight steps add fit, not edge; UVXY as the
+  hedge failed the holdout; the Backtester project matched this project's results exactly and allowed
+  a clean test (tuned on simulated 1990-2010, Sharpe 1.20 on real 2010-2026 against 0.87 for TQQQ);
+  and before 1990 the edge disappears.
+- **New rule:** simulated history is used only back to the real start of the index it stands in for,
+  for example 1985 for the Nasdaq-100.
+
+---
+
 ## [Unreleased] - Glossary: Out Of Sample (OOS); roadmap: Twitch Check
 
 - **New glossary concept, Out Of Sample (OOS).** Strategy concept, placed after Backtesting. Covers the
