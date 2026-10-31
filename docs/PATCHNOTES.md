@@ -10,6 +10,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Documentation: one full rule for generated symphony descriptions
+
+- **PRD Section 13, writing conventions.** The credit line and description-length bullets are merged
+  into one detailed rule. The credit line is now "Made using ComposerAtlas." (26 characters). The
+  rule covers the 128 character hard limit, 2 to 4 sentences with the credit line counted as one,
+  what the summary should and should not say, replacing older credit wordings, and the check
+  before shipping.
+
+---
+
 ## [Unreleased] - Documentation: credit line now names zoop
 
 - **PRD Section 13, writing conventions.** The credit line on symphonies Claude builds is now "Made by

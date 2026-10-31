@@ -2593,18 +2593,32 @@ in Composer.
 - **Copy to clipboard only.** No download button.
 - **Short description:** "Built with the Composer Atlas RSI Backtester." plus the link that reloads
   the setup.
-- **Credit line on symphonies Claude builds (owner, 2026-10-31):** every symphony JSON Claude
-  generates, cleans or flattens for the owner ends its `description` with "Made by zoop from
-  ComposerAtlas.", after whatever the description already says. Add it once, never twice: check
-  before appending to a description that already carries it. The RSI Backtester's own export is
-  not covered by this rule.
-- **Description length and style (owner, 2026-10-31):** the whole `description`, credit line
-  included, is at most 128 characters (the credit line takes 32, leaving about 96). It is 2 to 4
-  short sentences: a high-level executive summary of the idea behind the symphony, not a list of
-  its rules. Very brief specifics are welcome when they fit, such as "Sharpe-tuned" or "simulated
-  since 1938". The credit line counts as one of the sentences, so the summary itself is 1 to 3.
-  Count the characters before shipping. Example: "Trend-gated TQQQ. Buys dips, hedges rallies with
-  SH. Sharpe-tuned, simulated since 1938. Made by zoop from ComposerAtlas." (121, 4 sentences)
+- **Descriptions of symphonies Claude builds (owner, 2026-10-31).** Applies to every symphony JSON
+  Claude generates, cleans, flattens, condenses or re-tunes for the owner in a Claude session. It
+  does not apply to anything the site exports for a visitor (the RSI Backtester keeps its own short
+  description above) unless the owner asks.
+  - **Hard limit: 128 characters for the whole `description` string,** counted with Python
+    `len()`, spaces, punctuation and the credit line included. Never over 128.
+  - **Ends with the credit line,** exact text: `Made using ComposerAtlas.` It is the last sentence,
+    separated from the summary by one space, and appears exactly once (check before adding it to a
+    description that may already carry it or an older credit wording; replace an older wording
+    rather than stacking a second). With its leading space it takes 26 characters, so the summary
+    before it has at most 102.
+  - **2 to 4 sentences in total, the credit line counting as one,** so the summary is 1 to 3 short
+    sentences or fragments. Each ends with a period.
+  - **What the summary says:** a high-level executive summary of the idea behind the symphony (what
+    it holds, what it reacts to, what it is trying to do), not a list of its rules, tickers in
+    every branch, or exact thresholds. Very brief specifics are welcome when they fit and help a
+    reader judge it, such as "Sharpe-tuned", "simulated since 1938" or "RSI(10), 200/100/50d MA".
+    Do not put performance numbers (CAGR, drawdown, Sharpe values) in it: they go stale and vary
+    by backtest window.
+  - **Style:** plain words, no em-dashes, "zoop" always lowercase if it appears.
+  - **Cleaning or flattening an existing symphony:** replace its description with a fresh one that
+    follows these rules. If the old description says something the owner may want kept, ask first.
+  - **Check before shipping:** print the final string with its `len()` and sentence count, and
+    confirm it reads back the same from the clipboard.
+  - **Example** (114 characters, 4 sentences): "Trend-gated TQQQ. Buys dips, hedges rallies with
+    SH. Sharpe-tuned, simulated since 1938. Made using ComposerAtlas."
 
 **Cleaning up a downloaded symphony**
 
