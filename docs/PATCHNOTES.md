@@ -10,6 +10,14 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Documentation: credit line on generated symphonies
+
+- **PRD Section 13, writing conventions.** Every symphony JSON Claude builds, cleans or flattens for the
+  owner ends its description with "Made by Azqato from ComposerAtlas.", added once. The RSI Backtester's
+  export is unchanged.
+
+---
+
 ## [Unreleased] - Documentation: out-of-sample takeaways for tuned regime symphonies
 
 - **New PRD subsection** in Section 13, "Tuning Regime Symphonies: What the Out-of-Sample Tests

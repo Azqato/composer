@@ -2593,6 +2593,11 @@ in Composer.
 - **Copy to clipboard only.** No download button.
 - **Short description:** "Built with the Composer Atlas RSI Backtester." plus the link that reloads
   the setup.
+- **Credit line on symphonies Claude builds (owner, 2026-10-31):** every symphony JSON Claude
+  generates, cleans or flattens for the owner ends its `description` with "Made by Azqato from
+  ComposerAtlas.", after whatever the description already says. Add it once, never twice: check
+  before appending to a description that already carries it. The RSI Backtester's own export is
+  not covered by this rule.
 
 **Cleaning up a downloaded symphony**
 
