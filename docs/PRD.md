@@ -2598,6 +2598,13 @@ in Composer.
   ComposerAtlas.", after whatever the description already says. Add it once, never twice: check
   before appending to a description that already carries it. The RSI Backtester's own export is
   not covered by this rule.
+- **Description length and style (owner, 2026-10-31):** the whole `description`, credit line
+  included, is at most 128 characters (the credit line takes 34, leaving about 94). It is 2 to 4
+  short sentences: a high-level executive summary of the idea behind the symphony, not a list of
+  its rules. Very brief specifics are welcome when they fit, such as "Sharpe-tuned" or "simulated
+  since 1938". The credit line counts as one of the sentences, so the summary itself is 1 to 3.
+  Count the characters before shipping. Example: "Trend-gated TQQQ. Buys dips, hedges rallies with
+  SH. Sharpe-tuned, simulated since 1938. Made by Azqato from ComposerAtlas." (123, 4 sentences)
 
 **Cleaning up a downloaded symphony**
 

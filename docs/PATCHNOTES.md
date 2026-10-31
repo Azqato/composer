@@ -10,6 +10,14 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Documentation: description length for generated symphonies
+
+- **PRD Section 13, writing conventions.** Descriptions of symphonies Claude builds are at most 128
+  characters including the credit line, written as 2 to 4 short sentences summarising the idea,
+  with brief specifics such as "simulated since 1938" where they fit. The credit line counts as one sentence.
+
+---
+
 ## [Unreleased] - Documentation: credit line on generated symphonies
 
 - **PRD Section 13, writing conventions.** Every symphony JSON Claude builds, cleans or flattens for the
