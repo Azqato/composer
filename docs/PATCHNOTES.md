@@ -10,6 +10,13 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Documentation: credit line now names zoop
+
+- **PRD Section 13, writing conventions.** The credit line on symphonies Claude builds is now "Made by
+  zoop from ComposerAtlas." (32 characters with its leading space, 2 fewer than before).
+
+---
+
 ## [Unreleased] - Documentation: description length for generated symphonies
 
 - **PRD Section 13, writing conventions.** Descriptions of symphonies Claude builds are at most 128
