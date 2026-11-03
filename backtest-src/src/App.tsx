@@ -92,6 +92,12 @@ export function App() {
           <a
             key={page.id}
             href={hrefFor(page.id)}
+            onClick={e => {
+              // Composer Atlas: switch pages in place on the website instead of reloading 17 MB
+              if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+              const href = hrefFor(page.id)
+              if (href.startsWith('/')) { e.preventDefault(); navigate(href) }
+            }}
             aria-current={activeTab === page.id ? 'page' : undefined}
             style={{
               background: activeTab === page.id ? colors.tabBg : 'transparent',

@@ -6,8 +6,8 @@
 import type { PriceSeries } from '../types'
 
 // Composer Atlas clone: from disk the cache sits next to dist/ (../price-cache/); on the
-// website it is served beside the page, at /backtest/price-cache/.
-const CACHE_BASE = location.protocol === 'file:' ? '../price-cache/' : 'price-cache/'
+// website it is served beside the page, at /backtest/price-cache/ (absolute, since pages have their own paths).
+const CACHE_BASE = location.protocol === 'file:' ? '../price-cache/' : '/backtest/price-cache/'
 
 interface CachedPrices { ticker: string; fetchedAt: string; dates: string[]; closes: number[]; volumes?: (number | null)[] }
 

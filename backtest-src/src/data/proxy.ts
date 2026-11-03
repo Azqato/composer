@@ -29,6 +29,9 @@ const READER_RELAY = 'https://r.jina.ai/'
 const LOCAL_HELPER = 'http://localhost:5173/'
 let helperUp: Promise<boolean> | null = null
 function localHelperUp(): Promise<boolean> {
+  // Composer Atlas: only the file opened from disk looks for the dev server. From the website the
+  // probe makes Chrome ask to "access other apps and services on this device".
+  if (location.protocol !== 'file:') return Promise.resolve(false)
   helperUp ??= fetch(LOCAL_HELPER + 'app/', { method: 'HEAD', signal: AbortSignal.timeout(800) })
     .then(r => r.ok, () => false)
   return helperUp

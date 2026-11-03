@@ -1370,10 +1370,11 @@ Layout:
 - `backtest/price-cache/`: 218 per-ticker price snapshots (about 40 MiB in all, largest 0.5 MiB) plus saved symphonies, copied from the Backtester's `price-cache/`.
 
 Atlas-only changes in the clone, each marked "Composer Atlas" in a comment:
-- `src/data/localCache.ts`: the shipped cache is read on the website too, from `price-cache/` beside the page.
+- `src/data/localCache.ts`: the shipped cache is read on the website too, from `/backtest/price-cache/` (absolute, since tabs have their own paths).
 - `src/data/priceLoader.ts`: on the website the snapshot seeds the browser's IndexedDB once, then only days since the snapshot come from the relay; if that fetch fails the snapshot is used.
 - `src/symphony/parser.ts`: on the website symphonies are always fetched from Composer (they get edited); saved copies are a disk-only shortcut.
-- `src/router.ts`: the welcome page sits at the bare `/backtest/`, not `/backtest/#/`.
+- `src/router.ts`, `src/navigation.ts`, `src/App.tsx`: on the website each tab has a clean address (`/backtest/`, `/backtest/run-backtest/`, `/backtest/settings/`) switched in place with the History API; old `#/` links are rewritten to it. From disk the hash is kept. A direct visit to a tab's address is served by a small stub, `backtest/<tab>/index.html`, that redirects to `/backtest/?p=<tab>`; a new tab needs a new stub.
+- `src/data/proxy.ts`: the check for a running `npm run dev` server on `localhost:5173` runs only from disk. From the website it made Chrome ask to "access other apps and services on this device".
 
 To change it: edit `backtest-src/`, then `python scripts/build_backtest.py` (runs `npm run build`, writes `backtest/index.html`, fails over a 23 MiB budget, 2 MiB under Cloudflare's 25 MiB per-file limit). Test locally: serve the repo (`python -m http.server`), open `/backtest/` in headless Edge launched from PowerShell (from the Bash tool Edge exits 0 with no output), and run a backtest. In a driver, any wait must be effectively unbounded (`1e12`): virtual time otherwise ends it while network requests are still out. A symphony link fails in that rig because the relay's timeout fires on the fast clock; test with tickers and weights.
 

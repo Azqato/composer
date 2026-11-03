@@ -37,9 +37,24 @@ function allPages(): NavPage[] {
   return NAV.flatMap(a => [a, ...(a.children ?? [])])
 }
 
+// Composer Atlas: on the website each page has a clean address (/backtest/run-backtest/);
+// from disk it keeps the hash (#/run-backtest), since a file has no server behind it.
+export const SITE_BASE = '/backtest/'
+export const onWebsite = () => !import.meta.env.DEV && location.protocol !== 'file:'
+
 export function hrefFor(id: PageId): string {
   const page = allPages().find(p => p.id === id) ?? HOME
+  if (onWebsite()) return SITE_BASE + (page.path ? page.path + '/' : '')
   return '#/' + page.path
+}
+
+// Website address → page. The stub files at /backtest/<page>/ redirect to /backtest/?p=<page>.
+export function pageFromLocation(): NavPage {
+  if (!onWebsite()) return pageFromHash(window.location.hash)
+  const q = new URLSearchParams(window.location.search).get('p')
+  const fromPath = window.location.pathname.startsWith(SITE_BASE) ? window.location.pathname.slice(SITE_BASE.length) : ''
+  const hash = window.location.hash.replace(/^#\/?/, '')
+  return pageFromHash('#/' + (q ?? (hash || fromPath)))
 }
 
 // '#/run-backtest' → RUN_BACKTEST. Unknown paths fall back to the home page.

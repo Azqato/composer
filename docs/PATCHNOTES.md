@@ -10,6 +10,18 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Backtester: clean tab addresses, no device-access prompt
+
+- **Tabs have clean addresses** on the website: `/backtest/run-backtest/` and `/backtest/settings/`
+  instead of `/backtest/#/...`. Old `#/` links still work and are rewritten. Small stub pages at
+  `backtest/run-backtest/` and `backtest/settings/` serve direct visits.
+- **No more "access other apps and services on this device" prompt.** The website no longer checks
+  for a Backtester dev server on `localhost:5173`; only the copy opened from disk does.
+
+**Files changed:** `backtest-src/src/navigation.ts`, `backtest-src/src/router.ts`, `backtest-src/src/App.tsx`, `backtest-src/src/data/localCache.ts`, `backtest-src/src/data/proxy.ts`, `backtest/`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Backtester page is now an independent clone that works on the website
 
 - **Fixed "No price data for ..." on `/backtest/`.** The copied build only read its saved price files
