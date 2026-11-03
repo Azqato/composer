@@ -10,6 +10,20 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Synthetic Backtester page at /backtester/ (unlinked)
+
+- **New page `backtester/index.html`**, a copy of the Backtester repo's single-file build at commit
+  c9aa3f4 (16.83 MiB). Reachable by direct link; nothing on the site links to it yet, by the owner's
+  choice. Indexing is allowed.
+- **New `scripts/sync_backtester.py`** copies the build in, stamps the source commit, and refuses a
+  dirty Backtester tree, a stale build, or a file over 23 MiB.
+- **PRD Section 11, "Syncing the Backtester Page"**: the scan, build, copy, check, report process for
+  updating it on request. Directory structure and page routes updated.
+
+**Files changed:** `backtester/index.html`, `scripts/sync_backtester.py`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Documentation: signal windows of 10 days or longer
 
 - **PRD Section 13, writing conventions.** Every indicator Claude adds to a symphony uses a window of

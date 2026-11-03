@@ -402,6 +402,7 @@ composer/
 ├── rsi-backtest.html            # RSI Backtester, simple view (data/prices.json, client-side)
 ├── rsi-backtest-advanced.html   # RSI Backtester, advanced view; links both ways keep the settings
 ├── signal-miner.html            # Tool: client-side IF/THEN signal miner + backtester; nav Tools dropdown + footer + home (renamed from Signal Lab v1.16.6) (v1.15.2)
+├── backtester/index.html        # Synthetic Backtester, copied from the Backtester repo by scripts/sync_backtester.py; unlinked on purpose (see Syncing the Backtester Page)
 ├── signal-lab.html              # Redirect stub → signal-miner.html (noindex); preserves old Signal Lab links (v1.16.6)
 ├── converter.html               # Tool: Symphony → JSON converter + logic tree; nav Tools dropdown + footer + homepage card (v1.16.3)
 ├── nodes.html                   # Tool: symphony URL → node count + breakdown by node type; nav Tools dropdown + footer + homepage card (v1.26.0)
@@ -530,6 +531,7 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/rsi-backtest.html` | `rsi-backtest.html` | RSI Backtester, simple view: one Composer-rule table across levels with Sharpe; cascade (`?mode=cascade`) gets the same table across nearby setups, plus time in each fund |
 | `/composer/rsi-backtest-advanced.html` | `rsi-backtest-advanced.html` | RSI Backtester, advanced view: verdict, Sharpe, equity curve, level-nudge and year-by-year tables; same URL parameters |
 | `/composer/signal-miner.html` | `signal-miner.html` | Tool: IF/THEN signal miner + backtester, runs fully client-side. In the nav **Tools** dropdown, footer sitemap, and homepage Explore card; indexable. Renamed from "Signal Lab" at v1.16.6 (v1.15.2) |
+| `/composer/backtester/` | `backtester/index.html` | The Synthetic Backtester, a copy of the Backtester repo's single-file build. Indexable but **not linked** from the nav, footer or homepage yet (owner, 2026-11-03); shared by direct link. Never edit it here: see "Syncing the Backtester Page" in Section 11 |
 | `/composer/signal-lab.html` | `signal-lab.html` | Redirect stub → `signal-miner.html` (preserves query string); `noindex`. Kept so old Signal Lab links do not break (v1.16.6) |
 | `/composer/converter.html` | `converter.html` | Tool: Symphony → JSON converter + logic tree. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.16.3) |
 | `/composer/nodes.html` | `nodes.html` | Tool: paste a symphony URL, get its node count and a breakdown by node type. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.26.0) |
@@ -1356,6 +1358,20 @@ The workflow excludes from public deployment: `data/symphony_scores.json`, `docs
 > publicly. `data/database.json` (18.7MB) and `data/Full Database.xlsx` (5.8MB) are likewise served
 > though no page requests either: the site reads `database_summary.json`. That is roughly 47MB of
 > publicly reachable files that nothing on the site fetches. Not a leak, but not what the docs say.
+
+### Syncing the Backtester Page
+
+`backtester/index.html` is a copy of the separate Backtester repo's build (`../Backtester`, React + Vite, one self-contained file). The Backtester repo is the single source of truth; this copy is never edited by hand. Set up 2026-11-03.
+
+When the owner asks to sync or update the Backtester page:
+
+1. **Scan.** Read the Backtester's `git log` since the commit stamped in the first comment of `backtester/index.html`, and summarise what changed. Nothing new means stop and say so.
+2. **Build.** In the Backtester repo run `npm run build`. Only from a clean committed `main`: never edit, commit or push there. If its tree is dirty, stop and ask. Running this build is a standing exception to the global wrong-directory rule; any other work in that repo is not.
+3. **Copy and stamp.** `python scripts/sync_backtester.py`. It refuses a dirty tree or a build older than the last commit, stamps the source commit and date, and fails over a 23 MiB budget (2 MiB under Cloudflare's 25 MiB per-file limit, which silently kills the whole deploy).
+4. **Check locally.** `python scripts/check_asset_sizes.py`; confirm no page links to `/backtester/` (the owner has not listed it yet); serve the repo (`python -m http.server`) and load `/backtester/` in headless Edge. Launch Edge from PowerShell: launched from the Bash tool it exits 0 with empty output. When a change touches the engine, run one real and one synthetic backtest and compare with the Backtester's own build.
+5. **Report and record.** Tell the owner what changed and what the checks showed, add a patch-notes entry naming the Backtester commit, and commit only when asked.
+
+Not in `sitemap.xml`: the generator lists top-level pages only. Indexing is allowed, so adding it there or linking it from the site is a one-line decision for the owner when it is ready to be listed.
 
 ---
 
