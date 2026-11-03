@@ -16,8 +16,11 @@ Format: `[VERSION] - YYYY-MM-DD`
   Backtester's own colors, with Synthetic Backtester shown under Tools. Other pages still do not
   link here.
 - **Reopens the last tab used**, remembered in the browser.
+- **Works opened from disk and on GitHub Pages**, not only on composeratlas.com: nav links, the price
+  files and the old tab addresses use the same base-path rule as `js/app.js`. From disk it now reads
+  `backtest/price-cache/` beside the page (it looked one folder up, where nothing is).
 
-**Files changed:** `backtest-src/src/ui/AtlasNav.tsx`, `backtest-src/src/App.tsx`, `backtest/index.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+**Files changed:** `backtest-src/src/ui/AtlasNav.tsx`, `backtest-src/src/App.tsx`, `backtest-src/src/navigation.ts`, `backtest-src/src/data/localCache.ts`, `backtest/index.html`, `backtest/run-backtest/index.html`, `backtest/settings/index.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
 
 ---
 

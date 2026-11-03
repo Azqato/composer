@@ -3,32 +3,35 @@
 // shows itself under Tools as if it were listed; the real site nav does not link here yet.
 import { useEffect, useRef, useState } from 'react'
 import type { ThemeColors } from './theme'
+import { atlasHref } from '../navigation'
 
 type Link = { href: string; label: string; external?: boolean; current?: boolean }
 type Item = Link | { label: string; children: Link[] }
 
 const NAV: Item[] = [
   { href: '/', label: 'Home' },
-  { href: '/strategies', label: 'Strategies' },
-  { href: '/database', label: 'Database' },
+  { href: '/strategies.html', label: 'Strategies' },
+  { href: '/database.html', label: 'Database' },
   { label: 'Tools', children: [
-    { href: '/rsi', label: 'RSI Signals' },
-    { href: '/signal-miner', label: 'Signal Miner' },
-    { href: '/converter', label: 'Converter' },
-    { href: '/nodes', label: 'Nodes' },
-    { href: '/k1', label: 'K1 Lookup' },
-    { href: '/rsi-backtest', label: 'RSI Backtester' },
+    { href: '/rsi.html', label: 'RSI Signals' },
+    { href: '/signal-miner.html', label: 'Signal Miner' },
+    { href: '/converter.html', label: 'Converter' },
+    { href: '/nodes.html', label: 'Nodes' },
+    { href: '/k1.html', label: 'K1 Lookup' },
+    { href: '/rsi-backtest.html', label: 'RSI Backtester' },
     { href: '/backtest/', label: 'Synthetic Backtester', current: true },
-    { href: '/overfit', label: 'Overfit Check' },
+    { href: '/overfit.html', label: 'Overfit Check' },
   ] },
-  { href: '/guides', label: 'Guides' },
-  { href: '/glossary', label: 'Glossary' },
-  { href: '/referral', label: 'Referral' },
+  { href: '/guides.html', label: 'Guides' },
+  { href: '/glossary.html', label: 'Glossary' },
+  { href: '/referral.html', label: 'Referral' },
   { href: 'https://azqato.com/invests', label: 'Azqato Invests', external: true },
   { href: 'https://azqato.com/support.html', label: 'Support', external: true },
 ]
 
 const ext = (l: Link) => l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {}
+// Internal links go through atlasHref so they work hosted and from disk
+const h = (l: Link) => l.external ? l.href : atlasHref(l.href)
 
 export function AtlasNav({ colors, dark, onToggleTheme }: { colors: ThemeColors; dark: boolean; onToggleTheme: () => void }) {
   const [toolsOpen, setToolsOpen] = useState(false)
@@ -65,7 +68,7 @@ export function AtlasNav({ colors, dark, onToggleTheme }: { colors: ThemeColors;
   return (
     <header style={{ background: colors.accentBg, color: colors.onAccent, position: 'relative', zIndex: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px' }}>
-        <a href="/" style={{ color: colors.onAccent, textDecoration: 'none', fontSize: 18, fontWeight: 700, letterSpacing: '0.02em', display: 'flex', gap: 8, alignItems: 'center', marginRight: 12 }}>
+        <a href={atlasHref('/')} style={{ color: colors.onAccent, textDecoration: 'none', fontSize: 18, fontWeight: 700, letterSpacing: '0.02em', display: 'flex', gap: 8, alignItems: 'center', marginRight: 12 }}>
           <span>🗺️</span><span>Composer Atlas</span>
         </a>
 
@@ -86,7 +89,7 @@ export function AtlasNav({ colors, dark, onToggleTheme }: { colors: ThemeColors;
                     boxShadow: '0 8px 24px rgba(0,0,0,0.25)', display: 'flex', flexDirection: 'column',
                   }}>
                     {item.children.map(c => (
-                      <a key={c.href} href={c.href} {...ext(c)} aria-current={c.current ? 'page' : undefined}
+                      <a key={c.href} href={h(c)} {...ext(c)} aria-current={c.current ? 'page' : undefined}
                         style={{
                           color: c.current ? colors.tabActive : colors.text, fontWeight: c.current ? 700 : 400,
                           background: c.current ? colors.tabBg : 'transparent',
@@ -99,7 +102,7 @@ export function AtlasNav({ colors, dark, onToggleTheme }: { colors: ThemeColors;
                 )}
               </div>
             ) : (
-              <a key={item.href} href={item.href} {...ext(item)} style={linkStyle()}>{item.label}</a>
+              <a key={item.href} href={h(item)} {...ext(item)} style={linkStyle()}>{item.label}</a>
             ))}
           </nav>
         )}
@@ -122,9 +125,9 @@ export function AtlasNav({ colors, dark, onToggleTheme }: { colors: ThemeColors;
           {NAV.flatMap(item => 'children' in item
             ? [<span key={item.label} style={{ color: colors.textMuted, fontSize: 12, fontWeight: 600, padding: '10px 4px 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</span>,
                ...item.children.map(c => (
-                 <a key={c.href} href={c.href} {...ext(c)} style={{ color: c.current ? colors.tabActive : colors.text, fontWeight: c.current ? 700 : 400, padding: '8px 4px 8px 16px', textDecoration: 'none', fontSize: 14 }}>{c.label}</a>
+                 <a key={c.href} href={h(c)} {...ext(c)} style={{ color: c.current ? colors.tabActive : colors.text, fontWeight: c.current ? 700 : 400, padding: '8px 4px 8px 16px', textDecoration: 'none', fontSize: 14 }}>{c.label}</a>
                ))]
-            : [<a key={item.href} href={item.href} {...ext(item)} style={{ color: colors.text, padding: '8px 4px', textDecoration: 'none', fontSize: 14 }}>{item.label}</a>])}
+            : [<a key={item.href} href={h(item)} {...ext(item)} style={{ color: colors.text, padding: '8px 4px', textDecoration: 'none', fontSize: 14 }}>{item.label}</a>])}
           <a href="https://composer.trade" target="_blank" rel="noopener noreferrer" style={{ ...btn, color: colors.text, borderColor: colors.border, marginTop: 10, textAlign: 'center', padding: '8px 10px' }}>Open Composer ↗</a>
         </nav>
       )}

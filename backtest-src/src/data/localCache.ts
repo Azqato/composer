@@ -4,10 +4,11 @@
 // which sets a global this module reads. The cache sits next to dist/, so the built file
 // loads it from ../price-cache/.
 import type { PriceSeries } from '../types'
+import { SITE_BASE } from '../navigation'
 
-// Composer Atlas clone: from disk the cache sits next to dist/ (../price-cache/); on the
-// website it is served beside the page, at /backtest/price-cache/ (absolute, since pages have their own paths).
-const CACHE_BASE = location.protocol === 'file:' ? '../price-cache/' : '/backtest/price-cache/'
+// Composer Atlas clone: the cache sits beside the page (backtest/price-cache/), opened from disk
+// or served, at /backtest/price-cache/ (absolute, since pages have their own paths).
+const CACHE_BASE = location.protocol === 'file:' ? 'price-cache/' : SITE_BASE + 'price-cache/'
 
 interface CachedPrices { ticker: string; fetchedAt: string; dates: string[]; closes: number[]; volumes?: (number | null)[] }
 
@@ -55,7 +56,7 @@ export async function loadCachedPrices(ticker: string): Promise<PriceSeries> {
   })
   // Composer Atlas: the daily feed (scripts/update_backtest_recent.py) writes the last 30 days of
   // every shipped ticker to _recent.js; append the days after the snapshot.
-  if (location.protocol !== 'file:') {
+  {
     await loadScript('_recent.js')
     const recent = window.__BT_RECENT__?.prices?.[ticker]
     if (recent) return spliceTail(series, recent.dates.map((date, i) => ({ date, adjClose: recent.closes[i] })))

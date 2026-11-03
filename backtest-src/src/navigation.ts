@@ -39,7 +39,18 @@ function allPages(): NavPage[] {
 
 // Composer Atlas: on the website each page has a clean address (/backtest/run-backtest/);
 // from disk it keeps the hash (#/run-backtest), since a file has no server behind it.
-export const SITE_BASE = '/backtest/'
+// Same rule as js/app.js: on GitHub Pages (*.github.io) the site sits under /<repo>; elsewhere at /.
+export const ATLAS_BASE = (location.hostname.endsWith('.github.io') && location.pathname.split('/')[1])
+  ? '/' + location.pathname.split('/')[1] : ''
+export const SITE_BASE = ATLAS_BASE + '/backtest/'
+
+/** An Atlas page link that works hosted (Cloudflare or GitHub Pages) and opened from disk,
+ *  like u() in js/app.js but one folder deeper, since this page is backtest/index.html. */
+export function atlasHref(path: string): string {
+  if (location.protocol !== 'file:') return ATLAS_BASE + path
+  if (path === '/backtest/') return 'index.html'
+  return '../' + (path === '/' ? 'index.html' : path.replace(/^\//, ''))
+}
 export const onWebsite = () => !import.meta.env.DEV && location.protocol !== 'file:'
 
 export function hrefFor(id: PageId): string {
