@@ -1,4 +1,4 @@
-"""Copy the Backtester's single-file build into Composer Atlas at /backtester/.
+"""Copy the Backtester's single-file build into Composer Atlas at /backtest/.
 
 Usage: python scripts/sync_backtester.py
 Process (PRD "Backtester Page"): build the Backtester repo's committed main first
@@ -15,7 +15,7 @@ from pathlib import Path
 ATLAS = Path(__file__).resolve().parent.parent
 BT = ATLAS.parent / "Backtester"
 SRC = BT / "dist" / "backtester.html"
-DST = ATLAS / "backtester" / "index.html"
+DST = ATLAS / "backtest" / "index.html"
 BUDGET = 23 * 1024 * 1024
 
 
@@ -41,7 +41,7 @@ def main():
         sys.exit("Page is %.2f MiB, over the 23 MiB sync budget." % (size / 2**20))
     DST.parent.mkdir(exist_ok=True)
     DST.write_text(out, encoding="utf-8", newline="")
-    print("Synced Backtester %s -> backtester/index.html (%.2f MiB)" % (commit, size / 2**20))
+    print("Synced Backtester %s -> backtest/index.html (%.2f MiB)" % (commit, size / 2**20))
 
 
 if __name__ == "__main__":
