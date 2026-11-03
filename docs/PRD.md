@@ -2619,6 +2619,11 @@ in Composer.
     confirm it reads back the same from the clipboard.
   - **Example** (114 characters, 4 sentences): "Trend-gated TQQQ. Buys dips, hedges rallies with
     SH. Sharpe-tuned, simulated since 1938. Made using ComposerAtlas."
+- **Signal windows are 10 days or longer (owner, 2026-11-02).** Every indicator Claude adds to a
+  symphony (RSI, cumulative return, standard deviation, max drawdown, moving averages and the rest)
+  uses a window of at least 10 trading days. Nothing shorter is allowed, including 1-day returns.
+  This applies when optimising too: a candidate rule with a window under 10 days is not tested or
+  proposed. Existing symphonies the owner hands over are left as they are unless the owner asks.
 
 **Cleaning up a downloaded symphony**
 
@@ -7886,6 +7891,64 @@ explicitly if it cannot clear one.
 | **Edit `docs/PATCHNOTES.md` history to match later reality** | Append a correction instead. See Section 22 |
 | **Add a build step, an npm dependency, or a server** | Tenets 4 and 8. Every technical decision is evaluated against staying static and dependency-free |
 | **Push to `main` without running the gates for what you touched** | The gates exist because each one has already caught a real outage |
+
+### Judging a Strategy: Logic Before Outcomes
+
+This applies to every piece of strategy work: analysing a symphony, building or optimising one,
+ranking a collection, or writing a verdict for the site. It was adopted on 2026-11-02, after the
+owner shared an argument from the OLMA community (Vox Machina) and asked for it to become standard
+practice alongside the existing tests.
+
+**The principle.** Outcome metrics are symptoms, not the diagnosis. They are all *results* of
+whether the logic is sound, so none of them can be the test of it:
+- a drop in Sharpe out of sample;
+- max drawdown;
+- a volatility spike the tuning window never saw;
+- strong crash returns.
+
+A strategy is overfit when its logic contains paths that memorised specific events. You find those
+by taking the logic apart, not by reading what the backtest prints. A branch that fired once in
+testable history and perfectly avoids one drawdown on QQQ is not logic to rely on, however good the
+backtest looks.
+
+**The process, in order:**
+1. **Decompose.** List every path through the tree. A path is a chain of conditions that ends at a
+   leaf (a holding).
+2. **Count firings** for each path:
+   - days active;
+   - number of *separate episodes*, which matters more than days;
+   - when the episodes happened.
+3. **Attribute return.** Work out each path's share of the total return. Flag any path that fired
+   in fewer than about 3 to 5 episodes but carries a large share of the return, or that neatly
+   dodges one specific drawdown.
+4. **Ablate.** Neutralise each flagged path and re-run. If the result collapses, the strategy
+   depends on memorised edge cases.
+5. **Interrogate each rare path:**
+   - Is there an economic reason for it?
+   - Does its threshold still work when nudged up and down, or only at the exact tuned value?
+   - Would anyone have written it before seeing the data?
+6. **Then run the outcome checks**, as confirmation of step 5, never as a replacement for it:
+   - eras before and after the tuning window;
+   - synthetic history from before the tickers existed (Section 13 and the Backtester);
+   - crash tables;
+   - a random-null comparison;
+   - an execution-lag test.
+
+**Rules that follow from it:**
+- **A check that fires once and earns a lot is a red flag.** A check that never fires is only
+  clutter: it adds nodes and nothing else.
+- **Rarity alone is not guilt.** A genuine crash hedge *should* fire rarely. The red flag is rarity
+  combined with a large return contribution, no economic story and a fragile threshold.
+- **When building or optimising,** a new branch or threshold has to fire in several separate
+  episodes and have a reason to exist. A better Sharpe is not enough on its own. Report the firing
+  counts alongside the results.
+- **Rankings, tier lists and overfit verdicts** must cite the path evidence (episodes, return share,
+  ablation result), not only Sharpe and drawdown.
+
+**Relation to the Overfit Check page (V2.4).** The page's cone test measures outcomes, so in these
+terms it is a symptom test. It stays, because a stated outcome verdict is still useful to visitors.
+A path-firing audit is the logic-level complement and is a candidate for a future tier of the page.
+Nothing on the page changes because of this subsection.
 
 ### Adding a Release
 

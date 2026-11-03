@@ -10,6 +10,36 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Documentation: signal windows of 10 days or longer
+
+- **PRD Section 13, writing conventions.** Every indicator Claude adds to a symphony uses a window of
+  at least 10 trading days, and no shorter rule is tested or proposed when optimising. The owner set
+  this on 2026-11-02 after rejecting a 1-day crash guard.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [Unreleased] - Documentation: judge a strategy's logic before its outcomes
+
+- **PRD Section 23, Working Practice.** Added a new subsection, "Judging a Strategy: Logic Before
+  Outcomes". It makes a path-firing audit the first step of any strategy analysis, build,
+  optimisation or ranking:
+  - decompose the tree into paths;
+  - count the separate episodes each path fired;
+  - attribute return to each path;
+  - ablate the rare, high-impact paths;
+  - question their economic reason and how sensitive their thresholds are.
+
+  The existing outcome tests (eras, synthetic history, crash tables, random null, execution lag)
+  now come second, as confirmation. The change came from an OLMA community argument (Vox Machina)
+  that outcome metrics are symptoms of overfitting, not a measure of it. The owner adopted it on
+  2026-11-02. The Overfit Check page is unchanged; a path audit is noted as a candidate future tier.
+
+**Files changed:** `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Documentation: one full rule for generated symphony descriptions
 
 - **PRD Section 13, writing conventions.** The credit line and description-length bullets are merged
