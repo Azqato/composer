@@ -1,0 +1,180 @@
+/*
+ * Template Interface Color Standard v1.0 (2026-10-04)
+ * https://templateinterface.com/standards/color/
+ * Primitives: --ti-<hue>-<grade>. Grade 0 is white, 100 is black; any two
+ * colors 50 grades apart pass WCAG AA text contrast (4.5:1), 40 apart pass
+ * 3:1, 70 apart pass AAA (7:1). Roles: --ti-color-<role>, light by default,
+ * dark under prefers-color-scheme or [data-theme="dark"].
+ */
+
+:root {
+  --ti-white: #ffffff;
+  --ti-black: #000000;
+  --ti-gray-5: #e8eef6;
+  --ti-gray-10: #d8dee5;
+  --ti-gray-20: #bac0c7;
+  --ti-gray-30: #9fa5ac;
+  --ti-gray-40: #878c93;
+  --ti-gray-50: #71767d;
+  --ti-gray-60: #5c6168;
+  --ti-gray-70: #494e54;
+  --ti-gray-80: #363a40;
+  --ti-gray-90: #20252a;
+  --ti-gray-95: #13171c;
+  --ti-blue-5: #e4efff;
+  --ti-blue-10: #c9dfff;
+  --ti-blue-20: #98c1ff;
+  --ti-blue-30: #68a5ff;
+  --ti-blue-40: #378aff;
+  --ti-blue-50: #0070f1;
+  --ti-blue-60: #005cc9;
+  --ti-blue-70: #0049a3;
+  --ti-blue-80: #00377d;
+  --ti-blue-90: #002253;
+  --ti-blue-95: #001538;
+  --ti-teal-5: #c6f7f4;
+  --ti-teal-10: #9aece8;
+  --ti-teal-20: #25d4d0;
+  --ti-teal-30: #00b7b3;
+  --ti-teal-40: #009c99;
+  --ti-teal-50: #008380;
+  --ti-teal-60: #006d6a;
+  --ti-teal-70: #005755;
+  --ti-teal-80: #004140;
+  --ti-teal-90: #002a28;
+  --ti-teal-95: #001a19;
+  --ti-green-5: #d6f6da;
+  --ti-green-10: #b7eabd;
+  --ti-green-20: #77d386;
+  --ti-green-30: #0abd4d;
+  --ti-green-40: #00a240;
+  --ti-green-50: #008835;
+  --ti-green-60: #00712a;
+  --ti-green-70: #005a20;
+  --ti-green-80: #004416;
+  --ti-green-90: #002b0b;
+  --ti-green-95: #001c05;
+  --ti-yellow-5: #fcedc8;
+  --ti-yellow-10: #f4dba0;
+  --ti-yellow-20: #e5ba45;
+  --ti-yellow-30: #cb9e00;
+  --ti-yellow-40: #ad8600;
+  --ti-yellow-50: #927100;
+  --ti-yellow-60: #795d00;
+  --ti-yellow-70: #614a00;
+  --ti-yellow-80: #493700;
+  --ti-yellow-90: #2f2200;
+  --ti-yellow-95: #1e1500;
+  --ti-orange-5: #ffeadd;
+  --ti-orange-10: #ffd5bc;
+  --ti-orange-20: #ffac79;
+  --ti-orange-30: #ff811a;
+  --ti-orange-40: #dd6c00;
+  --ti-orange-50: #bb5a00;
+  --ti-orange-60: #9b4a00;
+  --ti-orange-70: #7d3a00;
+  --ti-orange-80: #602b00;
+  --ti-orange-90: #3f1a00;
+  --ti-orange-95: #2a0f00;
+  --ti-red-5: #ffe9e6;
+  --ti-red-10: #ffd3ce;
+  --ti-red-20: #ffa9a0;
+  --ti-red-30: #ff7d73;
+  --ti-red-40: #fe4745;
+  --ti-red-50: #e3272d;
+  --ti-red-60: #c5001a;
+  --ti-red-70: #9f0013;
+  --ti-red-80: #7a000c;
+  --ti-red-90: #510005;
+  --ti-red-95: #370002;
+  --ti-pink-5: #ffe8f0;
+  --ti-pink-10: #ffd1e1;
+  --ti-pink-20: #ffa4c8;
+  --ti-pink-30: #ff75b1;
+  --ti-pink-40: #e75699;
+  --ti-pink-50: #cd3d82;
+  --ti-pink-60: #b4226d;
+  --ti-pink-70: #990059;
+  --ti-pink-80: #750043;
+  --ti-pink-90: #4e002b;
+  --ti-pink-95: #34001b;
+  --ti-purple-5: #f1ebff;
+  --ti-purple-10: #e4d7ff;
+  --ti-purple-20: #cdb2ff;
+  --ti-purple-30: #b98fff;
+  --ti-purple-40: #a86bfd;
+  --ti-purple-50: #9253e4;
+  --ti-purple-60: #7e3bcb;
+  --ti-purple-70: #6a21b4;
+  --ti-purple-80: #550098;
+  --ti-purple-90: #370066;
+  --ti-purple-95: #240046;
+  --ti-brown-5: #ffeada;
+  --ti-brown-10: #ffd6b5;
+  --ti-brown-20: #e3b793;
+  --ti-brown-30: #c79c79;
+  --ti-brown-40: #ad8361;
+  --ti-brown-50: #966d4c;
+  --ti-brown-60: #805838;
+  --ti-brown-70: #6b4524;
+  --ti-brown-80: #55310f;
+  --ti-brown-90: #3b1d00;
+  --ti-brown-95: #271100;
+
+  --ti-color-canvas: var(--ti-white);
+  --ti-color-surface: var(--ti-gray-5);
+  --ti-color-text: var(--ti-gray-90);
+  --ti-color-text-muted: var(--ti-gray-60);
+  --ti-color-border: var(--ti-gray-20);
+  --ti-color-border-strong: var(--ti-gray-50);
+  --ti-color-accent: var(--ti-blue-60);
+  --ti-color-accent-bg: var(--ti-blue-60);
+  --ti-color-on-accent: var(--ti-white);
+  --ti-color-accent-muted: var(--ti-blue-5);
+  --ti-color-success: var(--ti-green-60);
+  --ti-color-warning: var(--ti-yellow-60);
+  --ti-color-danger: var(--ti-red-60);
+  --ti-color-info: var(--ti-teal-60);
+  --ti-color-focus: var(--ti-blue-50);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ti-color-canvas: var(--ti-gray-95);
+    --ti-color-surface: var(--ti-gray-90);
+    --ti-color-text: var(--ti-gray-5);
+    --ti-color-text-muted: var(--ti-gray-40);
+    --ti-color-border: var(--ti-gray-80);
+    --ti-color-border-strong: var(--ti-gray-50);
+    --ti-color-accent: var(--ti-blue-40);
+    --ti-color-accent-bg: var(--ti-blue-40);
+    --ti-color-on-accent: var(--ti-gray-95);
+    --ti-color-accent-muted: var(--ti-blue-90);
+    --ti-color-success: var(--ti-green-40);
+    --ti-color-warning: var(--ti-yellow-40);
+    --ti-color-danger: var(--ti-red-40);
+    --ti-color-info: var(--ti-teal-40);
+    --ti-color-focus: var(--ti-blue-50);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ti-color-canvas: var(--ti-gray-95);
+  --ti-color-surface: var(--ti-gray-90);
+  --ti-color-text: var(--ti-gray-5);
+  --ti-color-text-muted: var(--ti-gray-40);
+  --ti-color-border: var(--ti-gray-80);
+  --ti-color-border-strong: var(--ti-gray-50);
+  --ti-color-accent: var(--ti-blue-40);
+  --ti-color-accent-bg: var(--ti-blue-40);
+  --ti-color-on-accent: var(--ti-gray-95);
+  --ti-color-accent-muted: var(--ti-blue-90);
+  --ti-color-success: var(--ti-green-40);
+  --ti-color-warning: var(--ti-yellow-40);
+  --ti-color-danger: var(--ti-red-40);
+  --ti-color-info: var(--ti-teal-40);
+  --ti-color-focus: var(--ti-blue-50);
+  color-scheme: dark;
+}

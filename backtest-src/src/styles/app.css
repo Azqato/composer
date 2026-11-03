@@ -1,0 +1,38 @@
+/* App base styles on the Template Interface color standard (tokens.css). See docs/DESIGN.md. */
+:root {
+  --bt-font: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --bt-mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
+  --bt-radius: 6px;
+  /* Chart, tier and gain/loss colors: data-colors.css */
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ti-color-canvas);
+  color: var(--ti-color-text);
+  font-family: var(--bt-font);
+  font-size: 14px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: 14px;
+}
+
+:focus-visible { outline: 2px solid var(--ti-color-focus); outline-offset: 2px; }
+
+a { color: var(--ti-color-accent); text-decoration: underline; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ti-color-border-strong); border-radius: 3px; }

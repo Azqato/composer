@@ -1,0 +1,79 @@
+/* Landing page (index.html) on the color standard's role tokens. See docs/DESIGN.md. */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ti-color-canvas);
+  color: var(--ti-color-text);
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+
+a { color: var(--ti-color-accent); }
+:focus-visible { outline: 2px solid var(--ti-color-focus); outline-offset: 2px; }
+
+/* Same frame as the app (src/App.tsx): blue title bar, tab row, panels on a grey page */
+:root { --lp-page: var(--ti-color-canvas); --lp-panel: var(--ti-color-surface); --lp-border: var(--ti-color-border); --lp-bar: var(--ti-color-accent-bg); --lp-tab: var(--ti-color-accent); --lp-tab-bg: var(--ti-color-accent-muted); }
+body { background: var(--lp-page); }
+
+.titlebar {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: center; gap: 12px; padding: 8px 16px;
+  background: var(--lp-bar); color: var(--ti-color-on-accent);
+}
+.brand { font-size: 18px; font-weight: 700; letter-spacing: .02em; }
+.spacer { flex: 1; }
+.titlebar .button { padding: 4px 12px; font-size: .9rem; background: var(--ti-color-on-accent); color: var(--lp-bar); border-color: var(--ti-color-on-accent); }
+#theme-toggle { background: transparent; border: 1px solid var(--ti-color-on-accent); color: var(--ti-color-on-accent); border-radius: 6px; padding: 4px 10px; font: inherit; font-size: .9rem; cursor: pointer; }
+
+.tabs {
+  position: sticky; top: 46px; z-index: 1;
+  display: flex; flex-wrap: wrap; padding: 0 8px; background: var(--lp-panel); border-bottom: 1px solid var(--lp-border);
+}
+.tabs a {
+  padding: 10px 16px; font-size: 13px; text-decoration: none; color: var(--ti-color-text-muted);
+  border-bottom: 2px solid transparent; transition: all .15s;
+}
+.tabs a:hover { color: var(--ti-color-text); }
+.tabs a[aria-current] { background: var(--lp-tab-bg); color: var(--lp-tab); border-bottom-color: var(--lp-tab); font-weight: 700; }
+
+main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+section { scroll-margin-top: 100px; background: var(--lp-panel); border: 1px solid var(--lp-border); border-radius: 10px; padding: 32px; margin-bottom: 16px; }
+@media (max-width: 600px) { section { padding: 20px 16px; } }
+
+.eyebrow { color: var(--ti-color-accent); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; font-size: .85rem; margin: 0 0 8px; }
+h1 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.15; margin: 0 0 16px; max-width: 20ch; }
+h2 { font-size: 1.75rem; margin: 0 0 20px; }
+h3 { font-size: 1.15rem; margin: 10px 0 6px; }
+.lead { font-size: 1.2rem; color: var(--ti-color-text-muted); max-width: 62ch; }
+
+.button {
+  display: inline-block; padding: 10px 18px; border-radius: 6px; font-weight: 600; text-decoration: none;
+  background: var(--ti-color-accent-bg); color: var(--ti-color-on-accent); border: 1px solid var(--ti-color-accent-bg);
+}
+.button:hover { filter: brightness(1.08); }
+.button.secondary { background: transparent; color: var(--ti-color-accent); border-color: var(--ti-color-border-strong); }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
+
+.facts { list-style: none; padding: 0; margin: 32px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.facts li { background: var(--lp-page); border: 1px solid var(--lp-border); border-radius: 8px; padding: 14px 16px; }
+.facts strong { display: block; font-size: 1.8rem; line-height: 1.2; }
+.facts span { color: var(--ti-color-text-muted); font-size: .95rem; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.card { background: var(--lp-page); border: 1px solid var(--lp-border); border-radius: 8px; padding: 18px 20px; }
+.card p { margin: 0; color: var(--ti-color-text-muted); }
+.engine h3 { font-size: 1.35rem; }
+
+.tag { display: inline-block; font-size: .78rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; }
+.tag.available { color: var(--ti-color-success); }
+.tag.progress { color: var(--ti-color-info); }
+.tag.planned { color: var(--ti-color-text-muted); }
+.legend { color: var(--ti-color-text-muted); font-size: .95rem; display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; }
+.legend .tag { margin-right: 4px; }
+.note { color: var(--ti-color-text-muted); margin-top: 16px; }
+
+footer { max-width: 1100px; margin: 0 auto; padding: 24px 16px 40px; color: var(--ti-color-text-muted); font-size: .9rem; }

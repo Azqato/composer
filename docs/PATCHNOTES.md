@@ -10,6 +10,23 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Backtester page is now an independent clone that works on the website
+
+- **Fixed "No price data for ..." on `/backtest/`.** The copied build only read its saved price files
+  from disk; on the website it fetched every ticker through the rate-limited relay and most failed.
+- **New `backtest-src/`**: the Backtester's source, cloned at commit c9aa3f4 and edited here from now
+  on. Not served. Atlas-only changes: the shipped price cache is read on the website and seeds the
+  browser cache, so only days since the snapshot are fetched; symphonies are always fetched fresh;
+  the welcome page is the bare `/backtest/` instead of `/backtest/#/`.
+- **New `backtest/price-cache/`**: 218 ticker snapshots and saved symphonies, about 40 MiB.
+- **`scripts/sync_backtester.py` became `scripts/build_backtest.py`**, which builds the clone. The
+  sync process is retired. `.gitignore`, `.assetsignore` and the deploy rsync updated.
+- **PRD Section 11, "The Backtester Clone"** replaces "Syncing the Backtester Page".
+
+**Files changed:** `backtest-src/`, `backtest/`, `scripts/build_backtest.py`, `.gitignore`, `.assetsignore`, `.github/workflows/deploy.yml`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Synthetic Backtester page at /backtest/ (unlinked)
 
 - **New page `backtest/index.html`** (first shipped at `/backtester/`, renamed the same day for a shorter link), a copy of the Backtester repo's single-file build at commit

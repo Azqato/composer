@@ -1,0 +1,7 @@
+[
+  {"ticker":"VOOG","underlying":"IVW","calibrate":true},
+  {"ticker":"IVW","underlying":"VUGSIM","calibrate":true},
+  {"ticker":"VOOV","underlying":"IVE","calibrate":true},
+  {"ticker":"IVE","underlying":"VTVSIM","calibrate":true},
+  {"ticker":"QQEW","blend":{"QQQSIM":0.4,"VOTSIM":0.6},"calibrate":true}
+]

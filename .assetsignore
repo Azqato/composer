@@ -12,6 +12,9 @@
 docs/
 README.md
 
+# Source of the Backtester clone; only its build, backtest/index.html, is served
+backtest-src/
+
 # Build, test and data-refresh tooling (Python; never executed by the site)
 scripts/
 

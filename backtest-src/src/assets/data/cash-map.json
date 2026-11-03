@@ -1,0 +1,10 @@
+[
+  {"ticker":"CASHX","note":"the cash proxy itself - FRED DTB3 with a BIL fallback, not a tradable instrument"},
+  {"ticker":"BIL","note":"SPDR 1-3 month T-Bill"},
+  {"ticker":"BILS","note":"SPDR 3-12 month T-Bill"},
+  {"ticker":"BOXX","note":"Alpha Architect 1-3 Month Box - SPX box spreads, a T-bill rate with no duration or credit"},
+  {"ticker":"SGOV","note":"iShares 0-3 month Treasury"},
+  {"ticker":"SHV","note":"iShares Short Treasury, under a year"},
+  {"ticker":"TBIL","note":"US Treasury 3 Month Bill"},
+  {"ticker":"XBIL","note":"US Treasury 6 Month Bill"}
+]

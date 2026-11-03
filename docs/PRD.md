@@ -402,7 +402,8 @@ composer/
 ├── rsi-backtest.html            # RSI Backtester, simple view (data/prices.json, client-side)
 ├── rsi-backtest-advanced.html   # RSI Backtester, advanced view; links both ways keep the settings
 ├── signal-miner.html            # Tool: client-side IF/THEN signal miner + backtester; nav Tools dropdown + footer + home (renamed from Signal Lab v1.16.6) (v1.15.2)
-├── backtest/index.html        # Synthetic Backtester, copied from the Backtester repo by scripts/sync_backtester.py; unlinked on purpose (see Syncing the Backtester Page)
+├── backtest/                    # Synthetic Backtester clone build: index.html + price-cache/; unlinked on purpose (see The Backtester Clone)
+├── backtest-src/                # Source of the clone (React + Vite); not served; built by scripts/build_backtest.py
 ├── signal-lab.html              # Redirect stub → signal-miner.html (noindex); preserves old Signal Lab links (v1.16.6)
 ├── converter.html               # Tool: Symphony → JSON converter + logic tree; nav Tools dropdown + footer + homepage card (v1.16.3)
 ├── nodes.html                   # Tool: symphony URL → node count + breakdown by node type; nav Tools dropdown + footer + homepage card (v1.26.0)
@@ -531,7 +532,7 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/rsi-backtest.html` | `rsi-backtest.html` | RSI Backtester, simple view: one Composer-rule table across levels with Sharpe; cascade (`?mode=cascade`) gets the same table across nearby setups, plus time in each fund |
 | `/composer/rsi-backtest-advanced.html` | `rsi-backtest-advanced.html` | RSI Backtester, advanced view: verdict, Sharpe, equity curve, level-nudge and year-by-year tables; same URL parameters |
 | `/composer/signal-miner.html` | `signal-miner.html` | Tool: IF/THEN signal miner + backtester, runs fully client-side. In the nav **Tools** dropdown, footer sitemap, and homepage Explore card; indexable. Renamed from "Signal Lab" at v1.16.6 (v1.15.2) |
-| `/composer/backtest/` | `backtest/index.html` | The Synthetic Backtester, a copy of the Backtester repo's single-file build. Indexable but **not linked** from the nav, footer or homepage yet (owner, 2026-11-03); shared by direct link. Never edit it here: see "Syncing the Backtester Page" in Section 11 |
+| `/composer/backtest/` | `backtest/index.html` | The Synthetic Backtester, an independent clone of the Backtester repo. Indexable but **not linked** from the nav, footer or homepage yet (owner, 2026-11-03); shared by direct link. Built from `backtest-src/`: see "The Backtester Clone" in Section 11 |
 | `/composer/signal-lab.html` | `signal-lab.html` | Redirect stub → `signal-miner.html` (preserves query string); `noindex`. Kept so old Signal Lab links do not break (v1.16.6) |
 | `/composer/converter.html` | `converter.html` | Tool: Symphony → JSON converter + logic tree. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.16.3) |
 | `/composer/nodes.html` | `nodes.html` | Tool: paste a symphony URL, get its node count and a breakdown by node type. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.26.0) |
@@ -1359,19 +1360,26 @@ The workflow excludes from public deployment: `data/symphony_scores.json`, `docs
 > though no page requests either: the site reads `database_summary.json`. That is roughly 47MB of
 > publicly reachable files that nothing on the site fetches. Not a leak, but not what the docs say.
 
-### Syncing the Backtester Page
+### The Backtester Clone
 
-`backtest/index.html` is a copy of the separate Backtester repo's build (`../Backtester`, React + Vite, one self-contained file). The Backtester repo is the single source of truth; this copy is never edited by hand. Set up 2026-11-03.
+`/backtest/` is an **independent clone** of the separate Backtester repo (`../Backtester`), taken 2026-11-03 at its commit c9aa3f4. The owner chose a clone over syncing because the original build only reads its saved price files when opened from disk; on a website it fetched every ticker through the rate-limited `r.jina.ai` relay and most tickers failed ("No price data for ..."). Changes in the Backtester repo do not flow here; port them deliberately when asked.
 
-When the owner asks to sync or update the Backtester page:
+Layout:
+- `backtest-src/`: the clone's source (React + Vite + TypeScript). Not served (`.assetsignore` and the deploy rsync both exclude it). `node_modules/` and `dist/` are gitignored. This is the one place in Atlas with an npm build, an exception to the no-build-step rule made for this page only.
+- `backtest/index.html`: the built single-file page (about 17 MiB). Generated: never edit it by hand.
+- `backtest/price-cache/`: 218 per-ticker price snapshots (about 40 MiB in all, largest 0.5 MiB) plus saved symphonies, copied from the Backtester's `price-cache/`.
 
-1. **Scan.** Read the Backtester's `git log` since the commit stamped in the first comment of `backtest/index.html`, and summarise what changed. Nothing new means stop and say so.
-2. **Build.** In the Backtester repo run `npm run build`. Only from a clean committed `main`: never edit, commit or push there. If its tree is dirty, stop and ask. Running this build is a standing exception to the global wrong-directory rule; any other work in that repo is not.
-3. **Copy and stamp.** `python scripts/sync_backtester.py`. It refuses a dirty tree or a build older than the last commit, stamps the source commit and date, and fails over a 23 MiB budget (2 MiB under Cloudflare's 25 MiB per-file limit, which silently kills the whole deploy).
-4. **Check locally.** `python scripts/check_asset_sizes.py`; confirm no page links to `/backtest/` (the owner has not listed it yet); serve the repo (`python -m http.server`) and load `/backtest/` in headless Edge. Launch Edge from PowerShell: launched from the Bash tool it exits 0 with empty output. When a change touches the engine, run one real and one synthetic backtest and compare with the Backtester's own build.
-5. **Report and record.** Tell the owner what changed and what the checks showed, add a patch-notes entry naming the Backtester commit, and commit only when asked.
+Atlas-only changes in the clone, each marked "Composer Atlas" in a comment:
+- `src/data/localCache.ts`: the shipped cache is read on the website too, from `price-cache/` beside the page.
+- `src/data/priceLoader.ts`: on the website the snapshot seeds the browser's IndexedDB once, then only days since the snapshot come from the relay; if that fetch fails the snapshot is used.
+- `src/symphony/parser.ts`: on the website symphonies are always fetched from Composer (they get edited); saved copies are a disk-only shortcut.
+- `src/router.ts`: the welcome page sits at the bare `/backtest/`, not `/backtest/#/`.
 
-Not in `sitemap.xml`: the generator lists top-level pages only. Indexing is allowed, so adding it there or linking it from the site is a one-line decision for the owner when it is ready to be listed.
+To change it: edit `backtest-src/`, then `python scripts/build_backtest.py` (runs `npm run build`, writes `backtest/index.html`, fails over a 23 MiB budget, 2 MiB under Cloudflare's 25 MiB per-file limit). Test locally: serve the repo (`python -m http.server`), open `/backtest/` in headless Edge launched from PowerShell (from the Bash tool Edge exits 0 with no output), and run a backtest. In a driver, any wait must be effectively unbounded (`1e12`): virtual time otherwise ends it while network requests are still out. A symphony link fails in that rig because the relay's timeout fires on the fast clock; test with tickers and weights.
+
+To refresh the price snapshots: copy `price-cache/*.js` from the Backtester repo after running its `npm run fetch` there (a Backtester session, or the owner). Stale snapshots still work; they only mean more days fetched through the relay.
+
+Not linked from the nav, footer or homepage yet (owner, 2026-11-03), and not in `sitemap.xml` (the generator lists top-level pages only). Indexing is allowed.
 
 ---
 

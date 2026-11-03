@@ -1,0 +1,34 @@
+/*
+ * Data colors for charts, tiers and the out-of-sample band, on the color standard's palette.
+ * Shared by the app (main.tsx) and the exported report (inlined by src/reports/generator.ts).
+ * Light uses grade 50-60, dark grade 40, so each line keeps 3:1 against the canvas.
+ */
+:root {
+  /* History tiers, each always shown with its word as well as its color */
+  --bt-tier-real: var(--ti-color-success);
+  /* Simulated is neutral gray, never a second green: it must read as clearly not real */
+  --bt-tier-simulated: var(--ti-gray-40);
+  --bt-tier-pathing: var(--ti-color-warning);
+  /* Chart series: the strategy takes the accent; benchmark and the compared engine take data hues */
+  --bt-series-strategy: var(--ti-color-accent);
+  --bt-series-benchmark: var(--ti-orange-50);
+  --bt-series-compare: var(--ti-purple-50);
+  /* Gains and losses (always with a sign), and the out-of-sample band */
+  --bt-gain: var(--ti-color-success);
+  --bt-loss: var(--ti-color-danger);
+  --bt-oos: var(--ti-purple-5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bt-series-benchmark: var(--ti-orange-40);
+    --bt-series-compare: var(--ti-purple-40);
+    --bt-oos: var(--ti-purple-90);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bt-series-benchmark: var(--ti-orange-40);
+  --bt-series-compare: var(--ti-purple-40);
+  --bt-oos: var(--ti-purple-90);
+}

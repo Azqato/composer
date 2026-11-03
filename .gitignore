@@ -34,3 +34,7 @@ _harness_*_driver.js
 # Phase 7 brand showcase. Built by brand/build/build_showcase.py,
 # opened from the file system, deliberately never published.
 brand/brand-design.html
+
+# Backtester clone build output (scripts/build_backtest.py)
+backtest-src/node_modules/
+backtest-src/dist/
