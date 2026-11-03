@@ -10,6 +10,17 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Backtester: Atlas navigation, remembers the last tab
+
+- **Composer Atlas navigation** on `/backtest/` in place of the Backtester's title bar, in the
+  Backtester's own colors, with Synthetic Backtester shown under Tools. Other pages still do not
+  link here.
+- **Reopens the last tab used**, remembered in the browser.
+
+**Files changed:** `backtest-src/src/ui/AtlasNav.tsx`, `backtest-src/src/App.tsx`, `backtest/index.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Backtester is one page with tabs
 
 - **Welcome, Run Backtest and Settings stay tabs, all on one page** at `/backtest/`: switching tabs

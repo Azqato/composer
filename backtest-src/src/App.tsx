@@ -6,6 +6,7 @@ import { WelcomePanel } from './ui/WelcomePanel'
 import { BacktestPanel } from './ui/BacktestPanel'
 import { SettingsPanel } from './ui/SettingsPanel'
 import { themeColors } from './ui/theme'
+import { AtlasNav } from './ui/AtlasNav'
 
 // ─── Load config from localStorage ───────────────────────────────────────────
 
@@ -34,8 +35,13 @@ export function App() {
   // (#/run-backtest, or /backtest/settings/ via its stub's ?p=) open on that tab.
   const [activeTab, setActiveTab] = useState<PageId>(() => {
     const old = (new URLSearchParams(location.search).get('p') ?? location.hash.replace(/^#\/?/, '')).replace(/\/$/, '')
-    return NAV.find(p => p.path === old && old)?.id ?? 'WELCOME'
+    const fromLink = NAV.find(p => p.path === old && old)?.id
+    if (fromLink) return fromLink
+    // Otherwise resume the tab used last in this browser
+    try { const saved = localStorage.getItem('bt-active-tab'); if (NAV.some(p => p.id === saved)) return saved as PageId } catch { /* storage blocked */ }
+    return 'WELCOME'
   })
+  useEffect(() => { try { localStorage.setItem('bt-active-tab', activeTab) } catch { /* storage blocked */ } }, [activeTab])
   const [backtestResult, setBacktestResult] = useState<BacktestResult | null>(null)
   const [backtestStatus, setBacktestStatus] = useState<BacktestStatus>('idle')
   const [backtestError, setBacktestError] = useState<string | null>(null)
@@ -70,26 +76,12 @@ export function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: colors.bg, color: colors.text }}>
-      {/* Title bar */}
-      <div style={{
-        background: colors.accentBg,
-        color: colors.onAccent, padding: '8px 16px',
-        display: 'flex', alignItems: 'center', gap: 12,
-      }}>
-        <span style={{ fontSize: 18, fontWeight: 700, letterSpacing: '0.02em' }}>
-          📈 Synthetic Backtester
-        </span>
-        <span style={{ flex: 1 }} />
-        <button
-          onClick={() => updateConfig({ darkTheme: !dark })}
-          style={{ background: 'transparent', border: `1px solid ${colors.onAccent}`, color: colors.onAccent, borderRadius: 6, padding: '4px 10px' }}
-        >
-          {dark ? '☀️ Light' : '🌙 Dark'}
-        </button>
-      </div>
+      {/* Composer Atlas navigation, in the Backtester's colors */}
+      <AtlasNav colors={colors} dark={dark} onToggleTheme={() => updateConfig({ darkTheme: !dark })} />
 
       {/* Tabs: all on this one page; switching never changes the address */}
-      <nav style={{ display: 'flex', background: colors.panel, borderBottom: `1px solid ${colors.border}`, padding: '0 8px' }}>
+      <nav style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', background: colors.panel, borderBottom: `1px solid ${colors.border}`, padding: '0 8px' }}>
+        <span style={{ fontWeight: 700, fontSize: 15, padding: '10px 12px 10px 8px', color: colors.text }}>📈 Synthetic Backtester</span>
         {NAV.map(page => (
           <button
             key={page.id}
