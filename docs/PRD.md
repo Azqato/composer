@@ -1378,7 +1378,16 @@ Atlas-only changes in the clone, each marked "Composer Atlas" in a comment:
 
 To change it: edit `backtest-src/`, then `python scripts/build_backtest.py` (runs `npm run build`, writes `backtest/index.html`, fails over a 23 MiB budget, 2 MiB under Cloudflare's 25 MiB per-file limit). Test locally: serve the repo (`python -m http.server`), open `/backtest/` in headless Edge launched from PowerShell (from the Bash tool Edge exits 0 with no output), and run a backtest. In a driver, any wait must be effectively unbounded (`1e12`): virtual time otherwise ends it while network requests are still out. A symphony link fails in that rig because the relay's timeout fires on the fast clock; test with tickers and weights.
 
-To refresh the price snapshots: copy `price-cache/*.js` from the Backtester repo after running its `npm run fetch` there (a Backtester session, or the owner). Stale snapshots still work; they only mean more days fetched through the relay.
+**Daily price feed** (`.github/workflows/refresh-backtest-prices.yml`, set up 2026-11-03):
+- Weekdays 22:37 UTC (after the close in both EST and EDT; 30 minutes clear of `refresh-rsi.yml`), `python scripts/update_backtest_recent.py` writes `backtest/price-cache/_recent.js`: the last 30 trading days of every snapshotted ticker, about 150 KB. One small file on purpose: rewriting the 215 snapshots daily would add about 40 MB to git history every day.
+- Monthly (the 2nd, 04:37 UTC) or by hand (Run workflow, "Full refresh"), `--full` rewrites every snapshot with its whole history, so `_recent.js` only carries the last few weeks.
+- Yahoo's chart API directly, from Python's standard library, no relay (it runs on a server, not in a browser). An unfinished session is never stored. A failing ticker keeps yesterday's entry; if over a fifth fail, nothing is written.
+- The page appends `_recent.js` days to each snapshot, rescaled on their last shared day (adjusted closes from two downloads can differ by a dividend), and tops up the browser's IndexedDB with them. The relay is asked only when the data does not reach the latest market close (4:30 pm New York), once per close, and not again for 10 minutes after a failure.
+- The commit step adds only `backtest/price-cache/` files and rebases before pushing, so it cannot overwrite another feed's commit.
+
+**Adding a ticker:** `python scripts/update_backtest_recent.py --add SPTL URTY` fetches the full history into new snapshot files and refreshes `_recent.js`. Commit the new files. (SPTL and URTY were added this way on 2026-11-03.)
+
+**Progress box:** above the Log, styled like the Signal Miner's: a bar, the current step (loading prices with a ticker count, simulating, computing the report, then the comparison run) and time left, projected from elapsed time once 10% is done. In headless tests the times are meaningless (virtual time); only the steps and the result are worth asserting.
 
 Not linked from the nav, footer or homepage yet (owner, 2026-11-03), and not in `sitemap.xml` (the generator lists top-level pages only). Indexing is allowed.
 

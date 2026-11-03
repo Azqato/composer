@@ -10,6 +10,23 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Backtester: daily price feed, progress box, SPTL and URTY
+
+- **Daily price feed.** New `.github/workflows/refresh-backtest-prices.yml` runs
+  `scripts/update_backtest_recent.py` on weekdays after the close (22:37 UTC) and writes
+  `backtest/price-cache/_recent.js`, the last 30 days of every ticker (about 150 KB), straight from
+  Yahoo with no relay. A monthly run rewrites the full snapshots. Commits only its own files.
+- **Fewer relay requests.** The page merges the daily file into each snapshot and asks the relay
+  only when its data does not reach the latest close; before, every run re-requested the newest day
+  for every ticker, which tripped the relay's rate limit ("could not refresh ... using cached data").
+- **Progress box** above the Log, in the style of the Signal Miner: bar, current step, tickers
+  loaded, time left.
+- **Added SPTL and URTY** price histories (`--add` option of the feed script).
+
+**Files changed:** `.github/workflows/refresh-backtest-prices.yml`, `scripts/update_backtest_recent.py`, `backtest-src/src/ui/BacktestPanel.tsx`, `backtest-src/src/data/localCache.ts`, `backtest-src/src/data/priceLoader.ts`, `backtest-src/src/data/cache.ts`, `backtest/index.html`, `backtest/price-cache/`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Backtester: clean tab addresses, no device-access prompt
 
 - **Tabs have clean addresses** on the website: `/backtest/run-backtest/` and `/backtest/settings/`

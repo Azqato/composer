@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import type { Config, BacktestResult, BacktestStatus, HistoryMode, Engine, Strategy } from '../types'
 import { ENGINE_LABEL } from '../types'
 import { parseStrategyInput, extractSymphonyId, fetchPublicSymphony } from '../symphony/parser'
@@ -61,23 +61,50 @@ export function BacktestPanel({
 
   const isRunning = backtestStatus === 'fetching' || backtestStatus === 'computing'
 
+  // Composer Atlas: progress box with a time-left estimate, in the style of the Signal Miner.
+  // Each step owns a slice of the bar; loading prices advances per ticker within its slice.
+  type Progress = { frac: number; label: string; started: number; finished?: number; failed?: boolean }
+  const [progress, setProgress] = useState<Progress | null>(null)
+  const prog = useRef<Progress>({ frac: 0, label: '', started: 0 })
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    if (!isRunning) return
+    const id = setInterval(() => setTick(t => t + 1), 500)
+    return () => clearInterval(id)
+  }, [isRunning])
+  const step = (frac: number, label: string, extra: Partial<Progress> = {}) => {
+    prog.current = { ...prog.current, frac: Math.max(prog.current.frac, Math.min(1, frac)), label, ...extra }
+    setProgress({ ...prog.current })
+  }
+  // Slices of the bar: [loading prices from, to], [simulating from, to], for the main and comparison runs
+  const SLICES: Array<[number, number, number, number]> = [[0.08, 0.6, 0.6, 0.8], [0.8, 0.88, 0.88, 0.99]]
+  const yieldToPaint = () => new Promise(r => setTimeout(r, 0))
+
   // The engines differ in their price history: Crescendo-compatible keeps Crescendo's 2005-12-20 start
   // for volatility funds; Synthetic follows Settings (back to 1986 unless turned off).
   const engineConfig = (e: Engine): Config =>
     ({ ...config, historyMode, deepVolatility: e === 'CLASSIC' ? false : config.deepVolatility })
 
-  async function runEngine(e: Engine, strategy: Strategy, rfRate: number, log: (m: string) => void, start: string | null): Promise<BacktestResult> {
+  async function runEngine(e: Engine, strategy: Strategy, rfRate: number, log: (m: string) => void, start: string | null, k = 0): Promise<BacktestResult> {
     const cfg = engineConfig(e)
     const tickers = getRequiredTickers(strategy)
     if (!tickers.includes(benchmark)) tickers.push(benchmark)
     log(`[${ENGINE_LABEL[e]}] Loading price data for: ${tickers.join(', ')}`)
-    const priceData = await loadTickers(tickers, cfg, log)
+    const [l0, l1, s0, s1] = SLICES[k]
+    const run = k === 0 ? '' : 'Comparison run: '
+    step(l0, `${run}loading prices... 0 of ${new Set(tickers).size} tickers`)
+    const priceData = await loadTickers(tickers, cfg, log,
+      (done, total) => step(l0 + (l1 - l0) * done / total, `${run}loading prices... ${done} of ${total} tickers`))
     const missing = tickers.filter(t => !priceData[t]?.length)
     if (missing.length) throw new Error(`No price data for ${missing.join(', ')}. See the warnings above.`)
+    step(s0, `${run}simulating the strategy...`)
+    await yieldToPaint()
     const result = await runBacktest(
       { strategy, benchmark, startDate: start, endDate: endDate || null },
       priceData, rfRate, log)
     const realFrom = Object.fromEntries(tickers.map(t => [t, realPricesFrom(t, cfg)]))
+    step(s0 + (s1 - s0) * 0.8, `${run}computing the report...`)
+    await yieldToPaint()
     const churn = churnStats(result, priceData)
     return {
       ...result, engine: e,
@@ -96,6 +123,8 @@ export function BacktestPanel({
     logLines.current = []
     onLog([])
     onStatus('fetching')
+    prog.current = { frac: 0, label: 'Starting...', started: performance.now() }
+    setProgress({ ...prog.current })
 
     const log = (msg: string) => {
       logLines.current = [...logLines.current, `[${new Date().toLocaleTimeString()}] ${msg}`]
@@ -109,6 +138,7 @@ export function BacktestPanel({
       const symphonyIdMatch = extractSymphonyId(input)
       if (symphonyIdMatch) {
         log(`Fetching symphony ${symphonyIdMatch} from Composer...`)
+        step(0.01, 'Fetching the symphony from Composer...')
         strategy = await fetchPublicSymphony(symphonyIdMatch, config.corsProxy, log)
       } else {
         strategy = parseStrategyInput(input)
@@ -119,6 +149,8 @@ export function BacktestPanel({
 
       // Optionally load SIM data
       if (historyMode === 'SYNTHETIC') {
+        step(0.04, 'Loading simulated history...')
+        await yieldToPaint()
         await loadSimData(log)
       }
 
@@ -138,19 +170,21 @@ export function BacktestPanel({
       }
 
       onStatus('computing')
-      const result = await runEngine(engine, strategy, rfRate, log, start)
+      const result = await runEngine(engine, strategy, rfRate, log, start, 0)
       if (compare) {
         const other: Engine = engine === 'SYNTHETIC' ? 'CLASSIC' : 'SYNTHETIC'
-        const o = await runEngine(other, strategy, rfRate, log, start)
+        const o = await runEngine(other, strategy, rfRate, log, start, 1)
         result.comparison = { engine: other, dates: o.dates, portfolioValues: o.portfolioValues,
           cagr: o.metrics.cagr, maxDrawdown: o.metrics.maxDrawdown }
       }
       onResult(result)
+      step(1, `Done: ${result.dates.length.toLocaleString()} trading days`, { finished: performance.now() })
       log(`✓ Backtest complete: ${result.dates.length} trading days`)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
       onError(msg)
       onStatus('error')
+      step(prog.current.frac, 'Stopped by an error (see below)', { finished: performance.now(), failed: true })
       log(`✗ Error: ${msg}`)
     }
   }
@@ -273,6 +307,28 @@ export function BacktestPanel({
             </div>
           )}
         </div>
+
+        {/* Progress (Composer Atlas) */}
+        {progress && (() => {
+          const now = progress.finished ?? performance.now()
+          const elapsed = now - progress.started
+          const f = progress.frac
+          const fmt = (ms: number) => { const t = Math.max(0, Math.round(ms / 1000)); return t < 60 ? `${t}s` : `${Math.floor(t / 60)}m ${String(t % 60).padStart(2, '0')}s` }
+          const tail = progress.finished
+            ? `${fmt(elapsed)} total`
+            : f >= 0.1 && elapsed > 1500 ? `${fmt(elapsed * (1 - f) / f)} left` : 'estimating...'
+          return (
+            <div style={{ marginTop: 12, background: panel, border: `1px solid ${border}`, borderRadius: 10, padding: 12 }}>
+              <div style={{ fontSize: 12, color: textMuted, marginBottom: 8, fontWeight: 600 }}>Progress</div>
+              <div style={{ height: 8, borderRadius: 6, background: colors.bg, border: `1px solid ${border}`, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${(100 * f).toFixed(1)}%`, background: progress.failed ? colors.danger : colors.success, transition: 'width .2s linear' }} />
+              </div>
+              <div style={{ fontFamily: 'monospace', fontSize: 11, color: text, marginTop: 8, lineHeight: 1.6 }}>
+                {progress.label} ({Math.round(100 * f)}%) · {tail}
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Log */}
         {backtestLog.length > 0 && (

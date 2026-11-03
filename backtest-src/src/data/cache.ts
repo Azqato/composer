@@ -104,6 +104,16 @@ export async function getCacheSegments(ticker: string): Promise<CacheSegment[]> 
   })
 }
 
+/** Composer Atlas: the most recent weekday 4:30 pm New York time (close plus a margin for data to post). */
+function lastMarketClose(now = new Date()): number {
+  const ny = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }))
+  const offset = now.getTime() - ny.getTime()
+  const close = new Date(ny); close.setHours(16, 30, 0, 0)
+  if (ny < close) close.setDate(close.getDate() - 1)
+  while (close.getDay() === 0 || close.getDay() === 6) close.setDate(close.getDate() - 1)
+  return close.getTime() + offset
+}
+
 /** Returns the date range NOT yet cached for this ticker */
 export async function getMissingRange(
   ticker: string,
@@ -128,6 +138,16 @@ export async function getMissingRange(
   if (!stale && covered.start <= requestedStart && covered.end >= requestedEnd) {
     return null  // fully cached
   }
+  // Composer Atlas: nothing exists before a ticker's first day, so the start is never "covered".
+  // Without this every run re-requested the newest day for every ticker and tripped the relay's
+  // rate limit. Ask again only when a market close has happened since the last real download
+  // (shipped snapshots don't count, so the first run still fetches everything since the snapshot).
+  const lastDownload = Math.max(0, ...segments.filter(s => s.source !== 'SNAPSHOT').map(s => s.fetchedAt))
+  if (!stale && covered.end >= requestedEnd) return null
+  const close = lastMarketClose()
+  const closeDate = new Date(close).toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
+  if (covered.end >= closeDate) return null       // already has the latest closed session
+  if (lastDownload > close) return null           // asked since that close (a holiday has no new day)
   return { start: covered.end, end: requestedEnd }  // fetch tail
 }
 

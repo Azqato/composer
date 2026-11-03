@@ -6,13 +6,14 @@ import { fetchTiingo } from './tiingo'
 import { findSyntheticEntry, blendSeries, calibrateDrift } from './syntheticMap'
 import { loadLetfMap, findLetfEntry, estimateParameters, simulateLetf, trimThinTrading, mergeWithSimExtension } from './letf'
 import { getSimSeries, loadSimData } from './simData'
-import { useLocalCache, isWebsite, loadCachedPrices } from './localCache'
+import { useLocalCache, isWebsite, loadCachedPrices, spliceTail } from './localCache'
 import { healMisprints } from './hygiene'
 import { loadDataText } from './staticFile'
 
 export type ProgressCallback = (msg: string) => void
 
 const TODAY = new Date().toISOString().split('T')[0]
+const refreshFailedAt = new Map<string, number>()
 const HISTORY_START = '1900-01-01'
 
 /**
@@ -174,13 +175,22 @@ async function loadRealPrices(ticker: string, config: Config, log: (m: string) =
     try {
       const shipped = await loadCachedPrices(ticker)
       if (!isWebsite()) return shipped
-      // Composer Atlas: seed the browser cache once, then fetch only the days since the snapshot.
-      if ((await getCachedPrices(ticker)).length === 0) await cachePrices(ticker, shipped, 'SNAPSHOT')
+      // Composer Atlas: seed the browser cache from the shipped prices, and top it up when the daily
+      // feed has added days since; the relay is then asked only for days neither has.
+      const have = await getCachedPrices(ticker)
+      if (have.length === 0) await cachePrices(ticker, shipped, 'SNAPSHOT')
+      else if (shipped[shipped.length - 1].date > have[have.length - 1].date) {
+        const added = spliceTail(have, shipped).slice(have.length)
+        if (added.length) await cachePrices(ticker, added, 'SNAPSHOT')
+      }
     } catch {
       log(`${ticker} isn't in price-cache/; downloading it...`)
     }
   }
   const cached = await getCachedPrices(ticker)
+  // Composer Atlas: after a failed refresh, don't ask again for 10 minutes; the saved prices are used.
+  const failedAt = refreshFailedAt.get(ticker)
+  if (cached.length > 0 && failedAt && Date.now() - failedAt < 600000) return cached
   const missing = await getMissingRange(ticker, HISTORY_START, TODAY)
 
   let liveSeries: PriceSeries = []
@@ -203,6 +213,7 @@ async function loadRealPrices(ticker: string, config: Config, log: (m: string) =
         }
       } catch {
         if (cached.length === 0) throw new Error(`Could not fetch ${ticker}: ${msg}`)
+        refreshFailedAt.set(ticker, Date.now())
         log(`Warning: could not refresh ${ticker}, using cached data`)
       }
     }
@@ -222,16 +233,18 @@ async function loadRealPrices(ticker: string, config: Config, log: (m: string) =
 export async function loadTickers(
   tickers: string[],
   config: Config,
-  onProgress?: ProgressCallback
+  onProgress?: ProgressCallback,
+  onTickerDone?: (done: number, total: number) => void,
 ): Promise<Record<string, PriceSeries>> {
   const unique = [...new Set(tickers)]
+  let done = 0
   const result: Record<string, PriceSeries> = {}
   const CONCURRENCY = 3
 
   for (let i = 0; i < unique.length; i += CONCURRENCY) {
     const batch = unique.slice(i, i + CONCURRENCY)
     const loaded = await Promise.allSettled(
-      batch.map(t => loadTicker(t, config, onProgress))
+      batch.map(t => loadTicker(t, config, onProgress).finally(() => onTickerDone?.(++done, unique.length)))
     )
     for (let j = 0; j < batch.length; j++) {
       const res = loaded[j]

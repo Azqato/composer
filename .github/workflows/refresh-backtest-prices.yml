@@ -1,0 +1,59 @@
+name: Refresh Backtester Prices
+
+on:
+  schedule:
+    # Daily, weekdays at 22:37 UTC: 5:37 pm New York in winter, 6:37 pm in summer, so always
+    # after the close. Kept 30 minutes clear of refresh-rsi.yml (22:07) and off the congested
+    # :00 slot. Writes only backtest/price-cache/_recent.js (about 150 KB).
+    - cron: '37 22 * * 1-5'
+    # Monthly full refresh, the 2nd at 04:37 UTC (no other feed runs then): rewrites every
+    # snapshot in backtest/price-cache/ so _recent.js only ever carries the last few weeks.
+    - cron: '37 4 2 * *'
+  workflow_dispatch:
+    inputs:
+      full:
+        description: 'Full refresh (rewrite every snapshot, about 40 MB)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-backtest-prices
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Fetch prices
+        run: |
+          if [ "${{ github.event.schedule }}" = "37 4 2 * *" ] || [ "${{ inputs.full }}" = "true" ]; then
+            python scripts/update_backtest_recent.py --full
+          else
+            python scripts/update_backtest_recent.py
+          fi
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Only this feed's own files, never the whole tree
+          git add backtest/price-cache/_recent.js backtest/price-cache/*.js
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: refresh backtester prices"
+            # Another feed may have pushed meanwhile; replay on top rather than overwrite it
+            git pull --rebase
+            git push
+          fi
