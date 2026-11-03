@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import type { Config, BacktestResult, BacktestStatus } from './types'
 import { DEFAULT_CONFIG } from './types'
-import { onWebsite, SITE_BASE } from './navigation'
+import { NAV, onWebsite, SITE_BASE, type PageId } from './navigation'
 import { WelcomePanel } from './ui/WelcomePanel'
 import { BacktestPanel } from './ui/BacktestPanel'
 import { SettingsPanel } from './ui/SettingsPanel'
@@ -29,11 +29,13 @@ function saveConfig(cfg: Config) {
 
 export function App() {
   const [config, setConfig] = useState<Config>(loadConfig)
-  // Composer Atlas: one page. Welcome, Run Backtest and Settings are stacked sections; the old tab
-  // addresses (#/run-backtest, /backtest/settings/ via its stub's ?p=) land here and scroll there.
-  const runRef = useRef<HTMLDivElement>(null)
-  const settingsRef = useRef<HTMLDivElement>(null)
-  const scrollTo = (r: React.RefObject<HTMLDivElement>) => r.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  // Composer Atlas: one page with tabs. Welcome, Run Backtest and Settings stay separate tabs, but
+  // switching only changes what is shown: the address is always /backtest/. Old tab addresses
+  // (#/run-backtest, or /backtest/settings/ via its stub's ?p=) open on that tab.
+  const [activeTab, setActiveTab] = useState<PageId>(() => {
+    const old = (new URLSearchParams(location.search).get('p') ?? location.hash.replace(/^#\/?/, '')).replace(/\/$/, '')
+    return NAV.find(p => p.path === old && old)?.id ?? 'WELCOME'
+  })
   const [backtestResult, setBacktestResult] = useState<BacktestResult | null>(null)
   const [backtestStatus, setBacktestStatus] = useState<BacktestStatus>('idle')
   const [backtestError, setBacktestError] = useState<string | null>(null)
@@ -46,12 +48,7 @@ export function App() {
   }, [config.darkTheme])
 
   useEffect(() => {
-    const old = (new URLSearchParams(location.search).get('p') ?? location.hash.replace(/^#\/?/, '')).replace(/\/$/, '')
-    if (location.hash || location.search) {
-      history.replaceState(null, '', onWebsite() ? SITE_BASE : location.pathname)
-    }
-    if (old === 'run-backtest') setTimeout(() => scrollTo(runRef), 50)
-    if (old === 'settings') setTimeout(() => scrollTo(settingsRef), 50)
+    if (location.hash || location.search) history.replaceState(null, '', onWebsite() ? SITE_BASE : location.pathname)
   }, [])
 
   const updateConfig = useCallback((updates: Partial<Config>) => {
@@ -83,12 +80,6 @@ export function App() {
           📈 Synthetic Backtester
         </span>
         <span style={{ flex: 1 }} />
-        {([['📊 Run Backtest', runRef], ['⚙️ Settings', settingsRef]] as const).map(([label, ref]) => (
-          <button key={label} onClick={() => scrollTo(ref)}
-            style={{ background: 'transparent', border: 'none', color: colors.onAccent, padding: '4px 8px', fontSize: 13, cursor: 'pointer' }}>
-            {label}{label.includes('Run') && (backtestStatus === 'fetching' || backtestStatus === 'computing') && ' ⟳'}
-          </button>
-        ))}
         <button
           onClick={() => updateConfig({ darkTheme: !dark })}
           style={{ background: 'transparent', border: `1px solid ${colors.onAccent}`, color: colors.onAccent, borderRadius: 6, padding: '4px 10px' }}
@@ -97,10 +88,36 @@ export function App() {
         </button>
       </div>
 
+      {/* Tabs: all on this one page; switching never changes the address */}
+      <nav style={{ display: 'flex', background: colors.panel, borderBottom: `1px solid ${colors.border}`, padding: '0 8px' }}>
+        {NAV.map(page => (
+          <button
+            key={page.id}
+            onClick={() => { setActiveTab(page.id); window.scrollTo(0, 0) }}
+            aria-current={activeTab === page.id ? 'page' : undefined}
+            style={{
+              background: activeTab === page.id ? colors.tabBg : 'transparent',
+              color: activeTab === page.id ? colors.tabActive : colors.textMuted,
+              border: 'none',
+              borderBottom: activeTab === page.id ? `2px solid ${colors.tabActive}` : '2px solid transparent',
+              padding: '10px 16px', cursor: 'pointer',
+              fontWeight: activeTab === page.id ? 700 : 400,
+              fontSize: 13, transition: 'all 0.15s',
+            }}
+          >
+            {page.icon} {page.label}
+            {page.id === 'RUN_BACKTEST' && (backtestStatus === 'fetching' || backtestStatus === 'computing') && ' ⟳'}
+          </button>
+        ))}
+      </nav>
+
       {/* Panel content */}
       <div style={{ padding: '16px', maxWidth: 1600, margin: '0 auto' }}>
-        <WelcomePanel onStart={() => scrollTo(runRef)} colors={colors} />
-        <div ref={runRef} style={{ scrollMarginTop: 16, marginTop: 24 }}>
+        {/* All three stay mounted, so a run in progress survives a tab switch */}
+        <div hidden={activeTab !== 'WELCOME'}>
+          <WelcomePanel onStart={() => { setActiveTab('RUN_BACKTEST'); window.scrollTo(0, 0) }} colors={colors} />
+        </div>
+        <div hidden={activeTab !== 'RUN_BACKTEST'}>
           <BacktestPanel
             config={config}
             backtestResult={backtestResult}
@@ -114,8 +131,7 @@ export function App() {
             colors={colors}
           />
         </div>
-        <div ref={settingsRef} style={{ scrollMarginTop: 16, marginTop: 32 }}>
-          <h2 style={{ fontSize: 18, margin: '0 0 12px' }}>⚙️ Settings</h2>
+        <div hidden={activeTab !== 'SETTINGS'}>
           <SettingsPanel config={config} onUpdate={updateConfig} colors={colors} />
         </div>
       </div>

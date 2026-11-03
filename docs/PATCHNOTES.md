@@ -10,12 +10,12 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
-## [Unreleased] - Backtester is one page
+## [Unreleased] - Backtester is one page with tabs
 
-- **Welcome, Run Backtest and Settings are now one page** at `/backtest/`, stacked in that order, with
-  Run Backtest and Settings buttons in the title bar that scroll to them. No tab bar, no `#`.
-- Old tab addresses (`/backtest/run-backtest/`, `/backtest/settings/`, `#/...`) open the page
-  scrolled to that section and show `/backtest/`.
+- **Welcome, Run Backtest and Settings stay tabs, all on one page** at `/backtest/`: switching tabs
+  never changes the address, and there is no `#`. A run in progress survives a tab switch.
+- Old tab addresses (`/backtest/run-backtest/`, `/backtest/settings/`, `#/...`) open on that tab and
+  show `/backtest/`.
 
 **Files changed:** `backtest-src/src/App.tsx`, `backtest/index.html`, `backtest/run-backtest/index.html`, `backtest/settings/index.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
 
