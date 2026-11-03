@@ -10,6 +10,17 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Backtester is one page
+
+- **Welcome, Run Backtest and Settings are now one page** at `/backtest/`, stacked in that order, with
+  Run Backtest and Settings buttons in the title bar that scroll to them. No tab bar, no `#`.
+- Old tab addresses (`/backtest/run-backtest/`, `/backtest/settings/`, `#/...`) open the page
+  scrolled to that section and show `/backtest/`.
+
+**Files changed:** `backtest-src/src/App.tsx`, `backtest/index.html`, `backtest/run-backtest/index.html`, `backtest/settings/index.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Backtester: daily price feed, progress box, SPTL and URTY
 
 - **Daily price feed.** New `.github/workflows/refresh-backtest-prices.yml` runs

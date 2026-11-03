@@ -1,8 +1,7 @@
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import type { Config, BacktestResult, BacktestStatus } from './types'
 import { DEFAULT_CONFIG } from './types'
-import { NAV, hrefFor, titleFor } from './navigation'
-import { useRoute, navigate } from './router'
+import { onWebsite, SITE_BASE } from './navigation'
 import { WelcomePanel } from './ui/WelcomePanel'
 import { BacktestPanel } from './ui/BacktestPanel'
 import { SettingsPanel } from './ui/SettingsPanel'
@@ -30,8 +29,11 @@ function saveConfig(cfg: Config) {
 
 export function App() {
   const [config, setConfig] = useState<Config>(loadConfig)
-  const route = useRoute()
-  const activeTab = route.id
+  // Composer Atlas: one page. Welcome, Run Backtest and Settings are stacked sections; the old tab
+  // addresses (#/run-backtest, /backtest/settings/ via its stub's ?p=) land here and scroll there.
+  const runRef = useRef<HTMLDivElement>(null)
+  const settingsRef = useRef<HTMLDivElement>(null)
+  const scrollTo = (r: React.RefObject<HTMLDivElement>) => r.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   const [backtestResult, setBacktestResult] = useState<BacktestResult | null>(null)
   const [backtestStatus, setBacktestStatus] = useState<BacktestStatus>('idle')
   const [backtestError, setBacktestError] = useState<string | null>(null)
@@ -43,7 +45,14 @@ export function App() {
     document.body.classList.toggle('light', !config.darkTheme)
   }, [config.darkTheme])
 
-  useEffect(() => { document.title = titleFor(route) }, [route])
+  useEffect(() => {
+    const old = (new URLSearchParams(location.search).get('p') ?? location.hash.replace(/^#\/?/, '')).replace(/\/$/, '')
+    if (location.hash || location.search) {
+      history.replaceState(null, '', onWebsite() ? SITE_BASE : location.pathname)
+    }
+    if (old === 'run-backtest') setTimeout(() => scrollTo(runRef), 50)
+    if (old === 'settings') setTimeout(() => scrollTo(settingsRef), 50)
+  }, [])
 
   const updateConfig = useCallback((updates: Partial<Config>) => {
     setConfig(prev => {
@@ -74,6 +83,12 @@ export function App() {
           📈 Synthetic Backtester
         </span>
         <span style={{ flex: 1 }} />
+        {([['📊 Run Backtest', runRef], ['⚙️ Settings', settingsRef]] as const).map(([label, ref]) => (
+          <button key={label} onClick={() => scrollTo(ref)}
+            style={{ background: 'transparent', border: 'none', color: colors.onAccent, padding: '4px 8px', fontSize: 13, cursor: 'pointer' }}>
+            {label}{label.includes('Run') && (backtestStatus === 'fetching' || backtestStatus === 'computing') && ' ⟳'}
+          </button>
+        ))}
         <button
           onClick={() => updateConfig({ darkTheme: !dark })}
           style={{ background: 'transparent', border: `1px solid ${colors.onAccent}`, color: colors.onAccent, borderRadius: 6, padding: '4px 10px' }}
@@ -82,46 +97,10 @@ export function App() {
         </button>
       </div>
 
-      {/* Main nav, generated from NAV (src/navigation.ts) */}
-      <nav style={{
-        display: 'flex', background: colors.panel,
-        borderBottom: `1px solid ${colors.border}`,
-        padding: '0 8px',
-      }}>
-        {NAV.map(page => (
-          <a
-            key={page.id}
-            href={hrefFor(page.id)}
-            onClick={e => {
-              // Composer Atlas: switch pages in place on the website instead of reloading 17 MB
-              if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
-              const href = hrefFor(page.id)
-              if (href.startsWith('/')) { e.preventDefault(); navigate(href) }
-            }}
-            aria-current={activeTab === page.id ? 'page' : undefined}
-            style={{
-              background: activeTab === page.id ? colors.tabBg : 'transparent',
-              color: activeTab === page.id ? colors.tabActive : colors.textMuted,
-              borderBottom: activeTab === page.id ? `2px solid ${colors.tabActive}` : '2px solid transparent',
-              padding: '10px 16px',
-              fontWeight: activeTab === page.id ? 700 : 400,
-              fontSize: 13,
-              textDecoration: 'none',
-              transition: 'all 0.15s',
-            }}
-          >
-            {page.icon} {page.label}
-            {page.id === 'RUN_BACKTEST' && (backtestStatus === 'fetching' || backtestStatus === 'computing') && ' ⟳'}
-          </a>
-        ))}
-      </nav>
-
       {/* Panel content */}
       <div style={{ padding: '16px', maxWidth: 1600, margin: '0 auto' }}>
-        {activeTab === 'WELCOME' && (
-          <WelcomePanel onStart={() => navigate(hrefFor('RUN_BACKTEST'))} colors={colors} />
-        )}
-        {activeTab === 'RUN_BACKTEST' && (
+        <WelcomePanel onStart={() => scrollTo(runRef)} colors={colors} />
+        <div ref={runRef} style={{ scrollMarginTop: 16, marginTop: 24 }}>
           <BacktestPanel
             config={config}
             backtestResult={backtestResult}
@@ -134,10 +113,11 @@ export function App() {
             onLog={setBacktestLog}
             colors={colors}
           />
-        )}
-        {activeTab === 'SETTINGS' && (
+        </div>
+        <div ref={settingsRef} style={{ scrollMarginTop: 16, marginTop: 32 }}>
+          <h2 style={{ fontSize: 18, margin: '0 0 12px' }}>⚙️ Settings</h2>
           <SettingsPanel config={config} onUpdate={updateConfig} colors={colors} />
-        )}
+        </div>
       </div>
     </div>
   )
