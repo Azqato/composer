@@ -389,6 +389,16 @@ export function BacktestPanel({
             </button>
           )}
 
+          {/* Composer Atlas: back to the default setup (also clears the remembered one) */}
+          <button type="button" disabled={isRunning}
+            onClick={() => { setStratInput('QQQ'); setBenchmark('QQQ'); setStartDate(''); setEndDate(''); setHistory(config.historyMode ?? 'SYNTHETIC') }}
+            style={{
+              width: '100%', marginTop: 8, padding: '7px', background: 'transparent', color: text,
+              border: `1px solid ${border}`, borderRadius: 6, fontSize: 13, cursor: isRunning ? 'default' : 'pointer',
+            }}>
+            ↺ Default
+          </button>
+
           {backtestError && (
             <div style={{
               marginTop: 12, padding: 10, background: colors.panel, border: `1px solid ${colors.danger}`,
