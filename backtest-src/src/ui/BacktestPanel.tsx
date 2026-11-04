@@ -15,6 +15,13 @@ import { ReportView } from './ReportView'
 
 // History choices: the two synthetic engines, then real prices (all, before or after the symphony's last edit)
 type History = HistoryMode | 'CRESCENDO' | 'IS' | 'OOS'
+
+// Composer Atlas: the last setup used, kept in localStorage
+const SETUP_KEY = 'bt-last-setup'
+type Setup = Partial<{ stratInput: string; benchmark: string; startDate: string; endDate: string; history: History }>
+function loadSetup(): Setup {
+  try { const v = JSON.parse(localStorage.getItem(SETUP_KEY) || '{}'); return v && typeof v === 'object' ? v : {} } catch { return {} }
+}
 interface Props {
   config: Config
   backtestResult: BacktestResult | null
@@ -46,10 +53,11 @@ export function BacktestPanel({
   onResult, onStatus, onError, onLog, colors
 }: Props) {
   const { panel, border, text, textMuted, tabActive } = colors
+  const [saved] = useState(loadSetup)
 
-  const [stratInput, setStratInput] = useState('QQQ') // Composer Atlas: opens ready to run
-  const [benchmark, setBenchmark] = useState('QQQ')
-  const [startDate, setStartDate] = useState('')
+  const [stratInput, setStratInput] = useState<string>(() => saved.stratInput ?? 'QQQ') // Composer Atlas: opens ready to run
+  const [benchmark, setBenchmark] = useState<string>(() => saved.benchmark ?? 'QQQ')
+  const [startDate, setStartDate] = useState<string>(() => saved.startDate ?? '')
   // Date presets: each sets the start date and clears the end date (runs to the latest close)
   const PRESETS: [string, () => string][] = [
     ['Full', () => ''],
@@ -80,10 +88,14 @@ export function BacktestPanel({
         color: on ? tabActive : text, fontWeight: on ? 700 : 400,
       }}>{label}</button>
   )
-  const [endDate, setEndDate] = useState('')
+  const [endDate, setEndDate] = useState<string>(() => saved.endDate ?? '')
   // History choice: Synthetic, Real Data (the STANDARD mode) or Out-of-Sample (real prices,
   // starting the day after the symphony's last edit)
-  const [history, setHistory] = useState<History>(config.historyMode ?? 'SYNTHETIC')
+  const [history, setHistory] = useState<History>(() => saved.history ?? config.historyMode ?? 'SYNTHETIC')
+  // Composer Atlas: remember the setup in this browser so a reload carries it over
+  useEffect(() => {
+    try { localStorage.setItem(SETUP_KEY, JSON.stringify({ stratInput, benchmark, startDate, endDate, history })) } catch { /* storage blocked */ }
+  }, [stratInput, benchmark, startDate, endDate, history])
   const historyMode: HistoryMode = history === 'SYNTHETIC' || history === 'CRESCENDO' ? 'SYNTHETIC' : 'STANDARD'
   // In-Sample ends the run on the symphony's last edit; otherwise the End Date box applies
   const runEnd = useRef<string | null>(null)
