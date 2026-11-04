@@ -47,7 +47,7 @@ export function BacktestPanel({
 }: Props) {
   const { panel, border, text, textMuted, tabActive } = colors
 
-  const [stratInput, setStratInput] = useState('')
+  const [stratInput, setStratInput] = useState('QQQ') // Composer Atlas: opens ready to run
   const [benchmark, setBenchmark] = useState('QQQ')
   const [startDate, setStartDate] = useState('')
   // Date presets: each sets the start date and clears the end date (runs to the latest close)
