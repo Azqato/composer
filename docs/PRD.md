@@ -1389,6 +1389,8 @@ To change it: edit `backtest-src/`, then `python scripts/build_backtest.py` (run
 
 **Adding a ticker:** `python scripts/update_backtest_recent.py --add SPTL URTY` fetches the full history into new snapshot files and refreshes `_recent.js`. Commit the new files. (SPTL and URTY were added this way on 2026-11-03.)
 
+**Symphony as benchmark** (owner, 2026-11-04): the Benchmark box takes a ticker or a Composer symphony link. A link is fetched, backtested first over all its available history (SPY as its own reference), and its equity curve becomes a price series under the symphony's name (cut to 40 characters), so the chart, the metrics tables, the report and alpha/beta treat it like a ticker. The main backtest then starts no earlier than the benchmark symphony's first day. A link is kept as typed; tickers are still uppercased.
+
 **Progress box:** above the Log, styled like the Signal Miner's: a bar, the current step (loading prices with a ticker count, simulating, computing the report, then the comparison run) and time left, projected from elapsed time once 10% is done. In headless tests the times are meaningless (virtual time); only the steps and the result are worth asserting.
 
 Not linked from the nav, footer or homepage yet (owner, 2026-11-03), and not in `sitemap.xml` (the generator lists top-level pages only). Indexing is allowed.

@@ -85,10 +85,20 @@ export function BacktestPanel({
   const engineConfig = (e: Engine): Config =>
     ({ ...config, historyMode, deepVolatility: e === 'CLASSIC' ? false : config.deepVolatility })
 
-  async function runEngine(e: Engine, strategy: Strategy, rfRate: number, log: (m: string) => void, start: string | null, k = 0): Promise<BacktestResult> {
+  // Composer Atlas: the benchmark can be a Composer symphony link. It is backtested first and its
+  // equity curve becomes a price series under `bench.key`, so the chart, metrics and report treat it
+  // exactly like a ticker.
+  type Bench = { key: string; strategy: Strategy | null }
+
+  async function runEngine(e: Engine, strategy: Strategy, rfRate: number, log: (m: string) => void, start: string | null, k = 0, bench: Bench = { key: benchmark, strategy: null }): Promise<BacktestResult> {
     const cfg = engineConfig(e)
+    const benchmark = bench.key
     const tickers = getRequiredTickers(strategy)
-    if (!tickers.includes(benchmark)) tickers.push(benchmark)
+    const benchTickers = bench.strategy ? getRequiredTickers(bench.strategy) : []
+    if (bench.strategy) {
+      // The benchmark symphony's own run needs a reference ticker; SPY is only used for its metrics
+      for (const t of [...benchTickers, 'SPY']) if (!tickers.includes(t)) tickers.push(t)
+    } else if (!tickers.includes(benchmark)) tickers.push(benchmark)
     log(`[${ENGINE_LABEL[e]}] Loading price data for: ${tickers.join(', ')}`)
     const [l0, l1, s0, s1] = SLICES[k]
     const run = k === 0 ? '' : 'Comparison run: '
@@ -97,6 +107,13 @@ export function BacktestPanel({
       (done, total) => step(l0 + (l1 - l0) * done / total, `${run}loading prices... ${done} of ${total} tickers`))
     const missing = tickers.filter(t => !priceData[t]?.length)
     if (missing.length) throw new Error(`No price data for ${missing.join(', ')}. See the warnings above.`)
+    if (bench.strategy) {
+      step(s0, `${run}simulating the benchmark symphony...`)
+      await yieldToPaint()
+      const b = await runBacktest({ strategy: bench.strategy, benchmark: 'SPY', startDate: null, endDate: endDate || null }, priceData, rfRate, log)
+      priceData[benchmark] = b.dates.map((date, i) => ({ date, adjClose: b.portfolioValues[i] }))
+      log(`Benchmark symphony "${benchmark}": ${b.dates.length} trading days from ${b.dates[0]}`)
+    }
     step(s0, `${run}simulating the strategy...`)
     await yieldToPaint()
     const result = await runBacktest(
@@ -111,7 +128,7 @@ export function BacktestPanel({
       metrics: { ...result.metrics, avgChurn: churn.avg, medianChurn: churn.median },
       dataTiers: computeTiers(result, priceData, realFrom), oos: outOfSample(result, strategy),
       holdings: computeHoldings(result), contributions: computeContributions(result, priceData),
-      limiters: computeLimiters(tickers.filter(t => t !== benchmark), priceData, realFrom),
+      limiters: computeLimiters(tickers.filter(t => t !== benchmark && !(bench.strategy && !getRequiredTickers(strategy).includes(t))), priceData, realFrom),
     }
   }
 
@@ -145,7 +162,20 @@ export function BacktestPanel({
       }
 
       log(`Strategy: ${strategy.name}`)
-      log(`Benchmark: ${benchmark}`)
+
+      // Benchmark: a ticker, or a Composer symphony link (Composer Atlas)
+      let bench: Bench = { key: benchmark.trim().toUpperCase() || 'QQQ', strategy: null }
+      const benchId = extractSymphonyId(benchmark.trim())
+      if (benchId) {
+        log(`Fetching benchmark symphony ${benchId} from Composer...`)
+        step(0.02, 'Fetching the benchmark symphony from Composer...')
+        const bs = await fetchPublicSymphony(benchId, config.corsProxy, log)
+        let key = (bs.name || 'Benchmark symphony').trim()
+        if (key.length > 40) key = key.slice(0, 39).trimEnd() + '…'
+        if (key === strategy.name) key += ' (benchmark)'
+        bench = { key, strategy: bs }
+      }
+      log(`Benchmark: ${bench.key}`)
 
       // Optionally load SIM data
       if (historyMode === 'SYNTHETIC') {
@@ -170,10 +200,10 @@ export function BacktestPanel({
       }
 
       onStatus('computing')
-      const result = await runEngine(engine, strategy, rfRate, log, start, 0)
+      const result = await runEngine(engine, strategy, rfRate, log, start, 0, bench)
       if (compare) {
         const other: Engine = engine === 'SYNTHETIC' ? 'CLASSIC' : 'SYNTHETIC'
-        const o = await runEngine(other, strategy, rfRate, log, start, 1)
+        const o = await runEngine(other, strategy, rfRate, log, start, 1, bench)
         result.comparison = { engine: other, dates: o.dates, portfolioValues: o.portfolioValues,
           cagr: o.metrics.cagr, maxDrawdown: o.metrics.maxDrawdown }
       }
@@ -245,11 +275,12 @@ export function BacktestPanel({
           </div>
 
           <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle as React.CSSProperties}>Benchmark Ticker</label>
+            <label style={labelStyle as React.CSSProperties}>Benchmark (ticker or Composer symphony link)</label>
             <input
               value={benchmark}
-              onChange={e => setBenchmark(e.target.value.toUpperCase())}
-              placeholder="QQQ"
+              // A ticker is uppercased; a symphony link is kept as typed (its id is case-sensitive)
+              onChange={e => setBenchmark(/composer\.trade|\//i.test(e.target.value) ? e.target.value : e.target.value.toUpperCase())}
+              placeholder="QQQ, or https://app.composer.trade/symphony/.."
               style={inputStyle}
             />
           </div>

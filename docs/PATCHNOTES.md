@@ -10,6 +10,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Backtester: a symphony as the benchmark
+
+- **The Benchmark box takes a Composer symphony link** as well as a ticker. The symphony is
+  backtested first and drawn on the chart, and compared in every metrics table, under its own name.
+- The box no longer uppercases a link (symphony ids are case-sensitive).
+
+**Files changed:** `backtest-src/src/ui/BacktestPanel.tsx`, `backtest/index.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Backtester: Atlas navigation, remembers the last tab
 
 - **Composer Atlas navigation** on `/backtest/` in place of the Backtester's title bar, in the
