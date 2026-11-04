@@ -14,14 +14,43 @@ export function comparisonTrace(result: BacktestResult, pv: number[], color: str
   }
 }
 
-/** Plotly shading for the out-of-sample days (after the symphony's last edit). */
-export function oosShape(result: BacktestResult, text: string, fill: string) {
-  if (!result.oos) return {}
-  const end = result.dates[result.dates.length - 1]
+/**
+ * Where the run's periods begin: real data from the day after the last simulated day (so the band
+ * holds only real prices), and out of sample from the day after the symphony's last edit.
+ */
+export function periodStarts(result: BacktestResult): { realFrom?: string; oosFrom?: string } {
+  const tiers = result.dataTiers ?? []
+  const simSegs = tiers.filter(t => t.tier === 'simulated')
+  const lastSim = simSegs[simSegs.length - 1]
+  const realSeg = lastSim ? tiers.slice(tiers.indexOf(lastSim) + 1).find(t => t.tier === 'real') : undefined
+  return { realFrom: realSeg?.start, oosFrom: result.oos?.from }
+}
+
+/** The shaded periods in order: Synthetic, then In-Sample and Out-of-Sample when there is a last edit, or else Real Data. */
+export function periods(result: BacktestResult): { key: 'syn' | 'ins' | 'oos'; label: string; from: string; to: string }[] {
+  const { realFrom, oosFrom } = periodStarts(result)
+  const first = result.dates[0], end = result.dates[result.dates.length - 1]
+  const out: ReturnType<typeof periods> = []
+  if (realFrom) out.push({ key: 'syn', label: 'Synthetic', from: first, to: oosFrom && oosFrom < realFrom ? oosFrom : realFrom })
+  if (oosFrom) {
+    const from = realFrom && realFrom < oosFrom ? realFrom : first
+    if (from < oosFrom && !(realFrom && realFrom >= oosFrom)) out.push({ key: 'ins', label: 'In-Sample', from, to: oosFrom })
+    out.push({ key: 'oos', label: 'Out-of-Sample', from: oosFrom, to: end })
+  } else {
+    // No last edit (tickers, pasted JSON): the real prices are one Real Data band, in the In-Sample color
+    out.push({ key: 'ins', label: 'Real Data', from: realFrom ?? first, to: end })
+  }
+  return out
+}
+
+/** Plotly shading for the Synthetic, In-Sample and out-of-sample periods. */
+export function periodShapes(result: BacktestResult, text: string, fills: Record<'syn' | 'ins' | 'oos', string>) {
+  const ps = periods(result)
+  if (!ps.length) return {}
   return {
-    shapes: [{ type: 'rect', xref: 'x', yref: 'paper', x0: result.oos.from, x1: end, y0: 0, y1: 1,
-      fillcolor: fill, line: { width: 0 }, layer: 'below' }],
-    annotations: [{ xref: 'x', yref: 'paper', x: result.oos.from, y: 1, xanchor: 'left', yanchor: 'bottom',
-      text: 'OOS', showarrow: false, font: { size: 10, color: text } }],
+    shapes: ps.map(p => ({ type: 'rect', xref: 'x', yref: 'paper', x0: p.from, x1: p.to, y0: 0, y1: 1,
+      fillcolor: fills[p.key], line: { width: 0 }, layer: 'below' })),
+    annotations: ps.map(p => ({ xref: 'x', yref: 'paper', x: p.from, y: 1, xanchor: 'left', yanchor: 'bottom',
+      text: p.label, showarrow: false, font: { size: 10, color: text } })),
   }
 }

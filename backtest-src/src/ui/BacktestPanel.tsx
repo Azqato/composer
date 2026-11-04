@@ -12,6 +12,9 @@ import { loadSimData } from '../data/simData'
 import { generateReport } from '../reports/generator'
 import { ReportView } from './ReportView'
 
+
+// History choices: the two synthetic engines, then real prices (all, before or after the symphony's last edit)
+type History = HistoryMode | 'CRESCENDO' | 'IS' | 'OOS'
 interface Props {
   config: Config
   backtestResult: BacktestResult | null
@@ -47,21 +50,51 @@ export function BacktestPanel({
   const [stratInput, setStratInput] = useState('')
   const [benchmark, setBenchmark] = useState('QQQ')
   const [startDate, setStartDate] = useState('')
+  // Date presets: each sets the start date and clears the end date (runs to the latest close)
+  const PRESETS: [string, () => string][] = [
+    ['Full', () => ''],
+    ['YTD', () => `${new Date().getFullYear()}-01-01`],
+    ...[1, 3, 5, 10].map(y => [`${y}Y`, () => {
+      const d = new Date(); d.setFullYear(d.getFullYear() - y)
+      return d.toISOString().slice(0, 10)
+    }] as [string, () => string]),
+  ]
+  // Market events: S&P 500 closing high before the drop, to the day it closed above that high again
+  // (checked against ^GSPC closes). An optional fourth entry describes a range that differs.
+  const EVENTS: [string, string, string, string?][] = [
+    ['1929', '1929-09-16', '1954-09-22'],
+    ['1973', '1973-01-11', '1980-07-17'],
+    ['Black Monday', '1987-08-25', '1989-07-26'],
+    ['1990', '1990-01-02', '2002-10-09', 'S&P 500 from 1990 through the Tech Bubble peak to its low 2002-10-09'],
+    ['Tech Bubble', '2000-03-24', '2007-05-30'],
+    ['GFC', '2007-10-09', '2013-03-28'],
+    ['2018', '2018-09-20', '2019-04-23'],
+    ['COVID', '2020-02-19', '2020-08-18'],
+    ['2022', '2022-01-03', '2024-01-19'],
+  ]
+  const chip = (label: string, on: boolean, onClick: () => void, title?: string) => (
+    <button key={label} type="button" onClick={onClick} aria-pressed={on} title={title}
+      style={{
+        padding: '5px 0', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', borderRadius: 6, cursor: 'pointer',
+        border: `1px solid ${on ? tabActive : border}`, background: on ? colors.tabBg : 'transparent',
+        color: on ? tabActive : text, fontWeight: on ? 700 : 400,
+      }}>{label}</button>
+  )
   const [endDate, setEndDate] = useState('')
-  // History choice: Synthetic, Real Data (the STANDARD mode) or Out of Sample (Synthetic prices,
+  // History choice: Synthetic, Real Data (the STANDARD mode) or Out-of-Sample (real prices,
   // starting the day after the symphony's last edit)
-  const [history, setHistory] = useState<HistoryMode | 'OOS'>(config.historyMode ?? 'SYNTHETIC')
-  const historyMode: HistoryMode = history === 'OOS' ? 'SYNTHETIC' : history
-  // Every run uses the Synthetic engine and overlays the comparison run (the CLASSIC engine,
-  // kept for good but no longer chosen or named in the UI)
-  const engine: Engine = 'SYNTHETIC'
-  const compare = true
+  const [history, setHistory] = useState<History>(config.historyMode ?? 'SYNTHETIC')
+  const historyMode: HistoryMode = history === 'SYNTHETIC' || history === 'CRESCENDO' ? 'SYNTHETIC' : 'STANDARD'
+  // In-Sample ends the run on the symphony's last edit; otherwise the End Date box applies
+  const runEnd = useRef<string | null>(null)
+  // Synthetic (Crescendo) runs the Crescendo-compatible engine; every other choice runs Provenance
+  const engine: Engine = history === 'CRESCENDO' ? 'CLASSIC' : 'SYNTHETIC'
   const logRef = useRef<HTMLDivElement>(null)
   const logLines = useRef<string[]>([])
 
   const isRunning = backtestStatus === 'fetching' || backtestStatus === 'computing'
 
-  // Composer Atlas: progress box with a time-left estimate, in the style of the Signal Miner.
+  // progress box with a time-left estimate.
   // Each step owns a slice of the bar; loading prices advances per ticker within its slice.
   type Progress = { frac: number; label: string; started: number; finished?: number; failed?: boolean }
   const [progress, setProgress] = useState<Progress | null>(null)
@@ -77,7 +110,7 @@ export function BacktestPanel({
     setProgress({ ...prog.current })
   }
   // Slices of the bar: [loading prices from, to], [simulating from, to], for the main and comparison runs
-  const SLICES: Array<[number, number, number, number]> = [[0.08, 0.6, 0.6, 0.8], [0.8, 0.88, 0.88, 0.99]]
+  const SLICES: Array<[number, number, number, number]> = [[0.08, 0.8, 0.8, 0.99], [0.8, 0.88, 0.88, 0.99]]
   const yieldToPaint = () => new Promise(r => setTimeout(r, 0))
 
   // The engines differ in their price history: Crescendo-compatible keeps Crescendo's 2005-12-20 start
@@ -85,7 +118,7 @@ export function BacktestPanel({
   const engineConfig = (e: Engine): Config =>
     ({ ...config, historyMode, deepVolatility: e === 'CLASSIC' ? false : config.deepVolatility })
 
-  // Composer Atlas: the benchmark can be a Composer symphony link. It is backtested first and its
+  // the benchmark can be a Composer symphony link. It is backtested first and its
   // equity curve becomes a price series under `bench.key`, so the chart, metrics and report treat it
   // exactly like a ticker.
   type Bench = { key: string; strategy: Strategy | null }
@@ -101,7 +134,7 @@ export function BacktestPanel({
     } else if (!tickers.includes(benchmark)) tickers.push(benchmark)
     log(`[${ENGINE_LABEL[e]}] Loading price data for: ${tickers.join(', ')}`)
     const [l0, l1, s0, s1] = SLICES[k]
-    const run = k === 0 ? '' : 'Comparison run: '
+    const run = e === 'CLASSIC' ? 'Crescendo run: ' : ''
     step(l0, `${run}loading prices... 0 of ${new Set(tickers).size} tickers`)
     const priceData = await loadTickers(tickers, cfg, log,
       (done, total) => step(l0 + (l1 - l0) * done / total, `${run}loading prices... ${done} of ${total} tickers`))
@@ -110,14 +143,14 @@ export function BacktestPanel({
     if (bench.strategy) {
       step(s0, `${run}simulating the benchmark symphony...`)
       await yieldToPaint()
-      const b = await runBacktest({ strategy: bench.strategy, benchmark: 'SPY', startDate: null, endDate: endDate || null }, priceData, rfRate, log)
+      const b = await runBacktest({ strategy: bench.strategy, benchmark: 'SPY', startDate: null, endDate: runEnd.current }, priceData, rfRate, log)
       priceData[benchmark] = b.dates.map((date, i) => ({ date, adjClose: b.portfolioValues[i] }))
       log(`Benchmark symphony "${benchmark}": ${b.dates.length} trading days from ${b.dates[0]}`)
     }
     step(s0, `${run}simulating the strategy...`)
     await yieldToPaint()
     const result = await runBacktest(
-      { strategy, benchmark, startDate: start, endDate: endDate || null },
+      { strategy, benchmark, startDate: start, endDate: runEnd.current },
       priceData, rfRate, log)
     const realFrom = Object.fromEntries(tickers.map(t => [t, realPricesFrom(t, cfg)]))
     step(s0 + (s1 - s0) * 0.8, `${run}computing the report...`)
@@ -163,7 +196,7 @@ export function BacktestPanel({
 
       log(`Strategy: ${strategy.name}`)
 
-      // Benchmark: a ticker, or a Composer symphony link (Composer Atlas)
+      // Benchmark: a ticker, or a Composer symphony link
       let bench: Bench = { key: benchmark.trim().toUpperCase() || 'QQQ', strategy: null }
       const benchId = extractSymphonyId(benchmark.trim())
       if (benchId) {
@@ -188,25 +221,26 @@ export function BacktestPanel({
       const rfRate = await fetchRiskFreeRate(config.fredApiKey)
       log(`Risk-free rate: ${(rfRate * 100).toFixed(2)}%`)
 
-      // Out of Sample: start the day after the last edit (or the start date, if that is later)
+      // Out-of-Sample starts the day after the last edit (or the start date, if later);
+      // In-Sample ends on the last edit (or the end date, if earlier)
       let start: string | null = startDate || null
-      if (history === 'OOS') {
+      runEnd.current = endDate || null
+      if (history === 'OOS' || history === 'IS') {
         const edited = strategy.type === 'symphony' ? strategy.editedAt : undefined
-        if (!edited) throw new Error("Out of Sample needs the symphony's last edit date, which this strategy does not have. Load it from a Composer link, or choose Synthetic or Real Data.")
-        const next = new Date(edited + 'T00:00:00Z'); next.setUTCDate(next.getUTCDate() + 1)
-        const from = next.toISOString().slice(0, 10)
-        if (!start || start < from) start = from
-        log(`Out of Sample: from ${start} (last edit ${edited})`)
+        if (!edited) throw new Error("In-Sample and Out-of-Sample need the symphony's last edit date, which this strategy does not have. Load it from a Composer link, or choose another History.")
+        if (history === 'OOS') {
+          const next = new Date(edited + 'T00:00:00Z'); next.setUTCDate(next.getUTCDate() + 1)
+          const from = next.toISOString().slice(0, 10)
+          if (!start || start < from) start = from
+          log(`Out-of-Sample: from ${start} (last edit ${edited})`)
+        } else {
+          if (!runEnd.current || runEnd.current > edited) runEnd.current = edited
+          log(`In-Sample: to ${runEnd.current} (last edit ${edited})`)
+        }
       }
 
       onStatus('computing')
       const result = await runEngine(engine, strategy, rfRate, log, start, 0, bench)
-      if (compare) {
-        const other: Engine = engine === 'SYNTHETIC' ? 'CLASSIC' : 'SYNTHETIC'
-        const o = await runEngine(other, strategy, rfRate, log, start, 1, bench)
-        result.comparison = { engine: other, dates: o.dates, portfolioValues: o.portfolioValues,
-          cagr: o.metrics.cagr, maxDrawdown: o.metrics.maxDrawdown }
-      }
       onResult(result)
       step(1, `Done: ${result.dates.length.toLocaleString()} trading days`, { finished: performance.now() })
       log(`✓ Backtest complete: ${result.dates.length} trading days`)
@@ -285,6 +319,18 @@ export function BacktestPanel({
             />
           </div>
 
+          <label style={labelStyle as React.CSSProperties}>Date Range</label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6, marginBottom: 10 }}>
+            {PRESETS.map(([label, from]) =>
+              chip(label, !endDate && startDate === from(), () => { setStartDate(from()); setEndDate('') }))}
+          </div>
+          {/* Market events: the high before the drop to the recovery */}
+          <label style={labelStyle as React.CSSProperties}>Market Events</label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 }}>
+            {EVENTS.map(([label, from, to, note]) =>
+              chip(label, startDate === from && endDate === to, () => { setStartDate(from); setEndDate(to) },
+                note ?? `S&P 500 high ${from} to recovery ${to}`))}
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
             <div>
               <label style={labelStyle as React.CSSProperties}>Start Date</label>
@@ -298,10 +344,12 @@ export function BacktestPanel({
 
           <div style={{ marginBottom: 14 }}>
             <label style={labelStyle as React.CSSProperties}>History</label>
-            <select value={history} onChange={e => setHistory(e.target.value as HistoryMode | 'OOS')} style={inputStyle}>
-              <option value="SYNTHETIC">Synthetic: extend with simulated history</option>
-              <option value="STANDARD">Real Data: real prices only</option>
-              <option value="OOS">Out of Sample: from the symphony's last edit</option>
+            <select value={history} onChange={e => setHistory(e.target.value as History)} style={inputStyle}>
+              <option value="SYNTHETIC">Synthetic (Provenance)</option>
+              <option value="CRESCENDO">Synthetic (Crescendo)</option>
+              <option value="STANDARD">Real Data (All)</option>
+              <option value="IS">Real Data (In-Sample)</option>
+              <option value="OOS">Real Data (Out-of-Sample)</option>
             </select>
           </div>
 
@@ -339,7 +387,7 @@ export function BacktestPanel({
           )}
         </div>
 
-        {/* Progress (Composer Atlas) */}
+        {/* Progress */}
         {progress && (() => {
           const now = progress.finished ?? performance.now()
           const elapsed = now - progress.started

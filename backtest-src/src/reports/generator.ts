@@ -7,6 +7,7 @@ import { KPIS, METRIC_GROUPS, worstDrawdowns, benchmarkDrawdowns, CONTRIBUTION_T
 import tokensCss from '../styles/tokens.css?raw'
 import dataColorsCss from '../styles/data-colors.css?raw'
 import { tierShares } from '../engine/tiers'
+import { periods } from './overlays'
 
 const START = 100
 const PAGES = 6
@@ -25,7 +26,7 @@ export function generateReport(result: BacktestResult): string {
   const lastSim = simSegs[simSegs.length - 1]
   const realSeg = lastSim ? tiers.slice(tiers.indexOf(lastSim) + 1).find(t => t.tier === 'real') : undefined
   const oos = result.oos
-  const ctx: ChartCtx = { dates: DATES, realFrom: realSeg && simSegs.length ? realSeg.start : undefined, oosFrom: oos?.from }
+  const ctx: ChartCtx = { dates: DATES, realFrom: realSeg && simSegs.length ? realSeg.start : undefined, periods: periods(result) }
 
   // The comparison run, rescaled to start at this run's value, on this run's dates
   let cmpY: number[] | null = null
@@ -59,19 +60,18 @@ export function generateReport(result: BacktestResult): string {
   const notes = [
     simSegs.length ? note('Synthetic Data', simSegs[0].start, spanStats(simSegs[0].start)) : '',
     realSeg && simSegs.length ? note('Real Data', realSeg.start, spanStats(realSeg.start)) : '',
-    oos ? note('Out of Sample', oos.editedAt, { cagr: oos.metrics.cagr, dd: oos.metrics.maxDrawdown }) : '',
+    oos ? note('Out-of-Sample', oos.editedAt, { cagr: oos.metrics.cagr, dd: oos.metrics.maxDrawdown }) : '',
   ].join('')
 
   let mdd = 0, pk = PV[0]
   PV.forEach(v => { if (v > pk) pk = v; mdd = Math.min(mdd, v / pk - 1) })
 
-  const chips = [`<span class="chip on">Provenance Engine</span>`,
-    oos ? `<span class="chip">Out of Sample Since ${fmtDate(oos.editedAt)}</span>` : '',
+  const chips = [`<span class="chip on">${result.engine === 'CLASSIC' ? 'Crescendo' : 'Provenance'} Engine</span>`,
+    oos ? `<span class="chip">Out-of-Sample Since ${fmtDate(oos.editedAt)}</span>` : '',
     tiers.length ? `<span class="chip">${dataShare(tiers, DATES)}</span>` : ''].join('')
 
   const legend = [`<span><i></i>Backtest</span>`, `<span><i class="b"></i>${bench}</span>`,
-    ctx.realFrom ? `<span><i class="re"></i>Real Data (From ${fmtDate(ctx.realFrom)})</span><span><i class="si"></i>Simulated (Unshaded, Until ${fmtDate(simSegs[simSegs.length - 1].end)})</span>` : '',
-    oos ? `<span><i class="o"></i>Out of Sample</span>` : '', `<span>Growth of $1, Log Scale</span>`].join('')
+    ...ctx.periods.map(p => `<span><i class="${p.key}"></i>${p.label} (${fmtDate(p.from)} - ${fmtDate(p.to)})</span>`)].join('')
 
   const page = (n: number, inner: string) => `<section class="page">
   <header class="top"><div class="brand">Synthetic Backtester<small>Generated ${new Date(result.generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</small></div><div class="meta">${name}<br>${fmtDate(DATES[0])} – ${fmtDate(DATES[DATES.length - 1])}</div></header>
@@ -179,7 +179,7 @@ function metricTable(group: typeof METRIC_GROUPS[number], result: BacktestResult
   const rf = result.riskFreeRate, oos = result.oos, bmm = result.benchmarkMetrics
   const cell = (v: string) => `<td class="num${/^-/.test(v) ? ' neg' : ''}">${num(v)}</td>`
   const rows = group.rows.map(r => `<tr><td>${escHtml(r.label)}</td>${cell(r.value(result.metrics, rf))}${oos ? cell(r.value(oos.metrics, rf)) : ''}${cell(bmm && !r.relative ? r.value(bmm, rf) : '—')}</tr>`).join('')
-  return `<table class="metrics"><tr><th>${GROUP_TITLE[group.title] ?? group.title}</th><th class="num">Backtest</th>${oos ? '<th class="num">OOS</th>' : ''}<th class="num">${escHtml(result.benchmarkTicker)}</th></tr>${rows}</table>`
+  return `<table class="metrics"><tr><th>${GROUP_TITLE[group.title] ?? group.title}</th><th class="num">Backtest</th>${oos ? '<th class="num">Out-of-Sample</th>' : ''}<th class="num">${escHtml(result.benchmarkTicker)}</th></tr>${rows}</table>`
 }
 
 function ddTable(periods: DrawdownPeriod[]): string {
@@ -207,7 +207,7 @@ function heatTable(result: BacktestResult): string {
 
 // ─── SVG charts ───────────────────────────────────────────────────────────────
 
-interface ChartCtx { dates: string[]; realFrom?: string; oosFrom?: string }
+interface ChartCtx { dates: string[]; realFrom?: string; periods: ReturnType<typeof periods> }
 interface LineOpts { w: number; h: number; series: { y: number[]; cls: string }[]; log?: boolean; yFmt: (v: number) => string; zero?: boolean; fill?: boolean }
 
 const stepOf = (n: number, target: number) => Math.max(1, Math.round(n / target))
@@ -224,13 +224,12 @@ function lineChart(ctx: ChartCtx, { w, h, series, log = false, yFmt, zero = fals
   const X = (i: number) => L + (i / Math.max(1, n - 1)) * (w - L - R)
   const Y = (v: number) => Tp + (1 - (tf(v) - lo) / (hi - lo)) * (h - Tp - B)
   let g = ''
-  // Real data as a shaded band, then out of sample on top of it
-  const band = (from: string | undefined, cls: string, label: string, tcls: string) => {
-    const i = from ? xs.findIndex(d => d >= from) : -1
-    if (i >= 0) g += `<rect class="${cls}" x="${X(i)}" y="${Tp}" width="${X(n - 1) - X(i)}" height="${h - Tp - B}"/><text class="ax${tcls}" x="${X(i) + 3}" y="${Tp + 9}">${label}</text>`
+  // Shaded periods: Synthetic, In-Sample, then out of sample, as in the app's chart
+  for (const p of ctx.periods) {
+    const i = xs.findIndex(d => d >= p.from)
+    let j = xs.findIndex(d => d >= p.to); if (j < 0) j = n - 1
+    if (i >= 0) g += `<rect class="${p.key}" x="${X(i)}" y="${Tp}" width="${X(j) - X(i)}" height="${h - Tp - B}"/><text class="ax" x="${X(i) + 3}" y="${Tp + 9}">${p.label}</text>`
   }
-  band(ctx.realFrom, 'real', 'Real Data', ' real-t')
-  band(ctx.oosFrom, 'oos', 'OOS', '')
   const ticks: number[] = []
   if (log) for (let e = Math.ceil(lo); e <= hi; e++) ticks.push(10 ** e)
   else {
@@ -367,16 +366,15 @@ const STYLES = `
   .panel { flex-shrink:0; border-radius:8px; overflow:hidden; border:1px solid var(--ti-color-border-strong); }
   .dark { background:var(--ti-color-canvas); padding:8px 8px 4px; }
   svg .grid { stroke:var(--line); stroke-width:.6 } svg .ax { fill:var(--muted); font-size:8px; }
-  svg path { fill:none; } svg .oos { fill:var(--oos); opacity:.8 } svg .real { fill:color-mix(in srgb, var(--bt-tier-real) 10%, transparent); } svg .real-t { fill:var(--bt-tier-real); font-weight:600 }
+  svg path { fill:none; } svg .oos { fill:var(--oos); opacity:.8 } svg .syn { fill:var(--bt-syn); opacity:.8 } svg .ins { fill:var(--bt-ins); opacity:.8 }
   svg .strat { stroke:var(--accent); stroke-width:1.3; } svg .strat-solid { stroke:var(--accent); stroke-width:1; }
   svg .bench { stroke:var(--bench); stroke-width:1.1; stroke-dasharray:5 3; } svg .cmp { stroke:var(--cmp); stroke-width:1; stroke-dasharray:2 2; }
   svg .loss { stroke:var(--neg); stroke-width:.8; } svg .loss-fill { fill:var(--neg); opacity:.8; stroke:none; }
   svg .strat-bar { fill:var(--accent); } svg .strat-bar.op { opacity:.7 } svg .bench-bar { fill:var(--bench); opacity:.7 } svg .bench-bar.solid { opacity:1 }
   .legend { display:flex; justify-content:center; gap:14px; color:var(--muted); font-size:7pt; padding:2px 0 4px; flex-wrap:wrap; }
   .legend i { display:inline-block; width:14px; height:0; border-top:2px solid var(--accent); vertical-align:middle; margin-right:4px; }
-  .legend i.b { border-top:2px dotted var(--bench); } .legend i.o { border:0; height:8px; width:12px; background:var(--oos); }
+  .legend i.b { border-top:2px dotted var(--bench); } .legend i.oos, .legend i.syn, .legend i.ins { border:0; height:8px; width:12px; background:var(--oos); } .legend i.syn { background:var(--bt-syn); } .legend i.ins { background:var(--bt-ins); }
   .legend i.sq { border-top:6px solid var(--accent); } .legend i.sq.b { border-top:6px solid var(--bench); }
-  .legend i.re { border:0; height:8px; width:12px; background:color-mix(in srgb, var(--bt-tier-real) 10%, transparent); outline:1px solid var(--bt-tier-real); } .legend i.si { border:0; height:8px; width:12px; outline:1px solid var(--ti-color-border-strong); }
   .tierbar { display:flex; height:6px; border-radius:3px; overflow:hidden; margin:2px 46px 2px 4px; } .tierbar div { min-width:1px; }
   .tierlegend { display:flex; flex-wrap:wrap; gap:4px 12px; color:var(--muted); font-size:7pt; margin:2px 4px; }
   .tierlegend i { display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:4px; vertical-align:-1px; }

@@ -3,7 +3,7 @@ import PlotlyLib from 'plotly.js-dist-min'
 import { TierStrip } from './TierStrip'
 import type { BacktestResult, BacktestMetrics, DrawdownPeriod } from '../types'
 import { KPIS, METRIC_GROUPS, VISIBLE_ROWS, worstDrawdowns, benchmarkDrawdowns, pct, CONTRIBUTION_HEAD, CONTRIBUTION_TIP, contributionRows } from '../reports/metricGroups'
-import { comparisonTrace, oosShape } from '../reports/overlays'
+import { comparisonTrace, periodShapes } from '../reports/overlays'
 
 // Bundled (not loaded from a CDN) so charts work offline and in the single-file build.
 const Plotly = PlotlyLib as unknown as {
@@ -47,7 +47,7 @@ export function ReportView({ result, colors }: Props) {
         { x: dates, y: pv, name: result.strategyName, type: 'scatter', mode: 'lines', line: { color: colors.strategy, width: 2 } },
         { x: dates, y: bv, name: result.benchmarkTicker, type: 'scatter', mode: 'lines', line: { color: colors.benchmark, width: 1.5, dash: 'dot' } },
         ...(result.comparison ? [comparisonTrace(result, pv, colors.compare)] : []),
-      ], { ...plotlyTheme, yaxis: { ...plotlyTheme.yaxis, type: 'log', title: 'Portfolio Value ($)' }, ...oosShape(result, text, colors.oos) }, { responsive: true })
+      ], { ...plotlyTheme, yaxis: { ...plotlyTheme.yaxis, type: 'log', title: 'Portfolio Value ($)' }, ...periodShapes(result, text, { syn: colors.syn, ins: colors.ins, oos: colors.oos }) }, { responsive: true })
     }
 
     // ── EOY bar ──
@@ -284,7 +284,7 @@ function MetricGroupTable({ group, result, colors }: {
           <tr>
             <th style={th}>Metric</th>
             <th style={th}>Strategy</th>
-            {result.oos && <th style={th} title={`Since ${result.oos.from}, after the last edit`}>OOS</th>}
+            {result.oos && <th style={th} title={`Since ${result.oos.from}, after the last edit`}>Out-of-Sample</th>}
             <th style={{ ...th, color: colors.textMuted }}>{result.benchmarkTicker}</th>
           </tr>
         </thead>

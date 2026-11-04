@@ -25,7 +25,7 @@ export type HistoryMode = 'SYNTHETIC' | 'STANDARD'
 // SYNTHETIC: our engine (main focus; uses deepVolatility). CRESCENDO: runs as Crescendo does
 // (volatility funds start 2005-12-20), for comparing with Crescendo's reports.
 export type Engine = 'SYNTHETIC' | 'CLASSIC'
-export const ENGINE_LABEL: Record<Engine, string> = { SYNTHETIC: 'Provenance', CLASSIC: 'Comparison' }
+export const ENGINE_LABEL: Record<Engine, string> = { SYNTHETIC: 'Provenance', CLASSIC: 'Crescendo' }
 
 // Data tiers for the chart strip (engine/tiers.ts)
 export type DataTier = 'real' | 'simulated' | 'filled'

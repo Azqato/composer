@@ -23,6 +23,8 @@ const ROLES = {
   gain: '--bt-gain',
   loss: '--bt-loss',
   oos: '--bt-oos',
+  syn: '--bt-syn',
+  ins: '--bt-ins',
 } as const
 
 export type ThemeColors = Record<keyof typeof ROLES, string>

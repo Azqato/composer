@@ -13,10 +13,12 @@
   --bt-series-strategy: var(--ti-color-accent);
   --bt-series-benchmark: var(--ti-orange-50);
   --bt-series-compare: var(--ti-purple-50);
-  /* Gains and losses (always with a sign), and the out-of-sample band */
+  /* Gains and losses (always with a sign), and the Synthetic, In-Sample and out-of-sample bands */
   --bt-gain: var(--ti-color-success);
   --bt-loss: var(--ti-color-danger);
   --bt-oos: var(--ti-purple-5);
+  --bt-syn: var(--ti-gray-10);
+  --bt-ins: var(--ti-green-5);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -24,6 +26,8 @@
     --bt-series-benchmark: var(--ti-orange-40);
     --bt-series-compare: var(--ti-purple-40);
     --bt-oos: var(--ti-purple-90);
+    --bt-syn: var(--ti-gray-80);
+    --bt-ins: var(--ti-green-90);
   }
 }
 
@@ -31,4 +35,6 @@
   --bt-series-benchmark: var(--ti-orange-40);
   --bt-series-compare: var(--ti-purple-40);
   --bt-oos: var(--ti-purple-90);
+  --bt-syn: var(--ti-gray-80);
+  --bt-ins: var(--ti-green-90);
 }

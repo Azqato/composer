@@ -10,6 +10,17 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Backtester: one engine per run, five History choices, date presets
+
+- **History** now has five choices: Synthetic (Provenance), Synthetic (Crescendo), Real Data (All), Real Data (In-Sample) and Real Data (Out-of-Sample). Each run uses one engine; the second "Comparison" line is gone.
+- **Shaded periods** on the growth chart and in the exported report: Synthetic, then In-Sample and Out-of-Sample (or Real Data), with each period's dates in the report legend.
+- **Date Range presets** (Full, YTD, 1Y, 3Y, 5Y, 10Y) and **Market Events** buttons (1929 to 2022) set the dates in one click.
+- A lone ticker such as `tqqq` runs at 100%. "OOS" is spelled out as "Out-of-Sample".
+
+**Files changed:** `backtest-src/src/` (BacktestPanel, ReportView, WelcomePanel, parser, overlays, generator, theme, types, data-colors.css), `backtest/index.html`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Backtester: a symphony as the benchmark
 
 - **The Benchmark box takes a Composer symphony link** as well as a ticker. The symphony is

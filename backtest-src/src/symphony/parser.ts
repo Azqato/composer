@@ -27,6 +27,9 @@ export function parseStrategyInput(input: string): SymphonyStrategy | FixedWeigh
     throw new Error('This is a Composer symphony link; fetch it with fetchPublicSymphony first.')
   }
 
+  // A lone ticker ("SPY") is held at 100%
+  if (/^[A-Z][A-Z0-9./]{0,9}$/i.test(trimmed)) return parseTickerWeightString(`${trimmed} 100`)
+
   throw new Error('Unrecognised input. Paste a Composer symphony link or its JSON, or enter tickers like "SPY 60, QQQ 40".')
 }
 

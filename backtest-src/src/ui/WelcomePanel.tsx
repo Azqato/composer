@@ -22,8 +22,6 @@ const FEATURES: [string, string, Status, string][] = [
     'UVXY, VIXY and VXX rebuilt from spot VIX and VXO back to 1986, fitted to 15 years of simulated futures history. Short holds track closely; gains in crash years tend to be understated.'],
   ['🧭', 'Transparent Tiers', 'available',
     'A strip under the growth chart shows which stretches are real prices, simulated history, or Default Pathing (gaps filled by a stated rule), each named in words as well as color. The run log names where each fund\'s real prices begin.'],
-  ['🧮', 'Built-in Comparison', 'available',
-    'Every backtest also runs a comparison simulation and draws it on the same chart, so you can see how much a result depends on the modelling. There is nothing to set.'],
   ['🧹', 'Clean Data', 'available',
     'Bad prints in the price feed are repaired before a backtest runs and reported in the run log, and missing days follow Default Pathing instead of silently dropping out.'],
   ['💸', 'Realistic Costs', 'progress',
