@@ -1391,7 +1391,11 @@ To change it: edit `backtest-src/`, then `python scripts/build_backtest.py` (run
 
 **Symphony as benchmark** (owner, 2026-11-04): the Benchmark box takes a ticker or a Composer symphony link. A link is fetched, backtested first over all its available history (SPY as its own reference), and its equity curve becomes a price series under the symphony's name (cut to 40 characters), so the chart, the metrics tables, the report and alpha/beta treat it like a ticker. The main backtest then starts no earlier than the benchmark symphony's first day. A link is kept as typed; tickers are still uppercased.
 
-**Progress box:** above the Log, styled like the Signal Miner's: a bar, the current step (loading prices with a ticker count, simulating, computing the report, then the comparison run) and time left, projected from elapsed time once 10% is done. In headless tests the times are meaningless (virtual time); only the steps and the result are worth asserting.
+**Progress box:** above the Log, styled like the Signal Miner's: a bar, the current step (loading prices with a ticker count, simulating, computing the report; one run fills the bar) and time left, projected from elapsed time once 10% is done. In headless tests the times are meaningless (virtual time); only the steps and the result are worth asserting.
+
+**One engine per run, chosen in History** (ported from the Backtester repo, 2026-11-04): Synthetic (Provenance), Synthetic (Crescendo, the CLASSIC engine), Real Data (All), Real Data (In-Sample, ends on the symphony's last edit) and Real Data (Out-of-Sample, starts the day after it). The second "Comparison" line is gone. The growth chart and the exported report shade Synthetic, then In-Sample and Out-of-Sample (or one Real Data band when there is no last edit). Date Range presets (Full, YTD, 1Y, 3Y, 5Y, 10Y) and Market Events buttons (S&P 500 high to recovery, 1929 to 2022) set the dates. A lone ticker runs at 100%.
+
+**Starting setup** (owner, 2026-11-04, Atlas only): the Strategy and Benchmark boxes default to QQQ. The Strategy, Benchmark, both dates and History are saved in `localStorage` (`bt-last-setup`) and restored on reload; storage access is wrapped. **↺ Default** under Run Backtest puts back QQQ / QQQ, Full dates and Synthetic (Provenance); it leaves the last results on screen.
 
 Not linked from the nav, footer or homepage yet (owner, 2026-11-03), and not in `sitemap.xml` (the generator lists top-level pages only). Indexing is allowed.
 

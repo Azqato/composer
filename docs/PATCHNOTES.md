@@ -10,6 +10,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Backtester: QQQ default, remembered setup, Default button
+
+- The Strategy box opens on **QQQ**.
+- The last Strategy, Benchmark, dates and History are **remembered in the browser** and restored on reload.
+- A **Default** button under Run Backtest resets them.
+
+**Files changed:** `backtest-src/src/ui/BacktestPanel.tsx`, `backtest/index.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Backtester: one engine per run, five History choices, date presets
 
 - **History** now has five choices: Synthetic (Provenance), Synthetic (Crescendo), Real Data (All), Real Data (In-Sample) and Real Data (Out-of-Sample). Each run uses one engine; the second "Comparison" line is gone.
