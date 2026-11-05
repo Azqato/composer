@@ -13,15 +13,16 @@ import { generateReport } from '../reports/generator'
 import { ReportView } from './ReportView'
 
 
+
+const SETUP_KEY = 'bt-last-setup'
+type Setup = { strategy?: string; benchmark?: string; startDate?: string; endDate?: string; history?: History; excludeOn?: boolean; exclude?: Range[] }
+type Range = { from: string; to: string }
+const DEFAULT_EXCLUDE: Range[] = [{ from: '2020-01-02', to: '2020-12-31' }]
+function loadSetup(): Setup {
+  try { return JSON.parse(localStorage.getItem(SETUP_KEY) ?? '{}') as Setup } catch { return {} }
+}
 // History choices: the two synthetic engines, then real prices (all, before or after the symphony's last edit)
 type History = HistoryMode | 'CRESCENDO' | 'IS' | 'OOS'
-
-// Composer Atlas: the last setup used, kept in localStorage
-const SETUP_KEY = 'bt-last-setup'
-type Setup = Partial<{ stratInput: string; benchmark: string; startDate: string; endDate: string; history: History }>
-function loadSetup(): Setup {
-  try { const v = JSON.parse(localStorage.getItem(SETUP_KEY) || '{}'); return v && typeof v === 'object' ? v : {} } catch { return {} }
-}
 interface Props {
   config: Config
   backtestResult: BacktestResult | null
@@ -53,11 +54,12 @@ export function BacktestPanel({
   onResult, onStatus, onError, onLog, colors
 }: Props) {
   const { panel, border, text, textMuted, tabActive } = colors
-  const [saved] = useState(loadSetup)
 
-  const [stratInput, setStratInput] = useState<string>(() => saved.stratInput ?? 'QQQ') // Composer Atlas: opens ready to run
-  const [benchmark, setBenchmark] = useState<string>(() => saved.benchmark ?? 'QQQ')
-  const [startDate, setStartDate] = useState<string>(() => saved.startDate ?? '')
+  // The last setup is kept in this browser and restored after a reload
+  const [saved] = useState(loadSetup)
+  const [stratInput, setStratInput] = useState(saved.strategy ?? 'QQQ')
+  const [benchmark, setBenchmark] = useState(saved.benchmark ?? 'QQQ')
+  const [startDate, setStartDate] = useState(saved.startDate ?? '')
   // Date presets: each sets the start date and clears the end date (runs to the latest close)
   const PRESETS: [string, () => string][] = [
     ['Full', () => ''],
@@ -88,14 +90,16 @@ export function BacktestPanel({
         color: on ? tabActive : text, fontWeight: on ? 700 : 400,
       }}>{label}</button>
   )
-  const [endDate, setEndDate] = useState<string>(() => saved.endDate ?? '')
+  const [endDate, setEndDate] = useState(saved.endDate ?? '')
   // History choice: Synthetic, Real Data (the STANDARD mode) or Out-of-Sample (real prices,
   // starting the day after the symphony's last edit)
-  const [history, setHistory] = useState<History>(() => saved.history ?? config.historyMode ?? 'SYNTHETIC')
-  // Composer Atlas: remember the setup in this browser so a reload carries it over
+  const [history, setHistory] = useState<History>(saved.history ?? config.historyMode ?? 'SYNTHETIC')
+  // Exclude dates/ranges: those days' returns are left out and the curves break over the gap
+  const [excludeOn, setExcludeOn] = useState(saved.excludeOn ?? false)
+  const [exclude, setExclude] = useState<Range[]>(saved.exclude?.length ? saved.exclude : DEFAULT_EXCLUDE)
   useEffect(() => {
-    try { localStorage.setItem(SETUP_KEY, JSON.stringify({ stratInput, benchmark, startDate, endDate, history })) } catch { /* storage blocked */ }
-  }, [stratInput, benchmark, startDate, endDate, history])
+    try { localStorage.setItem(SETUP_KEY, JSON.stringify({ strategy: stratInput, benchmark, startDate, endDate, history, excludeOn, exclude })) } catch { /* storage blocked */ }
+  }, [stratInput, benchmark, startDate, endDate, history, excludeOn, exclude])
   const historyMode: HistoryMode = history === 'SYNTHETIC' || history === 'CRESCENDO' ? 'SYNTHETIC' : 'STANDARD'
   // In-Sample ends the run on the symphony's last edit; otherwise the End Date box applies
   const runEnd = useRef<string | null>(null)
@@ -162,7 +166,7 @@ export function BacktestPanel({
     step(s0, `${run}simulating the strategy...`)
     await yieldToPaint()
     const result = await runBacktest(
-      { strategy, benchmark, startDate: start, endDate: runEnd.current },
+      { strategy, benchmark, startDate: start, endDate: runEnd.current, exclude: excludeOn ? exclude : undefined },
       priceData, rfRate, log)
     const realFrom = Object.fromEntries(tickers.map(t => [t, realPricesFrom(t, cfg)]))
     step(s0 + (s1 - s0) * 0.8, `${run}computing the report...`)
@@ -290,7 +294,14 @@ export function BacktestPanel({
       {/* Left: Input panel */}
       <div style={{ width: 340, flexShrink: 0 }}>
         <div style={{ background: panel, border: `1px solid ${border}`, borderRadius: 10, padding: 16 }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 15 }}>Strategy Input</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
+            <h3 style={{ margin: 0, fontSize: 15 }}>Strategy Input</h3>
+            <button type="button" title="Reset the strategy, benchmark, dates and history"
+              onClick={() => { setStratInput('QQQ'); setBenchmark('QQQ'); setStartDate(''); setEndDate(''); setHistory('SYNTHETIC'); setExcludeOn(false); setExclude(DEFAULT_EXCLUDE) }}
+              style={{ padding: '3px 10px', fontSize: 12, borderRadius: 6, cursor: 'pointer', border: `1px solid ${border}`, background: 'transparent', color: textMuted }}>
+              Default
+            </button>
+          </div>
 
           {/* Examples */}
           <div style={{ marginBottom: 10 }}>
@@ -355,6 +366,27 @@ export function BacktestPanel({
           </div>
 
           <div style={{ marginBottom: 14 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
+              <input type="checkbox" checked={excludeOn} onChange={e => setExcludeOn(e.target.checked)} />
+              Exclude dates/ranges
+            </label>
+            {excludeOn && <div style={{ marginTop: 8 }}>
+              {exclude.map((r, i) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr) auto', gap: 6, alignItems: 'center', marginBottom: 6 }}>
+                  <input type="date" value={r.from} aria-label="Exclude from" style={{ ...inputStyle, minWidth: 0, padding: '6px 4px' }}
+                    onChange={e => setExclude(exclude.map((x, j) => j === i ? { ...x, from: e.target.value } : x))} />
+                  <span>→</span>
+                  <input type="date" value={r.to} aria-label="Exclude to" style={{ ...inputStyle, minWidth: 0, padding: '6px 4px' }}
+                    onChange={e => setExclude(exclude.map((x, j) => j === i ? { ...x, to: e.target.value } : x))} />
+                  <button type="button" title="Remove this range" style={{ ...inputStyle, width: 'auto', padding: '6px 8px', cursor: 'pointer' }}
+                    onClick={() => setExclude(exclude.filter((_, j) => j !== i))}>×</button>
+                </div>))}
+              <button type="button" style={{ ...inputStyle, width: 'auto', cursor: 'pointer' }}
+                onClick={() => setExclude([...exclude, { from: '', to: '' }])}>+ Add range</button>
+            </div>}
+          </div>
+
+          <div style={{ marginBottom: 14 }}>
             <label style={labelStyle as React.CSSProperties}>History</label>
             <select value={history} onChange={e => setHistory(e.target.value as History)} style={inputStyle}>
               <option value="SYNTHETIC">Synthetic (Provenance)</option>
@@ -388,16 +420,6 @@ export function BacktestPanel({
               ⬇ Export HTML Report
             </button>
           )}
-
-          {/* Composer Atlas: back to the default setup (also clears the remembered one) */}
-          <button type="button" disabled={isRunning}
-            onClick={() => { setStratInput('QQQ'); setBenchmark('QQQ'); setStartDate(''); setEndDate(''); setHistory(config.historyMode ?? 'SYNTHETIC') }}
-            style={{
-              width: '100%', marginTop: 8, padding: '7px', background: 'transparent', color: text,
-              border: `1px solid ${border}`, borderRadius: 6, fontSize: 13, cursor: isRunning ? 'default' : 'pointer',
-            }}>
-            ↺ Default
-          </button>
 
           {backtestError && (
             <div style={{

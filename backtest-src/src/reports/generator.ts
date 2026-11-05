@@ -26,7 +26,7 @@ export function generateReport(result: BacktestResult): string {
   const lastSim = simSegs[simSegs.length - 1]
   const realSeg = lastSim ? tiers.slice(tiers.indexOf(lastSim) + 1).find(t => t.tier === 'real') : undefined
   const oos = result.oos
-  const ctx: ChartCtx = { dates: DATES, realFrom: realSeg && simSegs.length ? realSeg.start : undefined, periods: periods(result) }
+  const ctx: ChartCtx = { dates: DATES, realFrom: realSeg && simSegs.length ? realSeg.start : undefined, periods: periods(result), gapAt: result.gapAt }
 
   // The comparison run, rescaled to start at this run's value, on this run's dates
   let cmpY: number[] | null = null
@@ -46,7 +46,7 @@ export function generateReport(result: BacktestResult): string {
   const win = 126, rdates = DATES.slice(win + 1)
   const roll = ([['Sharpe', 'sharpe', (v: number) => v.toFixed(0)], ['Sortino', 'sortino', (v: number) => v.toFixed(0)],
     ['CAGR (Capped at 5,000%)', 'cagr', (v: number) => Math.round(v * 100) + '%'], ['Volatility', 'vol', (v: number) => Math.round(v * 100) + '%']] as const)
-    .map(([t, k, f]) => `<figure><figcaption>${t}</figcaption>${lineChart({ ...ctx, dates: rdates }, { w: 350, h: 150, series: [{ y: rolling(DR, k, win).slice(0, rdates.length), cls: 'strat-solid' }], yFmt: f, zero: true })}</figure>`).join('')
+    .map(([t, k, f]) => `<figure><figcaption>${t}</figcaption>${lineChart({ ...ctx, dates: rdates, gapAt: undefined }, { w: 350, h: 150, series: [{ y: rolling(DR, k, win).slice(0, rdates.length), cls: 'strat-solid' }], yFmt: f, zero: true })}</figure>`).join('')
 
   // Span figures: annual return (252 trading days a year) and max drawdown from a date to the end
   const spanStats = (from: string) => {
@@ -207,7 +207,7 @@ function heatTable(result: BacktestResult): string {
 
 // ─── SVG charts ───────────────────────────────────────────────────────────────
 
-interface ChartCtx { dates: string[]; realFrom?: string; periods: ReturnType<typeof periods> }
+interface ChartCtx { dates: string[]; gapAt?: number[]; realFrom?: string; periods: ReturnType<typeof periods> }
 interface LineOpts { w: number; h: number; series: { y: number[]; cls: string }[]; log?: boolean; yFmt: (v: number) => string; zero?: boolean; fill?: boolean }
 
 const stepOf = (n: number, target: number) => Math.max(1, Math.round(n / target))
@@ -241,8 +241,13 @@ function lineChart(ctx: ChartCtx, { w, h, series, log = false, yFmt, zero = fals
   const yst = stepOf(yrs.length, 9)
   yrs.forEach(([d, i], k) => { if (k % yst === 0) g += `<text class="ax" x="${X(i)}" y="${h - 3}" text-anchor="${k === 0 ? 'start' : 'middle'}">${d.slice(0, 4)}</text>` })
   for (const s of series) {
-    let d = ''
-    s.y.forEach((v, i) => { if ((i % every === 0 || i === n - 1) && Number.isFinite(v) && (!log || v > 0)) d += (d ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1) })
+    // Excluded ranges break the line: the first day after a gap starts a new subpath
+    const gaps = new Set(ctx.gapAt ?? [])
+    let d = '', brk = false
+    s.y.forEach((v, i) => {
+      if (gaps.has(i)) brk = true
+      if ((i % every === 0 || i === n - 1 || gaps.has(i) || gaps.has(i + 1)) && Number.isFinite(v) && (!log || v > 0)) { d += (d && !brk ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); brk = false }
+    })
     if (!d) continue
     if (fill) g += `<path class="${s.cls}-fill" d="${d}L${X(n - 1)} ${Y(0)}L${X(0)} ${Y(0)}Z"/>`
     g += `<path class="${s.cls}" d="${d}"/>`

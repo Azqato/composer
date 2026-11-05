@@ -10,6 +10,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Backtester: exclude dates/ranges, updated LETF map
+
+- **Exclude dates/ranges:** a checkbox under the dates adds one or more from/to ranges (the first defaults to 2020). Those days are dropped from the run, the curves chain each kept day's own return, the metrics come from the shortened series, and the chart line breaks over each gap, in the app and the exported report. The ranges are saved with the last setup, and Default turns the option off.
+- **LETF map** from the 2026-10-28 Crescendo jar: UVIX preferred; new DOG (DIA -1) and SPYM (SPY 1, cutoff 2020-01-24); UCO/SCO map to OILK at +/-2; OILK maps to USO 1 with no unwind.
+- The **Default** button now sits beside the Strategy Input title.
+
+**Files changed:** `backtest-src/src/` (engine/backtest.ts, types.ts, reports/overlays.ts, reports/generator.ts, ui/ReportView.tsx, ui/BacktestPanel.tsx, assets/data/letf-map.json), `backtest/index.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Backtester: QQQ default, remembered setup, Default button
 
 - The Strategy box opens on **QQQ**.

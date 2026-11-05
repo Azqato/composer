@@ -3,7 +3,7 @@ import PlotlyLib from 'plotly.js-dist-min'
 import { TierStrip } from './TierStrip'
 import type { BacktestResult, BacktestMetrics, DrawdownPeriod } from '../types'
 import { KPIS, METRIC_GROUPS, VISIBLE_ROWS, worstDrawdowns, benchmarkDrawdowns, pct, CONTRIBUTION_HEAD, CONTRIBUTION_TIP, contributionRows } from '../reports/metricGroups'
-import { comparisonTrace, periodShapes } from '../reports/overlays'
+import { comparisonTrace, gapped, periodShapes } from '../reports/overlays'
 
 // Bundled (not loaded from a CDN) so charts work offline and in the single-file build.
 const Plotly = PlotlyLib as unknown as {
@@ -44,8 +44,8 @@ export function ReportView({ result, colors }: Props) {
     // ── Equity curve ──
     if (eqRef.current) {
       Plotly.newPlot(eqRef.current, [
-        { x: dates, y: pv, name: result.strategyName, type: 'scatter', mode: 'lines', line: { color: colors.strategy, width: 2 } },
-        { x: dates, y: bv, name: result.benchmarkTicker, type: 'scatter', mode: 'lines', line: { color: colors.benchmark, width: 1.5, dash: 'dot' } },
+        { ...gapped(result, pv), name: result.strategyName, type: 'scatter', mode: 'lines', line: { color: colors.strategy, width: 2 } },
+        { ...gapped(result, bv), name: result.benchmarkTicker, type: 'scatter', mode: 'lines', line: { color: colors.benchmark, width: 1.5, dash: 'dot' } },
         ...(result.comparison ? [comparisonTrace(result, pv, colors.compare)] : []),
       ], { ...plotlyTheme, yaxis: { ...plotlyTheme.yaxis, type: 'log', title: 'Portfolio Value ($)' }, ...periodShapes(result, text, { syn: colors.syn, ins: colors.ins, oos: colors.oos }) }, { responsive: true })
     }
@@ -63,7 +63,7 @@ export function ReportView({ result, colors }: Props) {
     if (ddRef.current) {
       const uw = computeUnderwater(pv)
       Plotly.newPlot(ddRef.current, [
-        { x: dates, y: uw.map(v => v * 100), type: 'scatter', mode: 'lines', fill: 'tozeroy', name: 'Strategy DD', line: { color: colors.loss, width: 1 }, opacity: 0.8 },
+        { ...gapped(result, uw.map(v => v * 100)), type: 'scatter', mode: 'lines', fill: 'tozeroy', name: 'Strategy DD', line: { color: colors.loss, width: 1 }, opacity: 0.8 },
       ], { ...plotlyTheme, yaxis: { ...plotlyTheme.yaxis, title: 'Drawdown (%)' } }, { responsive: true })
     }
 

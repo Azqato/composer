@@ -62,7 +62,25 @@ export async function runBacktest(
   }
 
   // Benchmark curve
-  const benchmarkValues = buildSingleTickerCurve(input.benchmark, filtered, priceData)
+  let benchmarkValues = buildSingleTickerCurve(input.benchmark, filtered, priceData)
+
+  // Excluded ranges: drop those days and chain the kept days' own returns, so the curves rejoin
+  const ranges = (input.exclude ?? []).filter(r => r.from && r.to && r.from <= r.to)
+  const hit = ranges.filter(r => filtered.some(d => d >= r.from && d <= r.to))
+  const gapAt: number[] = []
+  if (hit.length) {
+    const out = (d: string) => hit.some(r => d >= r.from && d <= r.to)
+    const keep = filtered.map((d, i) => i).filter(i => !out(filtered[i]))
+    if (keep.length < 2) throw new Error('The excluded ranges leave too few trading days')
+    const chain = (v: number[]) => keep.reduce<number[]>((acc, i, k) =>
+      (acc.push(k === 0 ? v[i] : acc[k - 1] * (v[i - 1] ? v[i] / v[i - 1] : 1)), acc), [])
+    keep.forEach((i, k) => { if (k > 0 && i !== keep[k - 1] + 1) gapAt.push(k) })
+    portfolioValues = chain(portfolioValues)
+    benchmarkValues = chain(benchmarkValues)
+    dailyAllocs = keep.map(i => dailyAllocs[i])
+    filtered = keep.map(i => filtered[i])
+    log(`Excluded ${hit.map(r => `${r.from} to ${r.to}`).join(', ')}: ${filtered.length} trading days kept`)
+  }
 
   // Daily returns
   const dailyReturns = portfolioValues.map((v, i) =>
@@ -123,6 +141,7 @@ export async function runBacktest(
     eoyReturns,
     monthlyReturns,
     riskFreeRate,
+    ...(hit.length ? { excluded: hit, gapAt } : {}),
   }
 }
 

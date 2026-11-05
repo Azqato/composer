@@ -43,6 +43,14 @@ export function periods(result: BacktestResult): { key: 'syn' | 'ins' | 'oos'; l
   return out
 }
 
+/** A curve with a null before each excluded range's gap, so Plotly breaks the line there. */
+export function gapped(result: BacktestResult, y: number[]): { x: (string | null)[]; y: (number | null)[] } {
+  const gaps = new Set(result.gapAt ?? [])
+  const x: (string | null)[] = [], ys: (number | null)[] = []
+  result.dates.forEach((d, i) => { if (gaps.has(i)) { x.push(d); ys.push(null) } x.push(d); ys.push(y[i]) })
+  return { x, y: ys }
+}
+
 /** Plotly shading for the Synthetic, In-Sample and out-of-sample periods. */
 export function periodShapes(result: BacktestResult, text: string, fills: Record<'syn' | 'ins' | 'oos', string>) {
   const ps = periods(result)

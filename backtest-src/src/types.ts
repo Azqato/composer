@@ -99,6 +99,8 @@ export interface BacktestInput {
   benchmark: string
   startDate: string | null    // YYYY-MM-DD, null = use all available
   endDate: string | null
+  // Days left out of the run (inclusive YYYY-MM-DD); their returns are dropped and the curves rejoin after
+  exclude?: { from: string; to: string }[]
 }
 
 export interface BacktestResult {
@@ -123,6 +125,9 @@ export interface BacktestResult {
   eoyReturns: Record<string, { strategy: number; benchmark: number }>
   monthlyReturns: Record<string, { strategy: number; benchmark: number }>
   riskFreeRate: number    // annualized
+  // The excluded ranges that fell inside the run, and the indexes of the first day after each gap
+  excluded?: { from: string; to: string }[]
+  gapAt?: number[]
 
   // Set by the app after runBacktest (optional, so scripts calling runBacktest are unaffected)
   engine?: Engine
