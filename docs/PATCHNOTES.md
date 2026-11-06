@@ -10,6 +10,14 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Backtester: start date defaults to 1990-01-01
+
+- The **Start Date** now opens on 1990-01-01 instead of blank (Full), and **Default** resets it there. The **Full** preset still clears it for all available history. A start date saved from an earlier visit is kept.
+
+**Files changed:** `backtest-src/src/ui/BacktestPanel.tsx`, `backtest/index.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Backtester: exclude dates/ranges, updated LETF map
 
 - **Exclude dates/ranges:** a checkbox under the dates adds one or more from/to ranges (the first defaults to 2020). Those days are dropped from the run, the curves chain each kept day's own return, the metrics come from the shortened series, and the chart line breaks over each gap, in the app and the exported report. The ranges are saved with the last setup, and Default turns the option off.

@@ -18,6 +18,7 @@ const SETUP_KEY = 'bt-last-setup'
 type Setup = { strategy?: string; benchmark?: string; startDate?: string; endDate?: string; history?: History; excludeOn?: boolean; exclude?: Range[] }
 type Range = { from: string; to: string }
 const DEFAULT_EXCLUDE: Range[] = [{ from: '2020-01-02', to: '2020-12-31' }]
+const DEFAULT_START = '1990-01-01'
 function loadSetup(): Setup {
   try { return JSON.parse(localStorage.getItem(SETUP_KEY) ?? '{}') as Setup } catch { return {} }
 }
@@ -59,7 +60,7 @@ export function BacktestPanel({
   const [saved] = useState(loadSetup)
   const [stratInput, setStratInput] = useState(saved.strategy ?? 'QQQ')
   const [benchmark, setBenchmark] = useState(saved.benchmark ?? 'QQQ')
-  const [startDate, setStartDate] = useState(saved.startDate ?? '')
+  const [startDate, setStartDate] = useState(saved.startDate ?? DEFAULT_START)
   // Date presets: each sets the start date and clears the end date (runs to the latest close)
   const PRESETS: [string, () => string][] = [
     ['Full', () => ''],
@@ -297,7 +298,7 @@ export function BacktestPanel({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
             <h3 style={{ margin: 0, fontSize: 15 }}>Strategy Input</h3>
             <button type="button" title="Reset the strategy, benchmark, dates and history"
-              onClick={() => { setStratInput('QQQ'); setBenchmark('QQQ'); setStartDate(''); setEndDate(''); setHistory('SYNTHETIC'); setExcludeOn(false); setExclude(DEFAULT_EXCLUDE) }}
+              onClick={() => { setStratInput('QQQ'); setBenchmark('QQQ'); setStartDate(DEFAULT_START); setEndDate(''); setHistory('SYNTHETIC'); setExcludeOn(false); setExclude(DEFAULT_EXCLUDE) }}
               style={{ padding: '3px 10px', fontSize: 12, borderRadius: 6, cursor: 'pointer', border: `1px solid ${border}`, background: 'transparent', color: textMuted }}>
               Default
             </button>
