@@ -38,3 +38,6 @@ brand/brand-design.html
 # Backtester clone build output (scripts/build_backtest.py)
 backtest-src/node_modules/
 backtest-src/dist/
+
+# Local-only spreadsheet export of data/database.json; never committed (2026-11-06)
+data/Full Database.xlsx

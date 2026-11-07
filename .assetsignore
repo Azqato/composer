@@ -90,3 +90,8 @@ wrangler.jsonc
 # file that is gitignored is brand/brand-design.html, and that is a separate
 # decision recorded in docs/PRD.md.
 brand/
+
+# Local-only spreadsheet export (scripts/export_full_database_to_xlsx.py). Untracked
+# and in .gitignore since 2026-11-06; listed here too so a stray local copy can
+# never be published by a manual wrangler deploy.
+data/Full Database.xlsx
