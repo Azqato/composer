@@ -350,7 +350,7 @@ composer/
 │   ├── k1.json                  # Master K-1 database: fund structure → tax form, per ticker (v1.27.0)
 │   ├── k1.js                    # Same data as window.K1_DATA, for file:// compat (v1.27.0)
 │   ├── k1_seed.txt              # Ticker candidate list refresh_k1.py reads with --seed; a request to check, not a claim (v1.27.0)
-│   ├── storage.csv              # Append-only archive of EVERY symphony URL ever seen, alive or dead; deliberately larger than database.json (v1.10.1)
+│   ├── storage.csv              # Append-only archive of EVERY symphony URL ever seen, alive or dead; deliberately larger than database.json (v1.10.1). Local-only since 2026-11-06: in .gitignore, .assetsignore and deploy.yml's excludes; its only copy is the OneDrive-synced working tree, and check_database_keys.py skips the archive check when it is absent (CI)
 │   ├── AddSymphony.csv          # User-submitted URL inbox, single `url` column, manual-only (added 2026-07-15)
 │   └── Full Database.xlsx       # Local-only export of the JSON for spreadsheet work. Untracked since 2026-11-06: in .gitignore, .assetsignore and deploy.yml's excludes, so it is never committed or served. Old versions remain in git history
 ├── js/

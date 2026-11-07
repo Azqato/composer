@@ -122,18 +122,23 @@ def main():
             drift.append("same ids, different order: re-run scripts/export_summary.py")
     report(failures, "database_summary.json is in sync", drift)
 
-    with open(STORAGE_PATH, encoding="utf-8", newline="") as f:
-        archived = set()
-        for row in csv.DictReader(f):
-            url = row["url"]
-            match = URL_ID_RE.search(url or "")
-            archived.add(match.group(1) if match else url)
-    unarchived = [
-        f"{e['symphony_id']} ({e.get('name') or 'unnamed'})"
-        for e in entries
-        if e.get("symphony_id") and e["symphony_id"] not in archived
-    ]
-    report(failures, "every symphony is archived in storage.csv", unarchived)
+    # storage.csv is local-only since 2026-11-06 (in .gitignore), so CI and the
+    # deploy gate never have it. Skip check 5 there; it still runs locally.
+    if not STORAGE_PATH.exists():
+        print("  skip every symphony is archived in storage.csv (file is local-only, not present)")
+    else:
+        with open(STORAGE_PATH, encoding="utf-8", newline="") as f:
+            archived = set()
+            for row in csv.DictReader(f):
+                url = row["url"]
+                match = URL_ID_RE.search(url or "")
+                archived.add(match.group(1) if match else url)
+        unarchived = [
+            f"{e['symphony_id']} ({e.get('name') or 'unnamed'})"
+            for e in entries
+            if e.get("symphony_id") and e["symphony_id"] not in archived
+        ]
+        report(failures, "every symphony is archived in storage.csv", unarchived)
 
     if failures:
         print("\nFAIL")

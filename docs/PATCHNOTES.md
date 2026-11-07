@@ -10,6 +10,14 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - storage.csv is local-only
+
+- `data/storage.csv` (the URL archive) is no longer tracked or published. The local file is unchanged, and it is listed in `.gitignore`, `.assetsignore` and `deploy.yml`'s excludes. `scripts/check_database_keys.py` now skips its archive check when the file is absent, so the deploy gate keeps passing on GitHub; the check still runs locally. Earlier versions remain in git history.
+
+**Files changed:** `data/storage.csv` (untracked), `.gitignore`, `.assetsignore`, `.github/workflows/deploy.yml`, `scripts/check_database_keys.py`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Full Database.xlsx is local-only
 
 - `data/Full Database.xlsx` is no longer tracked or published. It stays on disk as a local copy that `scripts/export_full_database_to_xlsx.py` keeps refreshing, and is listed in `.gitignore`, `.assetsignore` and `deploy.yml`'s excludes so it can never be committed or served again. Earlier versions remain in git history.

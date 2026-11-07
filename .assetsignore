@@ -95,3 +95,6 @@ brand/
 # and in .gitignore since 2026-11-06; listed here too so a stray local copy can
 # never be published by a manual wrangler deploy.
 data/Full Database.xlsx
+
+# Local-only URL archive, untracked since 2026-11-06; never serve a stray copy.
+data/storage.csv

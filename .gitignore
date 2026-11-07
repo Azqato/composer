@@ -41,3 +41,7 @@ backtest-src/dist/
 
 # Local-only spreadsheet export of data/database.json; never committed (2026-11-06)
 data/Full Database.xlsx
+
+# Local-only URL archive (every symphony ever seen); never committed (2026-11-06).
+# check_database_keys.py skips its archive check when this is absent (CI).
+data/storage.csv
