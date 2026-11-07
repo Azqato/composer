@@ -10,6 +10,14 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [Unreleased] - Full Database.xlsx is local-only
+
+- `data/Full Database.xlsx` is no longer tracked or published. It stays on disk as a local copy that `scripts/export_full_database_to_xlsx.py` keeps refreshing, and is listed in `.gitignore`, `.assetsignore` and `deploy.yml`'s excludes so it can never be committed or served again. Earlier versions remain in git history.
+
+**Files changed:** `data/Full Database.xlsx` (untracked), `.gitignore`, `.assetsignore`, `.github/workflows/deploy.yml`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - Backtester: start date defaults to 1990-01-01
 
 - The **Start Date** now opens on 1990-01-01 instead of blank (Full), and **Default** resets it there. The **Full** preset still clears it for all available history. A start date saved from an earlier visit is kept.
