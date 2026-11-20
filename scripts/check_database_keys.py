@@ -41,7 +41,8 @@ only, so in CI checks 1 to 3 run on the committed slice, data/database_public.js
 and check 4 compares the public summary against that slice. Locally checks 1 to
 3 run on database.json, and check 4 additionally demands that the local full
 summary matches database.json and that every slice row is in database.json.
-Both places demand that every visible curated strategy is in the public summary.
+Both places demand that every visible curated strategy is in the public summary,
+and that every curated strategy, hidden or not, has a row in the slice.
 
 Read-only. Exits non-zero on any failure, so it can gate a release.
 
@@ -152,6 +153,15 @@ def main():
     shown = {row[id_col] for row in summary["rows"]}
     unshown = [sid for sid in pdb.visible_curated_ids() if sid not in shown]
     report(failures, "every visible curated strategy is in the public summary", unshown)
+
+    # build_strategy_extras.py joins every curated strategy, hidden ones too, and
+    # in CI the slice is the only database it can read. Locally it reads
+    # database.json and passes, so without this a newly added or unhidden
+    # strategy would pass at the desk and fail the daily metrics job and the
+    # deploy gate on GitHub. Fix: run scripts/export_summary.py.
+    in_slice = set(slice_ids)
+    unsliced = [sid for sid in pdb.visible_curated_ids() + pdb.hidden_curated_ids() if sid not in in_slice]
+    report(failures, "every curated strategy has a row in database_public.json", unsliced)
 
     if pdb.has_full():
         full_ids = [e.get("symphony_id") for e in entries]

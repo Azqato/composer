@@ -1873,7 +1873,10 @@ only the public `index`. Visitors cannot recompute them: that needs the data tha
 
 **Gates.** `check_database_keys.py` runs checks 1 to 3 on whichever database `database_path()`
 returns, demands that the public summary equals the slice minus hidden curated strategies in slice
-order, and that every visible curated strategy is in it. Locally it also demands that the slice is an
+order, and that every visible curated strategy is in it. Since v1.84.1 it also demands that every curated strategy,
+hidden or not, has a row in the slice: after adding or unhiding a curated strategy, run
+`export_summary.py` before pushing, or the daily metrics job and the deploy gate fail in CI while
+everything passes locally. Locally it also demands that the slice is an
 ordered subset of `database.json` and that `database_summary_full.json` matches `database.json`.
 `check_strategy_extras.py` gives byte-identical results from the slice and from the master.
 

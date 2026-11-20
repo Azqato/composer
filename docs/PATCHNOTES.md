@@ -10,6 +10,14 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.84.1] - 2026-11-19 - Gate: every curated strategy must be in the public slice
+
+- Found in the post-deploy review of v1.84.0. Adding or unhiding a curated strategy passed every check locally, because `build_strategy_extras.py` reads the full `database.json` there, but CI reads `data/database_public.json`, which lacks the new row until `export_summary.py` runs. The daily metrics job and the deploy gate would then have failed on GitHub. `check_database_keys.py` now fails locally first, naming the strategy. Verified both ways: passes on the real data, fails on a copy with one hidden curated row removed.
+
+**Files changed:** `scripts/check_database_keys.py`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.84.0] - 2026-11-19 - Public database: featured symphonies only
 
 The live Database, Leaderboard, Screener and Overfit Check lookup now show only the public set: the 24 visible curated strategies, plus any symphony the owner lists in `data/Public Database.xlsx`. The full database (6,828 rows) stays offline on the owner's machine, and opening the site from a local copy (double-clicked or `127.0.0.1`) still shows all of it. Roadmap goal: 500 public symphonies (PRD Section 14, V2.7).
