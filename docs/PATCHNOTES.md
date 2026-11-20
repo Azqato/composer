@@ -10,6 +10,14 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.84.2] - 2026-11-20 - Nav: "Azqato Invests" becomes "Discord"
+
+- The top nav entry that read "Azqato Invests" (linking to `https://azqato.com/invests`) now reads "Discord" and links to the community Discord, `https://discord.com/invite/6bnZFtNd5p`. Same position, still opens in a new tab. Changed in the site nav (`js/app.js`, desktop and mobile) and in the Backtester's own nav copy (`backtest-src/src/ui/AtlasNav.tsx`). The built `backtest/index.html` was patched in place, one string, rather than rebuilt.
+
+**Files changed:** `js/app.js`, `backtest-src/src/ui/AtlasNav.tsx`, `backtest/index.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.84.1] - 2026-11-19 - Gate: every curated strategy must be in the public slice
 
 - Found in the post-deploy review of v1.84.0. Adding or unhiding a curated strategy passed every check locally, because `build_strategy_extras.py` reads the full `database.json` there, but CI reads `data/database_public.json`, which lacks the new row until `export_summary.py` runs. The daily metrics job and the deploy gate would then have failed on GitHub. `check_database_keys.py` now fails locally first, naming the strategy. Verified both ways: passes on the real data, fails on a copy with one hidden curated row removed.

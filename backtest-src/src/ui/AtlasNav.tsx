@@ -25,7 +25,7 @@ const NAV: Item[] = [
   { href: '/guides.html', label: 'Guides' },
   { href: '/glossary.html', label: 'Glossary' },
   { href: '/referral.html', label: 'Referral' },
-  { href: 'https://azqato.com/invests', label: 'Azqato Invests', external: true },
+  { href: 'https://discord.com/invite/6bnZFtNd5p', label: 'Discord', external: true },
   { href: 'https://azqato.com/support.html', label: 'Support', external: true },
 ]
 
