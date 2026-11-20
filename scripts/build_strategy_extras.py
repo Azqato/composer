@@ -39,7 +39,12 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STRATEGIES = BASE_DIR / "data" / "strategies.json"
-DATABASE = BASE_DIR / "data" / "database.json"
+# database.json is local only since v1.84.0. In CI the committed public slice
+# stands in for it; it holds a row for every curated strategy, hidden ones too,
+# so the join below finds the same rows either way (scripts/public_database.py).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import public_database as pdb  # noqa: E402  (path set above)
+DATABASE = pdb.database_path()
 K1 = BASE_DIR / "data" / "k1.json"
 INCEPTION = BASE_DIR / "data" / "ticker_inception.json"
 PRICES = BASE_DIR / "data" / "prices.json"

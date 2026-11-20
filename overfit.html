@@ -291,6 +291,15 @@
   <script src="js/app.js"></script>
   <script src="data/overfit.js"></script>
   <script>
+    // Public / full split (v1.84.0, docs/PRD.md Section 12). overfit.js indexes
+    // only the public symphonies. Opened locally, the owner's local-only
+    // overfit_full.js replaces it with the index of every symphony. On the live
+    // site this never runs, so no visitor's browser requests a missing file.
+    if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+      document.write('<script src="data/overfit_full.js"><\/script>');
+    }
+  </script>
+  <script>
     (function () {
       renderBreadcrumb('breadcrumb-root', [
         { label: 'Home', href: u('/') },
@@ -585,11 +594,13 @@
         document.getElementById('of-chk-excess').textContent = Math.abs(CH.score_vs_excess).toFixed(2);
       }
       document.getElementById('of-meta').innerHTML =
-        'Measured across ' + n(D.pool) + ' usable database rows on ' + esc(D.reference_date) +
+        'Measured across ' + n(D.pool) + ' usable rows of the full database (the public Database ' +
+        'lists only the featured set) on ' + esc(D.reference_date) +
         '. A symphony counts as untouched once its logic has gone ' + n(D.min_oos_days) +
         ' days without an edit for the two population cohorts above; a single symphony\'s ' +
         'verdict needs only ' + n(K.min_trading_days) + ' trading days, because its cone says ' +
-        'on its own when the record is too short. Refreshed weekly with the database.';
+        'on its own when the record is too short. The lookup refreshes weekly; the population ' +
+        'figures are rebuilt from the full database periodically.';
 
       // ---- the lookup ----
       var idx = D.index, pos = null;
@@ -1176,11 +1187,13 @@
         }
         var r = lookup(id);
         if (!r) {
-          setMsg('<code>' + esc(id) + '</code> is not in this database, so there is nothing to ' +
+          setMsg('<code>' + esc(id) + '</code> is not in the public database, which holds the featured ' +
+                 'symphonies, so there is nothing to ' +
                  'compare it against. This check works by looking up what a symphony actually did ' +
                  'after its author stopped editing it, which needs a recorded history. You can ' +
                  '<a href="' + u('/database.html') + '">search the database</a> for it, or read ' +
-                 'the population findings below, which hold regardless.', 'info');
+                 'the population findings below, which were measured across the full collection and ' +
+                 'hold regardless.', 'info');
           return;
         }
         setMsg('', '');

@@ -78,6 +78,13 @@ jobs:
       # reads the window.DATABASE_DATA global, and database.html loads the
       # 3.86 MiB data/database_summary.js instead. The fields held only in the
       # big file are joined in at build time by build_strategy_extras.py.
+      #
+      # v1.84.0 (public / full split, docs/PRD.md Section 12): database.json
+      # and the three _full pairs are local only and never in a clone, and the
+      # Public Database.xlsx list is local only too; they are listed so a stray
+      # copy can never be published. database_public.json/.js IS committed, as
+      # the CI build input, and is excluded for the same reason database.json
+      # always was: no page loads it.
       - name: Build deploy folder
         run: |
           mkdir -p _site
@@ -89,7 +96,20 @@ jobs:
             --exclude='scripts' \
             --exclude='brand' \
             --exclude='backtest-src' \
-            --exclude='data/symphony_scores.json'             --exclude='data/database.json'             --exclude='data/database.js'             --exclude='data/Full Database.xlsx'             --exclude='data/storage.csv' \
+            --exclude='data/symphony_scores.json' \
+            --exclude='data/database.json' \
+            --exclude='data/database.js' \
+            --exclude='data/database_public.json' \
+            --exclude='data/database_public.js' \
+            --exclude='data/database_summary_full.json' \
+            --exclude='data/database_summary_full.js' \
+            --exclude='data/oos_full.json' \
+            --exclude='data/oos_full.js' \
+            --exclude='data/overfit_full.json' \
+            --exclude='data/overfit_full.js' \
+            --exclude='data/Full Database.xlsx' \
+            --exclude='data/Public Database.xlsx' \
+            --exclude='data/storage.csv' \
             --exclude='README.md' \
             --exclude='.gitignore' \
             . _site/

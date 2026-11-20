@@ -22,9 +22,15 @@ from collections import Counter
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SUMMARY = BASE_DIR / "data" / "database_summary.json"
+# v1.84.0: the _full files are local only (docs/PRD.md Section 12). On the
+# owner's machine analysis runs over the full database; in CI, over the public set.
+SUMMARY = BASE_DIR / "data" / "database_summary_full.json"
+if not SUMMARY.exists():
+    SUMMARY = BASE_DIR / "data" / "database_summary.json"
 PRICES = BASE_DIR / "data" / "prices.json"
-OOS = BASE_DIR / "data" / "oos.json"
+OOS = BASE_DIR / "data" / "oos_full.json"
+if not OOS.exists():
+    OOS = BASE_DIR / "data" / "oos.json"
 
 # Mirrors database.html. CLAMP_Q 0.14 means only the top ~14% of a metric earns
 # full marks and the bottom ~14% earns zero, with a straight ramp between.

@@ -21,6 +21,14 @@ on:
     # At the proven-safe 2-second-per-call throttle that is ~4.5-5 hours,
     # close to GitHub's 6-hour job ceiling. See the timeout/continue-on-error
     # handling below: this is deliberate, not an oversight.
+    #
+    # v1.84.0 (public / full split, docs/PRD.md Section 12): database.json is
+    # local only now, so in CI refresh_full_database.py refreshes the committed
+    # public slice, data/database_public.json, a few dozen rows that take a
+    # couple of minutes. The full ~6,800-row refresh is run on the owner's
+    # machine instead, and export_summary.py merges this job's rows back into
+    # the local master (newer refresh_date wins). build_overfit.py carries the
+    # population findings forward and rebuilds only the public index here.
     - cron: '7 1 * * 0'
   workflow_dispatch:
 
@@ -88,7 +96,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/database.json data/database.js data/database_summary.json data/database_summary.js data/strategy_extras.json data/strategy_extras.js data/overfit.json data/overfit.js
+          git add data/database_public.json data/database_public.js data/database_summary.json data/database_summary.js data/strategy_extras.json data/strategy_extras.js data/overfit.json data/overfit.js
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else

@@ -60,6 +60,10 @@ jobs:
       # progress instead of throwing it away. The candidate set is roughly 3,200
       # calls at the 2-second throttle, about 1.8 hours, so the cap is slack
       # rather than a real constraint. It exists for the week the pool grows.
+      #
+      # v1.84.0: in CI the candidate pool is the public summary only (a few
+      # dozen rows), because oos_full.json and the full database are local
+      # only. The full candidate set is refreshed on the owner's machine.
       - name: Run refresh_oos.py
         timeout-minutes: 300
         continue-on-error: true

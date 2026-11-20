@@ -75,7 +75,17 @@ of modelled costs, and the turnover result below is not simply "the backtest
 ignored trading costs". Real slippage on a high-turnover strategy can still
 exceed the model, which is why the page reports an association and not a cause.
 
-Read-only against the database. Writes only its two output files.
+**Public / full split (v1.84.0, docs/PRD.md Section 12).** The population
+findings (every key except `index`) need the whole database, which is local
+only. So on the owner's machine this builds everything from database.json and
+oos_full.json, writes the full result to the local-only overfit_full.json, and
+writes the committed overfit.json with the same population block and an
+`index` cut to the public symphonies. In CI (no database.json) it carries the
+population block forward unchanged from the committed overfit.json and
+rebuilds only the public `index`, from database_public.json and oos.json. The
+population findings therefore move only when the owner rebuilds locally.
+
+Read-only against the database. Writes only its output files.
 
     python scripts/build_overfit.py
 """
@@ -90,6 +100,12 @@ DATABASE = BASE_DIR / "data" / "database.json"
 OOS = BASE_DIR / "data" / "oos.json"
 JSON_PATH = BASE_DIR / "data" / "overfit.json"
 JS_PATH = BASE_DIR / "data" / "overfit.js"
+# Local-only counterparts (v1.84.0): see the split note in the docstring.
+DATABASE_PUBLIC = BASE_DIR / "data" / "database_public.json"
+OOS_FULL = BASE_DIR / "data" / "oos_full.json"
+FULL_JSON_PATH = BASE_DIR / "data" / "overfit_full.json"
+FULL_JS_PATH = BASE_DIR / "data" / "overfit_full.js"
+SUMMARY = BASE_DIR / "data" / "database_summary.json"
 PRICES_PATH = BASE_DIR / "data" / "prices.json"
 
 NOISE_FLAGS = ("caution", "excluded", "duplicate")
@@ -554,16 +570,60 @@ def build_index(usable, series):
     return cols
 
 
+def public_ids():
+    """symphony_ids in the public database summary, the rows overfit.json may index."""
+    d = load(SUMMARY)
+    col = d["fields"].index("symphony_id")
+    return {row[col] for row in d["rows"]}
+
+
+def filter_index(index, keep):
+    """The columnar index cut to the ids in keep, order preserved."""
+    pos = [i for i, sid in enumerate(index["ids"]) if sid in keep]
+    return {k: [v[i] for i in pos] for k, v in index.items()}
+
+
+def write_payload(payload, json_path, js_path):
+    text = json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n"
+    json_path.write_text(text, encoding="utf-8")
+    js_path.write_text(
+        "// Overfit Check data, loaded as a script tag so overfit.html works\n"
+        "// with the file:// protocol. To update: run scripts/build_overfit.py\n"
+        "window.OVERFIT_DATA = " + text.rstrip("\n") + ";\n",
+        encoding="utf-8")
+
+
+def usable_rows(rows):
+    return [r for r in rows
+            if r.get("flag") not in NOISE_FLAGS
+            and num(r.get("annualized_rate_of_return")) is not None]
+
+
+def main_ci():
+    """No database.json: keep the committed population block, rebuild the index."""
+    keep = public_ids()
+    usable = [r for r in usable_rows(load(DATABASE_PUBLIC)) if r.get("symphony_id") in keep]
+    series = load(OOS).get("series", {})
+    payload = load(JSON_PATH)
+    payload["generated"] = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    payload["index"] = build_index(usable, series)
+    write_payload(payload, JSON_PATH, JS_PATH)
+    print("database.json absent: population block carried forward from %s (built %s)"
+          % (JSON_PATH.name, payload.get("reference_date")))
+    print("rebuilt the public index: %d rows" % len(payload["index"]["ids"]))
+
+
 def main():
     global PRICES
     pr = load(PRICES_PATH)
     PRICES = (pr["dates"], pr["tickers"]["SPY"]["closes"])
+    if not DATABASE.exists():
+        main_ci()
+        return
     rows = load(DATABASE)
-    series = load(OOS).get("series", {})
+    series = load(OOS_FULL if OOS_FULL.exists() else OOS).get("series", {})
 
-    usable = [r for r in rows
-              if r.get("flag") not in NOISE_FLAGS
-              and num(r.get("annualized_rate_of_return")) is not None]
+    usable = usable_rows(rows)
 
     trailing, trailing_stats = trailing_cohort(usable)
     _pairs, true_stats = true_oos_cohort(usable, series)
@@ -589,13 +649,10 @@ def main():
         "index": index,
     }
 
-    text = json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n"
-    JSON_PATH.write_text(text, encoding="utf-8")
-    JS_PATH.write_text(
-        "// Overfit Check data, loaded as a script tag so overfit.html works\n"
-        "// with the file:// protocol. To update: run scripts/build_overfit.py\n"
-        "window.OVERFIT_DATA = " + text.rstrip("\n") + ";\n",
-        encoding="utf-8")
+    write_payload(payload, FULL_JSON_PATH, FULL_JS_PATH)
+    public = dict(payload)
+    public["index"] = filter_index(index, public_ids())
+    write_payload(public, JSON_PATH, JS_PATH)
 
     d = payload["score_distribution"]
     print("pool %d, trailing %d, true-OOS %d, fitted split %d, index %d rows"
@@ -604,8 +661,9 @@ def main():
     print("verdict mix %s" % payload["verdict_mix"])
     print("base rates %s" % [f["fell_short"] for f in payload["base_rates"]["fifths"]])
     print("checks %s" % payload["checks"])
-    print("wrote %s (%.0f KB) and its .js twin"
-          % (JSON_PATH.name, JSON_PATH.stat().st_size / 1024.0))
+    print("wrote %s (%.0f KB, local only) and %s (%.0f KB, %d public index rows), each with its .js twin"
+          % (FULL_JSON_PATH.name, FULL_JSON_PATH.stat().st_size / 1024.0,
+             JSON_PATH.name, JSON_PATH.stat().st_size / 1024.0, len(public["index"]["ids"])))
 
 
 if __name__ == "__main__":

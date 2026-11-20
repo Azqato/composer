@@ -56,8 +56,15 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-JSON_PATH = BASE_DIR / "data" / "database.json"
-JS_PATH = BASE_DIR / "data" / "database.js"
+# database.json is local only since v1.84.0 (docs/PRD.md Section 12). On the
+# owner's machine this refreshes the full master. In CI, where it is absent, it
+# refreshes the committed public slice, data/database_public.json, and
+# scripts/export_summary.py merges those rows back into the master the next
+# time it runs locally (newer refresh_date wins).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import public_database as pdb  # noqa: E402  (path set above)
+JSON_PATH = pdb.database_path()
+JS_PATH, JS_GLOBAL = pdb.js_twin(JSON_PATH)
 
 API_BASE = "https://api.composer.trade"
 UA = "Mozilla/5.0 (compatible; composer-metrics-updater/1.0)"
@@ -136,11 +143,11 @@ def post(url, body):
 
 def write_js(entries):
     comment = (
-        "// Full database data - loaded as a script tag so database.html works with file:// protocol.\n"
-        "// To update: run scripts/refresh_full_database.py\n"
+        "// Database data - loaded as a script tag so it works with the file:// protocol.\n"
+        "// Written by scripts/refresh_full_database.py and scripts/export_summary.py.\n"
     )
     JS_PATH.write_text(
-        comment + f"window.DATABASE_DATA = {json.dumps(entries, indent=2, ensure_ascii=False)};\n",
+        comment + f"window.{JS_GLOBAL} ={json.dumps(entries, indent=2, ensure_ascii=False)};\n",
         encoding="utf-8",
     )
 

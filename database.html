@@ -28,9 +28,9 @@
   <meta property="og:url" content="https://composeratlas.com/database">
   <link rel="canonical" href="https://composeratlas.com/database">
   <meta property="og:title" content="Searchable Database of Community Symphonies">
-  <meta property="og:description" content="Browse thousands of community-built Composer.trade symphonies with a leaderboard, a screener, and full backtested metrics for every one. Refreshed weekly.">
+  <meta property="og:description" content="Browse featured community-built Composer.trade symphonies with a leaderboard, a screener, and full backtested metrics for every one. Refreshed weekly.">
   <meta name="twitter:card" content="summary">
-  <meta name="description" content="Browse thousands of community-built Composer.trade symphonies with a leaderboard, a screener, and full backtested metrics for every one. Refreshed weekly.">
+  <meta name="description" content="Browse featured community-built Composer.trade symphonies with a leaderboard, a screener, and full backtested metrics for every one. Refreshed weekly.">
   <title>Database: Composer Atlas</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/main.css">
@@ -46,7 +46,7 @@
       <div style="max-width:600px;margin-bottom:32px">
         <h1 style="color:var(--color-primary);margin-bottom:8px">Database</h1>
         <p style="color:var(--color-secondary);font-size:1.0625rem">
-          A community-sourced database of thousands of Composer.trade symphonies, not just the curated strategies.
+          A growing database of featured community Composer.trade symphonies, ranked and screened against each other with full backtested metrics.
         </p>
         <div id="db-updated-badge" style="margin-top:12px"></div>
       </div>
@@ -143,6 +143,17 @@
   <script src="data/glossary.js"></script>
   <script src="data/database_summary.js"></script>
   <script src="data/oos.js"></script>
+  <script>
+    // Public / full split (v1.84.0, docs/PRD.md Section 12). The two files above
+    // hold only the public set the live site shows. The owner's machine also has
+    // local-only _full copies that are never committed or served. When the page
+    // is opened locally (double-clicked, or a local server), load them too: they
+    // assign the same globals, so they simply replace the public data. On the
+    // live site this never runs, so no visitor's browser requests a missing file.
+    if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+      document.write('<script src="data/database_summary_full.js"><\/script><script src="data/oos_full.js"><\/script>');
+    }
+  </script>
   <script src="js/app.js"></script>
   <script>
     // Opens one of the four Database tabs. Assigned inside the tab-switching

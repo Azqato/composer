@@ -56,6 +56,16 @@ PRICES = BASE_DIR / "data" / "prices.json"
 STRATEGIES = BASE_DIR / "data" / "strategies.json"
 JSON_PATH = BASE_DIR / "data" / "oos.json"
 JS_PATH = BASE_DIR / "data" / "oos.js"
+# Public / full split (v1.84.0, docs/PRD.md Section 12). oos.json is committed
+# and holds the PUBLIC rows only. oos_full.json is local only and holds every
+# row; it exists exactly when database.json does. Locally this script reads and
+# writes both: oos_full is the store, and oos.json is cut from it. In CI only
+# oos.json exists, the candidate pool is the public summary, and rows the CI
+# run refreshed are pulled back into oos_full on the next local run (later
+# requested_end wins).
+FULL_JSON_PATH = BASE_DIR / "data" / "oos_full.json"
+FULL_JS_PATH = BASE_DIR / "data" / "oos_full.js"
+PUBLIC_SUMMARY = BASE_DIR / "data" / "database_summary.json"
 
 API_BASE = "https://api.composer.trade"
 UA = "Mozilla/5.0 (compatible; ComposerAtlas/1.0; +https://composeratlas.com)"
@@ -214,7 +224,50 @@ def select_candidates(pool):
     return [e for _s, e in picked], cutoff
 
 
+def full_mode():
+    """True on the owner's machine: the full database, and so oos_full, exist."""
+    return (BASE_DIR / "data" / "database.json").exists()
+
+
+def public_ids():
+    """symphony_ids in the public summary, the set oos.json is allowed to hold."""
+    d = json.loads(PUBLIC_SUMMARY.read_text(encoding="utf-8"))
+    col = d["fields"].index("symphony_id")
+    return {row[col] for row in d["rows"]}
+
+
 def write_out(store):
+    keep = public_ids()
+    write_one({k: v for k, v in store.items() if k in keep}, JSON_PATH, JS_PATH)
+    if full_mode():
+        write_one(store, FULL_JSON_PATH, FULL_JS_PATH)
+
+
+def load_store():
+    """The series store this run starts from (see the note on FULL_JSON_PATH)."""
+    public = {}
+    if JSON_PATH.exists():
+        public = json.loads(JSON_PATH.read_text(encoding="utf-8")).get("series", {})
+    if not full_mode():
+        return public
+    if FULL_JSON_PATH.exists():
+        store = json.loads(FULL_JSON_PATH.read_text(encoding="utf-8")).get("series", {})
+    else:
+        # First local run after the split: the committed oos.json still held
+        # every row, so it seeds the full store.
+        store = dict(public)
+    pulled = 0
+    for sid, row in public.items():
+        old = store.get(sid)
+        if old is None or str(row.get("requested_end") or "") > str(old.get("requested_end") or ""):
+            store[sid] = row
+            pulled += 1
+    if pulled:
+        print("pulled %d newer row(s) from oos.json into oos_full.json" % pulled)
+    return store
+
+
+def write_one(store, json_path, js_path):
     payload = {
         "generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "protect_top": PROTECT_TOP,
@@ -223,8 +276,8 @@ def write_out(store):
         "series": store,
     }
     text = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
-    JSON_PATH.write_text(text, encoding="utf-8")
-    JS_PATH.write_text(
+    json_path.write_text(text, encoding="utf-8")
+    js_path.write_text(
         "// Out-of-sample statistics, loaded as a script tag so database.html works\n"
         "// with the file:// protocol. To update: run scripts/refresh_oos.py\n"
         "window.OOS_DATA = " + text.rstrip("\n") + ";\n",
@@ -256,9 +309,7 @@ def main():
     print("pool %d, candidates %d (score cutoff %.1f, min OOS %dd), benchmark end %s"
           % (len(pool), len(candidates), cutoff, MIN_OOS_DAYS, want_end))
 
-    store = {}
-    if JSON_PATH.exists():
-        store = json.loads(JSON_PATH.read_text(encoding="utf-8")).get("series", {})
+    store = load_store()
 
     def current(e):
         """A stored row is current when it was measured over the window this run
@@ -345,7 +396,7 @@ def main():
                 print("  -- checkpoint at %d rows --" % (i + 1))
     finally:
         write_out(store)
-        print("\nSaved %d rows to data/oos.json. OK=%d DISCARDED=%d FAILED=%d"
+        print("\nSaved %d rows (oos.json keeps the public ones). OK=%d DISCARDED=%d FAILED=%d"
               % (len(store), ok, skipped, failed))
 
 

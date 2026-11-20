@@ -52,11 +52,28 @@ data/symphony_scores.json
 # also takes the two largest served files off the path to the 25 MiB per-file
 # limit that broke the deployment on 2026-09-01.
 #
-# IMPORTANT: this file is NOT .gitignore. Both stay committed and on disk, and
-# the 17 scripts that read them, including two of the five deploy gates, are
-# unaffected.
+# v1.84.0: both are now ALSO in .gitignore (public / full split, docs/PRD.md
+# Section 12). They stay on the owner's machine as the full master and are
+# never in a clone. Listed here so a stray local copy can never be published
+# by a manual wrangler deploy.
 data/database.json
 data/database.js
+
+# The committed CI stand-in for database.json: the public rows plus the hidden
+# curated strategies, read by the build scripts and the deploy gates in CI.
+# A build input like database.json, so no page loads it and it is not served.
+data/database_public.json
+data/database_public.js
+
+# Local-only full copies (v1.84.0, gitignored). database.html and overfit.html
+# load them only when opened locally; they must never reach the live site.
+data/database_summary_full.json
+data/database_summary_full.js
+data/oos_full.json
+data/oos_full.js
+data/overfit_full.json
+data/overfit_full.js
+data/Public Database.xlsx
 
 # Local UI mockups: gitignored as well, listed here as a second line of defence
 _wf-mockup.html

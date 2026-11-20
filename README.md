@@ -21,18 +21,20 @@ moving averages, momentum, VIX tiers, leveraged and inverse ETFs, managed future
 volatility decay, and the risk metrics used to judge any of it. Every strategy page cross-links to
 the concepts it uses, and every concept links back to the strategies that use it.
 
-**A community strategy database.** Thousands of Composer symphonies gathered from across the
-community, in one searchable place, with three ways to work through it:
+**A community strategy database.** Featured Composer symphonies gathered from across the
+community, in one searchable place, with three ways to work through it. The live site shows a
+hand-picked public set that grows over time (the goal is 500); the full collection of thousands
+stays offline with the maintainer and opens in full only from a local copy:
 
 - **All Strategies**, a dense sortable table of the whole set.
 - **Leaderboard**, which scores every eligible symphony against a published twenty-metric model and
   ranks it into tiers. The full methodology is on the page, and each score breaks down on click.
-- **Screener**, a bucketed filter grid for narrowing thousands of rows to the handful worth reading.
+- **Screener**, a bucketed filter grid for narrowing the set to the handful worth reading.
 
 **Tools that build things, and one that argues with you.** A **Signal Miner** that brute-forces
 millions of "if this, then hold that" rules against real price history and hands you the survivors as
-pasteable Composer JSON. An **Overfit Check** that takes any symphony and scores it from 0 to 100
-against the thousands whose logic has gone a year untouched, so a strategy that only looks good in a
+pasteable Composer JSON. An **Overfit Check** that scores a featured symphony from 0 to 100 and
+measures it against the thousands whose logic has gone a year untouched, so a strategy that only looks good in a
 backtest has somewhere to be caught. An **ETF Cloner** that turns any ETF's holdings into a Composer
 symphony. A **Converter** that turns any symphony URL into clean, readable JSON. A **Node Counter**
 for checking a symphony against Composer's own complexity limits, and a **K-1 Lookup** that answers
@@ -64,7 +66,7 @@ It runs no ads and sells nothing. If it is useful to you, there is a voluntary d
 
 ## Current Status
 
-Live and actively maintained. The curated library, the glossary, the full community database with
+Live and actively maintained. The curated library, the glossary, the public community database with
 its leaderboard and screener, and all the tools are built and public. Strategy metrics and the
 community database refresh on an automated schedule, and the RSI page refreshes several times each
 weekday.

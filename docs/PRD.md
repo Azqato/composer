@@ -164,6 +164,10 @@ Investors curious about algorithmic or rules-based investing who do not yet know
 
 ### Shipped: Full Database Initiative (v1.12.0)
 
+> **v1.84.0, owner decision 2026-11-19:** the live site now shows only the public set of featured
+> symphonies (goal 500); the full database described below stays offline and opens in full only from
+> a local copy. See Section 12, "Public and Full Database", and Section 14, V2.7.
+
 Separate from the 36 curated strategies, `data/database.json` holds the full raw
 symphony database, originally seeded by an external Google Apps Script scrape (the
 original 6,488-row scrape plus rows synced in from `data/storage.csv` over time).
@@ -333,14 +337,20 @@ composer/
 │   ├── glossary.json            # Glossary concept entries, source of truth (was 8 at MVP). Count in Section 6
 │   ├── glossary.js              # Same data as window.GLOSSARY_DATA, for file:// compat
 │   ├── symphony_scores.json     # Full logic trees; AI analysis input only. Excluded from BOTH hosts (.assetsignore + deploy.yml)
-│   ├── database.json            # Full community database. A BUILD INPUT, not a site asset: 19 MiB, excluded from both hosts, and no page fetches it (closed open question 2, v1.79.2)
-│   ├── database.js              # Same data as window.DATABASE_DATA. Also excluded; nothing reads the global
-│   ├── database_summary.json    # Columnar, float-rounded export of database.json. THIS is what database.html loads (v1.16)
+│   ├── database.json            # Full community database, LOCAL ONLY since v1.84.0 (gitignored, never served). Section 12, "Public and Full Database"
+│   ├── database.js              # Same data as window.DATABASE_DATA. Local only; nothing reads the global
+│   ├── database_public.json     # Committed slice: public rows + hidden curated, full schema. CI stand-in for database.json; not served (v1.84.0)
+│   ├── database_public.js       # Same data as window.DATABASE_PUBLIC_DATA; not served
+│   ├── database_summary.json    # Columnar, float-rounded export of the PUBLIC rows. THIS is what database.html loads on the live site (v1.16, v1.84.0)
 │   ├── database_summary.js      # Same data as window.DATABASE_SUMMARY_DATA, for file:// compat (v1.16)
-│   ├── oos.json                 # True out-of-sample statistics for the Leaderboard candidate set, keyed by symphony_id (V1.18)
+│   ├── database_summary_full.*  # Every row, local only; database.html loads it instead when opened locally (v1.84.0)
+│   ├── oos.json                 # True out-of-sample statistics, public ids only since v1.84.0, keyed by symphony_id (V1.18)
 │   ├── oos.js                   # Same data as window.OOS_DATA, for file:// compat
-│   ├── overfit.json             # Population findings, the "par" curve the Overfit Score is read against, and a per-symphony index (V2.4)
+│   ├── oos_full.*               # Every out-of-sample row, local only (v1.84.0)
+│   ├── overfit.json             # Population findings (full set) and a per-symphony index cut to public ids (V2.4, v1.84.0)
 │   ├── overfit.js               # Same data as window.OVERFIT_DATA, for file:// compat
+│   ├── overfit_full.*           # Same findings with the full index, local only (v1.84.0)
+│   ├── Public Database.xlsx     # Owner's list of extra public symphony_ids, local only; only symphony_id is read (v1.84.0)
 │   ├── rsi.json                 # 10-day RSI (Wilder's smoothing) for the 20-ticker Frontrunner universe (V2.1)
 │   ├── rsi.js                   # Same data as window.RSI_DATA, for file:// compat (V2.1)
 │   ├── prices.json              # Full daily adjusted-close history (72 tickers from 2010) for the Signal Miner (v1.15.0)
@@ -363,7 +373,8 @@ composer/
 │   ├── refresh_oos.py           # True out-of-sample statistics for the Leaderboard candidates (V1.18)
 │   ├── refresh_k1.py            # Reads each fund's Structure field, derives its tax form (v1.27.0)
 │   ├── refresh_ticker_inception.py # Real first-trade date per ticker
-│   ├── export_summary.py        # Derives database_summary.json/.js from database.json (v1.16); run after EVERY refresh
+│   ├── export_summary.py        # Makes the public/full split: slice, public + full summaries, oos cut (v1.16, v1.84.0); run after EVERY refresh
+│   ├── public_database.py       # Shared paths and rules for the public/full split; database_path() is the CI fallback (v1.84.0)
 │   ├── export_full_database_to_xlsx.py # Local-only, occasional: regenerates the xlsx from the JSON (v1.9.4)
 │   ├── build_strategy_extras.py # Joins the featured strategies to database.json and k1.json at build time (v1.28.0)
 │   ├── build_overfit.py         # Derives data/overfit.json + twin for the Overfit Check page (V2.4)
@@ -982,8 +993,12 @@ reason.
 | Order | Workflow | Cron (UTC) | Pacific | Runtime | Writes | Read by |
 |---|---|---|---|---|---|---|
 | 1 | `refresh-prices.yml` | `7 2 * * 6` Sat 02:07 | Fri 7:07pm | ~90s | `data/prices.json` | Signal Miner, `refresh-oos.py` |
-| 2 | `refresh-full-database.yml` | `7 1 * * 0` Sun 01:07 | Sat 6:07pm | 4.5-5 h | `database_summary.json` | the site, `refresh_oos.py` |
-| 3 | `refresh-oos.yml` | `7 3 * * 1` Mon 03:07 | Sun 8:07pm | ~2.7 h | `data/oos.json` | the Leaderboard, `build_overfit.py` |
+| 2 | `refresh-full-database.yml` | `7 1 * * 0` Sun 01:07 | Sat 6:07pm | minutes (public slice, v1.84.0) | `database_public.json`, `database_summary.json` | the site, `refresh_oos.py` |
+| 3 | `refresh-oos.yml` | `7 3 * * 1` Mon 03:07 | Sun 8:07pm | minutes (public set, v1.84.0) | `data/oos.json` | the Leaderboard, `build_overfit.py` |
+
+**Since v1.84.0 the scheduled jobs refresh only the public set** (Section 12, "Public and Full
+Database"). The full ~6,800-row refresh and the full out-of-sample run are local runs on the owner's
+machine; the runtimes and overlap notes below describe those runs, and still apply to them.
 
 **Why prices go first.** The Friday close lands at 1pm Pacific, so a Friday evening run picks it up
 the same day rather than waiting a night. Everything downstream is that much fresher.
@@ -1013,17 +1028,50 @@ missed run costs freshness rather than data.
 
 `Full Database.xlsx` is deliberately **not** regenerated/committed by this workflow, it's documented as a local-only, occasional-use review artifact (see `scripts/export_full_database_to_xlsx.py`'s docstring), not part of the site's data pipeline, and not worth the binary-diff churn in git history on a weekly cadence. Regenerate it manually when wanted.
 
-To force an immediate full-database refresh, either trigger the workflow manually (GitHub → Actions → "Refresh Full Database" → Run workflow) or run locally:
+**v1.84.0: the paragraphs above describe the full refresh, which is now a LOCAL run.**
+`data/database.json` is gitignored (Section 12, "Public and Full Database"), so the workflow cannot
+see it. In CI, `refresh_full_database.py` falls back to the committed public slice,
+`data/database_public.json`, a few dozen rows that refresh in minutes, and the workflow commits that
+slice, the public summary, `strategy_extras` and `overfit` (public index only; the population block is
+carried forward). The 4.5 to 5 hour figure now applies to the owner's local full run.
+
+To refresh the full database locally (it never needs to be committed):
 
 ```bash
-python scripts/refresh_full_database.py
-python scripts/export_summary.py
-git add data/database.json data/database.js data/database_summary.json data/database_summary.js
-git commit -m "data: refresh full database - YYYY-MM-DD"
+python scripts/refresh_full_database.py      # refreshes data/database.json (local master)
+python scripts/export_summary.py             # merges CI rows back, writes public + full summaries
+python scripts/build_strategy_extras.py
+python scripts/build_overfit.py              # rebuilds the population findings from the full set
+git add data/database_public.json data/database_public.js data/database_summary.json data/database_summary.js data/strategy_extras.json data/strategy_extras.js data/overfit.json data/overfit.js
+git commit -m "data: local full database refresh - YYYY-MM-DD"
 git push origin main
 ```
 
+Pull before running: the weekly job commits `database_public.json`, and `export_summary.py` merges
+those rows into the local master (newer `refresh_date` wins), so a stale checkout only delays that
+merge, it never loses rows.
+
 **Reminder, scope boundary:** this workflow runs `refresh_full_database.py` only. `scripts/flag_name_noise.py` and `scripts/dedupe_symphonies.py` (V1.14 Part A) remain manual-only and must never be added here or to any other scheduled/CI job, see "Name-Based Noise & De-Duplication" above for why.
+
+### Publishing a Symphony to the Live Database (v1.84.0)
+
+The live site shows only the public set: every visible curated strategy, plus every `symphony_id`
+listed in `data/Public Database.xlsx`. That file is local only (gitignored, never served) and has the
+same columns as `data/Full Database.xlsx`, so a row can be copied straight across. Only the
+`symphony_id` column is read.
+
+1. Open `data/Public Database.xlsx`, paste the row (or just the id) from `Full Database.xlsx`, save,
+   and **close Excel** (an open workbook can be locked or half-saved).
+2. `python scripts/export_summary.py`. It fails loudly, naming the id, if any listed id is not in
+   `database.json`, so a typo cannot silently publish nothing.
+3. `python scripts/build_overfit.py` (so the Overfit Check can look the new symphony up), then
+   `python scripts/check_database_keys.py`.
+4. Commit the public files listed in the runbook block above and push. To unpublish, delete the row
+   and repeat.
+
+Hidden curated strategies stay off the public summary even if listed. Curated strategies never need
+a row in the sheet; `--seed-public` on `export_full_database_to_xlsx.py` wrote them in once, for
+reference. The roadmap goal is 500 public symphonies (Section 14).
 
 ---
 
@@ -1675,6 +1723,8 @@ All fields in `data/database.json`. This is a separate, lighter schema from
 `strategies.json`: it holds the raw ~6,800-entry database (see Section 14 Roadmap),
 not the 36 curated strategies. `data/database.js` is its `.js` twin (assigns
 `window.DATABASE_DATA`, same file:// compat pattern as `strategies.js`/`glossary.js`).
+**Local only since v1.84.0** (gitignored; see "Public and Full Database" below). The committed
+`data/database_public.json` uses this exact schema, and its twin assigns `window.DATABASE_PUBLIC_DATA`.
 
 #### The Primary Key Invariant
 
@@ -1767,6 +1817,65 @@ Field names are stored once in the `fields` array; each entry is a positional va
 **Field list:** every `database.json` field except `cumulative_return`, `mean`, `min`, `max`, `active_asset_nodes`, `total_costs`, `annualized_turnover`, `herfindahl_index` (dropped, see V1.16/V1.13 for why each is unused). All floats rounded to 4 decimal places (percentages/ratios never need more precision than that in any UI).
 
 There is no `.js` twin naming inconsistency to worry about here, `data/database_summary.js` follows the same convention as every other twin file, assigning `window.DATABASE_SUMMARY_DATA` to the identical columnar payload.
+
+**Since v1.84.0 this file holds only the public rows** (next subsection). Its local-only sibling `data/database_summary_full.json`/`.js` holds every row, in the same layout and under the same global.
+
+---
+
+### Public and Full Database (v1.84.0)
+
+**Owner decision, 2026-11-19:** the live site shows only featured symphonies. The full community
+database stays offline on the owner's machine, and opening the site from a local copy shows all of it.
+The public set grows over time toward a goal of 500 (Section 14).
+
+**Definitions** (single source: `scripts/public_database.py`):
+
+- **Public set**, what `database.html`, the Leaderboard, the Screener and the Overfit lookup show:
+  every visible curated strategy, always, plus every `symphony_id` in `data/Public Database.xlsx`,
+  minus any hidden curated strategy.
+- **Slice**, `data/database_public.json`: the public set plus the hidden curated strategies, full
+  schema. Hidden strategies are included because `build_strategy_extras.py` joins every curated
+  strategy, and in CI the slice is the only database it can read.
+
+**Files.**
+
+| File | Tracked | Served | Holds |
+|---|---|---|---|
+| `data/database.json` / `.js` | no (gitignored) | no | full master, local only |
+| `data/database_public.json` / `.js` | yes | no (build input) | the slice; CI refresh target |
+| `data/database_summary.json` / `.js` | yes | yes | public rows only |
+| `data/database_summary_full.json` / `.js` | no | no | every row, local only |
+| `data/oos.json` / `.js` | yes | yes | out-of-sample rows for public ids only |
+| `data/oos_full.json` / `.js` | no | no | every out-of-sample row, local only |
+| `data/overfit.json` / `.js` | yes | yes | full population findings, `index` cut to public ids |
+| `data/overfit_full.json` / `.js` | no | no | full population findings and full index, local only |
+| `data/Public Database.xlsx` | no | no | owner's list of extra public ids; only `symphony_id` is read |
+
+Every untracked file is listed in `.gitignore`, `.assetsignore` and `deploy.yml`'s rsync excludes.
+`database_public.json` is in the last two only. Earlier full versions remain in git history; the owner
+ruled that acceptable and the history is not to be rewritten for this.
+
+**How the pages choose.** `database.html` and `overfit.html` load the public files by plain
+`<script src>`, then, only when `location.protocol` is `file:` or the host is `localhost`,
+`127.0.0.1` or `[::1]`, `document.write` the `_full.js` files after them. Those assign the same
+globals, so they replace the public data. On the live host that branch never runs, so no visitor's
+browser requests a missing file. A fresh clone without the local files shows the public set.
+
+**How CI and the local master stay in sync.** Every script that reads the database calls
+`database_path()`: `database.json` when present, else the slice. So in CI the weekly jobs refresh
+the slice and the public `oos.json`. Locally, `export_summary.py` merges slice rows back into
+`database.json` (newer `refresh_date` wins) and `refresh_oos.py` / `export_summary.py` merge
+`oos.json` rows back into `oos_full.json` (later `requested_end` wins). Neither direction loses a row.
+
+**The Overfit population findings** (every key of `overfit.json` except `index`) need the full set,
+so they are rebuilt only locally. In CI `build_overfit.py` carries them forward unchanged and rebuilds
+only the public `index`. Visitors cannot recompute them: that needs the data that is kept offline.
+
+**Gates.** `check_database_keys.py` runs checks 1 to 3 on whichever database `database_path()`
+returns, demands that the public summary equals the slice minus hidden curated strategies in slice
+order, and that every visible curated strategy is in it. Locally it also demands that the slice is an
+ordered subset of `database.json` and that `database_summary_full.json` matches `database.json`.
+`check_strategy_extras.py` gives byte-identical results from the slice and from the master.
 
 ---
 
@@ -2841,8 +2950,8 @@ in-sample and flatters it.
 ### Where the Project Is Right Now
 
 **Current phase: V2.2, "Scale and Discovery".** Everything through V2.1 has shipped and is live.
-The MVP, the curated library, the glossary, the full community database with its leaderboard and
-screener, the four tools and the live RSI page are all built, public and maintained on automated
+The MVP, the curated library, the glossary, the community database with its leaderboard and
+screener (public set only since v1.84.0, full set offline), the four tools and the live RSI page are all built, public and maintained on automated
 refresh schedules.
 
 **What the current phase is actually about.** Not new sections. The remaining V2.2 work is depth on
@@ -2879,6 +2988,7 @@ numbering schemes; they answer different questions.
 | V1.19 | K1 Lookup: `/k1`, structure-derived K-1 database, refresh script | Complete | v1.27.0, ETN display v1.27.9 |
 | V1.20 | Strategy page rebuild: database join, outlier and out-of-sample disclosure, K-1 cross-link, regime and risk sections | **Complete.** All 19 items shipped; 13, 14, 15 complete on all 24 visible strategies (v1.68.0); item 16 stores the daily series and the features it unblocks are tracked in Section 14 C3 | v1.72.0 |
 | V2.0 | Full database goes public | Complete | v1.12.0 |
+| V2.7 | **Public database: featured set, goal 500.** Owner decision 2026-11-19: the live Database, Leaderboard, Screener and Overfit lookup show only the public set (the 24 visible curated strategies plus ids the owner lists in `data/Public Database.xlsx`); the full ~6,800-row database stays offline and opens in full from a local copy. Mechanism in Section 12, "Public and Full Database". **Goal: grow the public set to 500 symphonies in total**, added by hand over time | **Mechanism complete; public set at 24 of 500** | v1.84.0 |
 | V2.1 | Live RSI signals page | Complete, built ahead of slot | v1.13.0 |
 | **V2.2** | **Signal Miner robustness (items A, B, C).** Split 2026-09-07: the curated-set refresh and library expansion moved out to V2.6. **A shipped** (parameter plateau scoring, verified by `run_harness.py plateau`). **C's empirical null shipped 2026-09-08 as v1.79.0**; the other five rating components C names remain unbuilt and are not queued. **B, walk-forward validation, is NOT built**, and it is the only item here that can fail a rule outright rather than caveat it | **A and C shipped, B outstanding** | Through v1.79.0 |
 | V2.3 | Community signals: external submission form, curator notes, related strategies | Backlog, lowest priority | Not started |
@@ -2907,6 +3017,7 @@ reason, and each remains a legitimate future item.
 | Strategy comparison view, per-strategy performance chart | Backlog | Never started |
 | Price data for UPRO, AGG, CORP and STIP (`refresh_prices.py`) | **Backlog, requested 2026-10-19** | Signal tickers in the owner's Wash Sale Symphony that the price set lacks (UPRO is used 41 times). Needed before the RSI Backtester or any full-symphony simulation can evaluate that symphony end to end |
 | Twitch Check (compare live trading to the backtest) | **Backlog, requested 2026-10-19, data source TBD** | A sibling of Overfit Check. It would line up a symphony's live daily returns against the backtest's daily returns over the same days and report the share of days that match within a tolerance, the share where live beat the backtest, and the share where it fell short. The user sets the tolerance (default 0.25 percentage points per day). Blocked on data: live returns are account-scoped in Composer's API (`portfolio/accounts/{acct}/symphonies/{id}` needs auth) and are not public, so the source is open (pasted data or a local script are the candidates). Distinct from Overfit Check, whose OOS is a backtest re-run after the last logic edit, not real fills |
+| Browser-side Composer backtest for any pasted symphony (Overfit Check) | **Idea, unverified, recorded 2026-11-19** | Since v1.84.0 the Overfit lookup covers only the public set, because the out-of-sample record of every other symphony is kept offline. A visitor could get a verdict for any symphony if the page fetched its backtest and its post-edit re-run from Composer's public backtest endpoint in the browser. Not checked: whether that endpoint allows cross-origin calls from a browser (CORS), and what the rate limit would mean shared across visitors. Verify both before any design work |
 | Backtester parity with Composer: slippage and start-date rule | **Backlog, requested 2026-11-06; owner is taking a break before starting** | A 96-strategy test (random database sample, real data only, ending 2026-10-30) found two causes for nearly all gaps between our engine and Composer's stored figures. (1) Costs: Composer charges 0.05% slippage per trade plus reg/TAF fees (the `BODY` in `refresh_full_database.py`); our engine charges none. CAGR gap tracked turnover at r = 0.94. Applying 0.05% to each day's traded weight cut the median CAGR gap from 9.9% to 0.9% of the value on same-length backtests (58 of 64 within 5%, max drawdown 59 of 64 within 1 pt, Sharpe 59 of 64 within 0.05). (2) Start date: Composer starts about 10-15 trading days after the newest ticker's first price; ours starts as soon as any ticker has data and skips the missing ones (e.g. QQQ strategies starting 1993), so 32 of 96 ran a different window. Plan: add both as Backtester options that default to Composer-matching. Our turnover is 2x Composer's by definition (two-sided vs one-sided). Separately ruled: the full database stays on Composer's API; our engine would need ~3,750 tickers of price upkeep for at most ~2 h/week saved |
 
 ### Guides Content Roadmap
@@ -7082,7 +7193,7 @@ The codebase is public, readable, and maintainable by a single developer. We do 
 **Q: What is Composer Atlas?**
 A: A free, independent reference website for people who use Composer.trade. It explains how real
 strategies work in plain English, publishes their backtested numbers without cherry-picking, covers
-thousands of community symphonies in a searchable database, and provides tools for building
+featured community symphonies in a searchable database, and provides tools for building
 strategies of your own.
 
 **Q: Who is this for?**
@@ -7118,9 +7229,15 @@ with its full logic and its full metrics, including the bad ones.
 
 **Q: What is the difference between the curated Strategies page and the Database?**
 A: The curated library is a small, hand-explained set: each has a written breakdown of its logic, an
-AI-authored analysis, tags and a full metrics table. The Database is thousands of community
-symphonies gathered from many sources, with metrics and a ranking but no hand-written explanation.
-The library is for understanding; the database is for finding.
+AI-authored analysis, tags and a full metrics table. The Database is a featured set of community
+symphonies, with metrics and a ranking but no hand-written explanation. The library is for
+understanding; the database is for finding.
+
+**Q: Why does the Database show only featured symphonies?**
+A: Since v1.84.0 the live site shows a hand-picked public set, ranked and screened against each
+other, which grows over time toward 500. The full collection of thousands stays offline with the
+maintainer. The Overfit Check's population findings are still measured across the full collection;
+only the per-symphony lookup is limited to the public set.
 
 **Q: How often are metrics updated?**
 A: The community database refreshes on an automated weekly schedule, the RSI page several times each

@@ -10,6 +10,24 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.84.0] - 2026-11-19 - Public database: featured symphonies only
+
+The live Database, Leaderboard, Screener and Overfit Check lookup now show only the public set: the 24 visible curated strategies, plus any symphony the owner lists in `data/Public Database.xlsx`. The full database (6,828 rows) stays offline on the owner's machine, and opening the site from a local copy (double-clicked or `127.0.0.1`) still shows all of it. Roadmap goal: 500 public symphonies (PRD Section 14, V2.7).
+
+- **Untracked:** `data/database.json` and `data/database.js` (`git rm --cached`; local copies unchanged). They are now in `.gitignore` as well as `.assetsignore`. Earlier versions remain in git history, by owner decision.
+- **New committed slice:** `data/database_public.json`/`.js`, the public rows plus the 12 hidden curated strategies (36 rows, full schema). It is the CI stand-in for `database.json` and is not served.
+- **New local-only files** (gitignored, never served): `database_summary_full`, `oos_full` and `overfit_full` (each `.json` + `.js`) and `Public Database.xlsx` (same columns as `Full Database.xlsx`; only `symphony_id` is read).
+- **Public files now hold public rows only:** `database_summary` (24 rows, 11 KB, was 6,828 rows and 3.9 MB), `oos` (22 series, was 3,813), and the `overfit` index (24 rows). The Overfit population findings are unchanged and still measured across the full set; CI carries them forward and only a local rebuild changes them.
+- **Pages:** `database.html` and `overfit.html` load the `_full.js` files only when opened via `file:` or a local host, so live visitors never request a missing file. Copy that promised "thousands" on the Database, homepage, Strategies page and Overfit Check was reworded.
+- **Scripts:** new `scripts/public_database.py` (shared paths; `database_path()` falls back to the slice when `database.json` is absent). `export_summary.py` makes the split, merges CI-refreshed rows back into the local master (newer `refresh_date` wins), re-cuts `oos.json` from `oos_full.json`, and fails loudly on an unknown id in the sheet. `refresh_full_database.py`, `refresh_oos.py`, `build_overfit.py`, `build_strategy_extras.py`, `analyze_leaderboard.py` and `refresh_ticker_inception.py` work against either. `export_full_database_to_xlsx.py --seed-public` creates the sheet (refuses to overwrite it).
+- **Gates:** `check_database_keys.py` checks the slice in CI and the master locally, plus public-summary sync and that every visible curated strategy is public. All five gates pass both locally and on an exact copy of the CI checkout (the asset-size gate needs a git repo, so it ran locally only). CI and local builds of the public summary and `strategy_extras` are byte-identical.
+- **Workflows:** the weekly refreshes now cover the public set only and take minutes; the full refresh is a local run (PRD Section 11). `deploy.yml` rsync excludes list every new file, one per line.
+- **Verified** in headless Edge: file:// and 127.0.0.1 load 6,828 rows and the full Overfit index (6,671 rows at test time, 6,633 after rebuilding on the 2026-11-15 refresh); a non-local host loads 24 and 24, with no errors. Rebased onto two newer weekly refreshes before pushing, which became the local master.
+
+**Files changed:** `.gitignore`, `.assetsignore`, `.github/workflows/deploy.yml`, `.github/workflows/refresh-full-database.yml`, `.github/workflows/refresh-oos.yml`, `data/database.json` (untracked), `data/database.js` (untracked), `data/database_public.json` (new), `data/database_public.js` (new), `data/database_summary.json`, `data/database_summary.js`, `data/oos.json`, `data/oos.js`, `data/overfit.json`, `data/overfit.js`, `database.html`, `overfit.html`, `index.html`, `strategies.html`, `scripts/public_database.py` (new), `scripts/export_summary.py`, `scripts/check_database_keys.py`, `scripts/build_strategy_extras.py`, `scripts/build_overfit.py`, `scripts/refresh_full_database.py`, `scripts/refresh_oos.py`, `scripts/analyze_leaderboard.py`, `scripts/refresh_ticker_inception.py`, `scripts/export_full_database_to_xlsx.py`, `README.md`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [Unreleased] - storage.csv is local-only
 
 - `data/storage.csv` (the URL archive) is no longer tracked or published. The local file is unchanged, and it is listed in `.gitignore`, `.assetsignore` and `deploy.yml`'s excludes. `scripts/check_database_keys.py` now skips its archive check when the file is absent, so the deploy gate keeps passing on GitHub; the check still runs locally. Earlier versions remain in git history.

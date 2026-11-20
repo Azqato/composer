@@ -45,3 +45,17 @@ data/Full Database.xlsx
 # Local-only URL archive (every symphony ever seen); never committed (2026-11-06).
 # check_database_keys.py skips its archive check when this is absent (CI).
 data/storage.csv
+
+# Public / full split (v1.84.0, docs/PRD.md Section 12). The live site shows only
+# the public set; the full database and everything derived from it stay on the
+# owner's machine. The committed CI stand-in is data/database_public.json.
+data/database.json
+data/database.js
+data/database_summary_full.json
+data/database_summary_full.js
+data/oos_full.json
+data/oos_full.js
+data/overfit_full.json
+data/overfit_full.js
+# The owner's hand-edited list of extra public symphony_ids (only symphony_id is read).
+data/Public Database.xlsx

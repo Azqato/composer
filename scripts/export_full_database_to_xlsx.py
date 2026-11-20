@@ -21,13 +21,26 @@ when its value is actually a dict/list.
 
 Usage:
     python scripts/export_full_database_to_xlsx.py
+    python scripts/export_full_database_to_xlsx.py --seed-public
+
+--seed-public (v1.84.0) creates data/Public Database.xlsx instead: the same
+columns, holding only the visible curated strategies. That file is the owner's
+list of which symphonies the live site shows (docs/PRD.md Section 12); only its
+symphony_id column is read, by scripts/export_summary.py. It refuses to run if
+the file already exists, because unlike Full Database.xlsx it is hand-edited
+and must never be regenerated over the owner's additions.
 """
 
 import json
 from datetime import date
 from pathlib import Path
 
+import sys
+
 import openpyxl
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import public_database as pdb  # noqa: E402  (path set above)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 JSON_PATH = BASE_DIR / "data" / "database.json"
@@ -43,6 +56,13 @@ def main():
         return
 
     headers = list(entries[0].keys())
+    out_path = XLSX_PATH
+    if "--seed-public" in sys.argv[1:]:
+        out_path = pdb.PUBLIC_XLSX
+        if out_path.exists():
+            raise SystemExit(f"{out_path.name} already exists; it is hand-edited, so it is never overwritten.")
+        visible = set(pdb.visible_curated_ids())
+        entries = [e for e in entries if e.get("symphony_id") in visible]
 
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -62,8 +82,8 @@ def main():
             row.append(val)
         ws.append(row)
 
-    wb.save(XLSX_PATH)
-    print(f"Wrote {len(entries)} rows ({len(headers)} columns) to {XLSX_PATH.name}")
+    wb.save(out_path)
+    print(f"Wrote {len(entries)} rows ({len(headers)} columns) to {out_path.name}")
 
 
 if __name__ == "__main__":
