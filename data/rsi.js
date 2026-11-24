@@ -1,7 +1,7 @@
 // RSI signals data - loaded as a script tag so the site works with file:// protocol.
 // To update: run scripts/refresh_rsi.py
 window.RSI_DATA = {
-  "refreshed_at": "2026-11-20T22:11:45Z",
+  "refreshed_at": "2026-11-24T02:04:41Z",
   "tickers": [
     {
       "symbol": "XLF",
@@ -153,7 +153,7 @@ window.RSI_DATA = {
     {
       "symbol": "DIA",
       "name": "SPDR Dow Jones Industrial Average ETF",
-      "rsi_10": 22.1,
+      "rsi_10": 22.3,
       "price": 481.08,
       "price_date": "2026-11-20"
     }
