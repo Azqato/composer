@@ -15,6 +15,7 @@ Format: `[VERSION] - YYYY-MM-DD`
 - CPI and Core CPI get the row of change tiles under Status (1M to 10Y, the change in the 12-month rate in points), each switching the chart range, and a 1M range tab.
 - The headline change follows the selected range, as on stock and yield pages: YTD shows the year-to-date change and "year to date".
 - A Status line uses the weekly report's rule (Rising or Falling on a 0.10-point monthly move, else Steady), with the link to the other CPI page beside it. Key Stats add Previous month.
+- The CPI chart's 2% goal line is labelled "Goal 2%" in the left axis gutter, beside High and Low, instead of at the right edge.
 - New Federal Funds Rate page (FEDFUNDS), built like the yield pages: daily effective rate from the New York Fed (FRED's DFF before July 2000, so history from 1954), bps tiles that switch the range, a range-following headline, Status, and Key Stats with the FOMC target range and the 3M Treasury gap. Search finds it as fed funds, fed rate, EFFR, FFR, FOMC or interest rate, and it heads the Popular panel's "Rates and yields" group.
 - scripts/update_fedfunds.py runs in the daily economy refresh workflow; update_yields.py now keeps other entries in data/yields/_latest.js.
 

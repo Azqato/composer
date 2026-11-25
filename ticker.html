@@ -582,7 +582,7 @@
         'Status, under the price, is a different reading: Bear 20% or more below the 52-week closing high, Correction 10% or more below it, Bull 20% or more above the 52-week closing low, otherwise Rising or Falling when the price is more than 5% from its 200-day average, else Steady.',
       cpi: 'CPI, the Consumer Price Index from the Bureau of Labor Statistics, tracks the prices of a basket of things households buy. Inflation here is each month&rsquo;s index against the same month a year earlier (the 12-month rate the news reports). ' +
         'Core CPI leaves out food and energy, whose prices jump around, so it shows the underlying trend more steadily. Both are seasonally adjusted (FRED series CPIAUCSL and CPILFESL). ' +
-        'The dashed line is 2%, the Federal Reserve&rsquo;s inflation goal (the Fed measures it with PCE, a broader index, so CPI tends to run a little higher). ' +
+        'The teal dashed line (Goal 2%) is 2%, the Federal Reserve&rsquo;s inflation goal (the Fed measures it with PCE, a broader index, so CPI tends to run a little higher). ' +
         'The 3-month annualized rates show the recent pace: the last three months&rsquo; rise, compounded to a year. Each month&rsquo;s figure comes out about two weeks after the month ends.',
       ffr: 'The federal funds rate is what banks charge each other to lend reserves overnight. The Federal Reserve&rsquo;s FOMC sets a target range for it at its meetings, and the effective rate shown here, published daily by the New York Fed, trades inside that range. It anchors short-term borrowing costs across the economy, from T-bills to savings accounts. ' +
         'Status is Rising or Falling on a move of 10 bps or more over the past month (usually a Fed meeting), else Steady. A 3M Treasury yield below it means the market expects cuts. History before July 2000 is FRED&rsquo;s daily series (DFF).',
@@ -1721,13 +1721,14 @@
       // as on the ticker chart.
       var vals = a.filter(function (v) { return v != null; }), cHi = Math.max.apply(null, vals), cLo = Math.min.apply(null, vals), showHL = cHi > cLo;
       var hiTxt = 'High ' + (cHi * 100).toFixed(2) + '%', loTxt = 'Low ' + (cLo * 100).toFixed(2) + '%';
-      var padL = 12 + Math.max(Math.max.apply(null, ticks.map(function (v) { return ((v * 100).toFixed(dec) + '%').length; })) * 6.6, showHL ? Math.max(hiTxt.length, loTxt.length) * 7 : 0);
+      var padL = 12 + Math.max(Math.max.apply(null, ticks.map(function (v) { return ((v * 100).toFixed(dec) + '%').length; })) * 6.6, showHL ? Math.max(hiTxt.length, loTxt.length) * 7 : 0, X.goal ? 7 * 7 : 0);
       var Xp = function (i) { return padL + (n < 2 ? 0 : i / (n - 1)) * (W - padL - padR); };
       var Y = function (v) { return padT + (1 - (v - y0) / ((y1 - y0) || 1)) * (H - padT - padB); };
       var grid = '', ax = '';
       ticks.forEach(function (v) {
         grid += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"' + (Math.abs(v) < 1e-12 ? ' style="stroke-dasharray:none;stroke:var(--color-border-strong)"' : '') + '/>';
         if (showHL && (Math.abs(Y(v) - Y(cHi)) < 13 || Math.abs(Y(v) - Y(cLo)) < 13)) return;
+        if (X.goal && Math.abs(Y(v) - Y(0.02)) < 13) return;
         ax += '<text x="' + (padL - 8) + '" y="' + (Y(v) + 4).toFixed(1) + '" text-anchor="end">' + (v * 100).toFixed(dec) + '%</text>';
       });
       if (showHL) {
@@ -1738,7 +1739,11 @@
       }
       if (X.goal) {
         grid += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + Y(0.02).toFixed(1) + '" y2="' + Y(0.02).toFixed(1) + '" style="stroke:var(--color-teal);stroke-dasharray:6 4;opacity:.7"/>';
-        ax += '<text class="lbl" x="' + (W - padR) + '" y="' + (Y(0.02) - 5).toFixed(1) + '" text-anchor="end">2% goal</text>';
+        // Labelled in the left gutter like High and Low; nudged off either
+        // label when the goal sits right beside it.
+        var gy = Y(0.02);
+        if (showHL) [Y(cLo), Y(cHi)].forEach(function (yy) { if (Math.abs(gy - yy) < 13) gy = yy + (gy >= yy ? 13 : -13); });
+        ax += '<text class="lbl" x="' + (padL - 8) + '" y="' + (gy + 4).toFixed(1) + '" text-anchor="end" style="fill:var(--color-teal)">Goal 2%</text>';
       }
       var spanDays = X.daily ? (parseD(months[n - 1]) - parseD(months[0])) / 864e5 : 0;
       var nt = Math.min(6, Math.max(2, Math.floor(W / 130)));
