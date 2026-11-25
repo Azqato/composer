@@ -180,6 +180,8 @@
     .tk-rel { list-style: none; margin: 0; padding: 0; }
     .tk-rel a { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--color-border); text-decoration: none; }
     .tk-rel li:last-child a { border-bottom: 0; }
+    .tk-rel li.tk-pop-h { color: var(--color-secondary); font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 16px 4px 2px; }
+    .tk-rel li.tk-pop-h:first-child { padding-top: 2px; }
     .tk-rel a:hover .tk-rel-name { color: var(--color-blue); }
     .tk-rel-main { flex: 1; min-width: 0; }
     .tk-rel-name { color: var(--color-primary); font-size: 0.875rem; font-weight: 500; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -214,7 +216,7 @@
     .tk-print-head { display: none; }
     html.tk-printing .tk-chart { width: 7.5in; height: 2.4in; }
     html.tk-printing .tk-chart:has(+ .tk-rsi:not([hidden])) { height: 1.6in; }
-    html.tk-printing .tk-chart.tk-rsi { height: 0.7in; }
+    html.tk-printing .tk-chart.tk-rsi { height: 0.95in; }
     .tk-foot-print, .tk-print-foot { display: none; }
     @page { size: letter; margin: 0.45in 0.5in; }
     @media print {
@@ -253,7 +255,8 @@
       .tk-overlays { margin: 10px 0 2px; }
       .tk-chart { width: 7.5in; height: 2.4in; break-inside: avoid; }
       .tk-chart:has(+ .tk-rsi:not([hidden])) { height: 1.6in; }
-      .tk-chart.tk-rsi { height: 0.7in; margin-top: 2px; }
+      .tk-chart.tk-rsi { height: 0.95in; margin-top: 2px; }
+      .tk-stats.tk-sigs { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; column-gap: 24px; }
       .tk-tip, #tk-hover, #tk-sel { display: none !important; }
       .tk-section { margin-top: 10px; break-inside: avoid; }
       .tk-section h2 { margin-bottom: 2px; }
@@ -414,44 +417,6 @@
       YINN:'Direxion Daily FTSE China Bull 3X', YXI:'ProShares Short FTSE China 50 (-1x)', EDC:'Direxion Daily MSCI Emerging Markets Bull 3X',
       EEV:'ProShares UltraShort MSCI Emerging Markets (-2x)', EUM:'ProShares Short MSCI Emerging Markets (-1x)'
     };
-
-    // Related tickers: the first group a ticker belongs to supplies its peers.
-    // They follow the fixed Popular list in the same panel.
-    var GROUPS = [
-      ['AAPL','AMZN','GOOGL','META','NVDA','TSLA','PLTR'],
-      ['NVDA','NVDL','SMH','SOXX','SOXL','USD'],
-      ['TSLA','TSLR'], ['AAPL','AAPX'], ['AMZN','AMZU','AMZZ'], ['GOOGL','GGLL'], ['META','FBL'],
-      ['COIN','CONL','BITX','HOOD'],
-      ['SOFI','HOOD','IBKR','SCHW','RGTI','PLTR'],
-      ['BX','KKR','BN','BAM','PSP'], ['MA','V','XLF'], ['WELL','VTR','XLRE','ICF'], ['BABA','FXI','YINN','YXI'],
-      ['QQQ','TQQQ','QLD','PSQ','SQQQ','QQQE','QQEW'],
-      ['SPY','UPRO','SPXL','SSO','SH','SDS','SPXU','SPXS'],
-      ['SPY','IVV','VTI','RSP','DIA','QQQ','IWM','VT'],
-      ['DIA','UDOW'], ['MDY','MVV'],
-      ['IWM','TNA','URTY','RWM','TWM','VBR'],
-      ['SMH','SOXX','SOXL','SOXS','USD','NVDA'],
-      ['XLK','TECL','TECS','QQQ'],
-      ['XLF','FAS','FAZ','KBE','KCE','KIE','IAI'],
-      ['XLE','ERX','DUG','USO','UCO','SCO'],
-      ['XLV','CURE','RXL','IHI','IHF'], ['IBB','XBI','LABU','LABD','BIS'],
-      ['XLRE','ICF','DRV','SRS'], ['XLU','UPW','VPU','PUI','RSPU'], ['XLP','UGE','RSPS'], ['XLY','XRT','RETL','RSPD'],
-      ['XLK','XLF','XLE','XLV','XLY','XLP','XLI','XLB','XLU','XLRE','VOX'],
-      ['XLI','ITA','IYT','ITB','PKB','XME','PHO','WOOD'],
-      ['VXX','UVXY','UVIX','VIXY','VIXM','SVXY','SVIX'],
-      ['TLT','TMF','TMV','SPTL','ZROZ','IEF'], ['IEF','TYO','IEI','SHY'],
-      ['BIL','SHV','SHY','IEI','IEF','TLT'], ['TIP','STIP'],
-      ['AGG','BND','BSV','LQD','CORP','VMBS'], ['HYG','JNK','HYEM','EMB','PFF','CWB'],
-      ['BKT','VBF','MMU','NAN','PMM','EVN'],
-      ['GLD','UGL','SLV','AGQ','GDX'], ['GDX','GDXU','GDXD'],
-      ['UNG','UNL','KOLD'], ['DBC','DBA','VEGI','USO'],
-      ['UUP','FXA','FXE','FXY','EUO','YCS'],
-      ['BTAL','KMLM','SPLV','ACWV'],
-      ['MTUM','QUAL','SPLV','SPHB','SPMO','MOAT','SCHD','HIBL'],
-      ['IVE','IVW','SPYG','SPYV','VTV','VUG','VOOG','VOOV','MGK','IWY','XLG'],
-      ['ARKK','TARK','SARK'],
-      ['EFA','EEM','VWO','SCZ','IDV','VIGI','IOO'], ['EEM','EDC','EEV','EUM','EWZ','EWY','EPI'], ['PBP','SCHD','SPY']
-    ];
-    var DEFAULT_RELATED = ['SPY','QQQ','TQQQ','IWM','TLT','GLD','UVXY'];
 
     var RANGES = [
       { id: '1D', intra: true }, { id: '1W', days: 7 }, { id: '1M', months: 1 }, { id: '3M', months: 3 }, { id: '6M', months: 6 },
@@ -788,7 +753,7 @@
       document.getElementById('tk-rsi10').addEventListener('change', function (e) { state.rsi = e.target.checked; drawChart(); });
       drawChart();
       renderPopular();
-      sparkFetch(POPULAR.map(function (x) { return x[0]; }).concat(relatedPeers()));
+      sparkFetch(popSymbols());
     }
 
     var RANGE_WORDS = { '1W': 'past week', '1M': 'past month', '3M': 'past 3 months', '6M': 'past 6 months', 'YTD': 'year to date',
@@ -815,7 +780,11 @@
       // never shares the price axis). Daily ranges only.
       var rsiEl = document.getElementById('tk-rsi'), rsiCb = document.getElementById('tk-rsi10'), rs = null;
       if (rsiCb) rsiCb.closest('label').hidden = intra;
-      if (rsiEl) { rsiEl.hidden = true; rsiEl.innerHTML = ''; rsiEl.onpointermove = rsiEl.onpointerleave = null; }
+      // Show or hide the panel before anything is measured: in print the price
+      // chart's height depends on whether the RSI panel follows it, and an SVG
+      // drawn for one height and shown at another is scaled down and centred,
+      // which pulls its plot out of line with the RSI panel.
+      if (rsiEl) { rsiEl.hidden = intra || !state.rsi; rsiEl.innerHTML = ''; rsiEl.onpointermove = rsiEl.onpointerleave = null; }
       if (intra) {
         maToggle(50, false); maToggle(200, false);
         if (!I || I.t !== state.ticker || I.err) {
@@ -840,10 +809,11 @@
       // The headline pill and amount follow the selected range, as on Google
       // Finance. 1D keeps the headline's own day change (live quote against
       // the previous close) so it never disagrees with the price above it.
-      if (intra) setHead(state.today.pct, state.today.amt, 'today', state.today.ref);
+      if (intra && I.roll) setHead(chg, c[c.length - 1] - prev, 'past 24 hours', c[c.length - 1]);
+      else if (intra) setHead(state.today.pct, state.today.amt, 'today', state.today.ref);
       else setHead(chg, c[c.length - 1] - c[0], RANGE_WORDS[r.id] || (r.all ? 'since ' + fmtDate(dates[0], true).replace(/^\w+, /, '') : r.id), c[c.length - 1]);
 
-      var W = Math.max(280, el.clientWidth), H = el.clientHeight, padL = 44, padR = 14, padT = 34, padB = 24;
+      var W = Math.max(280, el.clientWidth), H = el.getBoundingClientRect().height || el.clientHeight, padL = 44, padR = 14, padT = 34, padB = 24;
       var lo = Math.min.apply(null, c), hi = Math.max.apply(null, c), cLo = lo, cHi = hi;
       [50, 200].forEach(function (k) { if (ma[k]) ma[k].forEach(function (v) { if (v != null) { if (v < lo) lo = v; if (v > hi) hi = v; } }); });
       // Linear axis normally. When the window spans more than 20x (a decaying
@@ -909,7 +879,9 @@
       }
       var days = intra ? 1 : (parseD(dates[dates.length - 1]) - parseD(dates[0])) / 864e5, ticks = intra ? 0 : Math.min(5, Math.max(2, Math.floor(W / 140)));
       if (intra) {
-        var stepH = W < 600 ? 2 : 1, plotW = W - padL - padR, PX = function (f) { return padL + f * plotW; };
+        var plotW = W - padL - padR, PX = function (f) { return padL + f * plotW; }, rg = I.segs[I.segs.length - 1];
+        var pxH = plotW * rg.w / Math.max(1, (rg.end - rg.start) / 3600);
+        var stepH = [1, 2, 3, 4, 6, 12].filter(function (h) { return h * pxH >= 52; })[0] || 12;
         // The squeezed segments get a faint band, a divider and a name.
         I.segs.forEach(function (g) {
           if (g.kind === 'reg') return;
@@ -920,10 +892,12 @@
           ax += '<text x="' + ((x0 + x1) / 2).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle">' + name + '</text>';
         });
         var regX0 = PX(I.segs[I.segs.length - 1].x0);
-        for (var ts = Math.ceil((I.start + I.off) / 3600) * 3600 - I.off; ts <= I.end; ts += 3600 * stepH) {
-          var xx = PX(segX(I, ts)), hh = new Date((ts + I.off) * 1000).getUTCHours();
+        for (var ts = Math.ceil((I.start + I.off) / (3600 * stepH)) * 3600 * stepH - I.off; ts <= I.end; ts += 3600 * stepH) {
+          var xx = PX(segX(I, ts)), dh = new Date((ts + I.off) * 1000), hh = dh.getUTCHours();
           if (xx < regX0 + 22 || xx > W - padR - 14) continue;
-          ax += '<text x="' + xx.toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle">' + ((hh % 12) || 12) + (hh < 12 ? ' AM' : ' PM') + '</text>';
+          // On a rolling 24 hours, midnight is labelled with the date.
+          var hl = I.roll && hh === 0 ? MO[dh.getUTCMonth()] + ' ' + dh.getUTCDate() : ((hh % 12) || 12) + (hh < 12 ? ' AM' : ' PM');
+          ax += '<text x="' + xx.toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle">' + hl + '</text>';
         }
       }
       for (var k = 0; k < ticks; k++) {
@@ -960,12 +934,12 @@
       var rx = null;
       if (rs) {
         rsiEl.hidden = false;
-        var RH = rsiEl.clientHeight || 120, rT = 20, rB = 8, RY = function (v) { return rT + (1 - v / 100) * (RH - rT - rB); };
+        var RH = rsiEl.getBoundingClientRect().height || rsiEl.clientHeight || 160, rT = 20, rB = 8, RY = function (v) { return rT + (1 - v / 100) * (RH - rT - rB); };
         var rp = '', pen = false, rg = '', ra = '';
         rs.forEach(function (v, i) { if (v == null) { pen = false; return; } rp += (pen ? 'L' : 'M') + X(i).toFixed(1) + ' ' + RY(v).toFixed(1); pen = true; });
         [30, 50, 70].forEach(function (v) {
           rg += '<line' + (v === 50 ? '' : ' class="hl"') + ' x1="' + padL + '" x2="' + (W - padR) + '" y1="' + RY(v).toFixed(1) + '" y2="' + RY(v).toFixed(1) + '"/>';
-          ra += '<text x="' + (padL - 8) + '" y="' + (RY(v) + 4).toFixed(1) + '" text-anchor="end">' + v + '</text>';
+          if (v !== 50 || RH >= 110) ra += '<text x="' + (padL - 8) + '" y="' + (RY(v) + 4).toFixed(1) + '" text-anchor="end">' + v + '</text>'; // a short panel keeps only 30 and 70
         });
         var rl = rs[rs.length - 1];
         ra += '<text class="lbl" x="' + padL + '" y="12">RSI (10)' + (rl != null ? ' ' + rl.toFixed(2) + (rl < 30 ? ' oversold' : rl > 70 ? ' overbought' : '') : '') + '</text>' +
@@ -1039,11 +1013,19 @@
       if (rs) { rsiEl.onpointermove = function (e) { anchor = null; show(e.clientX); }; rsiEl.onpointerleave = hide; }
     }
 
-    // Popular: a fixed list of broad index funds, as on the owner's watchlist.
+    // Popular: the Azqato weekly report's lists. Its 12 major funds, its 11
+    // sector funds (the Select Sector SPDRs that make up the S&P 500), and a
+    // few of its market readings: the VIX, the 10-year yield, oil, gold, the
+    // dollar and Bitcoin, as Yahoo symbols.
     var POPULAR = [['SPY','S&P 500'],['QQQ','Nasdaq 100'],['IWM','Russell 2000'],['DIA','Dow Jones 30'],['RSP','Equal Weight'],
       ['VUG','Growth'],['VTV','Value'],['VIG','Dividend'],['VBR','Small-Cap Value'],['VT','World'],['VTI','Domestic'],['VXUS','International']];
-    // Side-panel prices. One batched Yahoo call (v8 spark, up to 20 symbols)
-    // covers the Popular panel (the fixed list plus the current ticker's related peers), through the same relay, saved in
+    var SECTORS = [['XLK','Technology'],['XLC','Communication'],['XLY','Consumer Discretionary'],['XLP','Consumer Staples'],
+      ['XLV','Health Care'],['XLF','Financials'],['XLI','Industrials'],['XLE','Energy'],['XLB','Materials'],['XLU','Utilities'],['XLRE','Real Estate']];
+    var MARKETS = [['^VIX','VIX'],['^TNX','10-Year Yield'],['CL=F','Crude Oil (WTI)'],['GC=F','Gold'],['DX-Y.NYB','US Dollar Index'],['BTC-USD','Bitcoin']];
+    var POP_GROUPS = [['Major Funds', POPULAR], ['Sectors', SECTORS], ['Markets', MARKETS]];
+    function popSymbols() { return POPULAR.concat(SECTORS, MARKETS).map(function (x) { return x[0]; }); }
+    // Side-panel prices. Batched Yahoo calls (v8 spark, 20 symbols a call)
+    // cover the Popular panel's three lists, through the same relay, saved in
     // this browser for ten minutes, so the panel shows the same day as the
     // headline. Each row then uses whichever is newest: that batch, this
     // browser's saved full lookup, or the site's cached close.
@@ -1051,8 +1033,9 @@
     function sparkStore() { try { return JSON.parse(localStorage.getItem(SPARK_KEY) || '{}') || {}; } catch (e) { return {}; } }
     function sparkFetch(symbols) {
       var store = sparkStore(), now = Date.now();
-      var need = symbols.filter(function (p) { return !sparkBusy[p] && !(store[p] && now - store[p].at < LIVE_TTL); }).slice(0, 20);
+      var need = symbols.filter(function (p) { return !sparkBusy[p] && !(store[p] && now - store[p].at < LIVE_TTL); });
       if (!need.length) return;
+      if (need.length > 20) { sparkFetch(need.slice(20)); need = need.slice(0, 20); } // the rest in further calls of 20
       need.forEach(function (p) { sparkBusy[p] = 1; });
       relayJson('https://query1.finance.yahoo.com/v8/finance/spark?symbols=' + need.map(encodeURIComponent).join(',') + '&range=5d&interval=1d')
         .then(function (j) {
@@ -1084,20 +1067,12 @@
         (q ? '<span class="tk-rel-px">' + fmtPx(q.px) + '</span><span class="tk-pill ' + dir(q.d) + '">' + arrow(q.d) + ' ' + fmtPct(Math.abs(q.d)) + '</span>'
            : '<span class="tk-rel-px">-</span>') + '</a></li>';
     }
-    function relatedPeers() {
-      var t = state.ticker, peers = [], fixed = POPULAR.map(function (x) { return x[0]; });
-      GROUPS.some(function (g) { if (g.indexOf(t) >= 0) { peers = g.filter(function (x) { return x !== t; }); return true; } return false; });
-      if (!peers.length) peers = DEFAULT_RELATED.filter(function (x) { return x !== t; });
-      return peers.filter(function (x) { return fixed.indexOf(x) < 0; }).slice(0, 7);
-    }
-    // Popular then Related, one list: the twelve fixed index funds, then the
-    // current ticker's peers after VXUS.
+    // One list with a small heading per group, as the weekly report groups them.
     function renderPopular() {
       var ul = document.getElementById('tk-pop'); if (!ul) return;
-      var R = (window.__BT_RECENT__ || {}).prices || {};
-      var rel = state.ticker ? relatedPeers().filter(function (p) { return R[p] || quote(p); }) : [];
-      ul.innerHTML = POPULAR.map(function (x) { return sideRow(x[0], esc(x[0]), esc(x[1])); }).join('') +
-        rel.map(function (p) { return sideRow(p, esc(p), esc(NAMES[p] || '')); }).join('');
+      ul.innerHTML = POP_GROUPS.map(function (g) {
+        return '<li class="tk-pop-h">' + g[0] + '</li>' + g[1].map(function (x) { return sideRow(x[0], esc(x[0]), esc(x[1])); }).join('');
+      }).join('');
     }
 
     // ---- Live prices ----
@@ -1178,6 +1153,20 @@
           function tod(x) { return (((x + off) % 86400) + 86400) % 86400; }
           var regS = reg.start ? tod(reg.start) : 34200, regE = reg.end ? tod(reg.end) : 57600;
           var preS = pre.start ? tod(pre.start) : regS;
+          // A market that trades around the clock (crypto: Yahoo's regular
+          // period is the whole day) has no sessions to squeeze, so 1D is the
+          // last 24 hours across the full width, measured from the price 24
+          // hours ago, the way Google Finance shows it.
+          if (reg.start && reg.end && reg.end - reg.start >= 23 * 3600) {
+            var endT = all[all.length - 1][0], startT = endT - 86400, rt = [], rp = [], ref = null;
+            all.forEach(function (x) { if (x[0] <= startT) ref = x[1]; else { rt.push(x[0]); rp.push(x[1]); } });
+            if (ref == null) ref = rp[0];
+            rt.unshift(startT); rp.unshift(ref); // the line starts at the reference price
+            if (rt.length < 2) throw new Error('too few bars');
+            state.intra = { t: t, at: Date.now(), times: rt, prices: rp, prev: ref, roll: true,
+              segs: [{ kind: 'reg', start: startT, end: endT, w: 1, x0: 0 }], start: startT, end: endT, off: off };
+            return;
+          }
           var dayOf = function (ts) { return Math.floor((ts + off) / 86400); };
           var dayList = [];
           all.forEach(function (x) { var d = dayOf(x[0]); if (dayList.indexOf(d) < 0) dayList.push(d); });
@@ -1586,7 +1575,7 @@
       bindRecent();
       setPop(true);
       renderPopular();
-      sparkFetch(POPULAR.map(function (x) { return x[0]; }));
+      sparkFetch(popSymbols());
     }
     // The URL decides the view: ?t=SYMBOL opens it, no symbol is the landing page.
     function route() {

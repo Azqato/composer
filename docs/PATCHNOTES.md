@@ -10,9 +10,18 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.87.7] - 2026-11-25 - Ticker Lookup: Popular follows the weekly report, crypto 1D is the last 24 hours
+
+- **Popular panel** now carries the Azqato weekly report's lists, under small headings: Major Funds (the same 12), Sectors (the 11 Select Sector SPDRs: XLK, XLC, XLY, XLP, XLV, XLF, XLI, XLE, XLB, XLU, XLRE) and Markets (^VIX, ^TNX 10-year yield, CL=F WTI oil, GC=F gold, DX-Y.NYB dollar index, BTC-USD). This replaces the per-ticker related peers (the GROUPS lists are removed). The 29 prices come from batched Yahoo spark calls of 20.
+- **1D for 24-hour markets** (crypto, where Yahoo's regular period is the whole day): the chart is the last 24 hours across the full width, measured from the price 24 hours earlier, and the headline reads the 24-hour change ("past 24 hours") so it agrees with the line. Before, it drew a squeezed previous day and an empty 24-hour session with a label every hour.
+- **1D hour labels** are spaced by the room available (1, 2, 3, 4, 6 or 12 hours, at least ~52 px apart), so they no longer run together on narrow screens; on a rolling 24 hours midnight shows the date.
+
+---
+
 ## [1.87.6] - 2026-11-25 - Ticker Lookup: no section subtitles, print fits one page again
 
 - Removed the description line under each section title (Technicals, Signals, Performance, Recently Viewed); the Explain button carries that text. The Signals Strong/Caution count moved into the title row.
+- Print alignment: the RSI panel and the price chart now line up exactly. Redrawing for print hid the RSI panel while the price chart measured itself, so the chart was drawn at the no-RSI height, then scaled down and centred when the panel reappeared (its plot sat at 203 to 615 px against the RSI panel's 113 to 730). The panel's visibility is now set before measuring, and both use exact heights. In print, Signals sits in three columns and the RSI panel is 0.95 in tall, keeping only its 30 and 70 labels when it is short.
 - Print: the 1.87.5 Signals section had pushed the footnote onto a second page. The printed chart is now 2.4 in tall (1.6 in plus a 0.7 in RSI panel when RSI is ticked), sections sit closer, and the "not a ticker, other listings" line is hidden in print. Checked one page in headless Edge for SPY and Paris MC.PA (no overlays), SPY, NVDA and Tokyo 7203.T with both MAs and RSI, and a "toyota" name search with RSI.
 
 ---
