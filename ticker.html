@@ -109,11 +109,12 @@
 
     .tk-section { margin-top: 28px; }
     .tk-section h2 { color: var(--color-primary); font-size: 1rem; font-weight: 600; margin: 0 0 4px; }
-    .tk-section h2 { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+    .tk-section h2 { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
     .tk-explain { font: inherit; font-size: 0.75rem; font-weight: 500; color: var(--color-secondary); background: none; cursor: pointer; border: 1px solid var(--color-border); border-radius: 999px; padding: 1px 9px; }
     .tk-explain:hover, .tk-explain[aria-expanded="true"] { color: var(--color-primary); border-color: var(--color-border-hover); }
     .tk-explain-p { margin: 4px 0 10px; font-size: 0.8125rem; line-height: 1.65; color: var(--color-secondary); max-width: 860px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 10px 14px; }
-    .tk-sig-n { font-weight: 600; margin-left: 4px; } .tk-sig-n.up { color: var(--color-positive); } .tk-sig-n.down { color: var(--color-negative); }
+    .tk-sig-c { font-size: 0.8125rem; font-weight: 400; color: var(--color-secondary); }
+    .tk-sig-n { font-weight: 600; } .tk-sig-n.up { color: var(--color-positive); } .tk-sig-n.down { color: var(--color-negative); }
     .tk-recent-clear { margin-left: auto; font: inherit; font-size: 0.75rem; font-weight: 500; color: var(--color-secondary); background: none; border: 1px solid var(--color-border); border-radius: 999px; padding: 1px 9px; cursor: pointer; }
     .tk-recent-clear:hover { color: var(--color-primary); }
     .tk-recent-wrap { overflow-x: auto; }
@@ -211,9 +212,9 @@
        date. The chart is redrawn at the printed width on beforeprint (see
        preparePrint) because it is an SVG sized in pixels to its container. */
     .tk-print-head { display: none; }
-    html.tk-printing .tk-chart { width: 7.5in; height: 2.8in; }
-    html.tk-printing .tk-chart:has(+ .tk-rsi:not([hidden])) { height: 2.2in; }
-    html.tk-printing .tk-chart.tk-rsi { height: 0.85in; }
+    html.tk-printing .tk-chart { width: 7.5in; height: 2.4in; }
+    html.tk-printing .tk-chart:has(+ .tk-rsi:not([hidden])) { height: 1.6in; }
+    html.tk-printing .tk-chart.tk-rsi { height: 0.7in; }
     .tk-foot-print, .tk-print-foot { display: none; }
     @page { size: letter; margin: 0.45in 0.5in; }
     @media print {
@@ -227,7 +228,7 @@
       }
       html, body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 10pt; }
       #nav-root, .nav, .ref-banner, #breadcrumb-root, #footer-root, footer, h1, .tk-search,
-      .tk-sidecol, .tk-tabs, .tk-all, .tk-explain, .tk-explain-p, .tk-recent, .tk-overlays input, .tk-overlays label:not(:has(input:checked)) { display: none !important; }
+      .tk-sidecol, .tk-tabs, .tk-all, .tk-alias, .tk-explain, .tk-explain-p, .tk-recent, .tk-overlays input, .tk-overlays label:not(:has(input:checked)) { display: none !important; }
       .page { padding-top: 0 !important; }
       .container { padding: 0 !important; max-width: none !important; }
       .py-12 { padding-top: 0 !important; padding-bottom: 0 !important; }
@@ -250,11 +251,12 @@
       .tk-price { font-size: 22pt; }
       .tk-asof { margin-top: 2px; }
       .tk-overlays { margin: 10px 0 2px; }
-      .tk-chart { width: 7.5in; height: 2.8in; break-inside: avoid; }
-      .tk-chart:has(+ .tk-rsi:not([hidden])) { height: 2.2in; }
-      .tk-chart.tk-rsi { height: 0.85in; margin-top: 2px; }
+      .tk-chart { width: 7.5in; height: 2.4in; break-inside: avoid; }
+      .tk-chart:has(+ .tk-rsi:not([hidden])) { height: 1.6in; }
+      .tk-chart.tk-rsi { height: 0.7in; margin-top: 2px; }
       .tk-tip, #tk-hover, #tk-sel { display: none !important; }
-      .tk-section { margin-top: 14px; break-inside: avoid; }
+      .tk-section { margin-top: 10px; break-inside: avoid; }
+      .tk-section h2 { margin-bottom: 2px; }
       .tk-section h2 { font-size: 11pt; }
       .tk-section .tk-sub { margin-bottom: 4px; font-size: 8pt; }
       .tk-stat { padding: 4px 0; font-size: 9pt; }
@@ -625,7 +627,6 @@
       if (a.length < (cur ? 2 : 1)) return '';
       function pc(v) { return v == null ? '<td class="na">-</td>' : '<td class="' + dir(v) + '">' + fmtPct(v, true) + '</td>'; }
       return '<div class="tk-section tk-recent"><h2>Recently Viewed <button type="button" class="tk-recent-clear" id="tk-recent-clear">Clear</button></h2>' +
-        '<p class="tk-sub">The tickers you looked up in this browser, side by side. Each row is as of the close shown; open a ticker to refresh it.</p>' +
         '<div class="tk-recent-wrap"><table class="tk-recent-t"><thead><tr><th>Ticker</th><th>Price</th><th>Day</th><th>1M</th><th>YTD</th><th>1Y</th><th>RSI (10)</th><th>Status</th><th>As of</th></tr></thead><tbody>' +
         a.map(function (x) {
           var px = x.last == null ? '-' : (ZERO_DEC[x.cur] ? Math.round(x.last).toLocaleString('en-US') : fmtPx(x.last)) + (x.cur && x.cur !== 'USD' ? ' <small>' + esc(x.cur) + '</small>' : '');
@@ -756,7 +757,6 @@
           '</dl></div>' +
 
           '<div class="tk-section"><h2>Technicals' + explain() + '</h2>' + explainP(EXPLAIN.tech) +
-            '<p class="tk-sub">The readings Composer conditions test. Percentages are the last close against each moving average.</p>' +
             '<dl class="tk-stats">' +
             stat('RSI (10)', (rsi10 != null ? rsi10.toFixed(2) : '-') + rsiFlag(rsi10)) +
             stat('RSI (14)', (rsi14 != null ? rsi14.toFixed(2) : '-') + rsiFlag(rsi14)) +
@@ -768,13 +768,12 @@
             stat('30-Day Volatility', v30 != null ? fmtPct(v30) + '<span class="note">annualized</span>' : '-') +
           '</dl></div>' +
 
-          '<div class="tk-section"><h2>Signals' + explain() + '</h2>' + explainP(EXPLAIN.sig) +
-            '<p class="tk-sub">The Index &amp; ETF Method&rsquo;s three timing signals for a single fund, from this ticker&rsquo;s own prices. ' +
-              '<b class="tk-sig-n up">' + nStrong + ' of ' + nSig + ' Strong</b> &middot; <b class="tk-sig-n down">' + nCaution + ' of ' + nSig + ' Caution</b></p>' +
+          '<div class="tk-section"><h2>Signals <span class="tk-sig-c"><b class="tk-sig-n up">' + nStrong + ' of ' + nSig + ' Strong</b> &middot; <b class="tk-sig-n down">' + nCaution + ' of ' + nSig + ' Caution</b></span>' +
+            explain() + '</h2>' + explainP(EXPLAIN.sig) +
             '<dl class="tk-stats tk-sigs">' + sigs.map(function (x) { return stat(x[0], x[2]); }).join('') + '</dl>' +
           '</div>' +
 
-          '<div class="tk-section"><h2>Performance' + explain() + '</h2>' + explainP(EXPLAIN.perf) + '<p class="tk-sub">Total return over each period, cumulative (not per year).</p><div class="tk-perf">' +
+          '<div class="tk-section"><h2>Performance' + explain() + '</h2>' + explainP(EXPLAIN.perf) + '<div class="tk-perf">' +
             perf.map(function (p) { var v = p[1]; return '<button type="button" data-r="' + p[0] + '" aria-pressed="' + (p[0] === state.range) + '" title="Show ' + p[0] + ' on the chart"><span>' + p[0] + '</span><b class="' + (v == null ? 'na' : dir(v)) + '">' + fmtPct(v, true) + '</b></button>'; }).join('') +
           '</div></div>' +
           recentHtml(t) +

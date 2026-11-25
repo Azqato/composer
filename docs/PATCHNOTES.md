@@ -10,6 +10,13 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.87.6] - 2026-11-25 - Ticker Lookup: no section subtitles, print fits one page again
+
+- Removed the description line under each section title (Technicals, Signals, Performance, Recently Viewed); the Explain button carries that text. The Signals Strong/Caution count moved into the title row.
+- Print: the 1.87.5 Signals section had pushed the footnote onto a second page. The printed chart is now 2.4 in tall (1.6 in plus a 0.7 in RSI panel when RSI is ticked), sections sit closer, and the "not a ticker, other listings" line is hidden in print. Checked one page in headless Edge for SPY and Paris MC.PA (no overlays), SPY, NVDA and Tokyo 7203.T with both MAs and RSI, and a "toyota" name search with RSI.
+
+---
+
 ## [1.87.5] - 2026-11-25 - Ticker Lookup: Signals scorecard, Explain notes, Recently Viewed
 
 - **Signals** section: the Index & ETF Method's three per-fund timing signals from the weekly report, from the viewed ticker's own prices only (no VIX or AAII): RSI (14) Strong at 45 or below, Caution above 70; 52-Week Range position Strong in the lower 25%, Caution in the top 10% (labels Lower, Middle, Upper, Top); vs 200-Day MA Strong more than 2% above, Caution more than 2% below (Above, Average, Below). A count reads e.g. "1 of 3 Strong, 1 of 3 Caution". The range uses closing prices, where the report uses intraday highs and lows, so positions can differ by a few points.
