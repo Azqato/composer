@@ -10,6 +10,29 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.87.0] - 2026-11-24 - Ticker Lookup page
+
+- **New `/ticker` page (`ticker.html`):** look up any ticker the RSI Backtester caches and see a Google-Finance-style view of it: name, last close, day change pill, year-to-date change, a range-tabbed area chart (1M, 6M, YTD, 1Y, 5Y, Max) with a crosshair tooltip and optional 50-day and 200-day moving-average overlays, key stats (previous close, 52-week high and low, all-time high, data start), technicals (RSI 10 and 14 with oversold/overbought flags, distance from the 20, 50 and 200-day moving averages, 50d vs 200d, drawdown, 30-day volatility), trailing returns from 1W to 10Y, and a Related panel of peer tickers with price and day change. Search matches tickers and fund names; `?t=NVDA&r=5Y` deep-links.
+- **Data:** reads `backtest/price-cache/{T}.js` plus the daily `_recent.js` tail, spliced the same way as the Backtester (`localCache.ts`), then re-anchored on the latest raw close so the headline matches the actual quote. `_recent.js` doubles as the ticker index, so a ticker added with `update_backtest_recent.py --add` appears without editing the page. Daily, split- and dividend-adjusted closes only: no intraday, market cap or P/E. Tickers neither cached nor found on Yahoo get a "not found" note and the browsable list. RSI uses Wilder's smoothing over about a year of closes, matching `refresh_rsi.py`.
+- **Live prices:** after drawing the site data, the page asks Yahoo Finance (v8 chart API) for a newer price through the same relay the Backtester uses: the CORS proxy saved in the Backtester's Settings (`backtestConfig.corsProxy`), else the `r.jina.ai` reader relay. The live tail is spliced on at the newest shared date, and the header shows the exchange and "Live from Yahoo Finance, as of <time> ET". Each answer is saved in this browser (`localStorage`, key `ca-ticker-live:<T>`, newest 40 tickers) and reused for ten minutes; if the relay fails, an older saved answer is used when it is newer than the site, otherwise the site's last close, labelled "live price unavailable". Tickers outside the site cache (e.g. MSFT) are fetched from Yahoo in full. The repo's price cache is unchanged: a web page cannot write it, and the nightly workflow still owns it.
+- **Chart:** linear axis normally; switches to a labelled log scale when the visible window spans more than 20x (decaying volatility and leveraged funds over years of reverse splits).
+- **Nav:** "Ticker Lookup" added to the Tools dropdown and the footer; `sitemap.xml` regenerated.
+
+**Files changed:** `ticker.html` (new), `js/app.js`, `sitemap.xml`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
+## [1.86.0] - 2026-11-24 - One-command local full refresh, out-of-sample included, checkpoints outside OneDrive
+
+Local tooling only. The live site and the GitHub workflows are unchanged.
+
+- **New `scripts/run_full_refresh.py`:** runs the whole local routine in the order the data forces: full refresh (`--priority`), `export_summary.py`, full out-of-sample (`refresh_oos.py`), score stamp, `build_strategy_extras.py`, `build_overfit.py`, `check_database_keys.py`. Out-of-sample must follow the export because it picks candidates from the summary, and the stamp must follow out-of-sample because the Leaderboard score gives it 35 of 100 points. Stops at the first failing step; `--from STEP` resumes. Commits nothing, and prints the public-files `git add` line at the end.
+- **Checkpoints outside OneDrive:** `refresh_full_database.py` and `refresh_oos.py` take `--scratch DIR`. Checkpoints go there instead of the OneDrive-synced repo (about 13 GB of rewrites of the 20 MB `database.json` over a full run), the repo files are written once when the step ends, and the scratch file is deleted. A killed step resumes from its scratch file. The routine uses `Downloads\composer-refresh-work`. Checkpoints are now written atomically (temp file, then swap).
+
+**Files changed:** `scripts/run_full_refresh.py` (new), `scripts/refresh_full_database.py`, `scripts/refresh_oos.py`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.85.0] - 2026-11-24 - Local full refresh: priority order, stored leaderboard scores, pacing tests
 
 Local tooling only. Nothing on the live site changes, and the GitHub workflows run exactly as before.

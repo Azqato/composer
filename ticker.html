@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Theme boot. Inline and first on purpose: runs before the first paint so a
+       visitor who chose light mode never sees a dark flash. Dark stays the
+       default; the system preference is deliberately not consulted. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('ca-theme');
+        if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+      } catch (e) { /* private mode: fall through to the dark default */ }
+    })();
+  </script>
+  <!-- Social sharing (PRD Section 27). Text only by policy: no og:image, so
+       twitter:card is "summary". No drifting numbers in these descriptions. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Composer Atlas">
+  <meta property="og:url" content="https://composeratlas.com/ticker">
+  <link rel="canonical" href="https://composeratlas.com/ticker">
+  <meta property="og:title" content="Ticker Lookup: Price, RSI and Moving Averages">
+  <meta property="og:description" content="Look up a stock or ETF and see its daily price chart, RSI, distance from the 200-day moving average and trailing returns, for every ticker the Composer Atlas backtester covers.">
+  <meta name="twitter:card" content="summary">
+  <meta name="description" content="Look up a stock or ETF and see its daily price chart, RSI, distance from the 200-day moving average and trailing returns, for every ticker the Composer Atlas backtester covers.">
+  <title>Ticker Lookup: Composer Atlas</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .tk-search { position: relative; max-width: 560px; margin-bottom: 28px; }
+    .tk-search input {
+      width: 100%; box-sizing: border-box; padding: 12px 16px; font-size: 1rem;
+      background: var(--color-surface); color: var(--color-primary);
+      border: 1px solid var(--color-border); border-radius: 999px; font-family: inherit;
+    }
+    .tk-search input:focus { outline: 2px solid var(--color-focus); outline-offset: 1px; border-color: transparent; }
+    .tk-suggest {
+      position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 20; margin: 0; padding: 6px 0;
+      list-style: none; background: var(--color-surface-raised); border: 1px solid var(--color-border);
+      border-radius: 12px; box-shadow: 0 8px 24px rgba(var(--rgb-shadow), 0.3); max-height: 320px; overflow-y: auto;
+    }
+    .tk-suggest li { display: flex; gap: 12px; align-items: baseline; padding: 8px 16px; cursor: pointer; }
+    .tk-suggest li[aria-selected="true"], .tk-suggest li:hover { background: var(--color-surface); }
+    .tk-suggest b { color: var(--color-primary); min-width: 56px; font-family: var(--font-mono); font-size: 0.875rem; }
+    .tk-suggest span { color: var(--color-secondary); font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .tk-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start; }
+    @media (max-width: 900px) { .tk-layout { grid-template-columns: minmax(0, 1fr); } }
+
+    .tk-name { color: var(--color-primary); font-size: 1.5rem; font-weight: 600; margin: 0 0 2px; }
+    .tk-sym { color: var(--color-secondary); font-size: 0.875rem; font-family: var(--font-mono); margin: 0 0 14px; }
+    .tk-price-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .tk-price { color: var(--color-primary); font-size: 2.25rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .tk-price small { font-size: 0.875rem; font-weight: 400; color: var(--color-secondary); margin-left: 4px; }
+    .tk-pill {
+      display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 6px;
+      font-size: 0.875rem; font-weight: 600; font-variant-numeric: tabular-nums;
+    }
+    .tk-pill.up { background: rgba(var(--rgb-green), 0.14); color: var(--color-positive); }
+    .tk-pill.down { background: rgba(var(--rgb-red), 0.14); color: var(--color-negative); }
+    .tk-pill.flat { background: var(--color-surface-raised); color: var(--color-secondary); }
+    .tk-chg { font-size: 0.9375rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+    .tk-chg.up { color: var(--color-positive); } .tk-chg.down { color: var(--color-negative); }
+    .tk-asof { color: var(--color-secondary); font-size: 0.8125rem; margin: 6px 0 0; }
+
+    .tk-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--color-border); margin: 22px 0 8px; overflow-x: auto; }
+    .tk-tabs button {
+      background: none; border: 0; border-bottom: 2px solid transparent; color: var(--color-secondary);
+      font: inherit; font-size: 0.875rem; font-weight: 500; padding: 8px 12px; cursor: pointer; white-space: nowrap;
+    }
+    .tk-tabs button:hover { color: var(--color-primary); }
+    .tk-tabs button[aria-selected="true"] { color: var(--color-primary); border-bottom-color: var(--color-blue); }
+    .tk-overlays { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.8125rem; color: var(--color-secondary); margin: 4px 0 4px; }
+    .tk-overlays label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+    .tk-key { width: 14px; height: 2px; display: inline-block; border-radius: 1px; }
+
+    .tk-chart { position: relative; height: 320px; touch-action: pan-y; user-select: none; }
+    .tk-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+    .tk-chart .grid line { stroke: var(--color-border); stroke-width: 1; opacity: 0.6; }
+    .tk-chart .axis text { fill: var(--color-secondary); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .tk-tip {
+      position: absolute; top: 0; pointer-events: none; transform: translateX(-50%); white-space: nowrap;
+      background: var(--color-surface-raised); border: 1px solid var(--color-border); border-radius: 8px;
+      padding: 6px 10px; font-size: 0.8125rem; color: var(--color-secondary); box-shadow: 0 4px 12px rgba(var(--rgb-shadow), 0.25);
+    }
+    .tk-tip b { color: var(--color-primary); font-weight: 600; margin-right: 6px; font-variant-numeric: tabular-nums; }
+
+    .tk-section { margin-top: 28px; }
+    .tk-section h2 { color: var(--color-primary); font-size: 1rem; font-weight: 600; margin: 0 0 4px; }
+    .tk-section .tk-sub { color: var(--color-secondary); font-size: 0.8125rem; margin: 0 0 12px; line-height: 1.6; }
+    .tk-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; }
+    @media (max-width: 560px) { .tk-stats { grid-template-columns: minmax(0, 1fr); } }
+    .tk-stat { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--color-border); font-size: 0.875rem; }
+    .tk-stat dt { color: var(--color-secondary); }
+    .tk-stat dd { margin: 0; color: var(--color-primary); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
+    .tk-stat dd .note { color: var(--color-secondary); font-weight: 400; margin-left: 6px; }
+    .tk-flag { font-size: 0.75rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
+    .tk-flag.os { background: rgba(var(--rgb-green), 0.14); color: var(--color-positive); }
+    .tk-flag.ob { background: rgba(var(--rgb-red), 0.14); color: var(--color-negative); }
+
+    .tk-perf { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+    .tk-perf div { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 10px 12px; }
+    .tk-perf span { display: block; color: var(--color-secondary); font-size: 0.75rem; margin-bottom: 4px; }
+    .tk-perf b { white-space: nowrap; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+    .tk-perf b.up { color: var(--color-positive); } .tk-perf b.down { color: var(--color-negative); } .tk-perf b.na { color: var(--color-disabled); font-weight: 400; }
+
+    .tk-side { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px; }
+    .tk-side h2 { color: var(--color-primary); font-size: 1rem; font-weight: 600; margin: 0 0 8px; }
+    .tk-rel { list-style: none; margin: 0; padding: 0; }
+    .tk-rel a { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--color-border); text-decoration: none; }
+    .tk-rel li:last-child a { border-bottom: 0; }
+    .tk-rel a:hover .tk-rel-name { color: var(--color-blue); }
+    .tk-rel-main { flex: 1; min-width: 0; }
+    .tk-rel-name { color: var(--color-primary); font-size: 0.875rem; font-weight: 500; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tk-rel-sym { color: var(--color-secondary); font-size: 0.75rem; font-family: var(--font-mono); }
+    .tk-rel-px { color: var(--color-primary); font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+
+    .tk-empty { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 20px; color: var(--color-secondary); line-height: 1.7; }
+    .tk-empty b { color: var(--color-primary); }
+    .tk-all { margin-top: 28px; }
+    .tk-all summary { cursor: pointer; color: var(--color-secondary); font-size: 0.875rem; }
+    .tk-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .tk-chips a {
+      font-family: var(--font-mono); font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; text-decoration: none;
+      background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-secondary);
+    }
+    .tk-chips a:hover { color: var(--color-primary); border-color: var(--color-border-hover); }
+    .tk-foot { color: var(--color-secondary); font-size: 0.8125rem; line-height: 1.7; margin-top: 28px; max-width: 760px; }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="nav-root"></nav>
+
+  <div class="page">
+    <div class="ref-banner" id="referral-banner" hidden></div>
+    <div class="container py-12">
+      <div id="breadcrumb-root"></div>
+
+      <h1 style="color:var(--color-primary);margin-bottom:16px">Ticker Lookup</h1>
+
+      <form class="tk-search" id="tk-form" role="search" autocomplete="off">
+        <input id="tk-input" type="search" placeholder="Search a ticker or name, e.g. TQQQ or gold"
+               aria-label="Search a ticker" aria-autocomplete="list" aria-controls="tk-suggest" spellcheck="false">
+        <ul class="tk-suggest" id="tk-suggest" role="listbox" hidden></ul>
+      </form>
+
+      <div id="tk-root"><p class="tk-asof">Loading prices...</p></div>
+
+      <details class="tk-all" id="tk-all">
+        <summary>Browse every covered ticker</summary>
+        <div class="tk-chips" id="tk-chips"></div>
+      </details>
+
+      <p class="tk-foot">
+        History comes from the RSI Backtester's price cache, updated after each US market close. The page
+        then asks Yahoo Finance for a newer price through a relay (the CORS proxy set in the Backtester's
+        Settings, or the r.jina.ai reader when none is set), so the ticker you look up is sent to that relay.
+        The answer is saved in this browser for ten minutes; if the relay fails, the site's last close is shown.
+        Tickers outside the cache are looked up on Yahoo in full. Prices are adjusted for splits and dividends,
+        so older prices read lower than the quotes printed at the time, and returns include dividends. During
+        market hours the latest point is the current price, not a close. RSI uses Wilder's smoothing on daily
+        closes, the same method as RSI Signals and Composer. Not financial advice.
+      </p>
+    </div>
+  </div>
+
+  <footer id="footer-root"></footer>
+
+  <script src="js/app.js"></script>
+  <script>
+  (function () {
+    renderBreadcrumb('breadcrumb-root', [
+      { label: 'Home', href: u('/') },
+      { label: 'Ticker Lookup' },
+    ]);
+
+    // Same cache the Backtester reads (backtest-src/src/data/localCache.ts).
+    // Relative on purpose: resolves from the site root and from file: alike.
+    var CACHE = 'backtest/price-cache/';
+
+    // Display names. The cache stores none, so they live here. A ticker missing
+    // from this map still works and simply shows its symbol.
+    var NAMES = {
+      AAPL:'Apple Inc.', AMZN:'Amazon.com Inc.', GOOGL:'Alphabet Inc. Class A', META:'Meta Platforms Inc.',
+      NVDA:'NVIDIA Corp.', TSLA:'Tesla Inc.', PLTR:'Palantir Technologies', COIN:'Coinbase Global', HOOD:'Robinhood Markets',
+      SOFI:'SoFi Technologies', RGTI:'Rigetti Computing', BABA:'Alibaba Group', IBKR:'Interactive Brokers', SCHW:'Charles Schwab',
+      BX:'Blackstone Inc.', KKR:'KKR & Co.', BN:'Brookfield Corp.', BAM:'Brookfield Asset Management', MA:'Mastercard Inc.',
+      V:'Visa Inc.', WELL:'Welltower Inc.', VTR:'Ventas Inc.',
+      SPY:'SPDR S&P 500 ETF', IVV:'iShares Core S&P 500 ETF', VTI:'Vanguard Total Stock Market ETF', VT:'Vanguard Total World Stock ETF',
+      RSP:'Invesco S&P 500 Equal Weight ETF', DIA:'SPDR Dow Jones Industrial Average ETF', MDY:'SPDR S&P MidCap 400 ETF',
+      IWM:'iShares Russell 2000 ETF', QQQ:'Invesco QQQ Trust (Nasdaq-100)', QQQE:'Direxion Nasdaq-100 Equal Weighted ETF',
+      QQEW:'First Trust Nasdaq-100 Equal Weighted ETF', IOO:'iShares Global 100 ETF', XLG:'Invesco S&P 500 Top 50 ETF',
+      TQQQ:'ProShares UltraPro QQQ (3x)', QLD:'ProShares Ultra QQQ (2x)', PSQ:'ProShares Short QQQ (-1x)', SQQQ:'ProShares UltraPro Short QQQ (-3x)',
+      UPRO:'ProShares UltraPro S&P 500 (3x)', SPXL:'Direxion Daily S&P 500 Bull 3X', SSO:'ProShares Ultra S&P 500 (2x)',
+      SH:'ProShares Short S&P 500 (-1x)', SDS:'ProShares UltraShort S&P 500 (-2x)', SPXU:'ProShares UltraPro Short S&P 500 (-3x)',
+      SPXS:'Direxion Daily S&P 500 Bear 3X', UDOW:'ProShares UltraPro Dow30 (3x)', MVV:'ProShares Ultra MidCap400 (2x)',
+      TNA:'Direxion Daily Small Cap Bull 3X', URTY:'ProShares UltraPro Russell2000 (3x)', RWM:'ProShares Short Russell2000 (-1x)',
+      TWM:'ProShares UltraShort Russell2000 (-2x)', HIBL:'Direxion Daily S&P 500 High Beta Bull 3X',
+      XLK:'Technology Select Sector SPDR', XLF:'Financial Select Sector SPDR', XLE:'Energy Select Sector SPDR', XLV:'Health Care Select Sector SPDR',
+      XLY:'Consumer Discretionary Select Sector SPDR', XLP:'Consumer Staples Select Sector SPDR', XLI:'Industrial Select Sector SPDR',
+      XLB:'Materials Select Sector SPDR', XLU:'Utilities Select Sector SPDR', XLRE:'Real Estate Select Sector SPDR', VOX:'Vanguard Communication Services ETF',
+      TECL:'Direxion Daily Technology Bull 3X', TECS:'Direxion Daily Technology Bear 3X', SMH:'VanEck Semiconductor ETF',
+      SOXX:'iShares Semiconductor ETF', SOXL:'Direxion Daily Semiconductor Bull 3X', SOXS:'Direxion Daily Semiconductor Bear 3X',
+      USD:'ProShares Ultra Semiconductors (2x)', FAS:'Direxion Daily Financial Bull 3X', FAZ:'Direxion Daily Financial Bear 3X',
+      KBE:'SPDR S&P Bank ETF', KCE:'SPDR S&P Capital Markets ETF', KIE:'SPDR S&P Insurance ETF', IAI:'iShares U.S. Broker-Dealers ETF',
+      ERX:'Direxion Daily Energy Bull 2X', DUG:'ProShares UltraShort Energy (-2x)', XME:'SPDR S&P Metals & Mining ETF',
+      XRT:'SPDR S&P Retail ETF', RETL:'Direxion Daily Retail Bull 3X', ITA:'iShares U.S. Aerospace & Defense ETF',
+      ITB:'iShares U.S. Home Construction ETF', IYT:'iShares U.S. Transportation ETF', PKB:'Invesco Building & Construction ETF',
+      PHO:'Invesco Water Resources ETF', WOOD:'iShares Global Timber & Forestry ETF', VEGI:'iShares MSCI Agriculture Producers ETF',
+      IBB:'iShares Biotechnology ETF', XBI:'SPDR S&P Biotech ETF', LABU:'Direxion Daily S&P Biotech Bull 3X', LABD:'Direxion Daily S&P Biotech Bear 3X',
+      BIS:'ProShares UltraShort Nasdaq Biotechnology (-2x)', CURE:'Direxion Daily Healthcare Bull 3X', RXL:'ProShares Ultra Health Care (2x)',
+      IHI:'iShares U.S. Medical Devices ETF', IHF:'iShares U.S. Healthcare Providers ETF',
+      ICF:'iShares Select U.S. REIT ETF', DRV:'Direxion Daily Real Estate Bear 3X', SRS:'ProShares UltraShort Real Estate (-2x)',
+      UPW:'ProShares Ultra Utilities (2x)', VPU:'Vanguard Utilities ETF', PUI:'Invesco Dorsey Wright Utilities Momentum ETF',
+      UGE:'ProShares Ultra Consumer Staples (2x)', RSPD:'Invesco S&P 500 Equal Weight Consumer Discretionary ETF',
+      RSPS:'Invesco S&P 500 Equal Weight Consumer Staples ETF', RSPU:'Invesco S&P 500 Equal Weight Utilities ETF',
+      MTUM:'iShares MSCI USA Momentum Factor ETF', QUAL:'iShares MSCI USA Quality Factor ETF', SPLV:'Invesco S&P 500 Low Volatility ETF',
+      ACWV:'iShares MSCI Global Min Vol Factor ETF', SPHB:'Invesco S&P 500 High Beta ETF', SPMO:'Invesco S&P 500 Momentum ETF',
+      MOAT:'VanEck Morningstar Wide Moat ETF', SCHD:'Schwab U.S. Dividend Equity ETF', IVE:'iShares S&P 500 Value ETF',
+      IVW:'iShares S&P 500 Growth ETF', SPYG:'SPDR Portfolio S&P 500 Growth ETF', SPYV:'SPDR Portfolio S&P 500 Value ETF',
+      VTV:'Vanguard Value ETF', VUG:'Vanguard Growth ETF', VOOG:'Vanguard S&P 500 Growth ETF', VOOV:'Vanguard S&P 500 Value ETF',
+      MGK:'Vanguard Mega Cap Growth ETF', IWY:'iShares Russell Top 200 Growth ETF', VBR:'Vanguard Small-Cap Value ETF',
+      ARKK:'ARK Innovation ETF', TARK:'Tradr 2X Long Innovation ETF', SARK:'Tradr 2X Short Innovation ETF',
+      NVDL:'GraniteShares 2x Long NVDA Daily ETF', CONL:'GraniteShares 2x Long COIN Daily ETF', TSLR:'GraniteShares 2x Long TSLA Daily ETF',
+      FBL:'GraniteShares 2x Long META Daily ETF', AMZZ:'GraniteShares 2x Long AMZN Daily ETF', AMZU:'Direxion Daily AMZN Bull 2X',
+      GGLL:'Direxion Daily GOOGL Bull 2X', AAPX:'T-Rex 2X Long Apple Daily Target ETF', BITX:'2x Bitcoin Strategy ETF',
+      BIL:'SPDR Bloomberg 1-3 Month T-Bill ETF', SHV:'iShares Short Treasury Bond ETF', SHY:'iShares 1-3 Year Treasury Bond ETF',
+      IEI:'iShares 3-7 Year Treasury Bond ETF', IEF:'iShares 7-10 Year Treasury Bond ETF', TLT:'iShares 20+ Year Treasury Bond ETF',
+      SPTL:'SPDR Portfolio Long Term Treasury ETF', ZROZ:'PIMCO 25+ Year Zero Coupon U.S. Treasury ETF',
+      TMF:'Direxion Daily 20+ Year Treasury Bull 3X', TMV:'Direxion Daily 20+ Year Treasury Bear 3X', TYO:'Direxion Daily 7-10 Year Treasury Bear 3X',
+      TIP:'iShares TIPS Bond ETF', STIP:'iShares 0-5 Year TIPS Bond ETF', AGG:'iShares Core U.S. Aggregate Bond ETF',
+      BND:'Vanguard Total Bond Market ETF', BSV:'Vanguard Short-Term Bond ETF', LQD:'iShares iBoxx Investment Grade Corporate Bond ETF',
+      CORP:'PIMCO Investment Grade Corporate Bond ETF', HYG:'iShares iBoxx High Yield Corporate Bond ETF', JNK:'SPDR Bloomberg High Yield Bond ETF',
+      EMB:'iShares J.P. Morgan USD Emerging Markets Bond ETF', HYEM:'VanEck Emerging Markets High Yield Bond ETF',
+      VMBS:'Vanguard Mortgage-Backed Securities ETF', PFF:'iShares Preferred and Income Securities ETF', CWB:'SPDR Bloomberg Convertible Securities ETF',
+      BKT:'BlackRock Income Trust', VBF:'Invesco Bond Fund', MMU:'Western Asset Managed Municipals Fund', NAN:'Nuveen New York Quality Municipal Income Fund',
+      PMM:'Putnam Managed Municipal Income Trust', EVN:'Eaton Vance Municipal Income Trust', PBP:'Invesco S&P 500 BuyWrite ETF',
+      PSP:'Invesco Global Listed Private Equity ETF',
+      GLD:'SPDR Gold Shares', UGL:'ProShares Ultra Gold (2x)', SLV:'iShares Silver Trust', AGQ:'ProShares Ultra Silver (2x)',
+      GDX:'VanEck Gold Miners ETF', GDXU:'MicroSectors Gold Miners 3X Leveraged ETN', GDXD:'MicroSectors Gold Miners -3X Inverse ETN',
+      USO:'United States Oil Fund', UCO:'ProShares Ultra Bloomberg Crude Oil (2x)', SCO:'ProShares UltraShort Bloomberg Crude Oil (-2x)',
+      UNG:'United States Natural Gas Fund', UNL:'United States 12 Month Natural Gas Fund', KOLD:'ProShares UltraShort Bloomberg Natural Gas (-2x)',
+      DBC:'Invesco DB Commodity Index Tracking Fund', DBA:'Invesco DB Agriculture Fund',
+      UUP:'Invesco DB US Dollar Index Bullish Fund', FXA:'Invesco CurrencyShares Australian Dollar Trust', FXE:'Invesco CurrencyShares Euro Trust',
+      FXY:'Invesco CurrencyShares Japanese Yen Trust', EUO:'ProShares UltraShort Euro (-2x)', YCS:'ProShares UltraShort Yen (-2x)',
+      VXX:'iPath Series B S&P 500 VIX Short-Term Futures ETN', UVXY:'ProShares Ultra VIX Short-Term Futures (1.5x)', UVIX:'2x Long VIX Futures ETF',
+      VIXY:'ProShares VIX Short-Term Futures ETF', VIXM:'ProShares VIX Mid-Term Futures ETF', SVXY:'ProShares Short VIX Short-Term Futures (-0.5x)',
+      SVIX:'-1x Short VIX Futures ETF', BTAL:'AGF U.S. Market Neutral Anti-Beta Fund', KMLM:'KFA Mount Lucas Managed Futures Index Strategy ETF',
+      EFA:'iShares MSCI EAFE ETF', EEM:'iShares MSCI Emerging Markets ETF', VWO:'Vanguard FTSE Emerging Markets ETF', SCZ:'iShares MSCI EAFE Small-Cap ETF',
+      IDV:'iShares International Select Dividend ETF', VIGI:'Vanguard International Dividend Appreciation ETF', EWZ:'iShares MSCI Brazil ETF',
+      EWY:'iShares MSCI South Korea ETF', EPI:'WisdomTree India Earnings Fund', FXI:'iShares China Large-Cap ETF',
+      YINN:'Direxion Daily FTSE China Bull 3X', YXI:'ProShares Short FTSE China 50 (-1x)', EDC:'Direxion Daily MSCI Emerging Markets Bull 3X',
+      EEV:'ProShares UltraShort MSCI Emerging Markets (-2x)', EUM:'ProShares Short MSCI Emerging Markets (-1x)'
+    };
+
+    // Related panel: the first group a ticker belongs to supplies its peers.
+    var GROUPS = [
+      ['AAPL','AMZN','GOOGL','META','NVDA','TSLA','PLTR'],
+      ['NVDA','NVDL','SMH','SOXX','SOXL','USD'],
+      ['TSLA','TSLR'], ['AAPL','AAPX'], ['AMZN','AMZU','AMZZ'], ['GOOGL','GGLL'], ['META','FBL'],
+      ['COIN','CONL','BITX','HOOD'],
+      ['SOFI','HOOD','IBKR','SCHW','RGTI','PLTR'],
+      ['BX','KKR','BN','BAM','PSP'], ['MA','V','XLF'], ['WELL','VTR','XLRE','ICF'], ['BABA','FXI','YINN','YXI'],
+      ['QQQ','TQQQ','QLD','PSQ','SQQQ','QQQE','QQEW'],
+      ['SPY','UPRO','SPXL','SSO','SH','SDS','SPXU','SPXS'],
+      ['SPY','IVV','VTI','RSP','DIA','QQQ','IWM','VT'],
+      ['DIA','UDOW'], ['MDY','MVV'],
+      ['IWM','TNA','URTY','RWM','TWM','VBR'],
+      ['SMH','SOXX','SOXL','SOXS','USD','NVDA'],
+      ['XLK','TECL','TECS','QQQ'],
+      ['XLF','FAS','FAZ','KBE','KCE','KIE','IAI'],
+      ['XLE','ERX','DUG','USO','UCO','SCO'],
+      ['XLV','CURE','RXL','IHI','IHF'], ['IBB','XBI','LABU','LABD','BIS'],
+      ['XLRE','ICF','DRV','SRS'], ['XLU','UPW','VPU','PUI','RSPU'], ['XLP','UGE','RSPS'], ['XLY','XRT','RETL','RSPD'],
+      ['XLK','XLF','XLE','XLV','XLY','XLP','XLI','XLB','XLU','XLRE','VOX'],
+      ['XLI','ITA','IYT','ITB','PKB','XME','PHO','WOOD'],
+      ['VXX','UVXY','UVIX','VIXY','VIXM','SVXY','SVIX'],
+      ['TLT','TMF','TMV','SPTL','ZROZ','IEF'], ['IEF','TYO','IEI','SHY'],
+      ['BIL','SHV','SHY','IEI','IEF','TLT'], ['TIP','STIP'],
+      ['AGG','BND','BSV','LQD','CORP','VMBS'], ['HYG','JNK','HYEM','EMB','PFF','CWB'],
+      ['BKT','VBF','MMU','NAN','PMM','EVN'],
+      ['GLD','UGL','SLV','AGQ','GDX'], ['GDX','GDXU','GDXD'],
+      ['UNG','UNL','KOLD'], ['DBC','DBA','VEGI','USO'],
+      ['UUP','FXA','FXE','FXY','EUO','YCS'],
+      ['BTAL','KMLM','SPLV','ACWV'],
+      ['MTUM','QUAL','SPLV','SPHB','SPMO','MOAT','SCHD','HIBL'],
+      ['IVE','IVW','SPYG','SPYV','VTV','VUG','VOOG','VOOV','MGK','IWY','XLG'],
+      ['ARKK','TARK','SARK'],
+      ['EFA','EEM','VWO','SCZ','IDV','VIGI','IOO'], ['EEM','EDC','EEV','EUM','EWZ','EWY','EPI'], ['PBP','SCHD','SPY']
+    ];
+    var DEFAULT_RELATED = ['SPY','QQQ','TQQQ','IWM','TLT','GLD','UVXY'];
+
+    var RANGES = [
+      { id: '1M', months: 1 }, { id: '6M', months: 6 }, { id: 'YTD', ytd: true },
+      { id: '1Y', months: 12 }, { id: '5Y', months: 60 }, { id: 'Max', all: true }
+    ];
+
+    var state = { ticker: null, series: null, range: '1Y', ma50: false, ma200: false };
+    var universe = [];
+    var root = document.getElementById('tk-root');
+
+    function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+    function fileName(t) { return t.replace(/[^A-Za-z0-9.-]/g, '_') + '.js'; }
+    var scripts = {};
+    function loadScript(path) {
+      if (!scripts[path]) scripts[path] = new Promise(function (resolve) {
+        var s = document.createElement('script');
+        s.src = CACHE + path; s.async = true;
+        s.onload = function () { resolve(true); };
+        s.onerror = function () { resolve(false); };
+        document.head.appendChild(s);
+      });
+      return scripts[path];
+    }
+
+    // Snapshot plus the daily _recent.js tail, rescaled at the overlap date so a
+    // dividend adjustment between the two files cannot create a fake jump.
+    // Mirrors spliceTail in backtest-src/src/data/localCache.ts.
+    function loadSeries(t) {
+      return loadScript(fileName(t)).then(function () {
+        var e = window.__BT_PRICES__ && window.__BT_PRICES__[t];
+        if (!e || !e.dates || !e.dates.length) return null;
+        var dates = e.dates.slice(), closes = e.closes.slice();
+        var r = window.__BT_RECENT__ && window.__BT_RECENT__.prices && window.__BT_RECENT__.prices[t];
+        if (r) {
+          var last = dates[dates.length - 1], i = r.dates.indexOf(last);
+          if (i >= 0 && r.closes[i] > 0) {
+            var k = closes[closes.length - 1] / r.closes[i];
+            for (var j = i + 1; j < r.dates.length; j++) { dates.push(r.dates[j]); closes.push(r.closes[j] * k); }
+            // Re-anchor the whole series on the latest raw close, so the headline
+            // price matches the actual quote. Ratios, and so every return, are unchanged.
+            var f = r.closes[r.closes.length - 1] / closes[closes.length - 1];
+            if (dates[dates.length - 1] === r.dates[r.dates.length - 1] && f > 0) closes = closes.map(function (v) { return v * f; });
+          }
+        }
+        return { dates: dates, closes: closes };
+      });
+    }
+
+    // ---- Math ----
+    function wilderRsi(c, period) {
+      // ~1 trading year of history, as scripts/refresh_rsi.py uses, so the value
+      // matches the RSI Signals page.
+      var x = c.slice(-260);
+      if (x.length <= period) return null;
+      var g = 0, l = 0, i, d;
+      for (i = 1; i <= period; i++) { d = x[i] - x[i - 1]; if (d > 0) g += d; else l -= d; }
+      g /= period; l /= period;
+      for (i = period + 1; i < x.length; i++) {
+        d = x[i] - x[i - 1];
+        g = (g * (period - 1) + (d > 0 ? d : 0)) / period;
+        l = (l * (period - 1) + (d < 0 ? -d : 0)) / period;
+      }
+      if (l === 0) return 100; if (g === 0) return 0;
+      return 100 - 100 / (1 + g / l);
+    }
+    function sma(c, n, end) { // average of the n closes ending at index end
+      if (end + 1 < n) return null;
+      var s = 0; for (var i = end - n + 1; i <= end; i++) s += c[i]; return s / n;
+    }
+    function smaSeries(c, n) {
+      var out = new Array(c.length), s = 0;
+      for (var i = 0; i < c.length; i++) { s += c[i]; if (i >= n) s -= c[i - n]; out[i] = i >= n - 1 ? s / n : null; }
+      return out;
+    }
+    function parseD(s) { return new Date(s + 'T12:00:00Z'); }
+    function isoMinusMonths(s, m) { var d = parseD(s); d.setUTCMonth(d.getUTCMonth() - m); return d.toISOString().slice(0, 10); }
+    function indexOnOrBefore(dates, iso) { // last index with date <= iso, or -1
+      var lo = 0, hi = dates.length - 1, ans = -1;
+      while (lo <= hi) { var mid = (lo + hi) >> 1; if (dates[mid] <= iso) { ans = mid; lo = mid + 1; } else hi = mid - 1; }
+      return ans;
+    }
+    function rangeStart(dates, r) {
+      var last = dates[dates.length - 1];
+      if (r.all) return 0;
+      // YTD anchors on the last close of the prior year, like Google Finance.
+      if (r.ytd) return Math.max(0, indexOnOrBefore(dates, (+last.slice(0, 4) - 1) + '-12-31'));
+      return Math.max(0, indexOnOrBefore(dates, isoMinusMonths(last, r.months)));
+    }
+    function trailing(s, months, annualize) {
+      var n = s.dates.length, i = indexOnOrBefore(s.dates, isoMinusMonths(s.dates[n - 1], months));
+      if (i < 0 || s.dates[0] > isoMinusMonths(s.dates[n - 1], months)) return null;
+      var r = s.closes[n - 1] / s.closes[i] - 1;
+      return annualize ? Math.pow(1 + r, 12 / months) - 1 : r;
+    }
+
+    // ---- Formatting ----
+    function fmtPx(v) {
+      if (v == null || !isFinite(v)) return '-';
+      var d = v >= 1000 ? 2 : v >= 1 ? 2 : 4;
+      return v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+    }
+    function fmtPct(v, sign) {
+      if (v == null || !isFinite(v)) return '-';
+      var p = v * 100, a = Math.abs(p);
+      var s = (a >= 1000 ? a.toLocaleString('en-US', { maximumFractionDigits: 0 }) : a.toFixed(2)) + '%';
+      return (p < 0 ? '-' : sign && p > 0 ? '+' : '') + s;
+    }
+    function dir(v) { return v > 0 ? 'up' : v < 0 ? 'down' : 'flat'; }
+    function arrow(v) { return v > 0 ? '&#9650;' : v < 0 ? '&#9660;' : ''; }
+    var WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    function fmtDate(s, withYear) {
+      var d = parseD(s);
+      return WD[d.getUTCDay()] + ', ' + MO[d.getUTCMonth()] + ' ' + d.getUTCDate() + (withYear ? ', ' + d.getUTCFullYear() : '');
+    }
+
+    // ---- Render ----
+    function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+    function render() {
+      var t = state.ticker, s = state.series, n = s.closes.length, c = s.closes;
+      var last = c[n - 1], prev = n > 1 ? c[n - 2] : null, day = prev ? last / prev - 1 : null;
+      var ytd, yi = indexOnOrBefore(s.dates, (+s.dates[n - 1].slice(0, 4) - 1) + '-12-31');
+      ytd = yi >= 0 ? last / c[yi] - 1 : null;
+
+      var rsi10 = wilderRsi(c, 10), rsi14 = wilderRsi(c, 14);
+      var m20 = sma(c, 20, n - 1), m50 = sma(c, 50, n - 1), m200 = sma(c, 200, n - 1);
+      var y1 = indexOnOrBefore(s.dates, isoMinusMonths(s.dates[n - 1], 12));
+      var hi52 = -Infinity, lo52 = Infinity, ath = -Infinity, i;
+      for (i = Math.max(0, y1); i < n; i++) { if (c[i] > hi52) hi52 = c[i]; if (c[i] < lo52) lo52 = c[i]; }
+      for (i = 0; i < n; i++) if (c[i] > ath) ath = c[i];
+      var rets = [], v30 = null;
+      if (n > 31) {
+        for (i = n - 30; i < n; i++) rets.push(Math.log(c[i] / c[i - 1]));
+        var mu = rets.reduce(function (a, b) { return a + b; }, 0) / rets.length;
+        v30 = Math.sqrt(rets.reduce(function (a, b) { return a + (b - mu) * (b - mu); }, 0) / (rets.length - 1) * 252);
+      }
+      function rsiFlag(r) { return r == null ? '' : r < 30 ? '<span class="tk-flag os">Oversold</span>' : r > 70 ? '<span class="tk-flag ob">Overbought</span>' : ''; }
+      function vsMa(m) { return m ? '<span class="tk-chg ' + dir(last / m - 1) + '">' + fmtPct(last / m - 1, true) + '</span><span class="note">' + fmtPx(m) + '</span>' : '-'; }
+      function stat(label, val) { return '<div class="tk-stat"><dt>' + label + '</dt><dd>' + val + '</dd></div>'; }
+      var cross = m50 && m200 ? (m50 > m200 ? '50d above 200d' : '50d below 200d') : '-';
+
+      var perf = [['1W', n > 5 ? last / c[n - 6] - 1 : null], ['1M', trailing(s, 1, false)], ['3M', trailing(s, 3, false)],
+        ['6M', trailing(s, 6, false)], ['YTD', ytd], ['1Y', trailing(s, 12, false)], ['3Y /yr', trailing(s, 36, true)],
+        ['5Y /yr', trailing(s, 60, true)], ['10Y /yr', trailing(s, 120, true)]];
+
+      root.innerHTML =
+        '<div class="tk-layout"><div>' +
+          '<p class="tk-name">' + esc(NAMES[t] || (state.meta && state.meta.name) || t) + '</p>' +
+          '<p class="tk-sym">' + esc(state.meta && state.meta.exch ? state.meta.exch + ': ' + t : t) + '</p>' +
+          '<div class="tk-price-row"><span class="tk-price">' + fmtPx(last) + '<small>' + esc((state.meta && state.meta.currency) || 'USD') + '</small></span>' +
+            (day != null ? '<span class="tk-pill ' + dir(day) + '">' + arrow(day) + ' ' + fmtPct(Math.abs(day)) + '</span>' +
+              '<span class="tk-chg ' + dir(day) + '">' + (last - prev >= 0 ? '+' : '-') + fmtPx(Math.abs(last - prev)) + ' today</span>' : '') +
+          '</div>' +
+          '<p class="tk-asof">' + (ytd != null ? '<span class="tk-chg ' + dir(ytd) + '">' + fmtPct(ytd, true) + '</span> year to date &middot; ' : '') +
+            sourceLine() + '</p>' +
+          '<div class="tk-tabs" role="tablist" aria-label="Chart range">' +
+            RANGES.map(function (r) { return '<button type="button" role="tab" data-r="' + r.id + '" aria-selected="' + (r.id === state.range) + '">' + r.id + '</button>'; }).join('') +
+          '</div>' +
+          '<div class="tk-overlays">' +
+            '<span id="tk-rchg"></span>' +
+            '<label><input type="checkbox" id="tk-ma50"' + (state.ma50 ? ' checked' : '') + '><span class="tk-key" style="background:var(--color-blue)"></span>50-day MA</label>' +
+            '<label><input type="checkbox" id="tk-ma200"' + (state.ma200 ? ' checked' : '') + '><span class="tk-key" style="background:var(--color-purple)"></span>200-day MA</label>' +
+          '</div>' +
+          '<div class="tk-chart" id="tk-chart"></div>' +
+
+          '<div class="tk-section"><h2>Key stats</h2><dl class="tk-stats">' +
+            stat('Previous close', fmtPx(prev)) +
+            stat('Day change', day != null ? '<span class="tk-chg ' + dir(day) + '">' + fmtPct(day, true) + '</span>' : '-') +
+            stat('52-wk high', fmtPx(hi52) + '<span class="note">' + fmtPct(last / hi52 - 1, true) + '</span>') +
+            stat('52-wk low', fmtPx(lo52) + '<span class="note">' + fmtPct(last / lo52 - 1, true) + '</span>') +
+            stat('All-time high', fmtPx(ath) + '<span class="note">' + fmtPct(last / ath - 1, true) + '</span>') +
+            stat('Data since', fmtDate(s.dates[0], true).replace(/^\w+, /, '')) +
+          '</dl></div>' +
+
+          '<div class="tk-section"><h2>Technicals</h2>' +
+            '<p class="tk-sub">The readings Composer conditions test. Percentages are the last close against each moving average.</p>' +
+            '<dl class="tk-stats">' +
+            stat('RSI (10)', (rsi10 != null ? rsi10.toFixed(2) : '-') + rsiFlag(rsi10)) +
+            stat('RSI (14)', (rsi14 != null ? rsi14.toFixed(2) : '-') + rsiFlag(rsi14)) +
+            stat('vs 20-day MA', vsMa(m20)) +
+            stat('vs 50-day MA', vsMa(m50)) +
+            stat('vs 200-day MA', vsMa(m200)) +
+            stat('50d vs 200d MA', cross) +
+            stat('Drawdown from high', fmtPct(last / ath - 1, true)) +
+            stat('30-day volatility', v30 != null ? fmtPct(v30) + '<span class="note">annualized</span>' : '-') +
+          '</dl></div>' +
+
+          '<div class="tk-section"><h2>Performance</h2><p class="tk-sub">Total return; 3Y and longer are per year.</p><div class="tk-perf">' +
+            perf.map(function (p) { var v = p[1]; return '<div><span>' + p[0] + '</span><b class="' + (v == null ? 'na' : dir(v)) + '">' + fmtPct(v, true) + '</b></div>'; }).join('') +
+          '</div></div>' +
+        '</div>' +
+        '<aside class="tk-side"><h2>Related</h2><ul class="tk-rel" id="tk-rel"></ul></aside></div>';
+
+      root.querySelectorAll('.tk-tabs button').forEach(function (b) {
+        b.addEventListener('click', function () { state.range = b.getAttribute('data-r'); syncUrl(); render(); });
+      });
+      document.getElementById('tk-ma50').addEventListener('change', function (e) { state.ma50 = e.target.checked; drawChart(); });
+      document.getElementById('tk-ma200').addEventListener('change', function (e) { state.ma200 = e.target.checked; drawChart(); });
+      drawChart();
+      renderRelated();
+    }
+
+    function drawChart() {
+      var el = document.getElementById('tk-chart'); if (!el) return;
+      var s = state.series, r = RANGES.filter(function (x) { return x.id === state.range; })[0];
+      var a = rangeStart(s.dates, r), b = s.dates.length - 1;
+      var dates = s.dates.slice(a, b + 1), c = s.closes.slice(a, b + 1);
+      var ma = { 50: state.ma50 ? smaSeries(s.closes, 50).slice(a, b + 1) : null, 200: state.ma200 ? smaSeries(s.closes, 200).slice(a, b + 1) : null };
+      var chg = c[c.length - 1] / c[0] - 1, up = chg >= 0;
+      document.getElementById('tk-rchg').innerHTML = '<span class="tk-chg ' + dir(chg) + '">' + fmtPct(chg, true) + '</span> over ' + (r.id === 'Max' ? 'all data' : r.id);
+
+      var W = Math.max(280, el.clientWidth), H = el.clientHeight, padL = 8, padR = 58, padT = 34, padB = 24;
+      var lo = Math.min.apply(null, c), hi = Math.max.apply(null, c);
+      [50, 200].forEach(function (k) { if (ma[k]) ma[k].forEach(function (v) { if (v != null) { if (v < lo) lo = v; if (v > hi) hi = v; } }); });
+      // Linear axis normally. When the window spans more than 20x (a decaying
+      // leveraged or volatility fund over years of reverse splits, or a decades-old
+      // compounder) a linear scale flattens everything recent to the floor, so the
+      // axis switches to log and says so.
+      var useLog = lo > 0 && hi / lo > 20, ticksY = [], y0, y1, step = 1;
+      if (useLog) {
+        y0 = Math.log10(lo); y1 = Math.log10(hi);
+        var decades = Math.ceil(y1) - Math.floor(y0), mult = decades > 4 ? [1] : decades > 2 ? [1, 3] : [1, 2, 5];
+        for (var e = Math.floor(y0); e <= Math.ceil(y1); e++) mult.forEach(function (m) { var t = m * Math.pow(10, e); if (t >= lo * 0.999 && t <= hi * 1.001) ticksY.push(t); });
+        if (decades > 8) ticksY = ticksY.filter(function (t, i) { return i % Math.ceil(decades / 6) === 0; });
+      } else {
+        var span = hi - lo || hi || 1, raw = span / 4, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+        step = [1, 2, 2.5, 5, 10].map(function (m) { return m * mag; }).filter(function (v) { return v >= raw; })[0];
+        y0 = Math.floor(lo / step) * step; y1 = Math.ceil(hi / step) * step;
+        for (var tv = y0; tv <= y1 + step / 2; tv += step) ticksY.push(+tv.toFixed(10));
+      }
+      function axLabel(v) {
+        var A = Math.abs(v), u = [[1e12, 'T'], [1e9, 'B'], [1e6, 'M'], [1e4, 'K']].filter(function (x) { return A >= x[0]; })[0];
+        if (u) return +(v / (u[0] === 1e4 ? 1e3 : u[0])).toFixed(1) + (u[0] === 1e4 ? 'K' : u[1]);
+        return v.toLocaleString('en-US', { maximumFractionDigits: useLog ? (v < 1 ? 3 : v < 10 ? 1 : 0) : step >= 1 ? 0 : Math.ceil(-Math.log10(step)) + 1 });
+      }
+      var X = function (i) { return padL + (dates.length < 2 ? 0 : i / (dates.length - 1)) * (W - padL - padR); };
+      var Y = function (v) { var t = useLog ? Math.log10(v) : v; return padT + (1 - (t - y0) / ((y1 - y0) || 1)) * (H - padT - padB); };
+      var line = c.map(function (v, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join('');
+      var area = line + 'L' + X(c.length - 1).toFixed(1) + ' ' + (H - padB) + 'L' + X(0).toFixed(1) + ' ' + (H - padB) + 'Z';
+      var col = up ? 'var(--color-positive)' : 'var(--color-negative)';
+
+      var grid = '', ax = '';
+      ticksY.forEach(function (v) {
+        grid += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"/>';
+        ax += '<text x="' + (W - padR + 8) + '" y="' + (Y(v) + 4).toFixed(1) + '">' + axLabel(v) + '</text>';
+      });
+      if (useLog) ax += '<text x="' + (W - padR + 8) + '" y="' + (padT - 14) + '">log scale</text>';
+      // About five x labels, formatted by span.
+      var days = (parseD(dates[dates.length - 1]) - parseD(dates[0])) / 864e5, ticks = Math.min(5, Math.max(2, Math.floor(W / 140)));
+      for (var k = 0; k < ticks; k++) {
+        var i = Math.round(k * (dates.length - 1) / (ticks - 1)), d = parseD(dates[i]);
+        var lab = days > 730 ? String(d.getUTCFullYear()) : days > 90 ? MO[d.getUTCMonth()] + ' ' + String(d.getUTCFullYear()).slice(2) : MO[d.getUTCMonth()] + ' ' + d.getUTCDate();
+        var anchor = k === 0 ? 'start' : k === ticks - 1 ? 'end' : 'middle';
+        ax += '<text x="' + X(i).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="' + anchor + '">' + lab + '</text>';
+      }
+      function maPath(arr) {
+        var p = '', pen = false;
+        arr.forEach(function (v, i) { if (v == null) { pen = false; return; } p += (pen ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); pen = true; });
+        return p;
+      }
+      el.innerHTML =
+        '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(state.ticker) + ' daily close, ' + r.id + '">' +
+          '<defs><linearGradient id="tk-fill" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0" stop-color="rgb(' + css(up ? '--rgb-green' : '--rgb-red') + ')" stop-opacity="0.28"/>' +
+            '<stop offset="1" stop-color="rgb(' + css(up ? '--rgb-green' : '--rgb-red') + ')" stop-opacity="0"/></linearGradient></defs>' +
+          '<g class="grid">' + grid + '</g>' +
+          '<path d="' + area + '" fill="url(#tk-fill)"/>' +
+          (ma[200] ? '<path d="' + maPath(ma[200]) + '" fill="none" stroke="var(--color-purple)" stroke-width="1.5"/>' : '') +
+          (ma[50] ? '<path d="' + maPath(ma[50]) + '" fill="none" stroke="var(--color-blue)" stroke-width="1.5"/>' : '') +
+          '<path d="' + line + '" fill="none" stroke="' + col + '" stroke-width="2" stroke-linejoin="round"/>' +
+          '<g class="axis">' + ax + '</g>' +
+          '<g id="tk-hover" visibility="hidden">' +
+            '<line id="tk-hx" y1="' + padT + '" y2="' + (H - padB) + '" stroke="var(--color-border-strong)" stroke-dasharray="3 3"/>' +
+            '<circle id="tk-hd" r="5" fill="' + col + '" stroke="var(--color-bg)" stroke-width="2"/></g>' +
+        '</svg><div class="tk-tip" id="tk-tip" hidden></div>';
+
+      var svg = el.querySelector('svg'), hv = el.querySelector('#tk-hover'), hx = el.querySelector('#tk-hx'), hd = el.querySelector('#tk-hd'), tip = el.querySelector('#tk-tip');
+      function show(clientX) {
+        var box = svg.getBoundingClientRect(), x = (clientX - box.left) * W / box.width;
+        var i = Math.round((x - padL) / (W - padL - padR) * (dates.length - 1));
+        i = Math.max(0, Math.min(dates.length - 1, i));
+        var px = X(i), py = Y(c[i]);
+        hx.setAttribute('x1', px); hx.setAttribute('x2', px); hd.setAttribute('cx', px); hd.setAttribute('cy', py);
+        hv.setAttribute('visibility', 'visible');
+        var extra = '';
+        if (ma[50] && ma[50][i] != null) extra += ' &middot; 50d ' + fmtPx(ma[50][i]);
+        if (ma[200] && ma[200][i] != null) extra += ' &middot; 200d ' + fmtPx(ma[200][i]);
+        tip.innerHTML = '<b>' + fmtPx(c[i]) + ' USD</b>' + fmtDate(dates[i], days > 300) + extra;
+        tip.hidden = false;
+        var half = tip.offsetWidth / 2, left = px * box.width / W;
+        tip.style.left = Math.max(half, Math.min(box.width - half, left)) + 'px';
+      }
+      function hide() { hv.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+      el.onpointermove = function (e) { show(e.clientX); };
+      el.onpointerdown = function (e) { show(e.clientX); };
+      el.onpointerleave = hide;
+    }
+
+    function renderRelated() {
+      var t = state.ticker, peers = [];
+      GROUPS.some(function (g) { if (g.indexOf(t) >= 0) { peers = g.filter(function (x) { return x !== t; }); return true; } return false; });
+      if (!peers.length) peers = DEFAULT_RELATED.filter(function (x) { return x !== t; });
+      var ul = document.getElementById('tk-rel'), R = (window.__BT_RECENT__ || {}).prices || {};
+      ul.innerHTML = peers.filter(function (p) { return R[p]; }).slice(0, 7).map(function (p) {
+        var cl = R[p].closes, l = cl[cl.length - 1], d = cl.length > 1 ? l / cl[cl.length - 2] - 1 : 0;
+        return '<li><a href="?t=' + encodeURIComponent(p) + '" data-t="' + esc(p) + '"><span class="tk-rel-main"><span class="tk-rel-name">' + esc(NAMES[p] || p) +
+          '</span><span class="tk-rel-sym">' + esc(p) + '</span></span><span class="tk-rel-px">' + fmtPx(l) + '</span>' +
+          '<span class="tk-pill ' + dir(d) + '">' + arrow(d) + ' ' + fmtPct(Math.abs(d)) + '</span></a></li>';
+      }).join('');
+    }
+
+    // ---- Live prices ----
+    // Yahoo sends no CORS headers, so the request goes through the same relay
+    // the RSI Backtester uses (backtest-src/src/data/proxy.ts): the CORS proxy
+    // saved in the Backtester's Settings if there is one, otherwise the r.jina.ai
+    // reader relay, which wraps Yahoo's reply in data.content. The result is kept
+    // in this browser (localStorage) so a repeat visit, or a relay outage, still
+    // has the newest price seen. Order: fresh browser copy -> live fetch ->
+    // older browser copy if newer than the site -> the site's cached close.
+    var LIVE_TTL = 10 * 60 * 1000, LIVE_KEY = 'ca-ticker-live:', LIVE_MAX = 40;
+    function corsProxy() {
+      try { return ((JSON.parse(localStorage.getItem('backtestConfig') || '{}') || {}).corsProxy || '').trim(); } catch (e) { return ''; }
+    }
+    function timeoutSignal(ms) {
+      if (window.AbortSignal && AbortSignal.timeout) return AbortSignal.timeout(ms);
+      var c = new AbortController(); setTimeout(function () { c.abort(); }, ms); return c.signal;
+    }
+    function relayJson(url) {
+      var p = corsProxy(), opts = { headers: { Accept: 'application/json' }, signal: timeoutSignal(15000) };
+      if (p) {
+        return fetch(p.indexOf('{url}') >= 0 ? p.replace('{url}', encodeURIComponent(url)) : p + url, opts)
+          .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+      }
+      return fetch('https://r.jina.ai/' + url, opts).then(function (r) {
+        if (!r.ok) throw new Error('relay HTTP ' + r.status); // 429 when the free tier is busy
+        return r.json();
+      }).then(function (w) {
+        var d = (w && w.data) || {};
+        if (d.httpStatus && d.httpStatus !== 200) throw new Error('Yahoo HTTP ' + d.httpStatus);
+        return JSON.parse(d.content || 'null');
+      });
+    }
+    function parseYahoo(j, t) {
+      var r = j && j.chart && j.chart.result && j.chart.result[0];
+      if (!r || !r.timestamp) return null;
+      var m = r.meta || {}, off = m.gmtoffset || 0;
+      var adj = (r.indicators.adjclose && r.indicators.adjclose[0] && r.indicators.adjclose[0].adjclose) || r.indicators.quote[0].close;
+      var dates = [], closes = [];
+      r.timestamp.forEach(function (ts, i) {
+        var v = adj[i]; if (v == null || !(v > 0)) return;
+        var d = new Date((ts + off) * 1000).toISOString().slice(0, 10);
+        if (dates.length && dates[dates.length - 1] === d) { closes[closes.length - 1] = v; return; }
+        dates.push(d); closes.push(v);
+      });
+      if (!dates.length || (m.symbol && m.symbol.toUpperCase() !== t)) return null;
+      return { at: Date.now(), name: m.longName || m.shortName || '', exch: m.fullExchangeName || m.exchangeName || '',
+        currency: m.currency || 'USD', mtime: m.regularMarketTime || 0, dates: dates, closes: closes };
+    }
+    function fetchLive(t, full) {
+      var path = '/v8/finance/chart/' + encodeURIComponent(t) + '?interval=1d&range=' + (full ? 'max' : '3mo') + '&includeAdjustedClose=true&events=div%7Csplit';
+      return relayJson('https://query1.finance.yahoo.com' + path)
+        .catch(function () { return relayJson('https://query2.finance.yahoo.com' + path); })
+        .then(function (j) { return parseYahoo(j, t); });
+    }
+    function readLive(t) { try { return JSON.parse(localStorage.getItem(LIVE_KEY + t) || 'null'); } catch (e) { return null; } }
+    function saveLive(t, v) {
+      try {
+        localStorage.setItem(LIVE_KEY + t, JSON.stringify(v));
+        // Keep the newest LIVE_MAX tickers; full histories of uncovered tickers are the big ones.
+        var keys = [];
+        for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf(LIVE_KEY) === 0) keys.push(k); }
+        if (keys.length > LIVE_MAX) {
+          keys.map(function (k) { var e = null; try { e = JSON.parse(localStorage.getItem(k)); } catch (x) {} return [k, e ? e.at : 0]; })
+            .sort(function (a, b) { return a[1] - b[1]; }).slice(0, keys.length - LIVE_MAX)
+            .forEach(function (x) { localStorage.removeItem(x[0]); });
+        }
+      } catch (e) { /* storage full or blocked: the page still works without it */ }
+    }
+    // Live tail onto the site series: rescale the site history at the newest
+    // shared date so the two adjustment bases meet without a jump, then append.
+    function mergeLive(site, live) {
+      if (!site) return { dates: live.dates.slice(), closes: live.closes.slice() };
+      var last = site.dates[site.dates.length - 1], i = live.dates.indexOf(last);
+      if (i < 0) {
+        // No shared date: usable only if the live window lies entirely inside the site one.
+        return null;
+      }
+      var k = live.closes[i] / site.closes[site.closes.length - 1];
+      return { dates: site.dates.concat(live.dates.slice(i + 1)), closes: site.closes.map(function (v) { return v * k; }).concat(live.closes.slice(i + 1)) };
+    }
+    function useLive(t, site, live, how) {
+      if (state.ticker !== t || !live) return false;
+      var merged = mergeLive(site, live);
+      if (!merged) return false;
+      if (site && merged.dates[merged.dates.length - 1] < site.dates[site.dates.length - 1]) return false;
+      state.series = merged;
+      state.meta = { name: live.name, exch: live.exch, currency: live.currency, mtime: live.mtime, at: live.at, how: how };
+      render(); return true;
+    }
+    function goLive(t, site) {
+      var saved = readLive(t), fresh = saved && Date.now() - saved.at < LIVE_TTL && (site || saved.dates.length > 300);
+      if (fresh && useLive(t, site, saved, 'saved')) return;
+      state.liveStatus = 'checking'; if (site) render();
+      fetchLive(t, !site).then(function (live) {
+        if (!live) throw new Error('no data');
+        saveLive(t, live);
+        if (!useLive(t, site, live, 'live')) throw new Error('no overlap');
+      }).catch(function () {
+        if (state.ticker !== t) return;
+        state.liveStatus = 'failed';
+        if (saved && useLive(t, site, saved, 'saved')) return;
+        if (site) render(); else notCovered(t);
+      });
+    }
+    function etTime(sec) {
+      try {
+        return new Date(sec * 1000).toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET';
+      } catch (e) { return new Date(sec * 1000).toLocaleString(); }
+    }
+    function sourceLine() {
+      var s = state.series, m = state.meta, lastD = fmtDate(s.dates[s.dates.length - 1], true);
+      if (m) {
+        var when = m.mtime ? 'as of ' + etTime(m.mtime) : 'close ' + lastD;
+        return (m.how === 'live' ? 'Live from Yahoo Finance, ' : 'Yahoo Finance, saved in this browser ' + Math.max(1, Math.round((Date.now() - m.at) / 60000)) + ' min ago, ') + when;
+      }
+      if (state.liveStatus === 'checking') return 'Close ' + lastD + ' &middot; checking for a newer price...';
+      if (state.liveStatus === 'failed') return 'Close ' + lastD + ' &middot; site data (live price unavailable)';
+      return 'Close ' + lastD + ' &middot; site data';
+    }
+
+    function notCovered(t) {
+      root.innerHTML = '<div class="tk-empty"><b>' + esc(t) + '</b> was not found. It is not in the RSI Backtester\'s price cache ' +
+        '(' + universe.length + ' tickers used across Composer strategies, browsable below), and a live lookup on Yahoo Finance ' +
+        'did not return it either. Check the symbol, or try again in a minute if the relay was busy.</div>';
+      document.getElementById('tk-all').open = true;
+    }
+
+    function syncUrl() {
+      try { history.replaceState(null, '', '?t=' + encodeURIComponent(state.ticker) + (state.range !== '1Y' ? '&r=' + state.range : '')); } catch (e) {}
+    }
+
+    function open(t) {
+      t = String(t || '').trim().toUpperCase();
+      if (!t) return;
+      state.ticker = t; syncUrl();
+      document.title = (NAMES[t] ? t + ' ' + NAMES[t] : t) + ': Ticker Lookup: Composer Atlas';
+      state.meta = null; state.liveStatus = null; state.series = null;
+      root.innerHTML = '<p class="tk-asof">Loading ' + esc(t) + '...</p>';
+      // Covered: draw the site data at once, then try for a newer price.
+      // Not covered: the whole history has to come from Yahoo.
+      var site = universe.indexOf(t) >= 0 ? loadSeries(t) : Promise.resolve(null);
+      site.then(function (s) {
+        if (state.ticker !== t) return;
+        if (s) { state.series = s; render(); }
+        else root.innerHTML = '<p class="tk-asof">' + esc(t) + ' is not in the site cache. Looking it up on Yahoo Finance...</p>';
+        goLive(t, s);
+      });
+    }
+
+    // ---- Search ----
+    var input = document.getElementById('tk-input'), list = document.getElementById('tk-suggest'), sel = -1, matches = [];
+    function search(q) {
+      q = q.trim().toUpperCase(); if (!q) return [];
+      var exact = [], pre = [], name = [];
+      universe.forEach(function (t) {
+        var nm = (NAMES[t] || '').toUpperCase();
+        if (t === q) exact.push(t); else if (t.indexOf(q) === 0) pre.push(t); else if (nm.indexOf(q) >= 0) name.push(t);
+      });
+      return exact.concat(pre.sort(), name).slice(0, 8);
+    }
+    function paint() {
+      list.hidden = !matches.length;
+      list.innerHTML = matches.map(function (t, i) {
+        return '<li role="option" data-t="' + t + '" aria-selected="' + (i === sel) + '"><b>' + t + '</b><span>' + esc(NAMES[t] || '') + '</span></li>';
+      }).join('');
+    }
+    input.addEventListener('input', function () { matches = search(input.value); sel = matches.length ? 0 : -1; paint(); });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown' && matches.length) { sel = (sel + 1) % matches.length; paint(); e.preventDefault(); }
+      else if (e.key === 'ArrowUp' && matches.length) { sel = (sel - 1 + matches.length) % matches.length; paint(); e.preventDefault(); }
+      else if (e.key === 'Escape') { matches = []; paint(); }
+    });
+    input.addEventListener('blur', function () { setTimeout(function () { matches = []; paint(); }, 150); });
+    list.addEventListener('mousedown', function (e) {
+      var li = e.target.closest('li'); if (li) { e.preventDefault(); go(li.getAttribute('data-t')); }
+    });
+    document.getElementById('tk-form').addEventListener('submit', function (e) {
+      e.preventDefault(); go(sel >= 0 && matches[sel] ? matches[sel] : input.value);
+    });
+    function go(t) { input.value = ''; matches = []; paint(); input.blur(); state.range = state.range || '1Y'; open(t); window.scrollTo(0, 0); }
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest('a[data-t]'); if (!a) return;
+      e.preventDefault(); go(a.getAttribute('data-t'));
+    });
+    var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(drawChart, 120); });
+
+    // ---- Boot ----
+    // _recent.js carries every cached ticker, so it doubles as the index: a
+    // ticker added with update_backtest_recent.py --add appears here unchanged.
+    loadScript('_recent.js').then(function () {
+      var R = (window.__BT_RECENT__ || {}).prices || {};
+      universe = Object.keys(R).filter(function (t) { return t.charAt(0) !== '_'; }).sort();
+      document.getElementById('tk-chips').innerHTML = universe.map(function (t) {
+        return '<a href="?t=' + t + '" data-t="' + t + '" title="' + esc(NAMES[t] || t) + '">' + t + '</a>';
+      }).join('');
+      if (!universe.length) { root.innerHTML = '<div class="tk-empty">Price data could not be loaded.</div>'; return; }
+      var q = new URLSearchParams(location.search);
+      var r = q.get('r'); if (r && RANGES.some(function (x) { return x.id === r; })) state.range = r;
+      open(q.get('t') || 'SPY');
+    });
+  })();
+  </script>
+</body>
+</html>

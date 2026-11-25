@@ -46,6 +46,7 @@ Usage:
 
 import json
 import math
+import os
 import re
 import sys
 import time
@@ -145,6 +146,14 @@ def post(url, body):
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
         return json.loads(resp.read().decode("utf-8"))
+
+
+def write_atomic(path, entries):
+    """Write to a temp file beside `path`, then swap it in, so a run killed
+    mid-write leaves the previous complete file rather than a truncated one."""
+    tmp = Path(str(path) + ".tmp")
+    tmp.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    os.replace(tmp, path)
 
 
 def write_js(entries):
@@ -259,9 +268,23 @@ def main():
         gap = float(args[i + 1])
         del args[i:i + 2]
         delay_overridden = True
+    # --scratch DIR (local): checkpoints go to DIR/database.json instead of the
+    # repo, so a cloud-synced repo folder (OneDrive) sees one write at the end,
+    # not one every CHECKPOINT_EVERY rows. A scratch copy newer than the repo
+    # file is a cut-short run, and this run resumes from it.
+    work = None
+    if "--scratch" in args:
+        i = args.index("--scratch")
+        work = Path(args[i + 1]) / "database.json"
+        del args[i:i + 2]
+        work.parent.mkdir(parents=True, exist_ok=True)
     limit = int(args[0]) if args else None
 
-    entries = json.loads(JSON_PATH.read_text(encoding="utf-8"))
+    source = JSON_PATH
+    if work and work.exists() and work.stat().st_mtime > JSON_PATH.stat().st_mtime:
+        source = work
+        print(f"Resuming from the scratch copy {work} (newer than {JSON_PATH.name}).")
+    entries = json.loads(source.read_text(encoding="utf-8"))
     stale_cutoff = date.today() - timedelta(days=STALE_AFTER_DAYS)
     today = date.today().isoformat()
 
@@ -325,15 +348,13 @@ def main():
                 print(f"FAILED: {reason}")
 
             if (i + 1) % CHECKPOINT_EVERY == 0:
-                JSON_PATH.write_text(
-                    json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-                )
+                write_atomic(work or JSON_PATH, entries)
                 print(f"  -- checkpoint saved at {i + 1} rows --")
     finally:
-        JSON_PATH.write_text(
-            json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-        )
+        write_atomic(JSON_PATH, entries)
         write_js(entries)
+        if work and work.exists():
+            work.unlink()  # its contents are now in the repo file
         mins = (time.time() - started) / 60
         print(f"\nSaved. OK={ok} FAIL={fail} in {mins:.1f} min")
 

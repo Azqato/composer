@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.85.0
+**Version:** 1.87.0
 **Status:** Active
 **Last Updated:** 2026-11-24
 
@@ -369,6 +369,7 @@ composer/
 │   ├── update_metrics.py        # Fetches backtest metrics + logic trees from the Composer API for the curated set
 │   ├── refresh_full_database.py # Resumable, checkpointed API refresh for the community database (v1.9.0); --priority order (v1.85.0)
 │   ├── stamp_leaderboard_scores.py # Local: writes the live page's leaderboard rank/score onto database.json (v1.85.0)
+│   ├── run_full_refresh.py      # Local: the whole full refresh routine in order, incl. full OOS; checkpoints outside OneDrive (v1.86.0)
 │   ├── refresh_prices.py        # Full Yahoo Finance daily-close history for the Signal Miner universe (v1.15.0)
 │   ├── refresh_rsi.py           # Yahoo Finance daily bars → Wilder's RSI(10) (V2.1)
 │   ├── refresh_oos.py           # True out-of-sample statistics for the Leaderboard candidates (V1.18)
@@ -421,6 +422,7 @@ composer/
 ├── nodes.html                   # Tool: symphony URL → node count + breakdown by node type; nav Tools dropdown + footer + homepage card (v1.26.0)
 ├── k1.html                      # Tool: ticker → does it issue a Schedule K-1; local lookup over data/k1.json; nav Tools dropdown + footer + homepage card (v1.27.0)
 ├── overfit.html                 # Tool: paste a symphony → a 0-100 Overfit Score against the unedited-for-a-year population; nav Tools dropdown + footer (V2.4, v1.75.0, corrected v1.76.0)
+├── ticker.html                  # Tool: Ticker Lookup: price chart, RSI, MA distances, returns, related tickers from the Backtester price cache; nav Tools dropdown + footer (v1.87.0)
 ├── etf-cloner.html              # Tool: ETF ticker or holdings file → a Composer symphony cloning the basket; footer + homepage card, intentionally NOT in nav (v1.16.0)
 ├── about.html                   # About page
 ├── 404.html                     # Custom 404 page
@@ -551,12 +553,13 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/k1.html` | `k1.html` | Tool: type a ticker, get whether it issues a Schedule K-1 or a 1099, plus the structure that decides it. Answers come from `data/k1.json`, shipped with the site, so the lookup is local and works offline. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.27.0) |
 | `/composer/etf-cloner.html` | `etf-cloner.html` | Tool: ETF → Composer holdings-clone generator. Live top-holdings fetch by ticker + full-basket upload of an issuer CSV/xlsx. Indexable; in the footer sitemap + homepage Explore card, but intentionally **not** in the primary nav (v1.16.3) |
 | `/composer/overfit.html` | `overfit.html` | Tool: paste a symphony and read a 0 to 100 **Overfit Score** against the population of 5,228 symphonies whose logic has gone a year unedited. Leads with the score as of v1.76.0. Indexable; in the nav **Tools** dropdown and the footer sitemap (V2.4 Tier 1, v1.75.0; substantially corrected v1.76.0; Tier 2 v1.77.0) |
+| `/composer/ticker.html` | `ticker.html` | Tool: **Ticker Lookup**. Search any ticker in the Backtester price cache (`backtest/price-cache/`, indexed by `_recent.js`) for a daily chart with range tabs and optional 50/200-day MA overlays, key stats, technicals (RSI 10/14, distance from 20/50/200-day MA, drawdown, 30-day volatility), trailing returns and a Related panel. `?t=TICKER&r=RANGE` deep-links. Then tries Yahoo Finance for a newer price through the Backtester's relay (Settings CORS proxy, else r.jina.ai), saves it in localStorage for ten minutes, and falls back to the site's close; uncached tickers are fetched from Yahoo in full. No fundamentals. Indexable; in the nav **Tools** dropdown and the footer sitemap (v1.87.0) |
 | `/composer/about.html` | `about.html` | Static HTML |
 | `/composer/404.html` | `404.html` | GitHub Pages error page |
 
 **Listing/detail routing:** Each combined page checks `new URLSearchParams(window.location.search).get('slug')` on load. `null` → listing view; non-null → detail view for that slug.
 
-**Tool pages:** `converter.html`, `signal-miner.html`, `nodes.html`, `k1.html`, `overfit.html`, and `etf-cloner.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). All are indexable. As of v1.16.3 the tools reachable from the primary nav (RSI Signals, Signal Miner, Converter, Nodes since v1.26.0, K1 Lookup since v1.27.0, and Overfit Check since v1.75.0) are grouped under a single **Tools** dropdown rather than sitting as separate top-level links; all of them also appear in the footer sitemap and homepage Explore grid. The ETF Cloner is lower-profile: it is live and indexable and appears in the footer sitemap + homepage Explore card, but at the user's request is intentionally held out of the primary nav (including the Tools dropdown). As of v1.15.4 no page carries a `noindex` robots meta.
+**Tool pages:** `converter.html`, `signal-miner.html`, `nodes.html`, `k1.html`, `overfit.html`, `ticker.html`, and `etf-cloner.html` are standalone utilities that reuse `css/main.css` + `js/app.js` (so nav/footer render consistently). All are indexable. As of v1.16.3 the tools reachable from the primary nav (RSI Signals, Signal Miner, Converter, Nodes since v1.26.0, K1 Lookup since v1.27.0, Overfit Check since v1.75.0, and Ticker Lookup since v1.87.0) are grouped under a single **Tools** dropdown rather than sitting as separate top-level links; all of them also appear in the footer sitemap and homepage Explore grid. The ETF Cloner is lower-profile: it is live and indexable and appears in the footer sitemap + homepage Explore card, but at the user's request is intentionally held out of the primary nav (including the Tools dropdown). As of v1.15.4 no page carries a `noindex` robots meta.
 
 **K1 Lookup data flow (v1.27.0):** the tool takes a ticker and answers whether holding it issues a
 Schedule K-1 instead of a 1099. **The lookup is entirely local.** `k1.html` reads `data/k1.js`
@@ -1036,18 +1039,44 @@ see it. In CI, `refresh_full_database.py` falls back to the committed public sli
 slice, the public summary, `strategy_extras` and `overfit` (public index only; the population block is
 carried forward). The 4.5 to 5 hour figure now applies to the owner's local full run.
 
-To refresh the full database locally (it never needs to be committed):
+To refresh the full database locally (it never needs to be committed), run the whole routine with
+one command (v1.86.0). It runs the steps below in order, stops at the first failure, and commits
+nothing:
 
 ```bash
-python scripts/refresh_full_database.py      # refreshes data/database.json (local master)
-python scripts/export_summary.py             # merges CI rows back, writes public + full summaries
-python scripts/stamp_leaderboard_scores.py   # re-stamps leaderboard_* on database.json (local only)
-python scripts/build_strategy_extras.py
-python scripts/build_overfit.py              # rebuilds the population findings from the full set
-git add data/database_public.json data/database_public.js data/database_summary.json data/database_summary.js data/strategy_extras.json data/strategy_extras.js data/overfit.json data/overfit.js
+python scripts/run_full_refresh.py              # everything, about 8 hours when nearly all rows are due
+python scripts/run_full_refresh.py --from oos   # resume at a step: refresh|export|oos|stamp|extras|overfit|check
+```
+
+| Step | Script | Why it sits here |
+|---|---|---|
+| refresh | `refresh_full_database.py --priority` | in-sample backtests into `database.json`, about 5 h |
+| export | `export_summary.py` | merges CI rows back, writes public + full summaries |
+| oos | `refresh_oos.py` | picks candidates from the summary's in-sample scores, so after export; about 3 h when a fresh week of prices makes every row due |
+| stamp | `stamp_leaderboard_scores.py` | the page's score gives 35 of 100 points to out-of-sample, so after oos |
+| extras | `build_strategy_extras.py` | |
+| overfit | `build_overfit.py` | rebuilds the population findings from the full set |
+| check | `check_database_keys.py` | deploy gate, must PASS |
+
+Then publish the public files only (the script prints this line when it finishes):
+
+```bash
+git add data/database_public.json data/database_public.js data/database_summary.json data/database_summary.js data/oos.json data/oos.js data/strategy_extras.json data/strategy_extras.js data/overfit.json data/overfit.js
 git commit -m "data: local full database refresh - YYYY-MM-DD"
 git push origin main
 ```
+
+The full out-of-sample run used to be a separate local job; it is now step 3. The GitHub
+`refresh-oos.yml` job is unchanged and still covers the public set on Mondays.
+
+**Checkpoints stay out of OneDrive.** The repo lives in a OneDrive-synced folder, and a checkpoint
+rewrites the 20 MB `database.json` every 10 rows (about every 30 s, roughly 13 GB over a full run).
+`run_full_refresh.py` therefore passes `--scratch %USERPROFILE%\Downloads\composer-refresh-work` to
+both API steps (Downloads is not synced on this machine). Each step checkpoints there (`database.json`,
+`oos_store.json`), writes the repo files once when it ends, then deletes its scratch file. A step that
+was killed leaves its scratch file behind, and the rerun resumes from it because it is newer than the
+repo copy. Checkpoints are written to a temp file and swapped in, so a kill mid-write cannot truncate
+them. Without `--scratch` (CI) both scripts write the repo files as before.
 
 Pull before running: the weekly job commits `database_public.json`, and `export_summary.py` merges
 those rows into the local master (newer `refresh_date` wins), so a stale checkout only delays that

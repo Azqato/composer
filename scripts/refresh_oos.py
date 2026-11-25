@@ -35,6 +35,7 @@ Usage:
 import datetime as dt
 import io
 import json
+import os
 import sys
 import time
 import urllib.error
@@ -299,6 +300,15 @@ def main():
     args = sys.argv[1:]
     force = "--force" in args
     args = [a for a in args if a != "--force"]
+    # --scratch DIR (local): checkpoints go to DIR/oos_store.json instead of the
+    # repo, so a cloud-synced repo folder sees one write at the end. A scratch
+    # copy newer than oos_full.json is a cut-short run, and this run resumes it.
+    work = None
+    if "--scratch" in args:
+        i = args.index("--scratch")
+        work = Path(args[i + 1]) / "oos_store.json"
+        del args[i:i + 2]
+        work.parent.mkdir(parents=True, exist_ok=True)
     limit = int(args[0]) if args else None
 
     dates, closes = load_spy()
@@ -310,6 +320,18 @@ def main():
           % (len(pool), len(candidates), cutoff, MIN_OOS_DAYS, want_end))
 
     store = load_store()
+    if (work and work.exists() and FULL_JSON_PATH.exists()
+            and work.stat().st_mtime > FULL_JSON_PATH.stat().st_mtime):
+        store = json.loads(work.read_text(encoding="utf-8"))
+        print("resuming from the scratch copy %s" % work)
+
+    def checkpoint():
+        if not work:
+            write_out(store)
+            return
+        tmp = Path(str(work) + ".tmp")
+        tmp.write_text(json.dumps(store, ensure_ascii=False), encoding="utf-8")
+        os.replace(tmp, work)
 
     def current(e):
         """A stored row is current when it was measured over the window this run
@@ -392,10 +414,12 @@ def main():
                      else "%+.2fpp" % (100 * row["excess_return"])))
 
             if (i + 1) % CHECKPOINT_EVERY == 0:
-                write_out(store)
+                checkpoint()
                 print("  -- checkpoint at %d rows --" % (i + 1))
     finally:
         write_out(store)
+        if work and work.exists():
+            work.unlink()  # its contents are now in the repo files
         print("\nSaved %d rows (oos.json keeps the public ones). OK=%d DISCARDED=%d FAILED=%d"
               % (len(store), ok, skipped, failed))
 
