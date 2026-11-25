@@ -1,10 +1,11 @@
-name: Refresh Economy Data (CPI)
+name: Refresh Economy Data (CPI, Treasury yields)
 
 on:
   schedule:
     # Daily at 03:17 UTC: 7:17pm Pacific in winter, 8:17pm in summer (GitHub
     # cron is UTC only and does not follow daylight saving). BLS publishes CPI
-    # at 8:30am Eastern, so an end-of-day run picks up a release the same day.
+    # at 8:30am Eastern and the Treasury posts each day's yield curve after the
+    # close, so an end-of-day run picks up both the same day.
     # Most runs find nothing new: scripts/update_macro.py leaves the files
     # untouched when FRED's series are unchanged, so there is no commit and no
     # deploy. Offset 17 minutes past the hour, as with the other refresh jobs:
@@ -33,17 +34,35 @@ jobs:
       # Refuses to write a series with fewer than 24 rows, so a broken download
       # fails here and the site keeps the last good file.
       - name: Run update_macro.py
+        id: cpi
+        continue-on-error: true
         run: python scripts/update_macro.py
 
+      # The 13 Treasury and TIPS yields of the weekly report, from the
+      # Treasury's own daily yield-curve CSVs (home.treasury.gov), this year
+      # only, merged into data/yields/. Unchanged series are not rewritten.
+      - name: Run update_yields.py
+        id: yields
+        continue-on-error: true
+        run: python scripts/update_yields.py
+
+      # Commits whatever the two steps wrote, even if one of them failed.
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/macro.json data/macro.js
+          git add data/macro.json data/macro.js data/yields/
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "chore: refresh CPI data"
+            git commit -m "chore: refresh CPI and Treasury yield data"
             git pull --rebase
             git push
           fi
+
+      # A failed download still fails the run, so it shows red in Actions.
+      - name: Report a failed download
+        if: steps.cpi.outcome == 'failure' || steps.yields.outcome == 'failure'
+        run: |
+          echo "CPI: ${{ steps.cpi.outcome }}, yields: ${{ steps.yields.outcome }}"
+          exit 1

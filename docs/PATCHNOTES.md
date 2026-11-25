@@ -10,6 +10,24 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.89.0] - 2026-11-25 - Ticker Lookup: Treasury and TIPS yields
+
+- The weekly report's 13 yields open as their own pages: Treasury 1M, 3M, 6M, 1Y, 2Y, 5Y, 7Y, 10Y, 20Y, 30Y (`?t=US10Y`, or type 10Y, 10 year, 10y yield, DGS10...) and TIPS 5Y, 10Y, 30Y (`?t=TIPS10Y`, or 10Y TIPS). Month maturities need US3M or 3M yield, so 3M the company is not taken over. Searching a word lists the matching economy pages first: TIPS gives the three TIPS yields, TREASURY or YIELD the yields, CPI both CPI pages.
+- Each page: the yield and its daily change in bps; Status as in the report (Inverted when below a shorter maturity on the same curve, else Rising/Falling on 10 bps over the past month, else Steady); the ticker range tabs (1W to Max) with High/Low lines; Changes in bps over 1W, 1M, 6M, YTD, 1Y, 5Y, 10Y (red when the yield rose), the 52-week high and low, the 10Y - 2Y gap, and on 10Y TIPS the 10Y breakeven. Prints on one page.
+- Popular gains a Yields group (3M, 2Y, 10Y, 30Y, 10Y TIPS) with the latest yield and day change in bps. The 10Y shorthand now opens the yield page; ^TNX stays under TNX.
+- Data: the Treasury's daily par and par real yield curves (home.treasury.gov), the report's source, via the new `scripts/update_yields.py` into `data/yields/<KEY>.js` (one file per yield, loaded on demand, 75-165 KB) and `data/yields/_latest.js`. History since 1990 (TIPS since 2003; 1M since 2001, 20Y since 1993, 30Y TIPS since 2010). FRED is not used: it times out from GitHub's runners.
+- `refresh-macro.yml` now runs both scripts daily at 03:17 UTC; each runs even if the other fails, whatever changed is committed, and a failed download still turns the run red.
+
+---
+
+## [1.88.1] - 2026-11-25 - Ticker Lookup: fixes leaving a CPI page, CPI chart matches the ticker chart, crypto midnight rule
+
+- Fixed: searching, or following any link, from a CPI or Core CPI page stopped the page. The ticker chart was redrawn before the new ticker's prices had loaded and threw; it now waits for them.
+- CPI and Core CPI use the ticker's range tabs (3M, 6M, YTD, 1Y, 3Y, 5Y, 10Y, Max; 1D, 1W and 1M are left out because a monthly series has at most two points there) and its dashed High and Low lines, labelled in the left gutter. The 2% goal line is now a teal dash so it reads apart from them. Axis labels carry enough decimals for the step (2.25%, not 2.3%).
+- The 1D chart of a 24-hour market (crypto) draws a dotted vertical rule at midnight, where the previous day ends.
+
+---
+
 ## [1.88.0] - 2026-11-25 - Ticker Lookup: CPI and core CPI inflation views
 
 - Typing CPI (or inflation) or core CPI opens an economy view instead of a ticker: the 12-month inflation rate, its change from the month before, a one-line chart with 1Y/3Y/5Y/10Y/Max tabs, a dashed 2% goal line and hover values, and Key Stats (a year earlier, last month, last 3 months annualized, 10-year high and low, index level). CPI and core CPI are separate pages, each linking to the other. Deep links: `?t=CPI`, `?t=CORE%20CPI`.
