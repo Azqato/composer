@@ -427,7 +427,7 @@
       { id: '10Y', months: 120 }, { id: 'Max', all: true }
     ];
 
-    var state = { ticker: null, series: null, range: '1Y', ma50: false, ma200: false };
+    var state = { ticker: null, series: null, range: '1D', ma50: false, ma200: false };
     var universe = [];
     var root = document.getElementById('tk-root');
 
@@ -645,7 +645,7 @@
         '</div>';
 
       root.querySelectorAll('.tk-tabs button').forEach(function (b) {
-        b.addEventListener('click', function () { state.range = b.getAttribute('data-r'); syncUrl(); render(); });
+        b.addEventListener('click', function () { state.range = b.getAttribute('data-r'); savePref(RANGE_KEY, state.range); syncUrl(); render(); });
       });
       document.getElementById('tk-ma50').addEventListener('change', function (e) { state.ma50 = e.target.checked; drawChart(); });
       document.getElementById('tk-ma200').addEventListener('change', function (e) { state.ma200 = e.target.checked; drawChart(); });
@@ -1191,7 +1191,7 @@
     }
 
     function syncUrl() {
-      try { history.replaceState(null, '', '?t=' + encodeURIComponent(state.ticker) + (state.range !== '1Y' ? '&r=' + state.range : '')); } catch (e) {}
+      try { history.replaceState(null, '', '?t=' + encodeURIComponent(state.ticker) + '&r=' + state.range); } catch (e) {}
     }
 
     function open(t, alias) {
@@ -1311,7 +1311,7 @@
       e.preventDefault(); go(sel >= 0 && matches[sel] ? matches[sel].t : input.value);
     });
     function go(t) {
-      input.value = ''; matches = []; paint(); input.blur(); state.range = state.range || '1Y';
+      input.value = ''; matches = []; paint(); input.blur(); state.range = state.range || defaultRange();
       try { history.pushState(null, '', '?t=' + encodeURIComponent(String(t).trim().toUpperCase())); } catch (e) {}
       open(t); window.scrollTo(0, 0);
     }
@@ -1355,7 +1355,19 @@
       document.getElementById('tk-layout').classList.toggle('pop-closed', !popBox.open);
       drawChart(); // the chart sizes to its container, which just changed width
     }
-    function setPop(on) { if (popBox.open !== on) popBox.open = on; else applyPop(); }
+    // Remembered in this browser: the last range picked (a new lookup opens on
+    // it, 1D until one is picked; a link's ?r= still wins) and whether Popular
+    // was last opened or closed by hand. Until Popular has been toggled by hand
+    // it follows the page: open on the landing page, folded once a search
+    // starts or a ticker opens. After that, the reader's choice holds.
+    var RANGE_KEY = 'ca-ticker-range', POP_KEY = 'ca-ticker-popular';
+    function readPref(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function savePref(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    function defaultRange() { var r = readPref(RANGE_KEY); return r && RANGES.some(function (x) { return x.id === r; }) ? r : '1D'; }
+    function setPop(on) {
+      var p = readPref(POP_KEY); if (p) on = p === 'open';
+      if (popBox.open !== on) popBox.open = on; else applyPop();
+    }
     // /ticker with no symbol: instructions where the stock would be.
     function landing() {
       state.ticker = null; state.series = null; state.meta = null; state.alias = null; state.liveStatus = null;
@@ -1383,7 +1395,7 @@
     // The URL decides the view: ?t=SYMBOL opens it, no symbol is the landing page.
     function route() {
       var q = new URLSearchParams(location.search), t = (q.get('t') || '').trim();
-      var r = q.get('r'); state.range = r && RANGES.some(function (x) { return x.id === r; }) ? r : '1Y';
+      var r = q.get('r'); state.range = r && RANGES.some(function (x) { return x.id === r; }) ? r : defaultRange();
       if (t) open(t); else landing();
     }
 
@@ -1397,6 +1409,10 @@
         return '<a href="?t=' + t + '" data-t="' + t + '" title="' + esc(NAMES[t] || t) + '">' + t + '</a>';
       }).join('');
       popBox.addEventListener('toggle', applyPop);
+      // A hand toggle (click, or Enter/Space on the header) is the reader's choice.
+      popBox.querySelector('summary').addEventListener('click', function () {
+        setTimeout(function () { savePref(POP_KEY, popBox.open ? 'open' : 'closed'); }, 0);
+      });
       if (!universe.length) { root.innerHTML = '<div class="tk-empty">Price data could not be loaded.</div>'; return; }
       route();
     });

@@ -10,6 +10,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.87.3] - 2026-11-25 - Ticker Lookup: opens on 1D, remembers the range and the Popular panel
+
+- **Opens on 1D:** a ticker now opens on the 1D chart instead of 1Y.
+- **Remembers the last range picked:** clicking a range tab saves it in this browser (`ca-ticker-range`), and every later lookup, including after a reload, opens on it until another is picked. A link's `?r=` still wins, and the URL now always carries the range, so Back and Forward return to the exact view.
+- **Remembers the Popular panel:** opening or closing Popular by hand saves the choice (`ca-ticker-popular`), and it then holds everywhere: on the landing page, after a search starts and when a ticker opens. Until it has been toggled by hand, the 1.87.2 behaviour stays: open on the landing page, folded once a search starts or a ticker opens.
+
+**Files changed:** `ticker.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.87.2] - 2026-11-24 - Ticker Lookup: landing page, drag to measure, Popular panel, full-width collapse, Letter printing, foreign stocks
 
 - **More chart ranges:** 1D, 1W, 1M, 3M, 6M, YTD, 1Y, 3Y, 5Y, 10Y, Max (was 1M, 6M, YTD, 1Y, 5Y, Max); `?r=` accepts the new ones. On phones the tabs share the row without a scrollbar.
