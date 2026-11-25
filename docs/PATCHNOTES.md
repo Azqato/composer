@@ -10,6 +10,12 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.87.8] - 2026-11-25 - Ticker Lookup: times in the reader's time zone
+
+- The "As of" time beside the exchange, the print header's time, and the 1D hour labels and tooltips now show in the reader's own time zone with its abbreviation (e.g. "As of Nov 24, 1:00 PM PST"), not the exchange's (ET, JST, CET). Sessions are still worked out on the exchange's clock, so a Tokyo session simply reads 5 PM to 10 PM for a reader in California. The hover title on the As of time also gives the exchange's own time.
+
+---
+
 ## [1.87.7] - 2026-11-25 - Ticker Lookup: Popular follows the weekly report, crypto 1D is the last 24 hours
 
 - **Popular panel** now carries the Azqato weekly report's lists, under small headings: Major Funds (the same 12), Sectors (the 11 Select Sector SPDRs: XLK, XLC, XLY, XLP, XLV, XLF, XLI, XLE, XLB, XLU, XLRE) and Markets (^VIX, ^TNX 10-year yield, CL=F WTI oil, GC=F gold, DX-Y.NYB dollar index, BTC-USD). This replaces the per-ticker related peers (the GROUPS lists are removed). The 29 prices come from batched Yahoo spark calls of 20.

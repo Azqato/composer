@@ -851,7 +851,7 @@
       function when(i, yr) {
         if (!intra) return fmtDate(dates[i], yr);
         var inPre = I.segs.some(function (g) { return g.kind === 'pre' && dates[i] >= g.start && dates[i] < g.end; });
-        return intraTime(dates[i], I.off) + (inPre ? ' (pre-market)' : '');
+        return intraTime(dates[i]) + (inPre ? ' (pre-market)' : '');
       }
       var Y = function (v) { var t = useLog ? Math.log10(v) : v; return padT + (1 - (t - y0) / ((y1 - y0) || 1)) * (H - padT - padB); };
       var line = c.map(function (v, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join('');
@@ -892,8 +892,9 @@
           ax += '<text x="' + ((x0 + x1) / 2).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle">' + name + '</text>';
         });
         var regX0 = PX(I.segs[I.segs.length - 1].x0);
-        for (var ts = Math.ceil((I.start + I.off) / (3600 * stepH)) * 3600 * stepH - I.off; ts <= I.end; ts += 3600 * stepH) {
-          var xx = PX(segX(I, ts)), dh = new Date((ts + I.off) * 1000), hh = dh.getUTCHours();
+        var LO = localOff(I.end); // hour labels on the reader's clock
+        for (var ts = Math.ceil((I.start + LO) / (3600 * stepH)) * 3600 * stepH - LO; ts <= I.end; ts += 3600 * stepH) {
+          var xx = PX(segX(I, ts)), dh = new Date((ts + LO) * 1000), hh = dh.getUTCHours();
           if (xx < regX0 + 22 || xx > W - padR - 14) continue;
           // On a rolling 24 hours, midnight is labelled with the date.
           var hl = I.roll && hh === 0 ? MO[dh.getUTCMonth()] + ' ' + dh.getUTCDate() : ((hh % 12) || 12) + (hh < 12 ? ' AM' : ' PM');
@@ -1130,9 +1131,12 @@
     // Other hours (after-hours, the earlier day's pre-market) are left out.
     // Prices are as traded; the change is measured from the previous close.
     var INTRA_TTL = 5 * 60 * 1000, intraBusy = null, SEG_W = { prev: 0.15, pre: 0.10 };
-    function intraTime(sec, off) {
-      var d = new Date((sec + off) * 1000), h = d.getUTCHours(), m = d.getUTCMinutes();
-      return MO[d.getUTCMonth()] + ' ' + d.getUTCDate() + ', ' + ((h % 12) || 12) + ':' + (m < 10 ? '0' : '') + m + (h < 12 ? ' AM' : ' PM');
+    // Times are shown in the reader's own time zone; the sessions themselves
+    // are still worked out on the exchange's clock (off = its UTC offset).
+    function localOff(sec) { return -new Date(sec * 1000).getTimezoneOffset() * 60; }
+    function intraTime(sec) {
+      var d = new Date(sec * 1000), h = d.getHours(), m = d.getMinutes();
+      return MO[d.getMonth()] + ' ' + d.getDate() + ', ' + ((h % 12) || 12) + ':' + (m < 10 ? '0' : '') + m + (h < 12 ? ' AM' : ' PM');
     }
     function loadIntra(t) {
       if (intraBusy === t) return;
@@ -1303,17 +1307,23 @@
         return new Date(sec * 1000).toLocaleString('en-US', { timeZone: tz, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
       } catch (e) { return new Date(sec * 1000).toLocaleString(); }
     }
-    // Short form beside the exchange: when the price is from. The full source
-    // (live, saved in this browser, or site data) is its hover title.
+    // The reader's own clock, with its zone: "Nov 24, 1:00 PM PST".
+    function localTime(sec) {
+      try { return new Date(sec * 1000).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }); }
+      catch (e) { return new Date(sec * 1000).toLocaleString(); }
+    }
+    // Short form beside the exchange: when the price is from, in the reader's
+    // time zone. The full source (live, saved in this browser, or site data),
+    // with the exchange's own time, is its hover title.
     function updatedLine() {
       var s = state.series, m = state.meta, lastD = fmtDate(s.dates[s.dates.length - 1], true).replace(/^\w+, /, '');
-      if (m && m.mtime) return 'As of ' + etTime(m.mtime, m.tz, m.tzAbbr);
+      if (m && m.mtime) return 'As of ' + localTime(m.mtime);
       return 'Close ' + lastD + (state.liveStatus === 'checking' ? ', checking for a newer price' : '');
     }
     function sourceLine() {
       var s = state.series, m = state.meta, lastD = fmtDate(s.dates[s.dates.length - 1], true);
       if (m) {
-        var when = m.mtime ? 'as of ' + etTime(m.mtime, m.tz, m.tzAbbr) : 'close ' + lastD;
+        var when = m.mtime ? 'as of ' + localTime(m.mtime) + ' (' + etTime(m.mtime, m.tz, m.tzAbbr) + ' exchange time)' : 'close ' + lastD;
         return (m.how === 'live' ? 'Live from Yahoo Finance, ' : 'Yahoo Finance, saved in this browser ' + Math.max(1, Math.round((Date.now() - m.at) / 60000)) + ' min ago, ') + when;
       }
       if (state.liveStatus === 'checking') return 'Close ' + lastD + ' &middot; checking for a newer price...';
