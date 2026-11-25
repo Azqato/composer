@@ -161,6 +161,9 @@
     .tk-perf button[aria-pressed="true"] { border-color: var(--color-primary); box-shadow: inset 0 0 0 1px var(--color-primary); }
     .tk-perf span { display: block; color: var(--color-secondary); font-size: 0.75rem; margin-bottom: 4px; }
     .tk-perf b { white-space: nowrap; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+    .tk-perf-top { margin: 12px 0 2px; }
+    @media (min-width: 820px) { .tk-perf-top { grid-template-columns: repeat(9, minmax(0, 1fr)); } }
+    .tk-perf-top button { padding: 7px 10px; }
     .tk-perf b.up { color: var(--color-positive); } .tk-perf b.down { color: var(--color-negative); } .tk-perf b.na { color: var(--color-disabled); font-weight: 400; }
 
     .tk-sidecol { display: flex; flex-direction: column; gap: 16px; }
@@ -719,6 +722,10 @@
           '<div class="tk-price-row"><span class="tk-price">' + fmtPxC(last) + '<small>' + esc((state.meta && state.meta.currency) || 'USD') + '</small></span>' +
             '<span id="tk-head-chg" style="display:contents"></span>' +
           '</div>' + statusHtml +
+          // Cumulative performance, each tile a chart range, under the status.
+          '<div class="tk-perf tk-perf-top" aria-label="Performance">' +
+            perf.map(function (p) { var v = p[1]; return '<button type="button" data-r="' + p[0] + '" aria-pressed="' + (p[0] === state.range) + '" title="Total return, ' + p[0] + '. Click to show it on the chart"><span>' + p[0] + '</span><b class="' + (v == null ? 'na' : dir(v)) + '">' + fmtPct(v, true) + '</b></button>'; }).join('') +
+          '</div>' +
           '<div class="tk-tabs" role="tablist" aria-label="Chart range">' +
             RANGES.map(function (r) { return '<button type="button" role="tab" data-r="' + r.id + '" aria-selected="' + (r.id === state.range) + '">' + r.id + '</button>'; }).join('') +
           '</div>' +
@@ -756,9 +763,6 @@
             '<dl class="tk-stats tk-sigs">' + sigs.map(function (x) { return stat(x[0], x[2]); }).join('') + '</dl>' +
           '</div>' +
 
-          '<div class="tk-section"><h2>Performance' + explain() + '</h2>' + explainP(EXPLAIN.perf) + '<div class="tk-perf">' +
-            perf.map(function (p) { var v = p[1]; return '<button type="button" data-r="' + p[0] + '" aria-pressed="' + (p[0] === state.range) + '" title="Show ' + p[0] + ' on the chart"><span>' + p[0] + '</span><b class="' + (v == null ? 'na' : dir(v)) + '">' + fmtPct(v, true) + '</b></button>'; }).join('') +
-          '</div></div>' +
           recentHtml(t) +
         '</div>';
 
@@ -1594,6 +1598,16 @@
         renderPopular();
       });
     }
+    // Seconds for 3:30pm New York time on an ISO date, when the Treasury's
+    // par yield curve is read from market quotes.
+    function nyCloseSec(iso) {
+      var t = Date.parse(iso + 'T20:30:00Z') / 1000; // 3:30pm EST
+      try {
+        var h = +new Date(t * 1000).toLocaleString('en-US', { timeZone: 'America/New_York', hour: 'numeric', hour12: false });
+        if (h === 16) t -= 3600; // daylight time
+      } catch (e) {}
+      return t;
+    }
     function renderYield() {
       var X = state.macro, V = X.V, D = X.Yd.dates, Vv = X.Yd.values, n = D.length, last = D[n - 1], L = X.L;
       function at(iso) { var i = indexOnOrBefore(D, iso); return i < 0 || D[0] > iso ? null : Vv[i]; }
@@ -1601,6 +1615,15 @@
       function cls(v) { return v == null || Math.round(v * 100) === 0 ? 'flat' : v > 0 ? 'down' : 'up'; } // rising yield = red
       function stat(label, val) { return '<div class="tk-stat"><dt>' + label + '</dt><dd>' + val + '</dd></div>'; }
       var y0 = Vv[n - 1], d1 = y0 - Vv[n - 2];
+      // The headline follows the selected range, as on a stock page.
+      var RGy = yieldRanges(), rSel = RGy.filter(function (x) { return x.id === state.range; })[0] || RGy[RGy.length - 4];
+      var hs = rangeStart(D, rSel), hc = y0 - Vv[hs];
+      var hl = rSel.all ? 'since ' + fmtDate(D[0], true).replace(/^\w+, /, '') : RANGE_WORDS[rSel.id] || 'from ' + fmtDate(D[hs]);
+      var tiles = ['1W', '1M', '3M', '6M', 'YTD', '1Y', '3Y', '5Y', '10Y'].map(function (id) {
+        var r = RGy.filter(function (x) { return x.id === id; })[0], i = rangeStart(D, r);
+        var from = r.days ? new Date(parseD(last).getTime() - r.days * 864e5).toISOString().slice(0, 10) : r.ytd ? D[0] : isoMinusMonths(last, r.months);
+        return [id, D[0] <= from ? y0 - Vv[i] : null];
+      });
       var wk = new Date(parseD(last).getTime() - 7 * 864e5).toISOString().slice(0, 10);
       var chg = [['1W', at(wk)], ['1M', at(isoMinusMonths(last, 1))], ['6M', at(isoMinusMonths(last, 6))],
         ['YTD', at((+last.slice(0, 4) - 1) + '-12-31')], ['1Y', at(isoMinusMonths(last, 12))], ['5Y', at(isoMinusMonths(last, 60))], ['10Y', at(isoMinusMonths(last, 120))]];
@@ -1619,17 +1642,22 @@
       var tenTwo = !V.tips && L.US10Y && L.US2Y && L.US10Y[0] === L.US2Y[0] ? L.US10Y[1] - L.US2Y[1] : null;
       root.innerHTML = '<div>' +
         '<p class="tk-name">' + V.name + '</p>' +
-        '<p class="tk-sym">U.S. Treasury: ' + X.key + '<span class="tk-upd"> &middot; Daily ' + (V.tips ? 'par real yield curve' : 'par yield curve') + ', close of ' + fmtDate(last, true) + '</span></p>' +
+        '<p class="tk-sym">U.S. Treasury: ' + X.key + '<span class="tk-upd" title="The Treasury&rsquo;s daily ' + (V.tips ? 'par real yield curve' : 'par yield curve') + ', read from market quotes at about 3:30 PM ET (' + etTime(nyCloseSec(last)) + ')"> &middot; As of ' + localTime(nyCloseSec(last)) + '</span></p>' +
         '<div class="tk-price-row"><span class="tk-price">' + y0.toFixed(2) + '%</span>' +
-          '<span class="tk-pill ' + cls(d1) + '">' + (d1 > 0 ? '&#9650;' : d1 < 0 ? '&#9660;' : '') + ' ' + Math.abs(Math.round(d1 * 100)) + ' bps</span>' +
-          '<span class="tk-chg ' + cls(d1) + '">from ' + fmtDate(D[n - 2]) + '</span></div>' +
+          '<span class="tk-pill ' + cls(hc) + '">' + (Math.round(hc * 100) > 0 ? '&#9650;' : Math.round(hc * 100) < 0 ? '&#9660;' : '') + ' ' + Math.abs(Math.round(hc * 100)) + ' bps</span>' +
+          '<span class="tk-chg ' + cls(hc) + '">' + hl + '</span></div>' +
         '<p class="tk-status">Status <span class="tk-st ' + st[1] + '">' + st[0] + '</span> <span class="tk-st-why">' + st[2] + '</span></p>' +
+        '<div class="tk-perf tk-perf-top" aria-label="Changes in basis points">' + tiles.map(function (p) {
+          var v = p[1], c = v == null ? 'na' : Math.round(v * 100) === 0 ? '' : v > 0 ? 'down' : 'up';
+          return '<button type="button" data-r="' + p[0] + '" aria-pressed="' + (p[0] === state.range) + '" title="Change in the yield, ' + p[0] + '. Click to show it on the chart"><span>' + p[0] + '</span><b class="' + c + '">' + bps(v) + '</b></button>';
+        }).join('') + '</div>' +
         '<div class="tk-tabs" role="tablist" aria-label="Chart range">' +
           yieldRanges().map(function (r) { return '<button type="button" role="tab" data-r="' + r.id + '" aria-selected="' + (r.id === state.range) + '">' + r.id + '</button>'; }).join('') +
         '</div>' +
         '<div class="tk-chart" id="tk-chart"></div>' +
-        '<div class="tk-section"><h2>Changes' + explain() + '</h2>' + explainP(EXPLAIN.yield) + '<dl class="tk-stats">' +
-          chg.map(function (c) { var v = c[1] == null ? null : y0 - c[1]; return stat(c[0], '<span class="tk-st-fig ' + (v == null || Math.round(v * 100) === 0 ? '' : v > 0 ? 'r1' : 'g1') + '">' + bps(v) + '</span>' + (c[1] == null ? '' : '<span class="note">from ' + c[1].toFixed(2) + '%</span>')); }).join('') +
+        '<div class="tk-section"><h2>Key Stats' + explain() + '</h2>' + explainP(EXPLAIN.yield) + '<dl class="tk-stats">' +
+          stat('Previous Close', Vv[n - 2].toFixed(2) + '%<span class="note">' + fmtDate(D[n - 2]) + '</span>') +
+          stat('Day Change', '<span class="tk-st-fig ' + (Math.round(d1 * 100) === 0 ? '' : d1 > 0 ? 'r1' : 'g1') + '">' + bps(d1) + '</span>') +
           stat('52-week high', Vv[base + hiI].toFixed(2) + '%<span class="note">' + fmtDate(D[base + hiI], true).replace(/^\w+, /, '') + '</span>') +
           stat('52-week low', Vv[base + loI].toFixed(2) + '%<span class="note">' + fmtDate(D[base + loI], true).replace(/^\w+, /, '') + '</span>') +
           (tenTwo != null ? stat('10Y - 2Y gap', (tenTwo >= 0 ? '+' : '') + tenTwo.toFixed(2) + ' pts<span class="note">' + (tenTwo < 0 ? 'inverted' : 'not inverted') + '</span>') : '') +
@@ -1637,7 +1665,7 @@
           stat('Data since', fmtDate(D[0], true).replace(/^\w+, /, '')) +
         '</dl></div>' +
       '</div>';
-      root.querySelectorAll('.tk-tabs button').forEach(function (bt) {
+      root.querySelectorAll('.tk-tabs button, .tk-perf button').forEach(function (bt) {
         bt.addEventListener('click', function () { state.range = bt.getAttribute('data-r'); syncUrl(); renderYield(); });
       });
       drawMacro();
@@ -1906,7 +1934,7 @@
       document.documentElement.classList.add('tk-printing');
       var t = state.ticker || '';
       var DISCORD = 'https://discord.com/invite/6bnZFtNd5p', page = 'https://composeratlas.com/ticker?t=' + encodeURIComponent(t);
-      var upd = state.macro ? (state.macro.daily ? 'Close of ' + fmtDate(state.macro.keys[state.macro.keys.length - 1], true) : 'Through ' + monthName(state.macro.months[state.macro.months.length - 1])) : state.series ? updatedLine().replace(/^(As of|Close) /, '') : '';
+      var upd = state.macro ? (state.macro.daily ? localTime(nyCloseSec(state.macro.keys[state.macro.keys.length - 1])) : 'Through ' + monthName(state.macro.months[state.macro.months.length - 1])) : state.series ? updatedLine().replace(/^(As of|Close) /, '') : '';
       document.getElementById('tk-print-head').innerHTML =
         // Every header line is a link, as in the weekly report: the brand to the
         // site, the subtitle to this page, Discord and the price time to Discord.

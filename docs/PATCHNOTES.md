@@ -10,6 +10,15 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.89.1] - 2026-11-25 - Ticker Lookup: Performance tiles above the chart; yields follow the selected range
+
+- The Performance tiles (1W to 10Y, cumulative) move from the bottom of a stock page to just under Status, above the chart. Each still switches the chart range.
+- Yield pages get the same row of tiles, in basis points, and their headline now follows the selected range like a stock's: YTD shows the year-to-date move in bps and "year to date", Max the move since the series began. Key Stats now lead with Previous Close and Day Change.
+- Yield times read like stock times: "As of Nov 24, 12:30 PM PST", the Treasury's 3:30 PM ET reading in the reader's time zone, with the ET time in the hover title and the print header.
+- The maturity buttons are gone; each yield is found by search like any ticker, and searching a word lists the matching economy pages first (TIPS gives the three TIPS yields).
+
+---
+
 ## [1.89.0] - 2026-11-25 - Ticker Lookup: Treasury and TIPS yields
 
 - The weekly report's 13 yields open as their own pages: Treasury 1M, 3M, 6M, 1Y, 2Y, 5Y, 7Y, 10Y, 20Y, 30Y (`?t=US10Y`, or type 10Y, 10 year, 10y yield, DGS10...) and TIPS 5Y, 10Y, 30Y (`?t=TIPS10Y`, or 10Y TIPS). Month maturities need US3M or 3M yield, so 3M the company is not taken over. Searching a word lists the matching economy pages first: TIPS gives the three TIPS yields, TREASURY or YIELD the yields, CPI both CPI pages.
