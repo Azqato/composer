@@ -162,8 +162,9 @@
     .tk-perf span { display: block; color: var(--color-secondary); font-size: 0.75rem; margin-bottom: 4px; }
     .tk-perf b { white-space: nowrap; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
     .tk-perf-top { margin: 12px 0 2px; }
-    @media (min-width: 820px) { .tk-perf-top { grid-template-columns: repeat(9, minmax(0, 1fr)); } .tk-perf-top.tk-perf-8 { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
-    .tk-perf-top button { padding: 7px 10px; }
+    @media (min-width: 820px) { .tk-perf-top { grid-template-columns: repeat(var(--n, 9), minmax(0, 1fr)); gap: 6px; } }
+    .tk-perf-top button { padding: 7px 8px; min-width: 0; }
+    .tk-perf-top button b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
     .tk-perf b.up { color: var(--color-positive); } .tk-perf b.flat { color: var(--color-secondary); } .tk-perf b.down { color: var(--color-negative); } .tk-perf b.na { color: var(--color-disabled); font-weight: 400; }
 
     .tk-sidecol { display: flex; flex-direction: column; gap: 16px; }
@@ -708,9 +709,12 @@
         last: last, day: day, m1: trailing(s, 1, false), ytd: ytd, y1: trailing(s, 12, false), rsi: rsi10,
         st: st ? [st[0], st[1]] : null, date: s.dates[n - 1], at: Date.now() });
 
-      var perf = [['1W', n > 5 ? last / c[n - 6] - 1 : null], ['1M', trailing(s, 1, false)], ['3M', trailing(s, 3, false)],
-        ['6M', trailing(s, 6, false)], ['YTD', ytd], ['1Y', trailing(s, 12, false)], ['3Y', trailing(s, 36, false)],
-        ['5Y', trailing(s, 60, false)], ['10Y', trailing(s, 120, false)]];
+      // One Performance tile per chart range tab (RANGES), so the two always
+      // match: add a range there and it gets a tile here.
+      var perfV = { '1D': day, '1W': n > 5 ? last / c[n - 6] - 1 : null, '1M': trailing(s, 1, false), '3M': trailing(s, 3, false),
+        '6M': trailing(s, 6, false), 'YTD': ytd, '1Y': trailing(s, 12, false), '3Y': trailing(s, 36, false),
+        '5Y': trailing(s, 60, false), '10Y': trailing(s, 120, false), 'Max': n > 1 && c[0] > 0 ? last / c[0] - 1 : null };
+      var perf = RANGES.map(function (r) { return [r.id, perfV[r.id] == null ? null : perfV[r.id]]; });
 
       root.innerHTML =
         '<div>' +
@@ -725,8 +729,8 @@
             '<span id="tk-head-chg" style="display:contents"></span>' +
           '</div>' + statusHtml +
           // Cumulative performance, each tile a chart range, under the status.
-          '<div class="tk-perf tk-perf-top" aria-label="Performance">' +
-            perf.map(function (p) { var v = p[1]; return '<button type="button" data-r="' + p[0] + '" aria-pressed="' + (p[0] === state.range) + '" title="Total return, ' + p[0] + '. Click to show it on the chart"><span>' + p[0] + '</span><b class="' + (v == null ? 'na' : dir(v)) + '">' + fmtPct(v, true) + '</b></button>'; }).join('') +
+          '<div class="tk-perf tk-perf-top" style="--n:' + perf.length + '" aria-label="Performance">' +
+            perf.map(function (p) { var v = p[1]; return '<button type="button" data-r="' + p[0] + '" aria-pressed="' + (p[0] === state.range) + '" title="' + (p[0] === '1D' ? 'Change from the previous close' : p[0] === 'Max' ? 'Total return since ' + fmtDate(s.dates[0], true).replace(/^\w+, /, '') : 'Total return, ' + p[0]) + '. Click to show it on the chart"><span>' + p[0] + '</span><b class="' + (v == null ? 'na' : dir(v)) + '">' + fmtPct(v, true) + '</b></button>'; }).join('') +
           '</div>' +
           '<div class="tk-tabs" role="tablist" aria-label="Chart range">' +
             RANGES.map(function (r) { return '<button type="button" role="tab" data-r="' + r.id + '" aria-selected="' + (r.id === state.range) + '">' + r.id + '</button>'; }).join('') +
@@ -1543,9 +1547,9 @@
       var rSel = RGc.filter(function (x) { return x.id === state.range; })[0] || RGc[RGc.length - 4];
       var hc = c0 - X.yoy[m[rangeStart(keys01, rSel)]];
       var hl = rSel.all ? 'since ' + monthName(m[0]) : RANGE_WORDS[rSel.id] || '';
-      var tiles = ['1M', '3M', '6M', 'YTD', '1Y', '3Y', '5Y', '10Y'].map(function (id) {
-        var r = RGc.filter(function (x) { return x.id === id; })[0], i = rangeStart(keys01, r);
-        var ok = r.ytd || keys01[0] <= isoMinusMonths(keys01[n - 1], r.months);
+      var tiles = RGc.map(function (r) {
+        var id = r.id, i = rangeStart(keys01, r);
+        var ok = r.ytd || r.all || keys01[0] <= isoMinusMonths(keys01[n - 1], r.months);
         return [id, ok ? c0 - X.yoy[m[i]] : null];
       });
       function dcls(v) { return v == null ? 'na' : Math.round(v * 1e4) === 0 ? 'flat' : v > 0 ? 'down' : 'up'; } // rising inflation = red
@@ -1562,7 +1566,7 @@
           '<span class="tk-chg ' + dcls(hc) + '">' + hl + '</span></div>' +
         '<p class="tk-status">Status <span class="tk-st ' + st[1] + '">' + st[0] + '</span> <span class="tk-st-why">' + pts(d) + ' from ' + monthName(prevM) + estNote(prevM) +
           (o0 != null ? ' &middot; <a href="?t=' + encodeURIComponent(V.other) + '" data-macro="' + V.other + '" style="color:inherit;text-decoration:underline;text-underline-offset:3px">' + O.short + '</a> ' + pct(o0) : '') + '</span></p>' +
-        '<div class="tk-perf tk-perf-top tk-perf-8" aria-label="Change in the 12-month rate">' + tiles.map(function (p) {
+        '<div class="tk-perf tk-perf-top" style="--n:' + tiles.length + '" aria-label="Change in the 12-month rate">' + tiles.map(function (p) {
           var v = p[1];
           return '<button type="button" data-r="' + p[0] + '" aria-pressed="' + (p[0] === state.range) + '" title="Change in the 12-month rate, ' + p[0] + '. Click to show it on the chart"><span>' + p[0] + '</span><b class="' + dcls(v) + '">' + (v == null ? '-' : pts(v)) + '</b></button>';
         }).join('') + '</div>' +
@@ -1632,9 +1636,9 @@
       var RGy = yieldRanges(), rSel = RGy.filter(function (x) { return x.id === state.range; })[0] || RGy[RGy.length - 4];
       var hs = rangeStart(D, rSel), hc = y0 - Vv[hs];
       var hl = rSel.all ? 'since ' + fmtDate(D[0], true).replace(/^\w+, /, '') : RANGE_WORDS[rSel.id] || 'from ' + fmtDate(D[hs]);
-      var tiles = ['1W', '1M', '3M', '6M', 'YTD', '1Y', '3Y', '5Y', '10Y'].map(function (id) {
-        var r = RGy.filter(function (x) { return x.id === id; })[0], i = rangeStart(D, r);
-        var from = r.days ? new Date(parseD(last).getTime() - r.days * 864e5).toISOString().slice(0, 10) : r.ytd ? D[0] : isoMinusMonths(last, r.months);
+      var tiles = RGy.map(function (r) {
+        var id = r.id, i = rangeStart(D, r);
+        var from = r.days ? new Date(parseD(last).getTime() - r.days * 864e5).toISOString().slice(0, 10) : r.ytd || r.all ? D[0] : isoMinusMonths(last, r.months);
         return [id, D[0] <= from ? y0 - Vv[i] : null];
       });
       var wk = new Date(parseD(last).getTime() - 7 * 864e5).toISOString().slice(0, 10);
@@ -1661,7 +1665,7 @@
           '<span class="tk-pill ' + cls(hc) + '">' + (Math.round(hc * 100) > 0 ? '&#9650;' : Math.round(hc * 100) < 0 ? '&#9660;' : '') + ' ' + Math.abs(Math.round(hc * 100)) + ' bps</span>' +
           '<span class="tk-chg ' + cls(hc) + '">' + hl + '</span></div>' +
         '<p class="tk-status">Status <span class="tk-st ' + st[1] + '">' + st[0] + '</span> <span class="tk-st-why">' + st[2] + '</span></p>' +
-        '<div class="tk-perf tk-perf-top" aria-label="Changes in basis points">' + tiles.map(function (p) {
+        '<div class="tk-perf tk-perf-top" style="--n:' + tiles.length + '" aria-label="Changes in basis points">' + tiles.map(function (p) {
           var v = p[1], c = v == null ? 'na' : Math.round(v * 100) === 0 ? '' : v > 0 ? 'down' : 'up';
           return '<button type="button" data-r="' + p[0] + '" aria-pressed="' + (p[0] === state.range) + '" title="Change in the yield, ' + p[0] + '. Click to show it on the chart"><span>' + p[0] + '</span><b class="' + c + '">' + bps(v) + '</b></button>';
         }).join('') + '</div>' +

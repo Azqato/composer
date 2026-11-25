@@ -10,6 +10,14 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.89.4] - 2026-11-25 - Ticker Lookup: a Performance tile for every chart range
+
+- Stock pages add 1D (change from the previous close) and Max (total return since the first close) tiles, so the Performance row reads 1D, 1W, 1M, 3M, 6M, YTD, 1Y, 3Y, 5Y, 10Y, Max, the same as the chart's range tabs.
+- Yield, fed funds and CPI pages add a Max tile, so their tiles also match their own tabs (yields: 1W to Max; CPI: 1M to Max).
+- The tiles are now built from the same range list as the tabs, so a range added or removed later changes both together. On wide screens the row gives every tile one equal column.
+
+---
+
 ## [1.89.3] - 2026-11-25 - Ticker Lookup: Popular back to the major funds; fix the empty panel on CPI pages
 
 - The Popular panel is back to its original list, the 12 major funds, with no group headings. The Sectors, Markets, and Rates and yields groups (added in 1.87.7 and 1.88.1, and FEDFUNDS in 1.89.2) are removed; every one of those pages is still found by search.
