@@ -48,6 +48,15 @@
 
     .tk-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start; }
     @media (max-width: 900px) { .tk-layout { grid-template-columns: minmax(0, 1fr); } }
+    /* Popular collapsed: one column, and the collapsed bar sits at the right end
+       of the search row (desktop only; on phones the sidebar already stacks). */
+    .tk-layout.pop-closed { grid-template-columns: minmax(0, 1fr); }
+    @media (min-width: 901px) {
+      .tk-layout { position: relative; }
+      .tk-layout.pop-closed .tk-sidecol { position: absolute; top: 0; right: 0; width: 200px; }
+      .tk-layout.pop-closed .tk-search { max-width: min(560px, calc(100% - 224px)); }
+      .tk-layout.pop-closed .tk-collapse { padding: 12px 16px; }
+    }
 
     .tk-name { color: var(--color-primary); font-size: 1.5rem; font-weight: 600; margin: 0 0 2px; }
     .tk-sym { color: var(--color-secondary); font-size: 0.875rem; font-family: var(--font-mono); margin: 0 0 14px; }
@@ -63,7 +72,10 @@
     .tk-pill.flat { background: var(--color-surface-raised); color: var(--color-secondary); }
     .tk-chg { font-size: 0.9375rem; font-weight: 500; font-variant-numeric: tabular-nums; }
     .tk-chg.up { color: var(--color-positive); } .tk-chg.down { color: var(--color-negative); }
+    .tk-alias { color: var(--color-secondary); font-size: 0.8125rem; margin: -8px 0 12px; line-height: 1.6; }
+    .tk-alias a { color: var(--color-blue); }
     .tk-asof { color: var(--color-secondary); font-size: 0.8125rem; margin: 6px 0 0; }
+    .tk-upd { font-family: var(--font-sans, inherit); font-size: 0.8125rem; }
 
     .tk-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--color-border); margin: 22px 0 8px; overflow-x: auto; }
     .tk-tabs button {
@@ -72,14 +84,21 @@
     }
     .tk-tabs button:hover { color: var(--color-primary); }
     .tk-tabs button[aria-selected="true"] { color: var(--color-primary); border-bottom-color: var(--color-blue); }
+    .tk-tabs { scrollbar-width: none; } .tk-tabs::-webkit-scrollbar { display: none; }
+    @media (max-width: 640px) { .tk-tabs { gap: 0; } .tk-tabs button { flex: 1 1 auto; padding: 8px 4px; font-size: 0.8125rem; } }
     .tk-overlays { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.8125rem; color: var(--color-secondary); margin: 4px 0 4px; }
     .tk-overlays label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+    .tk-overlays label[hidden] { display: none !important; }
     .tk-key { width: 14px; height: 2px; display: inline-block; border-radius: 1px; }
 
-    .tk-chart { position: relative; height: 320px; touch-action: pan-y; user-select: none; }
+    .tk-chart { position: relative; height: 320px; touch-action: pan-y; user-select: none; cursor: crosshair; }
     .tk-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
-    .tk-chart .grid line { stroke: var(--color-border); stroke-width: 1; opacity: 0.6; }
+    .tk-chart .grid line { stroke: var(--color-border); stroke-width: 1; opacity: 0.8; stroke-dasharray: 4 4; }
     .tk-chart .axis text { fill: var(--color-secondary); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .tk-chart .grid rect.seg { fill: var(--color-primary); fill-opacity: 0.035; }
+    .tk-chart .grid line.segdiv { stroke: var(--color-border-strong); opacity: 0.7; stroke-dasharray: none; }
+    .tk-chart .grid line.hl { stroke: var(--color-border-strong); stroke-dasharray: 5 4; opacity: 1; }
+    .tk-chart .axis text.lbl { fill: var(--color-primary); font-weight: 600; paint-order: stroke; stroke: var(--color-bg); stroke-width: 3px; stroke-linejoin: round; }
     .tk-tip {
       position: absolute; top: 0; pointer-events: none; transform: translateX(-50%); white-space: nowrap;
       background: var(--color-surface-raised); border: 1px solid var(--color-border); border-radius: 8px;
@@ -96,6 +115,16 @@
     .tk-stat dt { color: var(--color-secondary); }
     .tk-stat dd { margin: 0; color: var(--color-primary); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
     .tk-stat dd .note { color: var(--color-secondary); font-weight: 400; margin-left: 6px; }
+    .tk-status { margin: 8px 0 0; font-size: 0.875rem; color: var(--color-secondary); cursor: help; }
+    .tk-st { font-weight: 600; margin-left: 6px; padding: 1px 8px; border-radius: 4px; background: rgba(var(--rgb-shadow), 0.0); }
+    .tk-st-fig { margin-left: 4px; font-variant-numeric: tabular-nums; }
+    .tk-st.g1, .tk-st-fig.g1 { color: var(--color-positive); }
+    .tk-st.g3 { color: var(--color-positive); background: rgba(var(--rgb-green), 0.16); font-weight: 700; } .tk-st-fig.g3 { color: var(--color-positive); }
+    .tk-st.r1, .tk-st-fig.r1, .tk-st.r2, .tk-st-fig.r2 { color: var(--color-negative); }
+    .tk-st.r2 { background: rgba(var(--rgb-red), 0.10); }
+    .tk-st.r3 { color: var(--color-negative); background: rgba(var(--rgb-red), 0.18); font-weight: 700; } .tk-st-fig.r3 { color: var(--color-negative); }
+    .tk-st.n { color: var(--color-primary); }
+    .tk-st-why { margin-left: 6px; }
     .tk-flag { font-size: 0.75rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
     .tk-flag.os { background: rgba(var(--rgb-green), 0.14); color: var(--color-positive); }
     .tk-flag.ob { background: rgba(var(--rgb-red), 0.14); color: var(--color-negative); }
@@ -106,6 +135,19 @@
     .tk-perf b { white-space: nowrap; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
     .tk-perf b.up { color: var(--color-positive); } .tk-perf b.down { color: var(--color-negative); } .tk-perf b.na { color: var(--color-disabled); font-weight: 400; }
 
+    .tk-sidecol { display: flex; flex-direction: column; gap: 16px; }
+    .tk-collapse > summary { display: flex; align-items: center; justify-content: space-between; cursor: pointer; list-style: none; }
+    .tk-collapse > summary::-webkit-details-marker { display: none; }
+    .tk-collapse > summary h2 { margin: 0; }
+    .tk-collapse[open] > summary { margin-bottom: 8px; }
+    .tk-chev { width: 8px; height: 8px; border-right: 2px solid var(--color-secondary); border-bottom: 2px solid var(--color-secondary); transform: rotate(45deg); margin: 0 6px 4px 0; transition: transform .15s; }
+    .tk-collapse:not([open]) .tk-chev { transform: rotate(-45deg); margin-bottom: 0; }
+    .tk-collapse > summary:hover h2 { color: var(--color-blue); }
+    .tk-collapse > summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; border-radius: 4px; }
+    .tk-pop .tk-rel-main { display: flex; align-items: baseline; gap: 6px; }
+    .tk-pop .tk-rel-name { flex: none; font-family: var(--font-sans); font-weight: 700; font-size: 0.9375rem; }
+    .tk-pop .tk-rel-sym { font-family: var(--font-sans); font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tk-rel a[aria-current="true"] { background: var(--color-surface-raised); border-radius: 6px; }
     .tk-side { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px; }
     .tk-side h2 { color: var(--color-primary); font-size: 1rem; font-weight: 600; margin: 0 0 8px; }
     .tk-rel { list-style: none; margin: 0; padding: 0; }
@@ -119,6 +161,15 @@
 
     .tk-empty { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 20px; color: var(--color-secondary); line-height: 1.7; }
     .tk-empty b { color: var(--color-primary); }
+    .tk-land { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 20px 22px; }
+    .tk-land h2 { font-size: 1.125rem; margin: 0 0 4px; color: var(--color-primary); }
+    .tk-land > p { color: var(--color-secondary); margin: 0 0 14px; line-height: 1.6; }
+    .tk-land ol { margin: 0; padding-left: 20px; color: var(--color-secondary); line-height: 1.65; }
+    .tk-land li { margin-bottom: 8px; }
+    .tk-land li b { color: var(--color-primary); }
+    .tk-land code { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--color-primary); }
+    .tk-land .tk-chips { margin-top: 6px; align-items: center; }
+    .tk-land .tk-try { color: var(--color-secondary); font-size: 0.875rem; margin-right: 4px; }
     .tk-all { margin-top: 28px; }
     .tk-all summary { cursor: pointer; color: var(--color-secondary); font-size: 0.875rem; }
     .tk-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
@@ -128,9 +179,66 @@
     }
     .tk-chips a:hover { color: var(--color-primary); border-color: var(--color-border-hover); }
     .tk-foot { color: var(--color-secondary); font-size: 0.8125rem; line-height: 1.7; margin-top: 28px; max-width: 760px; }
+    /* ---- Print: one US Letter page (8.5 x 11 in) ----
+       White paper and the site's light-theme tokens to save ink; nav, search,
+       sidebar, tabs and footer dropped; a small header carries the source and
+       date. The chart is redrawn at the printed width on beforeprint (see
+       preparePrint) because it is an SVG sized in pixels to its container. */
+    .tk-print-head { display: none; }
+    html.tk-printing .tk-chart { width: 7.5in; height: 2.8in; }
+    .tk-foot-print, .tk-print-foot { display: none; }
+    @page { size: letter; margin: 0.45in 0.5in; }
+    @media print {
+      html:root, html:root[data-theme] {
+        --color-bg: #ffffff; --color-surface: #ffffff; --color-surface-raised: #eef1f5;
+        --color-border: #c9ced5; --color-border-strong: #71767d;
+        --color-primary: #20252a; --color-secondary: #454b53; --color-disabled: #5c6168;
+        --color-green: #00712a; --color-red: #c5001a; --color-blue: #005bc7; --color-purple: #7e3bcb;
+        --color-positive: #00712a; --color-negative: #c5001a;
+        --rgb-green: 0, 113, 42; --rgb-red: 197, 0, 26; --rgb-shadow: 0, 0, 0;
+      }
+      html, body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 10pt; }
+      #nav-root, .nav, .ref-banner, #breadcrumb-root, #footer-root, footer, h1, .tk-search,
+      .tk-sidecol, .tk-tabs, .tk-all, .tk-overlays input, .tk-overlays label:not(:has(input:checked)) { display: none !important; }
+      .page { padding-top: 0 !important; }
+      .container { padding: 0 !important; max-width: none !important; }
+      .py-12 { padding-top: 0 !important; padding-bottom: 0 !important; }
+      .tk-layout { display: block !important; }
+      /* Report-style header: brand left, symbol centred, price time right. */
+      .tk-print-head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 12px; white-space: nowrap;
+        border-bottom: 1px solid var(--color-border); padding-bottom: 8px; margin-bottom: 14px; }
+      .tk-print-head > div { display: flex; flex-direction: column; gap: 2px; font-size: 8.5pt; color: var(--color-primary); }
+      .tk-print-head .ph-r { text-align: right; align-items: flex-end; }
+      .tk-print-head .ph-brand { color: var(--color-blue); font-size: 11.5pt; font-weight: 700; text-decoration: none; }
+      .ph-plain { color: inherit; text-decoration: none; font: inherit; }
+      .tk-print-head .ph-c { font-size: 20pt; font-weight: 800; letter-spacing: -0.01em; line-height: 1; }
+      /* Footer pinned to the bottom of the page: disclaimer left, link right. */
+      .tk-print-foot { display: flex !important; justify-content: space-between; gap: 16px; position: fixed; left: 0; right: 0; bottom: 0;
+        border-top: 1px solid var(--color-border); padding-top: 6px; font-size: 7.5pt; color: var(--color-secondary); white-space: nowrap; }
+      body { padding-bottom: 0.35in; }
+      .tk-name { font-size: 16pt; }
+      .tk-sym { margin-bottom: 6px; }
+      .tk-upd { display: none; }
+      .tk-price { font-size: 22pt; }
+      .tk-asof { margin-top: 2px; }
+      .tk-overlays { margin: 10px 0 2px; }
+      .tk-chart { width: 7.5in; height: 2.8in; break-inside: avoid; }
+      .tk-tip, #tk-hover, #tk-sel { display: none !important; }
+      .tk-section { margin-top: 14px; break-inside: avoid; }
+      .tk-section h2 { font-size: 11pt; }
+      .tk-section .tk-sub { margin-bottom: 4px; font-size: 8pt; }
+      .tk-stat { padding: 4px 0; font-size: 9pt; }
+      .tk-perf { grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 4px; }
+      .tk-perf div { padding: 5px 6px; border-radius: 4px; }
+      .tk-perf span { font-size: 7.5pt; margin-bottom: 2px; }
+      .tk-perf b { font-size: 9pt; }
+      .tk-foot { display: none !important; }
+      .tk-foot-print { display: block; font-size: 7.5pt; line-height: 1.45; color: var(--color-secondary); margin: 14px 0 0; }
+    }
   </style>
 </head>
 <body>
+  <div class="tk-print-foot" id="tk-print-foot"></div>
   <nav class="nav" id="nav-root"></nav>
 
   <div class="page">
@@ -140,6 +248,9 @@
 
       <h1 style="color:var(--color-primary);margin-bottom:16px">Ticker Lookup</h1>
 
+      <div class="tk-layout" id="tk-layout">
+      <div class="tk-main">
+      <div class="tk-print-head" id="tk-print-head"></div>
       <form class="tk-search" id="tk-form" role="search" autocomplete="off">
         <input id="tk-input" type="search" placeholder="Search any stock, ETF or fund, e.g. TQQQ or Microsoft"
                aria-label="Search a ticker" aria-autocomplete="list" aria-controls="tk-suggest" spellcheck="false">
@@ -153,16 +264,33 @@
         <div class="tk-chips" id="tk-chips"></div>
       </details>
 
+      <p class="tk-foot-print">
+        Daily closes from the Composer Atlas price cache; the latest price from Yahoo Finance when it was reachable.
+        Prices are adjusted for splits and dividends. RSI uses Wilder's smoothing on daily closes.
+      </p>
       <p class="tk-foot">
         History comes from the RSI Backtester's price cache, updated after each US market close. The page
         then asks Yahoo Finance for a newer price through a relay (the CORS proxy set in the Backtester's
         Settings, or the r.jina.ai reader when none is set), so the ticker you look up is sent to that relay.
-        The answer is saved in this browser for ten minutes; if the relay fails, the site's last close is shown.
+        The answer is saved in this browser and reused for ten minutes, then checked again; if the relay fails, the newest saved answer is shown when it is newer than the site's close, otherwise the site's last close. The 1D chart's 5-minute prices are not saved.
         Tickers outside the cache are looked up on Yahoo in full. Prices are adjusted for splits and dividends,
         so older prices read lower than the quotes printed at the time, and returns include dividends. During
         market hours the latest point is the current price, not a close. RSI uses Wilder's smoothing on daily
         closes, the same method as RSI Signals and Composer. Not financial advice.
       </p>
+      </div>
+
+      <!-- Static sidebar: starts level with the search box and stays put while
+           a ticker loads. Popular collapses; the choice is remembered per browser.
+           Collapsed, it moves to the end of the search row and the chart takes
+           the full width. -->
+      <aside class="tk-sidecol">
+        <details class="tk-side tk-collapse" id="tk-pop-box" open>
+          <summary><h2>Popular</h2><span class="tk-chev" aria-hidden="true"></span></summary>
+          <ul class="tk-rel tk-pop" id="tk-pop"></ul>
+        </details>
+      </aside>
+      </div>
     </div>
   </div>
 
@@ -255,7 +383,8 @@
       EEV:'ProShares UltraShort MSCI Emerging Markets (-2x)', EUM:'ProShares Short MSCI Emerging Markets (-1x)'
     };
 
-    // Related panel: the first group a ticker belongs to supplies its peers.
+    // Related tickers: the first group a ticker belongs to supplies its peers.
+    // They follow the fixed Popular list in the same panel.
     var GROUPS = [
       ['AAPL','AMZN','GOOGL','META','NVDA','TSLA','PLTR'],
       ['NVDA','NVDL','SMH','SOXX','SOXL','USD'],
@@ -293,8 +422,9 @@
     var DEFAULT_RELATED = ['SPY','QQQ','TQQQ','IWM','TLT','GLD','UVXY'];
 
     var RANGES = [
-      { id: '1M', months: 1 }, { id: '6M', months: 6 }, { id: 'YTD', ytd: true },
-      { id: '1Y', months: 12 }, { id: '5Y', months: 60 }, { id: 'Max', all: true }
+      { id: '1D', intra: true }, { id: '1W', days: 7 }, { id: '1M', months: 1 }, { id: '3M', months: 3 }, { id: '6M', months: 6 },
+      { id: 'YTD', ytd: true }, { id: '1Y', months: 12 }, { id: '3Y', months: 36 }, { id: '5Y', months: 60 },
+      { id: '10Y', months: 120 }, { id: 'Max', all: true }
     ];
 
     var state = { ticker: null, series: null, range: '1Y', ma50: false, ma200: false };
@@ -377,6 +507,10 @@
       if (r.all) return 0;
       // YTD anchors on the last close of the prior year, like Google Finance.
       if (r.ytd) return Math.max(0, indexOnOrBefore(dates, (+last.slice(0, 4) - 1) + '-12-31'));
+      if (r.days) {
+        var d = parseD(last); d.setUTCDate(d.getUTCDate() - r.days);
+        return Math.max(0, indexOnOrBefore(dates, d.toISOString().slice(0, 10)));
+      }
       return Math.max(0, indexOnOrBefore(dates, isoMinusMonths(last, r.months)));
     }
     function trailing(s, months, annualize) {
@@ -391,6 +525,14 @@
       if (v == null || !isFinite(v)) return '-';
       var d = v >= 1000 ? 2 : v >= 1 ? 2 : 4;
       return v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+    }
+    // Currencies quoted without decimals (yen, won...). The main view formats
+    // in the shown ticker's currency; the Popular panel stays in fmtPx.
+    var ZERO_DEC = { JPY: 1, KRW: 1, IDR: 1, VND: 1, CLP: 1, ISK: 1, HUF: 1, TWD: 0 };
+    function fmtPxC(v) {
+      var cur = state.meta && state.meta.currency;
+      if (cur && ZERO_DEC[cur] && v != null && isFinite(v) && Math.abs(v) >= 100) return Math.round(v).toLocaleString('en-US');
+      return fmtPx(v);
     }
     function fmtPct(v, sign) {
       if (v == null || !isFinite(v)) return '-';
@@ -412,6 +554,7 @@
     function render() {
       var t = state.ticker, s = state.series, n = s.closes.length, c = s.closes;
       var last = c[n - 1], prev = n > 1 ? c[n - 2] : null, day = prev ? last / prev - 1 : null;
+      state.today = { pct: day, amt: prev ? last - prev : null, ref: last };
       var ytd, yi = indexOnOrBefore(s.dates, (+s.dates[n - 1].slice(0, 4) - 1) + '-12-31');
       ytd = yi >= 0 ? last / c[yi] - 1 : null;
 
@@ -428,40 +571,58 @@
         v30 = Math.sqrt(rets.reduce(function (a, b) { return a + (b - mu) * (b - mu); }, 0) / (rets.length - 1) * 252);
       }
       function rsiFlag(r) { return r == null ? '' : r < 30 ? '<span class="tk-flag os">Oversold</span>' : r > 70 ? '<span class="tk-flag ob">Overbought</span>' : ''; }
-      function vsMa(m) { return m ? '<span class="tk-chg ' + dir(last / m - 1) + '">' + fmtPct(last / m - 1, true) + '</span><span class="note">' + fmtPx(m) + '</span>' : '-'; }
+      function vsMa(m) { return m ? '<span class="tk-chg ' + dir(last / m - 1) + '">' + fmtPct(last / m - 1, true) + '</span><span class="note">' + fmtPxC(m) + '</span>' : '-'; }
       function stat(label, val) { return '<div class="tk-stat"><dt>' + label + '</dt><dd>' + val + '</dd></div>'; }
       var cross = m50 && m200 ? (m50 > m200 ? '50d above 200d' : '50d below 200d') : '-';
+      // Status, as on the Azqato weekly report: the first that applies, with
+      // the figure that decided it. Bear 20%+ below the 52-week closing high,
+      // Correction 10%+ below it, Bull 20%+ above the 52-week closing low,
+      // else the price against its 200-day average: Rising more than 5% above,
+      // Falling more than 5% below, otherwise Steady.
+      var st = null, offHi = last / hi52 - 1, offLo = last / lo52 - 1;
+      if (offHi <= -0.20) st = ['Bear', 'r3', offHi, 'below the 52-week closing high'];
+      else if (offHi <= -0.10) st = ['Correction', 'r2', offHi, 'below the 52-week closing high'];
+      else if (offLo >= 0.20) st = ['Bull', 'g3', offLo, 'above the 52-week closing low'];
+      else if (m200) {
+        var vs = last / m200 - 1;
+        st = vs > 0.05 ? ['Rising', 'g1', vs, 'above the 200-day average'] : vs < -0.05 ? ['Falling', 'r1', vs, 'below the 200-day average'] : ['Steady', 'n', vs, 'from the 200-day average'];
+      }
+      var STATUS_RULE = 'The first that applies: Bear 20% or more below the 52-week closing high; Correction 10% or more below it; ' +
+        'Bull 20% or more above the 52-week closing low; otherwise the price against its 200-day average: Rising more than 5% above, Falling more than 5% below, otherwise Steady.';
+      var statusHtml = st ? '<p class="tk-status" title="' + STATUS_RULE + '">Status <span class="tk-st ' + st[1] + '">' + st[0] + '</span>' +
+        ' <span class="tk-st-why">' + fmtPct(Math.abs(st[2])) + ' ' + st[3] + '</span></p>' : '';
 
       var perf = [['1W', n > 5 ? last / c[n - 6] - 1 : null], ['1M', trailing(s, 1, false)], ['3M', trailing(s, 3, false)],
         ['6M', trailing(s, 6, false)], ['YTD', ytd], ['1Y', trailing(s, 12, false)], ['3Y /yr', trailing(s, 36, true)],
         ['5Y /yr', trailing(s, 60, true)], ['10Y /yr', trailing(s, 120, true)]];
 
       root.innerHTML =
-        '<div class="tk-layout"><div>' +
+        '<div>' +
           '<p class="tk-name">' + esc(NAMES[t] || (state.meta && state.meta.name) || t) + '</p>' +
-          '<p class="tk-sym">' + esc(state.meta && state.meta.exch ? state.meta.exch + ': ' + t : t) + '</p>' +
-          '<div class="tk-price-row"><span class="tk-price">' + fmtPx(last) + '<small>' + esc((state.meta && state.meta.currency) || 'USD') + '</small></span>' +
-            (day != null ? '<span class="tk-pill ' + dir(day) + '">' + arrow(day) + ' ' + fmtPct(Math.abs(day)) + '</span>' +
-              '<span class="tk-chg ' + dir(day) + '">' + (last - prev >= 0 ? '+' : '-') + fmtPx(Math.abs(last - prev)) + ' today</span>' : '') +
-          '</div>' +
-          '<p class="tk-asof">' + (ytd != null ? '<span class="tk-chg ' + dir(ytd) + '">' + fmtPct(ytd, true) + '</span> year to date &middot; ' : '') +
-            sourceLine() + '</p>' +
+          '<p class="tk-sym">' + esc(state.meta && state.meta.exch ? state.meta.exch + ': ' + t : t) +
+            '<span class="tk-upd" title="' + esc(sourceLine().replace(/&middot;/g, '-')) + '"> &middot; ' + updatedLine() + '</span></p>' +
+          (state.alias ? '<p class="tk-alias">&ldquo;' + esc(state.alias.from) + '&rdquo; is not a ticker, so this is Yahoo&rsquo;s top match.' +
+            (state.alias.alts.length ? ' Other listings: ' + state.alias.alts.map(function (m) {
+              return '<a href="?t=' + encodeURIComponent(m.t) + '" data-t="' + esc(m.t) + '" title="' + esc(m.name) + '">' + esc(m.t) + (m.exch ? ' (' + esc(m.exch) + ')' : '') + '</a>';
+            }).join(', ') : '') + '</p>' : '') +
+          '<div class="tk-price-row"><span class="tk-price">' + fmtPxC(last) + '<small>' + esc((state.meta && state.meta.currency) || 'USD') + '</small></span>' +
+            '<span id="tk-head-chg" style="display:contents"></span>' +
+          '</div>' + statusHtml +
           '<div class="tk-tabs" role="tablist" aria-label="Chart range">' +
             RANGES.map(function (r) { return '<button type="button" role="tab" data-r="' + r.id + '" aria-selected="' + (r.id === state.range) + '">' + r.id + '</button>'; }).join('') +
           '</div>' +
           '<div class="tk-overlays">' +
-            '<span id="tk-rchg"></span>' +
             '<label><input type="checkbox" id="tk-ma50"' + (state.ma50 ? ' checked' : '') + '><span class="tk-key" style="background:var(--color-blue)"></span>50-Day MA</label>' +
             '<label><input type="checkbox" id="tk-ma200"' + (state.ma200 ? ' checked' : '') + '><span class="tk-key" style="background:var(--color-purple)"></span>200-Day MA</label>' +
           '</div>' +
           '<div class="tk-chart" id="tk-chart"></div>' +
 
           '<div class="tk-section"><h2>Key Stats</h2><dl class="tk-stats">' +
-            stat('Previous Close', fmtPx(prev)) +
+            stat('Previous Close', fmtPxC(prev)) +
             stat('Day Change', day != null ? '<span class="tk-chg ' + dir(day) + '">' + fmtPct(day, true) + '</span>' : '-') +
-            stat('52-Week High', fmtPx(hi52) + '<span class="note">' + fmtPct(last / hi52 - 1, true) + '</span>') +
-            stat('52-Week Low', fmtPx(lo52) + '<span class="note">' + fmtPct(last / lo52 - 1, true) + '</span>') +
-            stat('All-Time High', fmtPx(ath) + '<span class="note">' + fmtPct(last / ath - 1, true) + '</span>') +
+            stat('52-Week High', fmtPxC(hi52) + '<span class="note">' + fmtPct(last / hi52 - 1, true) + '</span>') +
+            stat('52-Week Low', fmtPxC(lo52) + '<span class="note">' + fmtPct(last / lo52 - 1, true) + '</span>') +
+            stat('All-Time High', fmtPxC(ath) + '<span class="note">' + fmtPct(last / ath - 1, true) + '</span>') +
             stat('Inception', fmtDate(s.dates[0], true).replace(/^\w+, /, '')) +
           '</dl></div>' +
 
@@ -481,8 +642,7 @@
           '<div class="tk-section"><h2>Performance</h2><p class="tk-sub">Total return; 3Y and longer are per year.</p><div class="tk-perf">' +
             perf.map(function (p) { var v = p[1]; return '<div><span>' + p[0] + '</span><b class="' + (v == null ? 'na' : dir(v)) + '">' + fmtPct(v, true) + '</b></div>'; }).join('') +
           '</div></div>' +
-        '</div>' +
-        '<aside class="tk-side"><h2>Related</h2><ul class="tk-rel" id="tk-rel"></ul></aside></div>';
+        '</div>';
 
       root.querySelectorAll('.tk-tabs button').forEach(function (b) {
         b.addEventListener('click', function () { state.range = b.getAttribute('data-r'); syncUrl(); render(); });
@@ -490,20 +650,58 @@
       document.getElementById('tk-ma50').addEventListener('change', function (e) { state.ma50 = e.target.checked; drawChart(); });
       document.getElementById('tk-ma200').addEventListener('change', function (e) { state.ma200 = e.target.checked; drawChart(); });
       drawChart();
-      renderRelated();
+      renderPopular();
+      sparkFetch(POPULAR.map(function (x) { return x[0]; }).concat(relatedPeers()));
     }
 
+    var RANGE_WORDS = { '1W': 'past week', '1M': 'past month', '3M': 'past 3 months', '6M': 'past 6 months', 'YTD': 'year to date',
+      '1Y': 'past year', '3Y': 'past 3 years', '5Y': 'past 5 years', '10Y': 'past 10 years' };
+    function setHead(pct, amt, label, ref) {
+      var el = document.getElementById('tk-head-chg'); if (!el) return;
+      if (pct == null || amt == null) { el.innerHTML = ''; return; }
+      var a = Math.abs(amt), zero = state.meta && ZERO_DEC[state.meta.currency];
+      var txt = zero ? Math.round(a).toLocaleString('en-US') : ref >= 1 ? a.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : fmtPxC(a);
+      el.innerHTML = '<span class="tk-pill ' + dir(pct) + '">' + arrow(pct) + ' ' + fmtPct(Math.abs(pct)) + '</span>' +
+        '<span class="tk-chg ' + dir(pct) + '">' + (amt >= 0 ? '+' : '-') + txt + ' ' + label + '</span>';
+    }
     function drawChart() {
       var el = document.getElementById('tk-chart'); if (!el) return;
-      var s = state.series, r = RANGES.filter(function (x) { return x.id === state.range; })[0];
-      var a = rangeStart(s.dates, r), b = s.dates.length - 1;
-      var dates = s.dates.slice(a, b + 1), c = s.closes.slice(a, b + 1);
-      var ma = { 50: state.ma50 ? smaSeries(s.closes, 50).slice(a, b + 1) : null, 200: state.ma200 ? smaSeries(s.closes, 200).slice(a, b + 1) : null };
-      var chg = c[c.length - 1] / c[0] - 1, up = chg >= 0;
-      document.getElementById('tk-rchg').innerHTML = '<span class="tk-chg ' + dir(chg) + '">' + fmtPct(chg, true) + '</span> over ' + (r.id === 'Max' ? 'all data' : r.id);
+      var r = RANGES.filter(function (x) { return x.id === state.range; })[0];
+      // 1D is the only range not drawn from the site's daily closes: it uses
+      // Yahoo's 5-minute bars for the latest session (loadIntra), measured
+      // against the previous close like Google Finance.
+      var intra = !!r.intra, I = state.intra, dates, c, prev = null, ma = { 50: null, 200: null };
+      // An MA overlay is offered only when the window holds at least that many
+      // trading days; the reader's tick is kept for a longer range.
+      function maToggle(n, on) { var cb = document.getElementById('tk-ma' + n); if (cb) cb.closest('label').hidden = !on; return on; }
+      if (intra) {
+        maToggle(50, false); maToggle(200, false);
+        if (!I || I.t !== state.ticker || I.err) {
+          setHead(state.today.pct, state.today.amt, 'today', state.today.ref);
+          var failed = I && I.t === state.ticker && I.err;
+          el.innerHTML = '<p class="tk-asof" style="padding-top:40px;text-align:center">' + (failed
+            ? 'Intraday prices could not be loaded from Yahoo Finance right now. The other ranges use the site&rsquo;s daily closes.'
+            : 'Loading the latest session from Yahoo Finance...') + '</p>';
+          if (!I || I.t !== state.ticker || Date.now() - I.at > 30000) loadIntra(state.ticker);
+          return;
+        }
+        if (Date.now() - I.at > INTRA_TTL) loadIntra(state.ticker); // redraws when the newer bars arrive
+        dates = I.times; c = I.prices; prev = I.prev;
+      } else {
+        var s = state.series, a = rangeStart(s.dates, r), b = s.dates.length - 1, n = b - a + 1;
+        dates = s.dates.slice(a, b + 1); c = s.closes.slice(a, b + 1);
+        ma = { 50: maToggle(50, n >= 50) && state.ma50 ? smaSeries(s.closes, 50).slice(a, b + 1) : null,
+               200: maToggle(200, n >= 200) && state.ma200 ? smaSeries(s.closes, 200).slice(a, b + 1) : null };
+      }
+      var chg = c[c.length - 1] / (prev || c[0]) - 1, up = chg >= 0;
+      // The headline pill and amount follow the selected range, as on Google
+      // Finance. 1D keeps the headline's own day change (live quote against
+      // the previous close) so it never disagrees with the price above it.
+      if (intra) setHead(state.today.pct, state.today.amt, 'today', state.today.ref);
+      else setHead(chg, c[c.length - 1] - c[0], RANGE_WORDS[r.id] || (r.all ? 'since ' + fmtDate(dates[0], true).replace(/^\w+, /, '') : r.id), c[c.length - 1]);
 
-      var W = Math.max(280, el.clientWidth), H = el.clientHeight, padL = 8, padR = 58, padT = 34, padB = 24;
-      var lo = Math.min.apply(null, c), hi = Math.max.apply(null, c);
+      var W = Math.max(280, el.clientWidth), H = el.clientHeight, padL = 44, padR = 14, padT = 34, padB = 24;
+      var lo = Math.min.apply(null, c), hi = Math.max.apply(null, c), cLo = lo, cHi = hi;
       [50, 200].forEach(function (k) { if (ma[k]) ma[k].forEach(function (v) { if (v != null) { if (v < lo) lo = v; if (v > hi) hi = v; } }); });
       // Linear axis normally. When the window spans more than 20x (a decaying
       // leveraged or volatility fund over years of reverse splits, or a decades-old
@@ -526,7 +724,22 @@
         if (u) return +(v / (u[0] === 1e4 ? 1e3 : u[0])).toFixed(1) + (u[0] === 1e4 ? 'K' : u[1]);
         return v.toLocaleString('en-US', { maximumFractionDigits: useLog ? (v < 1 ? 3 : v < 10 ? 1 : 0) : step >= 1 ? 0 : Math.ceil(-Math.log10(step)) + 1 });
       }
-      var X = function (i) { return padL + (dates.length < 2 ? 0 : i / (dates.length - 1)) * (W - padL - padR); };
+      // Y labels sit left of the plot, right-aligned, as in the weekly report;
+      // the left margin fits the widest one.
+      // High and Low labels share that gutter, so it fits them too.
+      var hiTxt = 'High ' + fmtPxC(cHi), loTxt = 'Low ' + fmtPxC(cLo), showHL = cHi > cLo;
+      padL = 12 + Math.max(Math.max.apply(null, ticksY.map(function (v) { return axLabel(v).length; })) * 6.6,
+        showHL ? Math.max(hiTxt.length, loTxt.length) * 7 : 0);
+      // Daily ranges space the closes evenly; 1D places each bar by its time
+      // across the whole session, so a session in progress fills only part.
+      var fx = intra ? function (i) { return segX(I, dates[i]); }
+                     : function (i) { return dates.length < 2 ? 0 : i / (dates.length - 1); };
+      var X = function (i) { return padL + Math.max(0, Math.min(1, fx(i))) * (W - padL - padR); };
+      function when(i, yr) {
+        if (!intra) return fmtDate(dates[i], yr);
+        var inPre = I.segs.some(function (g) { return g.kind === 'pre' && dates[i] >= g.start && dates[i] < g.end; });
+        return intraTime(dates[i], I.off) + (inPre ? ' (pre-market)' : '');
+      }
       var Y = function (v) { var t = useLog ? Math.log10(v) : v; return padT + (1 - (t - y0) / ((y1 - y0) || 1)) * (H - padT - padB); };
       var line = c.map(function (v, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join('');
       var area = line + 'L' + X(c.length - 1).toFixed(1) + ' ' + (H - padB) + 'L' + X(0).toFixed(1) + ' ' + (H - padB) + 'Z';
@@ -535,14 +748,44 @@
       var grid = '', ax = '';
       ticksY.forEach(function (v) {
         grid += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"/>';
-        ax += '<text x="' + (W - padR + 8) + '" y="' + (Y(v) + 4).toFixed(1) + '">' + axLabel(v) + '</text>';
+        // A tick label that would touch the High or Low label gives way to it.
+        if (showHL && (Math.abs(Y(v) - Y(cHi)) < 13 || Math.abs(Y(v) - Y(cLo)) < 13)) return;
+        ax += '<text x="' + (padL - 8) + '" y="' + (Y(v) + 4).toFixed(1) + '" text-anchor="end">' + axLabel(v) + '</text>';
       });
-      if (useLog) ax += '<text x="' + (W - padR + 8) + '" y="' + (padT - 14) + '">log scale</text>';
+      if (useLog) ax += '<text x="' + (W - padR) + '" y="' + (padT - 14) + '" text-anchor="end">log scale</text>';
       // About five x labels, formatted by span.
-      var days = (parseD(dates[dates.length - 1]) - parseD(dates[0])) / 864e5, ticks = Math.min(5, Math.max(2, Math.floor(W / 140)));
+      // High and low of the price in this window: dashed rules, labelled in
+      // the left gutter beside the Y axis at their own height.
+      if (showHL) {
+        var yH = Y(cHi), yL = Y(cLo);
+        grid += '<line class="hl" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yH.toFixed(1) + '" y2="' + yH.toFixed(1) + '"/>' +
+                '<line class="hl" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yL.toFixed(1) + '" y2="' + yL.toFixed(1) + '"/>';
+        if (yL - yH < 13) { yH -= (13 - (yL - yH)) / 2; yL = yH + 13; } // a near-flat window: keep both readable
+        ax += '<text class="lbl" x="' + (padL - 8) + '" y="' + (yH + 4).toFixed(1) + '" text-anchor="end">' + hiTxt + '</text>' +
+              '<text class="lbl" x="' + (padL - 8) + '" y="' + (yL + 4).toFixed(1) + '" text-anchor="end">' + loTxt + '</text>';
+      }
+      var days = intra ? 1 : (parseD(dates[dates.length - 1]) - parseD(dates[0])) / 864e5, ticks = intra ? 0 : Math.min(5, Math.max(2, Math.floor(W / 140)));
+      if (intra) {
+        var stepH = W < 600 ? 2 : 1, plotW = W - padL - padR, PX = function (f) { return padL + f * plotW; };
+        // The squeezed segments get a faint band, a divider and a name.
+        I.segs.forEach(function (g) {
+          if (g.kind === 'reg') return;
+          var x0 = PX(g.x0), x1 = PX(g.x0 + g.w), dd = new Date(g.day * 864e5);
+          grid += '<rect class="seg" x="' + x0.toFixed(1) + '" y="' + padT + '" width="' + (x1 - x0).toFixed(1) + '" height="' + (H - padT - padB) + '"/>' +
+                  '<line class="segdiv" x1="' + x1.toFixed(1) + '" x2="' + x1.toFixed(1) + '" y1="' + padT + '" y2="' + (H - padB) + '"/>';
+          var name = g.kind === 'prev' ? MO[dd.getUTCMonth()] + ' ' + dd.getUTCDate() : (x1 - x0 < 70 ? 'Pre' : 'Pre-market');
+          ax += '<text x="' + ((x0 + x1) / 2).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle">' + name + '</text>';
+        });
+        var regX0 = PX(I.segs[I.segs.length - 1].x0);
+        for (var ts = Math.ceil((I.start + I.off) / 3600) * 3600 - I.off; ts <= I.end; ts += 3600 * stepH) {
+          var xx = PX(segX(I, ts)), hh = new Date((ts + I.off) * 1000).getUTCHours();
+          if (xx < regX0 + 22 || xx > W - padR - 14) continue;
+          ax += '<text x="' + xx.toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle">' + ((hh % 12) || 12) + (hh < 12 ? ' AM' : ' PM') + '</text>';
+        }
+      }
       for (var k = 0; k < ticks; k++) {
         var i = Math.round(k * (dates.length - 1) / (ticks - 1)), d = parseD(dates[i]);
-        var lab = days > 730 ? String(d.getUTCFullYear()) : days > 90 ? MO[d.getUTCMonth()] + ' ' + String(d.getUTCFullYear()).slice(2) : MO[d.getUTCMonth()] + ' ' + d.getUTCDate();
+        var lab = days > 730 ? String(d.getUTCFullYear()) : days > 200 ? MO[d.getUTCMonth()] + ' &rsquo;' + String(d.getUTCFullYear()).slice(2) : MO[d.getUTCMonth()] + ' ' + d.getUTCDate();
         var anchor = k === 0 ? 'start' : k === ticks - 1 ? 'end' : 'middle';
         ax += '<text x="' + X(i).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="' + anchor + '">' + lab + '</text>';
       }
@@ -554,52 +797,142 @@
       el.innerHTML =
         '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(state.ticker) + ' daily close, ' + r.id + '">' +
           '<defs><linearGradient id="tk-fill" x1="0" y1="0" x2="0" y2="1">' +
-            '<stop offset="0" stop-color="rgb(' + css(up ? '--rgb-green' : '--rgb-red') + ')" stop-opacity="0.28"/>' +
-            '<stop offset="1" stop-color="rgb(' + css(up ? '--rgb-green' : '--rgb-red') + ')" stop-opacity="0"/></linearGradient></defs>' +
+            '<stop offset="0" style="stop-color:rgb(var(' + (up ? '--rgb-green' : '--rgb-red') + '))" stop-opacity="0.28"/>' +
+            '<stop offset="1" style="stop-color:rgb(var(' + (up ? '--rgb-green' : '--rgb-red') + '))" stop-opacity="0"/></linearGradient></defs>' +
           '<g class="grid">' + grid + '</g>' +
           '<path d="' + area + '" fill="url(#tk-fill)"/>' +
           (ma[200] ? '<path d="' + maPath(ma[200]) + '" fill="none" stroke="var(--color-purple)" stroke-width="1.5"/>' : '') +
           (ma[50] ? '<path d="' + maPath(ma[50]) + '" fill="none" stroke="var(--color-blue)" stroke-width="1.5"/>' : '') +
           '<path d="' + line + '" fill="none" stroke="' + col + '" stroke-width="2" stroke-linejoin="round"/>' +
           '<g class="axis">' + ax + '</g>' +
+          '<g id="tk-sel" visibility="hidden">' +
+            '<rect id="tk-sr" y="' + padT + '" height="' + (H - padT - padB) + '" fill="var(--color-primary)" fill-opacity="0.07"/>' +
+            '<line id="tk-sx" y1="' + padT + '" y2="' + (H - padB) + '" stroke="var(--color-border-strong)" stroke-dasharray="3 3"/>' +
+            '<circle id="tk-sd" r="5" fill="' + col + '" stroke="var(--color-bg)" stroke-width="2"/></g>' +
           '<g id="tk-hover" visibility="hidden">' +
             '<line id="tk-hx" y1="' + padT + '" y2="' + (H - padB) + '" stroke="var(--color-border-strong)" stroke-dasharray="3 3"/>' +
             '<circle id="tk-hd" r="5" fill="' + col + '" stroke="var(--color-bg)" stroke-width="2"/></g>' +
         '</svg><div class="tk-tip" id="tk-tip" hidden></div>';
 
       var svg = el.querySelector('svg'), hv = el.querySelector('#tk-hover'), hx = el.querySelector('#tk-hx'), hd = el.querySelector('#tk-hd'), tip = el.querySelector('#tk-tip');
-      function show(clientX) {
+      // Hover shows one day. Press and drag (mouse or finger) to measure the
+      // change between two days: the span is shaded and the tooltip gives the
+      // amount, percent and the two dates, earlier date first either way.
+      var sel = el.querySelector('#tk-sel'), sr = el.querySelector('#tk-sr'), sx = el.querySelector('#tk-sx'), sd = el.querySelector('#tk-sd');
+      var anchor = null;
+      function idxAt(clientX) {
         var box = svg.getBoundingClientRect(), x = (clientX - box.left) * W / box.width;
-        var i = Math.round((x - padL) / (W - padL - padR) * (dates.length - 1));
-        i = Math.max(0, Math.min(dates.length - 1, i));
-        var px = X(i), py = Y(c[i]);
-        hx.setAttribute('x1', px); hx.setAttribute('x2', px); hd.setAttribute('cx', px); hd.setAttribute('cy', py);
-        hv.setAttribute('visibility', 'visible');
-        var extra = '';
-        if (ma[50] && ma[50][i] != null) extra += ' &middot; 50d ' + fmtPx(ma[50][i]);
-        if (ma[200] && ma[200][i] != null) extra += ' &middot; 200d ' + fmtPx(ma[200][i]);
-        tip.innerHTML = '<b>' + fmtPx(c[i]) + ' USD</b>' + fmtDate(dates[i], days > 300) + extra;
-        tip.hidden = false;
-        var half = tip.offsetWidth / 2, left = px * box.width / W;
+        var f = (x - padL) / (W - padL - padR), i;
+        if (intra) {
+          var tt = segT(I, f); i = 0;
+          for (var k = 1; k < dates.length; k++) if (Math.abs(dates[k] - tt) < Math.abs(dates[i] - tt)) i = k;
+          return i;
+        }
+        i = Math.round(f * (dates.length - 1));
+        return Math.max(0, Math.min(dates.length - 1, i));
+      }
+      function place(html, px) {
+        tip.innerHTML = html; tip.hidden = false;
+        var box = svg.getBoundingClientRect(), half = tip.offsetWidth / 2, left = px * box.width / W;
         tip.style.left = Math.max(half, Math.min(box.width - half, left)) + 'px';
       }
-      function hide() { hv.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+      function show(clientX) {
+        var i = idxAt(clientX), px = X(i), py = Y(c[i]);
+        hx.setAttribute('x1', px); hx.setAttribute('x2', px); hd.setAttribute('cx', px); hd.setAttribute('cy', py);
+        hv.setAttribute('visibility', 'visible');
+        if (anchor !== null && anchor !== i) {
+          var a0 = Math.min(anchor, i), a1 = Math.max(anchor, i), d = c[a1] - c[a0], pct = c[a1] / c[a0] - 1;
+          sr.setAttribute('x', X(a0)); sr.setAttribute('width', X(a1) - X(a0));
+          sx.setAttribute('x1', X(anchor)); sx.setAttribute('x2', X(anchor)); sd.setAttribute('cx', X(anchor)); sd.setAttribute('cy', Y(c[anchor]));
+          sel.setAttribute('visibility', 'visible');
+          var zero = (state.meta && ZERO_DEC[state.meta.currency]) || Math.abs(d) >= 1e4;
+          var amt = (d > 0 ? '+' : d < 0 ? '-' : '') + (zero ? Math.round(Math.abs(d)).toLocaleString('en-US') : Math.abs(d).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: Math.abs(d) < 1 ? 4 : 2 }));
+          var yr = !intra && (parseD(dates[a0]).getUTCFullYear() !== parseD(dates[a1]).getUTCFullYear() || days > 300);
+          place('<span class="tk-chg ' + dir(d) + '">' + amt + ' (' + fmtPct(pct, true) + ') ' + arrow(d) + '</span> ' +
+            when(a0, yr) + ' to ' + when(a1, yr), (X(a0) + X(a1)) / 2);
+          return;
+        }
+        sel.setAttribute('visibility', 'hidden');
+        var extra = '';
+        if (ma[50] && ma[50][i] != null) extra += ' &middot; 50d ' + fmtPxC(ma[50][i]);
+        if (ma[200] && ma[200][i] != null) extra += ' &middot; 200d ' + fmtPxC(ma[200][i]);
+        place('<b>' + fmtPxC(c[i]) + ' ' + esc((state.meta && state.meta.currency) || 'USD') + '</b>' + when(i, days > 300) + extra, px);
+      }
+      function hide() { hv.setAttribute('visibility', 'hidden'); sel.setAttribute('visibility', 'hidden'); tip.hidden = true; anchor = null; }
       el.onpointermove = function (e) { show(e.clientX); };
-      el.onpointerdown = function (e) { show(e.clientX); };
-      el.onpointerleave = hide;
+      el.onpointerdown = function (e) {
+        if (e.button > 0) return;
+        anchor = idxAt(e.clientX);
+        try { el.setPointerCapture(e.pointerId); } catch (x) {}
+        show(e.clientX);
+      };
+      el.onpointerup = el.onpointercancel = function (e) {
+        anchor = null;
+        try { el.releasePointerCapture(e.pointerId); } catch (x) {}
+        if (e.pointerType === 'mouse') show(e.clientX); else hide();
+      };
+      el.onpointerleave = function () { if (anchor === null) hide(); };
     }
 
-    function renderRelated() {
-      var t = state.ticker, peers = [];
+    // Popular: a fixed list of broad index funds, as on the owner's watchlist.
+    var POPULAR = [['SPY','S&P 500'],['QQQ','Nasdaq 100'],['IWM','Russell 2000'],['DIA','Dow Jones 30'],['RSP','Equal Weight'],
+      ['VUG','Growth'],['VTV','Value'],['VIG','Dividend'],['VBR','Small-Cap Value'],['VT','World'],['VTI','Domestic'],['VXUS','International']];
+    // Side-panel prices. One batched Yahoo call (v8 spark, up to 20 symbols)
+    // covers the Popular panel (the fixed list plus the current ticker's related peers), through the same relay, saved in
+    // this browser for ten minutes, so the panel shows the same day as the
+    // headline. Each row then uses whichever is newest: that batch, this
+    // browser's saved full lookup, or the site's cached close.
+    var SPARK_KEY = 'ca-ticker-spark', sparkBusy = {};
+    function sparkStore() { try { return JSON.parse(localStorage.getItem(SPARK_KEY) || '{}') || {}; } catch (e) { return {}; } }
+    function sparkFetch(symbols) {
+      var store = sparkStore(), now = Date.now();
+      var need = symbols.filter(function (p) { return !sparkBusy[p] && !(store[p] && now - store[p].at < LIVE_TTL); }).slice(0, 20);
+      if (!need.length) return;
+      need.forEach(function (p) { sparkBusy[p] = 1; });
+      relayJson('https://query1.finance.yahoo.com/v8/finance/spark?symbols=' + need.map(encodeURIComponent).join(',') + '&range=5d&interval=1d')
+        .then(function (j) {
+          var st = sparkStore();
+          Object.keys(j || {}).forEach(function (k) {
+            var v = j[k] || {}, ts = v.timestamp || [], cl = v.close || [], pts = [];
+            ts.forEach(function (t, i) { if (cl[i] != null && cl[i] > 0) pts.push([new Date(t * 1000).toISOString().slice(0, 10), cl[i]]); });
+            if (pts.length < 2) return;
+            st[k.toUpperCase()] = { at: Date.now(), date: pts[pts.length - 1][0], px: pts[pts.length - 1][1], prev: pts[pts.length - 2][1] };
+          });
+          try { localStorage.setItem(SPARK_KEY, JSON.stringify(st)); } catch (e) {}
+          renderPopular();
+        })
+        .catch(function () { /* relay busy or down: rows keep the site's close */ })
+        .then(function () { need.forEach(function (p) { delete sparkBusy[p]; }); });
+    }
+    function quote(p) {
+      var R = (window.__BT_RECENT__ || {}).prices || {}, site = R[p], live = readLive(p), sp = sparkStore()[p], best = null;
+      function take(date, px, prev) { if (px > 0 && prev > 0 && (!best || date > best.date)) best = { date: date, px: px, d: px / prev - 1 }; }
+      if (sp) take(sp.date, sp.px, sp.prev);
+      if (live && live.closes && live.closes.length > 1) take(live.dates[live.dates.length - 1], live.closes[live.closes.length - 1], live.closes[live.closes.length - 2]);
+      if (site && site.closes.length > 1) take(site.dates[site.dates.length - 1], site.closes[site.closes.length - 1], site.closes[site.closes.length - 2]);
+      return best;
+    }
+    function sideRow(p, nameHtml, symHtml) {
+      var q = quote(p);
+      return '<li><a href="?t=' + encodeURIComponent(p) + '" data-t="' + esc(p) + '"' + (p === state.ticker ? ' aria-current="true"' : '') + '>' +
+        '<span class="tk-rel-main"><span class="tk-rel-name">' + nameHtml + '</span><span class="tk-rel-sym">' + symHtml + '</span></span>' +
+        (q ? '<span class="tk-rel-px">' + fmtPx(q.px) + '</span><span class="tk-pill ' + dir(q.d) + '">' + arrow(q.d) + ' ' + fmtPct(Math.abs(q.d)) + '</span>'
+           : '<span class="tk-rel-px">-</span>') + '</a></li>';
+    }
+    function relatedPeers() {
+      var t = state.ticker, peers = [], fixed = POPULAR.map(function (x) { return x[0]; });
       GROUPS.some(function (g) { if (g.indexOf(t) >= 0) { peers = g.filter(function (x) { return x !== t; }); return true; } return false; });
       if (!peers.length) peers = DEFAULT_RELATED.filter(function (x) { return x !== t; });
-      var ul = document.getElementById('tk-rel'), R = (window.__BT_RECENT__ || {}).prices || {};
-      ul.innerHTML = peers.filter(function (p) { return R[p]; }).slice(0, 7).map(function (p) {
-        var cl = R[p].closes, l = cl[cl.length - 1], d = cl.length > 1 ? l / cl[cl.length - 2] - 1 : 0;
-        return '<li><a href="?t=' + encodeURIComponent(p) + '" data-t="' + esc(p) + '"><span class="tk-rel-main"><span class="tk-rel-name">' + esc(NAMES[p] || p) +
-          '</span><span class="tk-rel-sym">' + esc(p) + '</span></span><span class="tk-rel-px">' + fmtPx(l) + '</span>' +
-          '<span class="tk-pill ' + dir(d) + '">' + arrow(d) + ' ' + fmtPct(Math.abs(d)) + '</span></a></li>';
-      }).join('');
+      return peers.filter(function (x) { return fixed.indexOf(x) < 0; }).slice(0, 7);
+    }
+    // Popular then Related, one list: the twelve fixed index funds, then the
+    // current ticker's peers after VXUS.
+    function renderPopular() {
+      var ul = document.getElementById('tk-pop'); if (!ul) return;
+      var R = (window.__BT_RECENT__ || {}).prices || {};
+      var rel = state.ticker ? relatedPeers().filter(function (p) { return R[p] || quote(p); }) : [];
+      ul.innerHTML = POPULAR.map(function (x) { return sideRow(x[0], esc(x[0]), esc(x[1])); }).join('') +
+        rel.map(function (p) { return sideRow(p, esc(p), esc(NAMES[p] || '')); }).join('');
     }
 
     // ---- Live prices ----
@@ -647,10 +980,112 @@
       });
       if (!dates.length || (m.symbol && m.symbol.toUpperCase() !== t)) return null;
       return { at: Date.now(), name: m.longName || m.shortName || '', exch: m.fullExchangeName || m.exchangeName || '',
-        currency: m.currency || 'USD', mtime: m.regularMarketTime || 0, dates: dates, closes: closes };
+        currency: m.currency || 'USD', tz: m.exchangeTimezoneName || 'America/New_York', tzAbbr: m.timezone || '', mtime: m.regularMarketTime || 0, dates: dates, closes: closes };
+    }
+    // 1D chart: Yahoo's 5-minute bars, two days with pre-market, kept in memory
+    // for five minutes. The axis is cut into segments: the previous regular
+    // session squeezed into the first ~15% of the width, this session's
+    // pre-market into the next ~10%, and this session's regular hours in the
+    // rest (on a weekend or before the open, "this session" is the last one).
+    // Other hours (after-hours, the earlier day's pre-market) are left out.
+    // Prices are as traded; the change is measured from the previous close.
+    var INTRA_TTL = 5 * 60 * 1000, intraBusy = null, SEG_W = { prev: 0.15, pre: 0.10 };
+    function intraTime(sec, off) {
+      var d = new Date((sec + off) * 1000), h = d.getUTCHours(), m = d.getUTCMinutes();
+      return MO[d.getUTCMonth()] + ' ' + d.getUTCDate() + ', ' + ((h % 12) || 12) + ':' + (m < 10 ? '0' : '') + m + (h < 12 ? ' AM' : ' PM');
+    }
+    function loadIntra(t) {
+      if (intraBusy === t) return;
+      intraBusy = t;
+      var path = '/v8/finance/chart/' + encodeURIComponent(t) + '?interval=5m&range=2d&includePrePost=true';
+      relayJson('https://query1.finance.yahoo.com' + path)
+        .catch(function () { return relayJson('https://query2.finance.yahoo.com' + path); })
+        .then(function (j) {
+          var res = j && j.chart && j.chart.result && j.chart.result[0], m = (res && res.meta) || {};
+          var q = res && res.indicators && res.indicators.quote && res.indicators.quote[0];
+          if (!res || !res.timestamp || !q || (m.symbol && m.symbol.toUpperCase() !== t)) throw new Error('no intraday data');
+          var off = m.gmtoffset || 0, all = [];
+          res.timestamp.forEach(function (ts, i) { var v = q.close[i]; if (v != null && v > 0) all.push([ts, v]); });
+          if (all.length < 2) throw new Error('too few bars');
+          // Session hours as local time of day, from Yahoo's current trading
+          // period (the same every weekday), applied to each day in the reply.
+          var cp = m.currentTradingPeriod || {}, reg = cp.regular || {}, pre = cp.pre || {};
+          function tod(x) { return (((x + off) % 86400) + 86400) % 86400; }
+          var regS = reg.start ? tod(reg.start) : 34200, regE = reg.end ? tod(reg.end) : 57600;
+          var preS = pre.start ? tod(pre.start) : regS;
+          var dayOf = function (ts) { return Math.floor((ts + off) / 86400); };
+          var dayList = [];
+          all.forEach(function (x) { var d = dayOf(x[0]); if (dayList.indexOf(d) < 0) dayList.push(d); });
+          dayList.sort(function (x, y) { return x - y; });
+          var today = dayList[dayList.length - 1], before = dayList.length > 1 ? dayList[dayList.length - 2] : null;
+          var at0 = function (d, sec) { return d * 86400 - off + sec; };
+          var segs = [];
+          if (before !== null) segs.push({ kind: 'prev', start: at0(before, regS), end: at0(before, regE), w: SEG_W.prev, day: before });
+          if (preS < regS) segs.push({ kind: 'pre', start: at0(today, preS), end: at0(today, regS), w: SEG_W.pre, day: today });
+          segs.push({ kind: 'reg', start: at0(today, regS), end: at0(today, regE), w: 0, day: today });
+          var used = segs.reduce(function (sum, g) { return sum + g.w; }, 0);
+          segs[segs.length - 1].w = 1 - used;
+          var cum = 0; segs.forEach(function (g) { g.x0 = cum; cum += g.w; });
+          var times = [], prices = [], prevBars = [];
+          all.forEach(function (x) {
+            for (var k = 0; k < segs.length; k++) {
+              var g = segs[k], last = g.kind === 'reg' || g.kind === 'prev';
+              if (x[0] >= g.start && (x[0] < g.end || (last && x[0] === g.end))) {
+                times.push(x[0]); prices.push(x[1]); if (g.kind === 'prev') prevBars.push(x[1]); return;
+              }
+            }
+          });
+          if (times.length < 2) throw new Error('too few bars in session');
+          // Previous close: the site's daily close for that day when it has it,
+          // else Yahoo's previous close, else the earlier session's last bar.
+          // (A last 5-minute bar can miss the closing auction: Tokyo's 7203.T
+          // read 3,331 against an official 3,311.)
+          var prev = null;
+          if (before !== null && state.series && state.ticker === t) {
+            var iso = new Date(before * 864e5).toISOString().slice(0, 10), di = state.series.dates.lastIndexOf(iso);
+            if (di >= 0) prev = state.series.closes[di];
+          }
+          if (!prev) prev = m.previousClose || (prevBars.length ? prevBars[prevBars.length - 1] : null) || m.chartPreviousClose || null;
+          // End the earlier session's line on that close too.
+          if (prev && prevBars.length) {
+            var pe = segs[0].end, li = -1;
+            times.forEach(function (x, k) { if (x <= pe) li = k; });
+            if (li >= 0) prices[li] = prev;
+          }
+          var regSeg = segs[segs.length - 1];
+          // After the close, end the line on the official close (the closing
+          // auction), which the last 5-minute bar can miss by a few cents.
+          if (Date.now() / 1000 > regSeg.end && state.series && state.ticker === t && times[times.length - 1] <= regSeg.end) {
+            var sd = state.series.dates, todayIso = new Date(today * 864e5).toISOString().slice(0, 10);
+            if (sd[sd.length - 1] === todayIso) {
+              if (times[times.length - 1] === regSeg.end) prices[prices.length - 1] = state.series.closes[sd.length - 1];
+              else { times.push(regSeg.end); prices.push(state.series.closes[sd.length - 1]); }
+            }
+          }
+          state.intra = { t: t, at: Date.now(), times: times, prices: prices, prev: prev, segs: segs,
+            start: regSeg.start, end: regSeg.end, off: off };
+        })
+        .catch(function () {
+          if (state.intra && state.intra.t === t && !state.intra.err) state.intra.at = Date.now(); // keep the older bars
+          else state.intra = { t: t, at: Date.now(), err: true };
+        })
+        .then(function () { intraBusy = null; if (state.ticker === t && state.range === '1D') drawChart(); });
+    }
+    // Time -> 0..1 across the 1D axis, and back.
+    function segX(I, ts) {
+      var g = I.segs.filter(function (x) { return ts <= x.end; })[0] || I.segs[I.segs.length - 1];
+      if (ts < g.start) return g.x0; // in a skipped gap: pin to the next segment's start
+      return g.x0 + Math.min(1, (ts - g.start) / ((g.end - g.start) || 1)) * g.w;
+    }
+    function segT(I, f) {
+      var g = I.segs.filter(function (x) { return f <= x.x0 + x.w; })[0] || I.segs[I.segs.length - 1];
+      return g.start + Math.max(0, Math.min(1, (f - g.x0) / (g.w || 1))) * (g.end - g.start);
     }
     function fetchLive(t, full) {
-      var path = '/v8/finance/chart/' + encodeURIComponent(t) + '?interval=1d&range=' + (full ? 'max' : '3mo') + '&includeAdjustedClose=true&events=div%7Csplit';
+      // range=max comes back in monthly steps for long histories (7203.T did),
+      // so the full history asks for an explicit span instead, which stays daily.
+      var path = '/v8/finance/chart/' + encodeURIComponent(t) + '?interval=1d&' +
+        (full ? 'period1=0&period2=' + Math.floor(Date.now() / 1000) : 'range=3mo') + '&includeAdjustedClose=true&events=div%7Csplit';
       return relayJson('https://query1.finance.yahoo.com' + path)
         .catch(function () { return relayJson('https://query2.finance.yahoo.com' + path); })
         .then(function (j) { return parseYahoo(j, t); });
@@ -687,7 +1122,7 @@
       if (!merged) return false;
       if (site && merged.dates[merged.dates.length - 1] < site.dates[site.dates.length - 1]) return false;
       state.series = merged;
-      state.meta = { name: live.name, exch: live.exch, currency: live.currency, mtime: live.mtime, at: live.at, how: how };
+      state.meta = { name: live.name, exch: live.exch, currency: live.currency, tz: live.tz, tzAbbr: live.tzAbbr, mtime: live.mtime, at: live.at, how: how };
       if (universe.indexOf(t) < 0) rememberTicker(t, live.name, live.exch);
       render(); return true;
     }
@@ -703,23 +1138,46 @@
         if (state.ticker !== t) return;
         state.liveStatus = 'failed';
         if (saved && useLive(t, site, saved, 'saved')) return;
-        if (site) render(); else notCovered(t);
+        if (site) render(); else resolveName(t);
       });
     }
-    function etTime(sec) {
+    // The exchange's own clock: 5:30 PM CET for Paris, 3:00 PM JST for Tokyo.
+    function etTime(sec, tz, abbr) {
       try {
-        return new Date(sec * 1000).toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET';
+        if (tz && tz !== 'America/New_York' && abbr) return new Date(sec * 1000).toLocaleString('en-US', { timeZone: tz, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ' + abbr;
+        if (!tz || tz === 'America/New_York') return new Date(sec * 1000).toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET';
+        return new Date(sec * 1000).toLocaleString('en-US', { timeZone: tz, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
       } catch (e) { return new Date(sec * 1000).toLocaleString(); }
+    }
+    // Short form beside the exchange: when the price is from. The full source
+    // (live, saved in this browser, or site data) is its hover title.
+    function updatedLine() {
+      var s = state.series, m = state.meta, lastD = fmtDate(s.dates[s.dates.length - 1], true).replace(/^\w+, /, '');
+      if (m && m.mtime) return 'As of ' + etTime(m.mtime, m.tz, m.tzAbbr);
+      return 'Close ' + lastD + (state.liveStatus === 'checking' ? ', checking for a newer price' : '');
     }
     function sourceLine() {
       var s = state.series, m = state.meta, lastD = fmtDate(s.dates[s.dates.length - 1], true);
       if (m) {
-        var when = m.mtime ? 'as of ' + etTime(m.mtime) : 'close ' + lastD;
+        var when = m.mtime ? 'as of ' + etTime(m.mtime, m.tz, m.tzAbbr) : 'close ' + lastD;
         return (m.how === 'live' ? 'Live from Yahoo Finance, ' : 'Yahoo Finance, saved in this browser ' + Math.max(1, Math.round((Date.now() - m.at) / 60000)) + ' min ago, ') + when;
       }
       if (state.liveStatus === 'checking') return 'Close ' + lastD + ' &middot; checking for a newer price...';
       if (state.liveStatus === 'failed') return 'Close ' + lastD + ' &middot; site data (live price unavailable)';
       return 'Close ' + lastD + ' &middot; site data';
+    }
+
+    // Not a symbol Yahoo knows: treat it as a name ("LVMH", "toyota") and open
+    // Yahoo's top match, listing the other listings to switch to.
+    function resolveName(t) {
+      if (state.alias) { notCovered(t); return; } // already a resolved match: stop
+      root.innerHTML = '<p class="tk-asof">No symbol ' + esc(t) + '. Searching Yahoo Finance for it as a name...</p>';
+      searchYahoo(t).then(function (r) {
+        if (state.ticker !== t) return;
+        r = r.filter(function (m) { return m.t !== t; });
+        if (!r.length) { notCovered(t); return; }
+        open(r[0].t, { from: t, pick: r[0], alts: r.slice(1, 7) });
+      });
     }
 
     function notCovered(t) {
@@ -736,10 +1194,10 @@
       try { history.replaceState(null, '', '?t=' + encodeURIComponent(state.ticker) + (state.range !== '1Y' ? '&r=' + state.range : '')); } catch (e) {}
     }
 
-    function open(t) {
+    function open(t, alias) {
       t = String(t || '').trim().toUpperCase();
       if (!t) return;
-      state.ticker = t; syncUrl();
+      state.ticker = t; state.alias = alias || null; syncUrl(); setPop(false);
       document.title = (NAMES[t] ? t + ' ' + NAMES[t] : t) + ': Ticker Lookup: Composer Atlas';
       state.meta = null; state.liveStatus = null; state.series = null;
       root.innerHTML = '<p class="tk-asof">Loading ' + esc(t) + '...</p>';
@@ -791,19 +1249,35 @@
       var q = raw.trim().toUpperCase(); if (!q) return [];
       var out = localMatches(q), seen = {};
       out.forEach(function (m) { seen[m.t] = 1; });
-      if (SYMBOL_RE.test(q) && !seen[q]) { out.unshift({ t: q, name: 'Look up ' + q, tag: 'Yahoo' }); seen[q] = 1; }
-      (yCache[q] || []).forEach(function (m) { if (!seen[m.t]) { seen[m.t] = 1; out.push(m); } });
+      var typed = SYMBOL_RE.test(q) && !seen[q] ? { t: q, name: 'Look up ' + q, tag: 'Yahoo' } : null;
+      var yr = yCache[q] || [], yExact = yr.some(function (m) { return m.t === q; });
+      // Until Yahoo answers, the typed text leads so Enter opens it as typed.
+      // Once Yahoo answers and has no such symbol (LVMH, TOYOTA), its matches
+      // lead and the typed row drops to the end.
+      if (typed && (!yCache[q] || yExact)) { out.unshift(typed); seen[q] = 1; typed = null; }
+      yr.forEach(function (m) { if (!seen[m.t]) { seen[m.t] = 1; out.push(m); } });
+      if (typed) out.push(typed);
       return out.slice(0, 10);
+    }
+    // Yahoo's symbol search. It knows company names and every listing of a
+    // company (LVMH -> MC.PA Paris, LVMUY US ADR, MOH.DE Xetra...), which is
+    // what makes foreign stocks findable when their symbol is not the name.
+    var yPending = {};
+    function searchYahoo(q) {
+      if (yCache[q]) return Promise.resolve(yCache[q]);
+      if (!yPending[q]) yPending[q] = relayJson('https://query1.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(q) + '&quotesCount=8&newsCount=0&listsCount=0')
+        .then(function (j) {
+          return (yCache[q] = ((j && j.quotes) || []).filter(function (x) { return x.symbol && x.quoteType !== 'OPTION'; }).map(function (x) {
+            return { t: String(x.symbol).toUpperCase(), name: x.longname || x.shortname || '', exch: x.exchDisp || '', tag: [x.exchDisp, x.typeDisp || x.quoteType].filter(Boolean).join(' · ') };
+          }));
+        }).catch(function () { return []; }).then(function (r) { delete yPending[q]; return r; });
+      return yPending[q];
     }
     function yahooSearch(q) {
       if (yCache[q] || q.length < 2) return;
-      relayJson('https://query1.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(q) + '&quotesCount=8&newsCount=0&listsCount=0')
-        .then(function (j) {
-          yCache[q] = ((j && j.quotes) || []).filter(function (x) { return x.symbol; }).map(function (x) {
-            return { t: String(x.symbol).toUpperCase(), name: x.longname || x.shortname || '', tag: [x.exchDisp, x.typeDisp || x.quoteType].filter(Boolean).join(' · ') };
-          });
-          if (input.value.trim().toUpperCase() === q && document.activeElement === input) refresh(false);
-        }).catch(function () { yCache[q] = []; });
+      searchYahoo(q).then(function () {
+        if (input.value.trim().toUpperCase() === q && document.activeElement === input) refresh(false);
+      });
     }
     function refresh(fetchToo) {
       var cur = matches[sel] && matches[sel].t;
@@ -823,7 +1297,7 @@
           (m.tag ? ' <em class="tk-tag">' + esc(m.tag) + '</em>' : '') + '</span></li>';
       }).join('');
     }
-    input.addEventListener('input', function () { refresh(true); });
+    input.addEventListener('input', function () { if (input.value.trim()) setPop(false); refresh(true); });
     input.addEventListener('keydown', function (e) {
       if (e.key === 'ArrowDown' && matches.length) { sel = (sel + 1) % matches.length; paint(); e.preventDefault(); }
       else if (e.key === 'ArrowUp' && matches.length) { sel = (sel - 1 + matches.length) % matches.length; paint(); e.preventDefault(); }
@@ -836,12 +1310,82 @@
     document.getElementById('tk-form').addEventListener('submit', function (e) {
       e.preventDefault(); go(sel >= 0 && matches[sel] ? matches[sel].t : input.value);
     });
-    function go(t) { input.value = ''; matches = []; paint(); input.blur(); state.range = state.range || '1Y'; open(t); window.scrollTo(0, 0); }
+    function go(t) {
+      input.value = ''; matches = []; paint(); input.blur(); state.range = state.range || '1Y';
+      try { history.pushState(null, '', '?t=' + encodeURIComponent(String(t).trim().toUpperCase())); } catch (e) {}
+      open(t); window.scrollTo(0, 0);
+    }
+    window.addEventListener('popstate', function () { route(); });
     document.addEventListener('click', function (e) {
       var a = e.target.closest('a[data-t]'); if (!a) return;
       e.preventDefault(); go(a.getAttribute('data-t'));
     });
     var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(drawChart, 120); });
+
+    // ---- Print ----
+    // The chart is drawn in pixels for its container, so before printing the
+    // container is pinned to the printed width (7.5 in) and the chart redrawn;
+    // afterwards it is drawn again for the screen.
+    function preparePrint() {
+      document.documentElement.classList.add('tk-printing');
+      var t = state.ticker || '';
+      var DISCORD = 'https://discord.com/invite/6bnZFtNd5p', page = 'https://composeratlas.com/ticker?t=' + encodeURIComponent(t);
+      var upd = state.series ? updatedLine().replace(/^(As of|Close) /, '') : '';
+      document.getElementById('tk-print-head').innerHTML =
+        // Every header line is a link, as in the weekly report: the brand to the
+        // site, the subtitle to this page, Discord and the price time to Discord.
+        '<div><a class="ph-brand" href="https://composeratlas.com/">Composer Atlas</a>' +
+          '<a class="ph-plain" href="' + page + '">Ticker Lookup</a></div>' +
+        '<div class="ph-c">' + esc(t) + '</div>' +
+        '<div class="ph-r"><a class="ph-brand" href="' + DISCORD + '">Discord</a><a class="ph-plain" href="' + DISCORD + '">' + upd + '</a></div>';
+      document.getElementById('tk-print-foot').innerHTML =
+        '<span>For information only. Not investment advice. Past performance does not guarantee future results.</span>' +
+        '<a class="ph-plain" href="' + page + '">composeratlas.com/ticker?t=' + encodeURIComponent(t) + '</a>';
+      drawChart();
+    }
+    function finishPrint() { document.documentElement.classList.remove('tk-printing'); drawChart(); }
+    window.addEventListener('beforeprint', preparePrint);
+    window.addEventListener('afterprint', finishPrint);
+
+    // ---- Popular panel + landing page ----
+    // Popular starts expanded on the landing page and collapses as soon as a
+    // search starts or a ticker opens; the reader can still toggle it by hand.
+    var popBox = document.getElementById('tk-pop-box');
+    function applyPop() {
+      document.getElementById('tk-layout').classList.toggle('pop-closed', !popBox.open);
+      drawChart(); // the chart sizes to its container, which just changed width
+    }
+    function setPop(on) { if (popBox.open !== on) popBox.open = on; else applyPop(); }
+    // /ticker with no symbol: instructions where the stock would be.
+    function landing() {
+      state.ticker = null; state.series = null; state.meta = null; state.alias = null; state.liveStatus = null;
+      document.title = 'Ticker Lookup: Composer Atlas';
+      var tryList = ['SPY', 'QQQ', 'TQQQ', 'NVDA', 'MSFT', 'LVMH', '7203.T'];
+      root.innerHTML = '<div class="tk-land">' +
+        '<h2>Look Up Any Ticker</h2>' +
+        '<p>Search above, or pick a fund from the Popular list. Every page shows the chart, key stats, technicals and performance for one symbol.</p>' +
+        '<ol>' +
+          '<li><b>Search</b> by symbol or company name. Stocks, ETFs, funds and indices all work; the ' + universe.length + ' tickers the site tracks load instantly, and anything else comes from Yahoo Finance.</li>' +
+          '<li><b>Foreign listings</b> use the exchange suffix, e.g. <code>7203.T</code> Tokyo, <code>MC.PA</code> Paris, <code>NESN.SW</code> Zurich, <code>005930.KS</code> Seoul. Or type the name (LVMH, Toyota) and pick the listing.</li>' +
+          '<li><b>Prices</b> are live from Yahoo Finance when the relay answers, otherwise the site&rsquo;s last cached close. The line under the price says which.</li>' +
+          '<li><b>The chart</b> has ranges from 1D (the latest session, in 5-minute steps) to Max and optional 50-Day and 200-Day moving averages. Hover it for the close on any day.</li>' +
+          '<li><b>Technicals</b> cover RSI (10) and RSI (14), distance from the 20, 50 and 200-Day averages, drawdown from the high and 30-day volatility.</li>' +
+          '<li><b>Print</b> with Ctrl+P for a one-page Letter summary.</li>' +
+        '</ol>' +
+        '<div class="tk-chips"><span class="tk-try">Try:</span>' + tryList.map(function (t) {
+          return '<a href="?t=' + encodeURIComponent(t) + '" data-t="' + t + '">' + t + '</a>';
+        }).join('') + '</div>' +
+      '</div>';
+      setPop(true);
+      renderPopular();
+      sparkFetch(POPULAR.map(function (x) { return x[0]; }));
+    }
+    // The URL decides the view: ?t=SYMBOL opens it, no symbol is the landing page.
+    function route() {
+      var q = new URLSearchParams(location.search), t = (q.get('t') || '').trim();
+      var r = q.get('r'); state.range = r && RANGES.some(function (x) { return x.id === r; }) ? r : '1Y';
+      if (t) open(t); else landing();
+    }
 
     // ---- Boot ----
     // _recent.js carries every cached ticker, so it doubles as the index: a
@@ -852,10 +1396,9 @@
       document.getElementById('tk-chips').innerHTML = universe.map(function (t) {
         return '<a href="?t=' + t + '" data-t="' + t + '" title="' + esc(NAMES[t] || t) + '">' + t + '</a>';
       }).join('');
+      popBox.addEventListener('toggle', applyPop);
       if (!universe.length) { root.innerHTML = '<div class="tk-empty">Price data could not be loaded.</div>'; return; }
-      var q = new URLSearchParams(location.search);
-      var r = q.get('r'); if (r && RANGES.some(function (x) { return x.id === r; })) state.range = r;
-      open(q.get('t') || 'SPY');
+      route();
     });
   })();
   </script>
