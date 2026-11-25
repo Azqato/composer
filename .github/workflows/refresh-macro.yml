@@ -1,0 +1,49 @@
+name: Refresh Economy Data (CPI)
+
+on:
+  schedule:
+    # Daily at 03:17 UTC: 7:17pm Pacific in winter, 8:17pm in summer (GitHub
+    # cron is UTC only and does not follow daylight saving). BLS publishes CPI
+    # at 8:30am Eastern, so an end-of-day run picks up a release the same day.
+    # Most runs find nothing new: scripts/update_macro.py leaves the files
+    # untouched when FRED's series are unchanged, so there is no commit and no
+    # deploy. Offset 17 minutes past the hour, as with the other refresh jobs:
+    # on-the-hour (:00) is GitHub Actions' most congested slot and can be
+    # delayed for hours or dropped on public repos.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-macro:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # Downloads CPIAUCSL and CPILFESL from FRED's public CSV (no API key) into
+      # data/macro.json and data/macro.js, read by ticker.html's CPI views.
+      # Refuses to write a series with fewer than 24 rows, so a broken download
+      # fails here and the site keeps the last good file.
+      - name: Run update_macro.py
+        run: python scripts/update_macro.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/macro.json data/macro.js
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: refresh CPI data"
+            git pull --rebase
+            git push
+          fi

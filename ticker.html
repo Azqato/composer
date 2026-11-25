@@ -89,6 +89,7 @@
     .tk-overlays { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.8125rem; color: var(--color-secondary); margin: 4px 0 4px; }
     .tk-overlays label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
     .tk-overlays label[hidden] { display: none !important; }
+    body:not(.tk-econ) .tk-econ-only, body.tk-econ .tk-price-only { display: none !important; }
     .tk-key { width: 14px; height: 2px; display: inline-block; border-radius: 1px; }
 
     .tk-chart { position: relative; height: 320px; touch-action: pan-y; user-select: none; cursor: crosshair; }
@@ -299,11 +300,20 @@
         <div class="tk-chips" id="tk-chips"></div>
       </details>
 
-      <p class="tk-foot-print">
+      <p class="tk-foot-print tk-econ-only">
+        Monthly CPI from the U.S. Bureau of Labor Statistics via FRED (Federal Reserve Bank of St. Louis), seasonally adjusted, refreshed daily.
+        Inflation is each month's index against the same month a year earlier; dotted months are estimated where no index was published.
+      </p>
+      <p class="tk-foot-print tk-price-only">
         Daily closes from the Composer Atlas price cache; the latest price from Yahoo Finance when it was reachable.
         Prices are adjusted for splits and dividends. RSI uses Wilder's smoothing on daily closes.
       </p>
-      <p class="tk-foot">
+      <p class="tk-foot tk-econ-only">
+        CPI and core CPI come from the U.S. Bureau of Labor Statistics through FRED, the Federal Reserve Bank of St. Louis's data service.
+        FRED cannot be read from a browser, so a scheduled job downloads both series once a day into a file this site serves; no relay is used
+        and nothing you type is sent anywhere. A new month appears about two weeks after it ends, when BLS publishes it. Not financial advice.
+      </p>
+      <p class="tk-foot tk-price-only">
         History comes from the RSI Backtester's price cache, updated after each US market close. The page
         then asks Yahoo Finance for a newer price through a relay (the CORS proxy set in the Backtester's
         Settings, or the r.jina.ai reader when none is set), so the ticker you look up is sent to that relay.
@@ -567,6 +577,10 @@
         '<b>vs 200-Day MA</b> is Strong more than 2% above the 200-day average (the long-term trend is up) and Caution more than 2% below it. Green labels are Strong, red Caution, grey Neutral; Elevated and Upper fill the gaps between the method&rsquo;s bands. ' +
         'The strongest setup is when they line up: a low RSI and a price near its 52-week low while it still holds above its 200-day average. One Strong reading on its own means much less. The signals are for extra cash you already have, not a reason to pause regular investing. ' +
         'Status, under the price, is a different reading: Bear 20% or more below the 52-week closing high, Correction 10% or more below it, Bull 20% or more above the 52-week closing low, otherwise Rising or Falling when the price is more than 5% from its 200-day average, else Steady.',
+      cpi: 'CPI, the Consumer Price Index from the Bureau of Labor Statistics, tracks the prices of a basket of things households buy. Inflation here is each month&rsquo;s index against the same month a year earlier (the 12-month rate the news reports). ' +
+        'Core CPI leaves out food and energy, whose prices jump around, so it shows the underlying trend more steadily. Both are seasonally adjusted (FRED series CPIAUCSL and CPILFESL). ' +
+        'The dashed line is 2%, the Federal Reserve&rsquo;s inflation goal (the Fed measures it with PCE, a broader index, so CPI tends to run a little higher). ' +
+        'The 3-month annualized rates show the recent pace: the last three months&rsquo; rise, compounded to a year. Each month&rsquo;s figure comes out about two weeks after the month ends.',
       perf: 'Total return over each period, from closing prices adjusted for dividends and splits, so it includes dividends reinvested. Every figure is cumulative: 10Y is the whole gain over ten years, not a yearly rate. YTD runs from the last close of the previous year. Click a tile to show that range on the chart.'
     };
     // An Explain button sits in the heading; its note is the paragraph right
@@ -578,7 +592,7 @@
     // returns, RSI, Status), newest first, kept in this browser so the tickers
     // can be compared side by side. Figures are as of each snapshot's date;
     // opening a ticker again refreshes its row.
-    var RECENT_KEY = 'ca-ticker-recent', RECENT_MAX = 12;
+    var RECENT_KEY = 'ca-ticker-recent', RECENT_MAX = 5;
     function readRecent() { try { var a = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
     function saveRecent(row) {
       try {
@@ -588,7 +602,7 @@
       } catch (e) { /* storage blocked: the table just stays empty */ }
     }
     function recentHtml(cur) {
-      var a = readRecent();
+      var a = readRecent().slice(0, RECENT_MAX);
       if (a.length < (cur ? 2 : 1)) return '';
       function pc(v) { return v == null ? '<td class="na">-</td>' : '<td class="' + dir(v) + '">' + fmtPct(v, true) + '</td>'; }
       return '<div class="tk-section tk-recent"><h2>Recently Viewed <button type="button" class="tk-recent-clear" id="tk-recent-clear">Clear</button></h2>' +
@@ -767,6 +781,7 @@
         '<span class="tk-chg ' + dir(pct) + '">' + (amt >= 0 ? '+' : '-') + txt + ' ' + label + '</span>';
     }
     function drawChart() {
+      if (state.macro) return drawMacro();
       var el = document.getElementById('tk-chart'); if (!el) return;
       var r = RANGES.filter(function (x) { return x.id === state.range; })[0];
       // 1D is the only range not drawn from the site's daily closes: it uses
@@ -1359,8 +1374,11 @@
     }
 
     function open(t, alias) {
-      t = String(t || '').trim().toUpperCase();
+      t = String(t || '').trim().toUpperCase().replace(/\s+/g, ' ');
       if (!t) return;
+      state.macro = null;
+      document.body.classList.toggle('tk-econ', !!MACRO_ALIAS[t]);
+      if (MACRO_ALIAS[t]) return openMacro(MACRO_ALIAS[t]);
       state.ticker = t; state.alias = alias || null; syncUrl(); setPop(false);
       document.title = (NAMES[t] ? t + ' ' + NAMES[t] : t) + ': Ticker Lookup: Composer Atlas';
       state.meta = null; state.liveStatus = null; state.series = null;
@@ -1374,6 +1392,188 @@
         else root.innerHTML = '<p class="tk-asof">' + esc(t) + ' is not in the site cache. Looking it up on Yahoo Finance...</p>';
         goLive(t, s);
       });
+    }
+
+    // ---- Economy views: CPI ----
+    // Monthly economic series from FRED, downloaded outside the browser by
+    // scripts/update_macro.py into data/macro.js (FRED sends no CORS headers,
+    // so a page cannot fetch it itself, and no relay is used). CPI and core CPI
+    // are shown the way the weekly report shows them: each month's index
+    // against the same month a year earlier, as 12-month inflation.
+    var MACRO_ALIAS = { 'CPI': 'CPI', 'INFLATION': 'CPI', 'CPIAUCSL': 'CPI', 'CORE CPI': 'CORE CPI', 'CORECPI': 'CORE CPI', 'CORE INFLATION': 'CORE CPI', 'CPILFESL': 'CORE CPI' };
+    var MACRO_RANGES = [{ id: '1Y', m: 12 }, { id: '3Y', m: 36 }, { id: '5Y', m: 60 }, { id: '10Y', m: 120 }, { id: 'Max', m: 0 }];
+    var macroLoad = null;
+    function loadMacro() {
+      if (!macroLoad) macroLoad = new Promise(function (resolve) {
+        var el = document.createElement('script');
+        el.src = 'data/macro.js'; el.async = true;
+        el.onload = function () { resolve(window.__MACRO__ || null); };
+        el.onerror = function () { resolve(null); };
+        document.head.appendChild(el);
+      });
+      return macroLoad;
+    }
+    var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    function monthName(ym, short) { var y = ym.slice(0, 4), mo = +ym.slice(5, 7) - 1; return (short ? MO[mo] : MONTHS[mo]) + ' ' + y; }
+    // Months with no published figure (October 2025: BLS collected no prices
+    // during the federal shutdown; any later gap the same way) are filled on a
+    // straight line in log terms between the months either side, so the
+    // 12-month rate still has a base. Rates that lean on a filled month are
+    // estimates: dotted on the chart and marked (est.).
+    function nextMonth(ym) { var y = +ym.slice(0, 4), m = +ym.slice(5, 7) + 1; if (m > 12) { m = 1; y++; } return y + '-' + (m < 10 ? '0' : '') + m; }
+    function fillGaps(sr) {
+      var dates = [], values = [], est = {};
+      sr.dates.forEach(function (d, i) {
+        if (i) {
+          var miss = [], mo = nextMonth(sr.dates[i - 1]);
+          while (mo < d && miss.length < 24) { miss.push(mo); mo = nextMonth(mo); }
+          var v0 = sr.values[i - 1], step = Math.pow(sr.values[i] / v0, 1 / (miss.length + 1));
+          miss.forEach(function (g, k) { dates.push(g); values.push(v0 * Math.pow(step, k + 1)); est[g] = 1; });
+        }
+        dates.push(d); values.push(sr.values[i]);
+      });
+      return { dates: dates, values: values, est: est };
+    }
+    // 12-month change of a monthly index, keyed by month.
+    function yoyMap(sr) {
+      var at = {}, out = {}, est = {};
+      sr.dates.forEach(function (d, i) { at[d] = sr.values[i]; });
+      sr.dates.forEach(function (d, i) {
+        var prev = (+d.slice(0, 4) - 1) + d.slice(4);
+        if (at[prev]) { out[d] = sr.values[i] / at[prev] - 1; if (sr.est[d] || sr.est[prev]) est[d] = 1; }
+      });
+      out.est = est;
+      return out;
+    }
+    // Each economy view is its own page, one series per chart.
+    var MACRO_VIEWS = {
+      'CPI': { fred: 'CPIAUCSL', name: 'CPI Inflation', short: 'CPI', other: 'CORE CPI', note: 'all items' },
+      'CORE CPI': { fred: 'CPILFESL', name: 'Core CPI Inflation', short: 'Core CPI', other: 'CPI', note: 'without food and energy' }
+    };
+    function openMacro(key) {
+      var V = MACRO_VIEWS[key];
+      state.ticker = key; state.alias = null; state.series = null; state.meta = null; state.liveStatus = null;
+      if (!MACRO_RANGES.some(function (x) { return x.id === state.range; })) state.range = '5Y';
+      syncUrl(); setPop(false);
+      document.title = V.name + ': Ticker Lookup: Composer Atlas';
+      root.innerHTML = '<p class="tk-asof">Loading ' + V.short + '...</p>';
+      loadMacro().then(function (M) {
+        if (state.ticker !== key) return;
+        if (!M || !M.series || !M.series[V.fred]) { root.innerHTML = '<p class="tk-asof">The ' + V.short + ' data file (data/macro.js) could not be loaded.</p>'; return; }
+        var idx = fillGaps(M.series[V.fred]), a = yoyMap(idx);
+        var months = idx.dates.filter(function (d) { return a[d] != null; });
+        var O = MACRO_VIEWS[V.other], oth = M.series[O.fred] ? yoyMap(fillGaps(M.series[O.fred])) : null;
+        state.macro = { key: key, V: V, M: M, months: months, yoy: a, idx: idx, other: oth };
+        renderMacro();
+      });
+    }
+    function renderMacro() {
+      var X = state.macro, V = X.V, m = X.months, n = m.length, last = m[n - 1], prevM = m[n - 2];
+      var c0 = X.yoy[last], c1 = X.yoy[prevM];
+      var lv = X.idx.values, li = lv.length - 1;
+      var mom = lv[li] / lv[li - 1] - 1, ann3 = Math.pow(lv[li] / lv[li - 3], 4) - 1;
+      var yearAgo = X.yoy[(+last.slice(0, 4) - 1) + last.slice(4)];
+      var ten = m.slice(-120), hi = ten[0], lo = ten[0];
+      ten.forEach(function (d) { if (X.yoy[d] > X.yoy[hi]) hi = d; if (X.yoy[d] < X.yoy[lo]) lo = d; });
+      function pts(v) { return (v >= 0 ? '+' : '-') + Math.abs(v * 100).toFixed(2) + ' pts'; }
+      function stat(label, val) { return '<div class="tk-stat"><dt>' + label + '</dt><dd>' + val + '</dd></div>'; }
+      function pct(v) { return v == null ? '-' : (v * 100).toFixed(2) + '%'; }
+      var estNote = function (mo) { return X.yoy.est[mo] ? ' (est.)' : ''; };
+      var d = c0 - c1, gap = Object.keys(X.idx.est);
+      var estLine = gap.length ? '<p class="tk-asof">Dotted: ' + gap.map(function (g) { return monthName(g); }).join(', ') +
+        ' had no published index' + (gap.indexOf('2025-10') >= 0 ? ' (BLS collected no prices during the October 2025 federal shutdown)' : '') +
+        ', so rates that use ' + (gap.length > 1 ? 'those months' : 'that month') + ', then or as the year-earlier base, are estimated from the months either side.</p>' : '';
+      var O = MACRO_VIEWS[V.other], o0 = X.other ? X.other[last] : null;
+      root.innerHTML = '<div>' +
+        '<p class="tk-name">' + V.name + '</p>' +
+        '<p class="tk-sym">BLS via FRED: ' + V.fred + '<span class="tk-upd"> &middot; Monthly, seasonally adjusted, ' + V.note + ', through ' + monthName(last) + '</span></p>' +
+        '<div class="tk-price-row"><span class="tk-price">' + pct(c0) + '<small>12-month' + estNote(last) + '</small></span>' +
+          '<span class="tk-pill ' + (d > 0 ? 'down' : d < 0 ? 'up' : 'flat') + '">' + (d > 0 ? '&#9650;' : d < 0 ? '&#9660;' : '') + ' ' + Math.abs(d * 100).toFixed(2) + ' pts</span>' +
+          '<span class="tk-chg ' + (d > 0 ? 'down' : d < 0 ? 'up' : 'flat') + '">from ' + monthName(prevM) + estNote(prevM) + '</span></div>' +
+        (o0 != null ? '<p class="tk-status"><a href="?t=' + encodeURIComponent(V.other) + '" data-macro="' + V.other + '" style="color:inherit;text-decoration:underline;text-underline-offset:3px">' + O.short + '</a> <b>' + pct(o0) + '</b> <span class="tk-st-why">' + O.note + ', ' + monthName(last, true) + '</span></p>' : '') +
+        '<div class="tk-tabs" role="tablist" aria-label="Chart range">' +
+          MACRO_RANGES.map(function (r) { return '<button type="button" role="tab" data-r="' + r.id + '" aria-selected="' + (r.id === state.range) + '">' + r.id + '</button>'; }).join('') +
+        '</div>' +
+        '<div class="tk-chart" id="tk-chart"></div>' + estLine +
+        '<div class="tk-section"><h2>Key Stats' + explain() + '</h2>' + explainP(EXPLAIN.cpi) + '<dl class="tk-stats">' +
+          stat(V.short + ', 12-month', pct(c0) + '<span class="note">' + monthName(last, true) + estNote(last) + '</span>') +
+          stat('A year earlier', pct(yearAgo) + '<span class="note">' + (yearAgo != null ? pts(c0 - yearAgo) : '') + '</span>') +
+          stat('Last month', pct(mom) + '<span class="note">not annualized</span>') +
+          stat('Last 3 months, annualized', pct(ann3)) +
+          stat('10-year high', pct(X.yoy[hi]) + '<span class="note">' + monthName(hi, true) + '</span>') +
+          stat('10-year low', pct(X.yoy[lo]) + '<span class="note">' + monthName(lo, true) + '</span>') +
+          stat('Index level', lv[li].toFixed(3) + '<span class="note">1982-84 = 100</span>') +
+          stat('Data since', monthName(X.months[0], true)) +
+        '</dl></div>' +
+      '</div>';
+      root.querySelectorAll('.tk-tabs button').forEach(function (bt) {
+        bt.addEventListener('click', function () { state.range = bt.getAttribute('data-r'); syncUrl(); renderMacro(); });
+      });
+      root.querySelectorAll('a[data-macro]').forEach(function (a) {
+        a.addEventListener('click', function (e) { e.preventDefault(); go(a.getAttribute('data-macro')); });
+      });
+      drawMacro();
+    }
+    function drawMacro() {
+      var el = document.getElementById('tk-chart'), X = state.macro; if (!el || !X) return;
+      var r = MACRO_RANGES.filter(function (x) { return x.id === state.range; })[0] || MACRO_RANGES[2];
+      var months = r.m ? X.months.slice(-r.m - 1) : X.months, n = months.length;
+      var a = months.map(function (d) { return X.yoy[d]; });
+      var all = a.filter(function (v) { return v != null; }).concat([0.02]);
+      var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+      var span = (hi - lo) || 0.01, raw = span / 4, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+      var step = [1, 2, 2.5, 5, 10].map(function (k) { return k * mag; }).filter(function (v) { return v >= raw; })[0];
+      var y0 = Math.floor(lo / step) * step, y1 = Math.ceil(hi / step) * step, ticks = [];
+      for (var t = y0; t <= y1 + step / 2; t += step) ticks.push(+t.toFixed(10));
+      var dec = step * 100 >= 1 ? 0 : 1;
+      var W = Math.max(280, el.clientWidth), H = el.getBoundingClientRect().height || el.clientHeight, padT = 24, padB = 24, padR = 14;
+      var padL = 12 + Math.max.apply(null, ticks.map(function (v) { return ((v * 100).toFixed(dec) + '%').length; })) * 6.6;
+      var Xp = function (i) { return padL + (n < 2 ? 0 : i / (n - 1)) * (W - padL - padR); };
+      var Y = function (v) { return padT + (1 - (v - y0) / ((y1 - y0) || 1)) * (H - padT - padB); };
+      var grid = '', ax = '';
+      ticks.forEach(function (v) {
+        grid += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"' + (Math.abs(v) < 1e-12 ? ' style="stroke-dasharray:none;stroke:var(--color-border-strong)"' : '') + '/>';
+        ax += '<text x="' + (padL - 8) + '" y="' + (Y(v) + 4).toFixed(1) + '" text-anchor="end">' + (v * 100).toFixed(dec) + '%</text>';
+      });
+      grid += '<line class="hl" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + Y(0.02).toFixed(1) + '" y2="' + Y(0.02).toFixed(1) + '"/>';
+      ax += '<text class="lbl" x="' + (W - padR) + '" y="' + (Y(0.02) - 5).toFixed(1) + '" text-anchor="end">2% goal</text>';
+      var nt = Math.min(6, Math.max(2, Math.floor(W / 130)));
+      for (var k = 0; k < nt; k++) {
+        var i = Math.round(k * (n - 1) / (nt - 1)), dd = months[i];
+        var lab = r.m && r.m <= 36 ? monthName(dd, true).replace(/ (\d\d)(\d\d)$/, ' &rsquo;$2') : dd.slice(0, 4);
+        ax += '<text x="' + Xp(i).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="' + (k === 0 ? 'start' : k === nt - 1 ? 'end' : 'middle') + '">' + lab + '</text>';
+      }
+      // Two paths: segments touching an estimated month go in the dotted one.
+      function path(want) {
+        var p = '';
+        for (var i = 1; i < n; i++) {
+          if (a[i - 1] == null || a[i] == null) continue;
+          if (!!(X.yoy.est[months[i - 1]] || X.yoy.est[months[i]]) === want)
+            p += 'M' + Xp(i - 1).toFixed(1) + ' ' + Y(a[i - 1]).toFixed(1) + 'L' + Xp(i).toFixed(1) + ' ' + Y(a[i]).toFixed(1);
+        }
+        return p;
+      }
+      el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + X.V.name + ', 12-month, ' + r.id + '">' +
+        '<g class="grid">' + grid + '</g>' +
+        '<path d="' + path(false) + '" fill="none" stroke="var(--color-blue)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
+        '<path d="' + path(true) + '" fill="none" stroke="var(--color-blue)" stroke-width="2" stroke-dasharray="1 4" stroke-linecap="round"/>' +
+        '<g class="axis">' + ax + '</g>' +
+        '<g id="tk-hover" visibility="hidden"><line id="tk-hx" y1="' + padT + '" y2="' + (H - padB) + '" stroke="var(--color-border-strong)" stroke-dasharray="3 3"/>' +
+          '<circle id="tk-hd" r="5" fill="var(--color-blue)" stroke="var(--color-bg)" stroke-width="2"/></g>' +
+        '</svg><div class="tk-tip" id="tk-tip" hidden></div>';
+      var svg = el.querySelector('svg'), hv = el.querySelector('#tk-hover'), hx = el.querySelector('#tk-hx'), hd = el.querySelector('#tk-hd'), tip = el.querySelector('#tk-tip');
+      el.onpointermove = function (e) {
+        var box = svg.getBoundingClientRect(), x = (e.clientX - box.left) * W / box.width;
+        var i = Math.max(0, Math.min(n - 1, Math.round((x - padL) / (W - padL - padR) * (n - 1)))), px = Xp(i);
+        hx.setAttribute('x1', px); hx.setAttribute('x2', px); hd.setAttribute('cx', px); hd.setAttribute('cy', Y(a[i]));
+        hv.setAttribute('visibility', 'visible');
+        tip.innerHTML = '<b>' + monthName(months[i]) + (X.yoy.est[months[i]] ? ' (est.)' : '') + '</b>' + X.V.short + ' ' + (a[i] * 100).toFixed(2) + '%';
+        tip.hidden = false;
+        var half = tip.offsetWidth / 2, left = px * box.width / W;
+        tip.style.left = Math.max(half, Math.min(box.width - half, left)) + 'px';
+      };
+      el.onpointerleave = function () { hv.setAttribute('visibility', 'hidden'); tip.hidden = true; };
+      el.onpointerdown = el.onpointerup = el.onpointercancel = null;
     }
 
     // ---- Search ----
@@ -1409,10 +1609,33 @@
       pre.sort(function (a, b) { return a.t < b.t ? -1 : 1; });
       return exact.concat(pre, name).slice(0, 6);
     }
+    // Market shorthands: what people type for a coin, a commodity or an index,
+    // mapped to Yahoo's symbol, which then leads the suggestions (and opens on
+    // Enter). The plain symbol, when it is also a listing (BTC is a Grayscale
+    // ETF, GOLD a miner), stays as the next suggestion.
+    var MARKET_ALIAS = {};
+    [['BTC-USD', 'Bitcoin', 'BTC BITCOIN XBT'], ['ETH-USD', 'Ethereum', 'ETH ETHEREUM ETHER'], ['SOL-USD', 'Solana', 'SOL SOLANA'],
+     ['XRP-USD', 'XRP', 'XRP RIPPLE'], ['DOGE-USD', 'Dogecoin', 'DOGE DOGECOIN'], ['ADA-USD', 'Cardano', 'ADA CARDANO'],
+     ['BNB-USD', 'BNB', 'BNB'], ['LTC-USD', 'Litecoin', 'LTC LITECOIN'], ['ZEC-USD', 'Zcash', 'ZEC ZCASH'],
+     ['GC=F', 'Gold futures', 'GOLD'], ['SI=F', 'Silver futures', 'SILVER'], ['PL=F', 'Platinum futures', 'PLATINUM'],
+     ['PA=F', 'Palladium futures', 'PALLADIUM'], ['HG=F', 'Copper futures', 'COPPER'],
+     ['CL=F', 'Crude oil (WTI) futures', 'OIL CRUDE WTI'], ['BZ=F', 'Brent crude futures', 'BRENT'],
+     ['NG=F', 'Natural gas futures', 'NATGAS|NATURAL GAS'], ['ZC=F', 'Corn futures', 'CORN'], ['ZW=F', 'Wheat futures', 'WHEAT'],
+     ['ZS=F', 'Soybean futures', 'SOYBEANS SOYBEAN'],
+     ['^VIX', 'CBOE Volatility Index', 'VIX'], ['DX-Y.NYB', 'US Dollar Index', 'DXY DOLLAR'], ['^TNX', '10-Year Treasury yield', 'TNX 10Y'],
+     ['^GSPC', 'S&P 500 index', 'SPX GSPC'], ['^NDX', 'Nasdaq 100 index', 'NDX'], ['^DJI', 'Dow Jones Industrial Average', 'DJI DJIA'],
+     ['^RUT', 'Russell 2000 index', 'RUT'], ['CPI', 'CPI inflation, 12-month (BLS via FRED)', 'CPI|INFLATION|CPIAUCSL'], ['CORE CPI', 'Core CPI inflation, without food and energy', 'CORE CPI|CORECPI|CORE|CORE INFLATION|CPILFESL']
+    ].forEach(function (x) { x[2].split(x[2].indexOf('|') >= 0 ? '|' : ' ').forEach(function (k) { MARKET_ALIAS[k] = [x[0], x[1]]; }); });
+    function marketTag(t) { return MACRO_VIEWS[t] ? 'Economy' : t.slice(-4) === '-USD' ? 'Crypto' : t.slice(-2) === '=F' ? 'Futures' : 'Index'; }
     function build(raw) {
-      var q = raw.trim().toUpperCase(); if (!q) return [];
+      var q = raw.trim().toUpperCase().replace(/\s+/g, ' '); if (!q) return [];
       var out = localMatches(q), seen = {};
       out.forEach(function (m) { seen[m.t] = 1; });
+      // A coin Yahoo lists as <typed>-USD (SHIB -> SHIB-USD) leads like the
+      // shorthands above.
+      var al = MARKET_ALIAS[q], cx = !al && (yCache[q] || []).filter(function (m) { return m.t === q + '-USD'; })[0];
+      var lead = al ? { t: al[0], name: al[1], tag: marketTag(al[0]) } : cx ? { t: cx.t, name: cx.name, tag: 'Crypto' } : null;
+      if (lead) { out = out.filter(function (m) { return m.t !== lead.t; }); seen[lead.t] = 1; }
       var typed = SYMBOL_RE.test(q) && !seen[q] ? { t: q, name: 'Look up ' + q, tag: 'Yahoo' } : null;
       var yr = yCache[q] || [], yExact = yr.some(function (m) { return m.t === q; });
       // Until Yahoo answers, the typed text leads so Enter opens it as typed.
@@ -1421,6 +1644,7 @@
       if (typed && (!yCache[q] || yExact)) { out.unshift(typed); seen[q] = 1; typed = null; }
       yr.forEach(function (m) { if (!seen[m.t]) { seen[m.t] = 1; out.push(m); } });
       if (typed) out.push(typed);
+      if (lead) out.unshift(lead);
       return out.slice(0, 10);
     }
     // Yahoo's symbol search. It knows company names and every listing of a
@@ -1523,7 +1747,7 @@
       document.documentElement.classList.add('tk-printing');
       var t = state.ticker || '';
       var DISCORD = 'https://discord.com/invite/6bnZFtNd5p', page = 'https://composeratlas.com/ticker?t=' + encodeURIComponent(t);
-      var upd = state.series ? updatedLine().replace(/^(As of|Close) /, '') : '';
+      var upd = state.macro ? 'Through ' + monthName(state.macro.months[state.macro.months.length - 1]) : state.series ? updatedLine().replace(/^(As of|Close) /, '') : '';
       document.getElementById('tk-print-head').innerHTML =
         // Every header line is a link, as in the weekly report: the brand to the
         // site, the subtitle to this page, Discord and the price time to Discord.
@@ -1563,7 +1787,7 @@
     }
     // /ticker with no symbol: instructions where the stock would be.
     function landing() {
-      state.ticker = null; state.series = null; state.meta = null; state.alias = null; state.liveStatus = null;
+      state.ticker = null; state.series = null; state.meta = null; state.alias = null; state.liveStatus = null; state.macro = null; document.body.classList.remove('tk-econ');
       document.title = 'Ticker Lookup: Composer Atlas';
       var tryList = ['SPY', 'QQQ', 'TQQQ', 'NVDA', 'MSFT', 'LVMH', '7203.T'];
       root.innerHTML = '<div class="tk-land">' +
@@ -1576,6 +1800,7 @@
           '<li><b>The chart</b> has ranges from 1D (the latest session, in 5-minute steps) to Max, optional 50-Day and 200-Day moving averages and a 10-Day RSI panel. Hover it for the close on any day; press and drag to measure a change.</li>' +
           '<li><b>Technicals</b> cover RSI (10) and RSI (14), distance from the 20, 50 and 200-Day averages, drawdown from the high and 30-day volatility.</li>' +
           '<li><b>Signals</b> score RSI (14), the 52-week range and the 200-day average as Strong, Neutral or Caution, as on the Azqato weekly report.</li>' +
+          '<li><b>Inflation</b>: type <a href="?t=CPI" data-macro="CPI">CPI</a> or <a href="?t=CORE%20CPI" data-macro="CORE CPI">core CPI</a> for the 12-month rate since 1948, from BLS via FRED, refreshed daily.</li>' +
           '<li><b>Print</b> with Ctrl+P for a one-page Letter summary.</li>' +
         '</ol>' +
         '<div class="tk-chips"><span class="tk-try">Try:</span>' + tryList.map(function (t) {

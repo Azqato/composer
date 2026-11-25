@@ -10,6 +10,24 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.88.0] - 2026-11-25 - Ticker Lookup: CPI and core CPI inflation views
+
+- Typing CPI (or inflation) or core CPI opens an economy view instead of a ticker: the 12-month inflation rate, its change from the month before, a one-line chart with 1Y/3Y/5Y/10Y/Max tabs, a dashed 2% goal line and hover values, and Key Stats (a year earlier, last month, last 3 months annualized, 10-year high and low, index level). CPI and core CPI are separate pages, each linking to the other. Deep links: `?t=CPI`, `?t=CORE%20CPI`.
+- Data: the BLS series CPIAUCSL and CPILFESL from FRED's public CSV, downloaded by the new `scripts/update_macro.py` into `data/macro.json` / `data/macro.js`. FRED sends no CORS headers, so the page reads this static file; no relay or proxy is involved.
+- A month with no published index (October 2025: BLS collected no prices during the federal shutdown) is filled log-linearly from the months either side. Rates that use a filled month, as that month or as the year-earlier base, are drawn dotted and marked (est.), with a note under the chart. Later gaps are handled the same way.
+- New workflow `refresh-macro.yml` runs the script daily at 03:17 UTC (evening Pacific). The script leaves the files untouched when FRED has nothing new, so most runs make no commit.
+- Prints on one page, with an economy source note in place of the price-cache note.
+
+---
+
+## [1.87.9] - 2026-11-25 - Ticker Lookup: search prefers crypto, futures and index symbols
+
+- Typing a market shorthand puts Yahoo's symbol first and opens it on Enter: coins (BTC, ETH, SOL, XRP, DOGE, ADA, BNB, LTC, ZEC and their names) to <coin>-USD; GOLD, SILVER, PLATINUM, PALLADIUM, COPPER, OIL/CRUDE/WTI, BRENT, NATGAS/NATURAL GAS, CORN, WHEAT, SOYBEANS to their futures (GC=F, CL=F and so on); VIX, DXY/DOLLAR, TNX/10Y, SPX, NDX, DJI, RUT to their indices. The plain symbol, where it is also a listing (BTC is a Grayscale ETF, GOLD a miner), stays as the next suggestion.
+- Recently Viewed keeps the last 5 tickers (was 12); a longer list saved earlier is trimmed when shown.
+- Any other coin Yahoo lists as <typed>-USD leads the same way once Yahoo's search answers (SHIB opens SHIB-USD).
+
+---
+
 ## [1.87.8] - 2026-11-25 - Ticker Lookup: times in the reader's time zone
 
 - The "As of" time beside the exchange, the print header's time, and the 1D hour labels and tooltips now show in the reader's own time zone with its abbreviation (e.g. "As of Nov 24, 1:00 PM PST"), not the exchange's (ET, JST, CET). Sessions are still worked out on the exchange's clock, so a Tokyo session simply reads 5 PM to 10 PM for a reader in California. The hover title on the As of time also gives the exchange's own time.
