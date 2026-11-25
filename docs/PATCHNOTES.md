@@ -10,13 +10,20 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.89.3] - 2026-11-25 - Ticker Lookup: Popular back to the major funds; fix the empty panel on CPI pages
+
+- The Popular panel is back to its original list, the 12 major funds, with no group headings. The Sectors, Markets, and Rates and yields groups (added in 1.87.7 and 1.88.1, and FEDFUNDS in 1.89.2) are removed; every one of those pages is still found by search.
+- Fix: on the CPI and Core CPI pages the Popular panel opened empty, because those pages never filled it. It now shows the same list as every other page.
+
+---
+
 ## [1.89.2] - 2026-11-25 - Ticker Lookup: CPI pages work like stock pages; fed funds rate
 
 - CPI and Core CPI get the row of change tiles under Status (1M to 10Y, the change in the 12-month rate in points), each switching the chart range, and a 1M range tab.
 - The headline change follows the selected range, as on stock and yield pages: YTD shows the year-to-date change and "year to date".
 - A Status line uses the weekly report's rule (Rising or Falling on a 0.10-point monthly move, else Steady), with the link to the other CPI page beside it. Key Stats add Previous month.
 - The CPI chart's 2% goal line is labelled "Goal 2%" in the left axis gutter, beside High and Low, instead of at the right edge.
-- New Federal Funds Rate page (FEDFUNDS), built like the yield pages: daily effective rate from the New York Fed (FRED's DFF before July 2000, so history from 1954), bps tiles that switch the range, a range-following headline, Status, and Key Stats with the FOMC target range and the 3M Treasury gap. Search finds it as fed funds, fed rate, EFFR, FFR, FOMC or interest rate, and it heads the Popular panel's "Rates and yields" group.
+- New Federal Funds Rate page (FEDFUNDS), built like the yield pages: daily effective rate from the New York Fed (FRED's DFF before July 2000, so history from 1954), bps tiles that switch the range, a range-following headline, Status, and Key Stats with the FOMC target range and the 3M Treasury gap. Search finds it as fed funds, fed rate, EFFR, FFR, FOMC or interest rate, and it headed the Popular panel's "Rates and yields" group until 1.89.3.
 - scripts/update_fedfunds.py runs in the daily economy refresh workflow; update_yields.py now keeps other entries in data/yields/_latest.js.
 
 ---

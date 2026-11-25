@@ -1048,11 +1048,7 @@
     // dollar and Bitcoin, as Yahoo symbols.
     var POPULAR = [['SPY','S&P 500'],['QQQ','Nasdaq 100'],['IWM','Russell 2000'],['DIA','Dow Jones 30'],['RSP','Equal Weight'],
       ['VUG','Growth'],['VTV','Value'],['VIG','Dividend'],['VBR','Small-Cap Value'],['VT','World'],['VTI','Domestic'],['VXUS','International']];
-    var SECTORS = [['XLK','Technology'],['XLC','Communication'],['XLY','Consumer Discretionary'],['XLP','Consumer Staples'],
-      ['XLV','Health Care'],['XLF','Financials'],['XLI','Industrials'],['XLE','Energy'],['XLB','Materials'],['XLU','Utilities'],['XLRE','Real Estate']];
-    var MARKETS = [['^VIX','VIX'],['^TNX','10-Year Yield'],['CL=F','Crude Oil (WTI)'],['GC=F','Gold'],['DX-Y.NYB','US Dollar Index'],['BTC-USD','Bitcoin']];
-    var POP_GROUPS = [['Major Funds', POPULAR], ['Sectors', SECTORS], ['Markets', MARKETS]];
-    function popSymbols() { return POPULAR.concat(SECTORS, MARKETS).map(function (x) { return x[0]; }); }
+    function popSymbols() { return POPULAR.map(function (x) { return x[0]; }); }
     // Side-panel prices. Batched Yahoo calls (v8 spark, 20 symbols a call)
     // cover the Popular panel's three lists, through the same relay, saved in
     // this browser for ten minutes, so the panel shows the same day as the
@@ -1096,21 +1092,9 @@
         (q ? '<span class="tk-rel-px">' + fmtPx(q.px) + '</span><span class="tk-pill ' + dir(q.d) + '">' + arrow(q.d) + ' ' + fmtPct(Math.abs(q.d)) + '</span>'
            : '<span class="tk-rel-px">-</span>') + '</a></li>';
     }
-    // One list with a small heading per group, as the weekly report groups them.
-    function yieldRow(key) {
-      var V = MACRO_VIEWS[key], l = (window.__YIELDS_LATEST__ || {})[key], d = l ? l[1] - l[3] : null;
-      return '<li><a href="?t=' + key + '" data-t="' + key + '"' + (key === state.ticker ? ' aria-current="true"' : '') + '>' +
-        '<span class="tk-rel-main"><span class="tk-rel-name">' + key + '</span><span class="tk-rel-sym">' + V.name.replace(' Yield', '') + '</span></span>' +
-        (l ? '<span class="tk-rel-px">' + l[1].toFixed(2) + '%</span><span class="tk-pill ' + (Math.round(d * 100) === 0 ? 'flat' : d > 0 ? 'down' : 'up') + '">' +
-          (d > 0 ? '&#9650;' : d < 0 ? '&#9660;' : '') + ' ' + Math.abs(Math.round(d * 100)) + ' bps</span>' : '<span class="tk-rel-px">-</span>') + '</a></li>';
-    }
-    var POP_YIELDS = ['FEDFUNDS', 'US3M', 'US2Y', 'US10Y', 'US30Y', 'TIPS10Y'];
     function renderPopular() {
       var ul = document.getElementById('tk-pop'); if (!ul) return;
-      if (!window.__YIELDS_LATEST__) loadYieldsLatest().then(function (L) { if (L) renderPopular(); });
-      ul.innerHTML = POP_GROUPS.map(function (g) {
-        return '<li class="tk-pop-h">' + g[0] + '</li>' + g[1].map(function (x) { return sideRow(x[0], esc(x[0]), esc(x[1])); }).join('');
-      }).join('') + '<li class="tk-pop-h">Rates and yields</li>' + POP_YIELDS.map(yieldRow).join('');
+      ul.innerHTML = POPULAR.map(function (x) { return sideRow(x[0], esc(x[0]), esc(x[1])); }).join('');
     }
 
     // ---- Live prices ----
@@ -1535,6 +1519,7 @@
         state.macro = { key: key, V: V, M: M, months: months, yoy: a, idx: idx, other: oth,
           keys: months, vals: months.map(function (d) { return a[d]; }), est: a.est, goal: true };
         renderMacro();
+        renderPopular();
       });
     }
     function renderMacro() {
