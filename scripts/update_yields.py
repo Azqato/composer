@@ -102,7 +102,14 @@ def main():
             for col, vals in year_rows(kind, y).items():
                 got[kind].setdefault(col, {}).update(vals)
         print(f'{kind}: {len(list(years))} year(s)')
-    changed, latest = 0, {}
+    # Keep other series' entries (the fed funds rate, update_fedfunds.py).
+    try:
+        with open(os.path.join(OUT, '_latest.js'), encoding='utf-8') as f:
+            body = f.read().strip()
+        latest = json.loads(body[body.index('=') + 1:].rstrip(';'))
+    except (OSError, ValueError):
+        latest = {}
+    changed = 0
     for key, kind, col, name in SERIES:
         merged = {} if seed or not have[key] else dict(zip(have[key]['dates'], have[key]['values']))
         merged.update(got[kind].get(col, {}))

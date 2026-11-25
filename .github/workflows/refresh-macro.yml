@@ -1,4 +1,4 @@
-name: Refresh Economy Data (CPI, Treasury yields)
+name: Refresh Economy Data (CPI, Treasury yields, fed funds rate)
 
 on:
   schedule:
@@ -46,7 +46,14 @@ jobs:
         continue-on-error: true
         run: python scripts/update_yields.py
 
-      # Commits whatever the two steps wrote, even if one of them failed.
+      # The effective federal funds rate from the New York Fed (last 30
+      # readings merged into data/yields/FEDFUNDS.js, plus its _latest entry).
+      - name: Run update_fedfunds.py
+        id: ffr
+        continue-on-error: true
+        run: python scripts/update_fedfunds.py
+
+      # Commits whatever the steps wrote, even if one of them failed.
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
@@ -55,14 +62,14 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "chore: refresh CPI and Treasury yield data"
+            git commit -m "chore: refresh CPI, Treasury yield and fed funds data"
             git pull --rebase
             git push
           fi
 
       # A failed download still fails the run, so it shows red in Actions.
       - name: Report a failed download
-        if: steps.cpi.outcome == 'failure' || steps.yields.outcome == 'failure'
+        if: steps.cpi.outcome == 'failure' || steps.yields.outcome == 'failure' || steps.ffr.outcome == 'failure'
         run: |
-          echo "CPI: ${{ steps.cpi.outcome }}, yields: ${{ steps.yields.outcome }}"
+          echo "CPI: ${{ steps.cpi.outcome }}, yields: ${{ steps.yields.outcome }}, fed funds: ${{ steps.ffr.outcome }}"
           exit 1

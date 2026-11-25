@@ -162,9 +162,9 @@
     .tk-perf span { display: block; color: var(--color-secondary); font-size: 0.75rem; margin-bottom: 4px; }
     .tk-perf b { white-space: nowrap; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
     .tk-perf-top { margin: 12px 0 2px; }
-    @media (min-width: 820px) { .tk-perf-top { grid-template-columns: repeat(9, minmax(0, 1fr)); } }
+    @media (min-width: 820px) { .tk-perf-top { grid-template-columns: repeat(9, minmax(0, 1fr)); } .tk-perf-top.tk-perf-8 { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
     .tk-perf-top button { padding: 7px 10px; }
-    .tk-perf b.up { color: var(--color-positive); } .tk-perf b.down { color: var(--color-negative); } .tk-perf b.na { color: var(--color-disabled); font-weight: 400; }
+    .tk-perf b.up { color: var(--color-positive); } .tk-perf b.flat { color: var(--color-secondary); } .tk-perf b.down { color: var(--color-negative); } .tk-perf b.na { color: var(--color-disabled); font-weight: 400; }
 
     .tk-sidecol { display: flex; flex-direction: column; gap: 16px; }
     .tk-collapse > summary { display: flex; align-items: center; justify-content: space-between; cursor: pointer; list-style: none; }
@@ -304,7 +304,7 @@
       </details>
 
       <p class="tk-foot-print tk-econ-only">
-        Monthly CPI from the U.S. Bureau of Labor Statistics via FRED (Federal Reserve Bank of St. Louis), seasonally adjusted; daily Treasury and TIPS yields from the U.S. Treasury's par yield curves. Both refreshed daily.
+        Monthly CPI from the U.S. Bureau of Labor Statistics via FRED (Federal Reserve Bank of St. Louis), seasonally adjusted; daily Treasury and TIPS yields from the U.S. Treasury's par yield curves; the effective federal funds rate from the Federal Reserve Bank of New York (FRED's DFF before July 2000). All refreshed daily.
         Inflation is each month's index against the same month a year earlier; dotted months are estimated where no index was published.
       </p>
       <p class="tk-foot-print tk-price-only">
@@ -312,8 +312,8 @@
         Prices are adjusted for splits and dividends. RSI uses Wilder's smoothing on daily closes.
       </p>
       <p class="tk-foot tk-econ-only">
-        CPI and core CPI come from the U.S. Bureau of Labor Statistics through FRED, the Federal Reserve Bank of St. Louis's data service; Treasury and TIPS yields from the U.S. Treasury's daily par yield curves (home.treasury.gov), at each day's close.
-        Neither can be read from a browser, so a scheduled job downloads them once a day into a file this site serves; no relay is used
+        CPI and core CPI come from the U.S. Bureau of Labor Statistics through FRED, the Federal Reserve Bank of St. Louis's data service; Treasury and TIPS yields from the U.S. Treasury's daily par yield curves (home.treasury.gov), at each day's close; the effective federal funds rate from the Federal Reserve Bank of New York, published each business day for the day before.
+        None can be read from a browser, so a scheduled job downloads them once a day into a file this site serves; no relay is used
         and nothing you type is sent anywhere. A new month appears about two weeks after it ends, when BLS publishes it. Not financial advice.
       </p>
       <p class="tk-foot tk-price-only">
@@ -584,6 +584,8 @@
         'Core CPI leaves out food and energy, whose prices jump around, so it shows the underlying trend more steadily. Both are seasonally adjusted (FRED series CPIAUCSL and CPILFESL). ' +
         'The dashed line is 2%, the Federal Reserve&rsquo;s inflation goal (the Fed measures it with PCE, a broader index, so CPI tends to run a little higher). ' +
         'The 3-month annualized rates show the recent pace: the last three months&rsquo; rise, compounded to a year. Each month&rsquo;s figure comes out about two weeks after the month ends.',
+      ffr: 'The federal funds rate is what banks charge each other to lend reserves overnight. The Federal Reserve&rsquo;s FOMC sets a target range for it at its meetings, and the effective rate shown here, published daily by the New York Fed, trades inside that range. It anchors short-term borrowing costs across the economy, from T-bills to savings accounts. ' +
+        'Status is Rising or Falling on a move of 10 bps or more over the past month (usually a Fed meeting), else Steady. A 3M Treasury yield below it means the market expects cuts. History before July 2000 is FRED&rsquo;s daily series (DFF).',
       yield: 'A Treasury yield is the yearly return the U.S. government pays to borrow for that long; a TIPS real yield is the return on top of inflation, since TIPS principal rises with CPI. ' +
         'These are the Treasury&rsquo;s daily par yield curves at each day&rsquo;s close, the same figures as the weekly report. Changes are in basis points (100 bps = 1 percentage point): red when the yield rose, since a rising yield means a falling bond price, green when it fell. ' +
         'Status is Inverted when this yield is below a shorter maturity&rsquo;s on the same curve; otherwise Rising or Falling on a move of 10 bps or more over the past month, else Steady. ' +
@@ -1102,13 +1104,13 @@
         (l ? '<span class="tk-rel-px">' + l[1].toFixed(2) + '%</span><span class="tk-pill ' + (Math.round(d * 100) === 0 ? 'flat' : d > 0 ? 'down' : 'up') + '">' +
           (d > 0 ? '&#9650;' : d < 0 ? '&#9660;' : '') + ' ' + Math.abs(Math.round(d * 100)) + ' bps</span>' : '<span class="tk-rel-px">-</span>') + '</a></li>';
     }
-    var POP_YIELDS = ['US3M', 'US2Y', 'US10Y', 'US30Y', 'TIPS10Y'];
+    var POP_YIELDS = ['FEDFUNDS', 'US3M', 'US2Y', 'US10Y', 'US30Y', 'TIPS10Y'];
     function renderPopular() {
       var ul = document.getElementById('tk-pop'); if (!ul) return;
       if (!window.__YIELDS_LATEST__) loadYieldsLatest().then(function (L) { if (L) renderPopular(); });
       ul.innerHTML = POP_GROUPS.map(function (g) {
         return '<li class="tk-pop-h">' + g[0] + '</li>' + g[1].map(function (x) { return sideRow(x[0], esc(x[0]), esc(x[1])); }).join('');
-      }).join('') + '<li class="tk-pop-h">Yields</li>' + POP_YIELDS.map(yieldRow).join('');
+      }).join('') + '<li class="tk-pop-h">Rates and yields</li>' + POP_YIELDS.map(yieldRow).join('');
     }
 
     // ---- Live prices ----
@@ -1421,10 +1423,10 @@
     // are shown the way the weekly report shows them: each month's index
     // against the same month a year earlier, as 12-month inflation.
     var MACRO_ALIAS = { 'CPI': 'CPI', 'INFLATION': 'CPI', 'CPIAUCSL': 'CPI', 'CORE CPI': 'CORE CPI', 'CORECPI': 'CORE CPI', 'CORE INFLATION': 'CORE CPI', 'CPILFESL': 'CORE CPI' };
-    // The ticker's range tabs; 1D, 1W and 1M are left out because a monthly
-    // series has at most two points in them.
+    // The ticker's range tabs; 1D and 1W are left out, since a monthly series
+    // has a single point in them (1M is the change from the month before).
     var MACRO_RANGES = null;
-    function macroRanges() { return MACRO_RANGES || (MACRO_RANGES = RANGES.filter(function (r) { return !r.intra && !r.days && r.months !== 1; })); }
+    function macroRanges() { return MACRO_RANGES || (MACRO_RANGES = RANGES.filter(function (r) { return !r.intra && !r.days; })); }
     var macroLoad = null;
     function loadMacro() {
       if (!macroLoad) macroLoad = new Promise(function (resolve) {
@@ -1491,6 +1493,11 @@
            n + ' ' + unit + ' TREASURY', n + '-' + unit + ' TREASURY', 'DGS' + (unit === 'MONTH' ? n + 'MO' : n)];
       keys.forEach(function (k) { MACRO_ALIAS[k] = y[0]; });
     });
+    // The effective federal funds rate (New York Fed), shown like a yield.
+    MACRO_VIEWS.FEDFUNDS = { yield: true, ffr: true, tips: false, mat: '', months: 0, short: 'fed funds rate', name: 'Federal Funds Rate' };
+    ['FEDFUNDS', 'FED FUNDS', 'FED FUNDS RATE', 'FEDERAL FUNDS', 'FEDERAL FUNDS RATE', 'FED RATE', 'FED INTEREST RATE', 'FFR', 'EFFR', 'DFF',
+     'EFFECTIVE FEDERAL FUNDS RATE', 'EFFECTIVE FED FUNDS RATE', 'INTEREST RATE', 'INTEREST RATES', 'FOMC']
+      .forEach(function (k) { MACRO_ALIAS[k] = 'FEDFUNDS'; });
     var yieldLoads = {};
     function loadFile(src) {
       return new Promise(function (resolve) {
@@ -1543,6 +1550,21 @@
       function pct(v) { return v == null ? '-' : (v * 100).toFixed(2) + '%'; }
       var estNote = function (mo) { return X.yoy.est[mo] ? ' (est.)' : ''; };
       var d = c0 - c1, gap = Object.keys(X.idx.est);
+      // As on a stock page: the headline follows the selected range, tiles
+      // give the change over each range (in points of the 12-month rate) and
+      // switch the chart, and Status reads the past month (the weekly
+      // report's rule: Rising or Falling on 0.10 points or more, else Steady).
+      var keys01 = m.map(function (k) { return k + '-01'; }), RGc = macroRanges();
+      var rSel = RGc.filter(function (x) { return x.id === state.range; })[0] || RGc[RGc.length - 4];
+      var hc = c0 - X.yoy[m[rangeStart(keys01, rSel)]];
+      var hl = rSel.all ? 'since ' + monthName(m[0]) : RANGE_WORDS[rSel.id] || '';
+      var tiles = ['1M', '3M', '6M', 'YTD', '1Y', '3Y', '5Y', '10Y'].map(function (id) {
+        var r = RGc.filter(function (x) { return x.id === id; })[0], i = rangeStart(keys01, r);
+        var ok = r.ytd || keys01[0] <= isoMinusMonths(keys01[n - 1], r.months);
+        return [id, ok ? c0 - X.yoy[m[i]] : null];
+      });
+      function dcls(v) { return v == null ? 'na' : Math.round(v * 1e4) === 0 ? 'flat' : v > 0 ? 'down' : 'up'; } // rising inflation = red
+      var st = d >= 0.001 ? ['Rising', 'r1'] : d <= -0.001 ? ['Falling', 'g1'] : ['Steady', 'n'];
       var estLine = gap.length ? '<p class="tk-asof">Dotted: ' + gap.map(function (g) { return monthName(g); }).join(', ') +
         ' had no published index' + (gap.indexOf('2025-10') >= 0 ? ' (BLS collected no prices during the October 2025 federal shutdown)' : '') +
         ', so rates that use ' + (gap.length > 1 ? 'those months' : 'that month') + ', then or as the year-earlier base, are estimated from the months either side.</p>' : '';
@@ -1551,15 +1573,21 @@
         '<p class="tk-name">' + V.name + '</p>' +
         '<p class="tk-sym">BLS via FRED: ' + V.fred + '<span class="tk-upd"> &middot; Monthly, seasonally adjusted, ' + V.note + ', through ' + monthName(last) + '</span></p>' +
         '<div class="tk-price-row"><span class="tk-price">' + pct(c0) + '<small>12-month' + estNote(last) + '</small></span>' +
-          '<span class="tk-pill ' + (d > 0 ? 'down' : d < 0 ? 'up' : 'flat') + '">' + (d > 0 ? '&#9650;' : d < 0 ? '&#9660;' : '') + ' ' + Math.abs(d * 100).toFixed(2) + ' pts</span>' +
-          '<span class="tk-chg ' + (d > 0 ? 'down' : d < 0 ? 'up' : 'flat') + '">from ' + monthName(prevM) + estNote(prevM) + '</span></div>' +
-        (o0 != null ? '<p class="tk-status"><a href="?t=' + encodeURIComponent(V.other) + '" data-macro="' + V.other + '" style="color:inherit;text-decoration:underline;text-underline-offset:3px">' + O.short + '</a> <b>' + pct(o0) + '</b> <span class="tk-st-why">' + O.note + ', ' + monthName(last, true) + '</span></p>' : '') +
+          '<span class="tk-pill ' + dcls(hc) + '">' + (dcls(hc) === 'down' ? '&#9650;' : dcls(hc) === 'up' ? '&#9660;' : '') + ' ' + Math.abs(hc * 100).toFixed(2) + ' pts</span>' +
+          '<span class="tk-chg ' + dcls(hc) + '">' + hl + '</span></div>' +
+        '<p class="tk-status">Status <span class="tk-st ' + st[1] + '">' + st[0] + '</span> <span class="tk-st-why">' + pts(d) + ' from ' + monthName(prevM) + estNote(prevM) +
+          (o0 != null ? ' &middot; <a href="?t=' + encodeURIComponent(V.other) + '" data-macro="' + V.other + '" style="color:inherit;text-decoration:underline;text-underline-offset:3px">' + O.short + '</a> ' + pct(o0) : '') + '</span></p>' +
+        '<div class="tk-perf tk-perf-top tk-perf-8" aria-label="Change in the 12-month rate">' + tiles.map(function (p) {
+          var v = p[1];
+          return '<button type="button" data-r="' + p[0] + '" aria-pressed="' + (p[0] === state.range) + '" title="Change in the 12-month rate, ' + p[0] + '. Click to show it on the chart"><span>' + p[0] + '</span><b class="' + dcls(v) + '">' + (v == null ? '-' : pts(v)) + '</b></button>';
+        }).join('') + '</div>' +
         '<div class="tk-tabs" role="tablist" aria-label="Chart range">' +
           macroRanges().map(function (r) { return '<button type="button" role="tab" data-r="' + r.id + '" aria-selected="' + (r.id === state.range) + '">' + r.id + '</button>'; }).join('') +
         '</div>' +
         '<div class="tk-chart" id="tk-chart"></div>' + estLine +
         '<div class="tk-section"><h2>Key Stats' + explain() + '</h2>' + explainP(EXPLAIN.cpi) + '<dl class="tk-stats">' +
           stat(V.short + ', 12-month', pct(c0) + '<span class="note">' + monthName(last, true) + estNote(last) + '</span>') +
+          stat('Previous month', pct(c1) + '<span class="note">' + monthName(prevM, true) + estNote(prevM) + '</span>') +
           stat('A year earlier', pct(yearAgo) + '<span class="note">' + (yearAgo != null ? pts(c0 - yearAgo) : '') + '</span>') +
           stat('Last month', pct(mom) + '<span class="note">not annualized</span>') +
           stat('Last 3 months, annualized', pct(ann3)) +
@@ -1569,7 +1597,7 @@
           stat('Data since', monthName(X.months[0], true)) +
         '</dl></div>' +
       '</div>';
-      root.querySelectorAll('.tk-tabs button').forEach(function (bt) {
+      root.querySelectorAll('.tk-tabs button, .tk-perf button').forEach(function (bt) {
         bt.addEventListener('click', function () { state.range = bt.getAttribute('data-r'); syncUrl(); renderMacro(); });
       });
       root.querySelectorAll('a[data-macro]').forEach(function (a) {
@@ -1588,11 +1616,11 @@
       if (!yieldRanges().some(function (x) { return x.id === state.range; })) state.range = '1Y';
       syncUrl(); setPop(false);
       document.title = V.name + ': Ticker Lookup: Composer Atlas';
-      root.innerHTML = '<p class="tk-asof">Loading the ' + V.short + ' yield...</p>';
+      root.innerHTML = '<p class="tk-asof">Loading the ' + V.short + (V.ffr ? '' : ' yield') + '...</p>';
       Promise.all([loadYield(key), loadYieldsLatest()]).then(function (res) {
         if (state.ticker !== key) return;
         var Y = res[0];
-        if (!Y || !Y.dates || Y.dates.length < 2) { root.innerHTML = '<p class="tk-asof">The ' + V.short + ' yield file (data/yields/' + key + '.js) could not be loaded.</p>'; return; }
+        if (!Y || !Y.dates || Y.dates.length < 2) { root.innerHTML = '<p class="tk-asof">The ' + V.short + (V.ffr ? '' : ' yield') + ' file (data/yields/' + key + '.js) could not be loaded.</p>'; return; }
         state.macro = { key: key, V: V, Yd: Y, L: res[1] || {}, daily: true, keys: Y.dates, vals: Y.values.map(function (v) { return v / 100; }), est: {}, goal: false };
         renderYield();
         renderPopular();
@@ -1639,10 +1667,11 @@
       var yr = D.slice(Math.max(0, indexOnOrBefore(D, isoMinusMonths(last, 12)))), hiI = 0, loI = 0, base = n - yr.length;
       for (var i = base; i < n; i++) { if (Vv[i] > Vv[base + hiI]) hiI = i - base; if (Vv[i] < Vv[base + loI]) loI = i - base; }
       var be = V.tips && X.key === 'TIPS10Y' && L.US10Y && L.US10Y[0] === last ? L.US10Y[1] - y0 : null;
-      var tenTwo = !V.tips && L.US10Y && L.US2Y && L.US10Y[0] === L.US2Y[0] ? L.US10Y[1] - L.US2Y[1] : null;
+      var tenTwo = !V.tips && !V.ffr && L.US10Y && L.US2Y && L.US10Y[0] === L.US2Y[0] ? L.US10Y[1] - L.US2Y[1] : null;
       root.innerHTML = '<div>' +
         '<p class="tk-name">' + V.name + '</p>' +
-        '<p class="tk-sym">U.S. Treasury: ' + X.key + '<span class="tk-upd" title="The Treasury&rsquo;s daily ' + (V.tips ? 'par real yield curve' : 'par yield curve') + ', read from market quotes at about 3:30 PM ET (' + etTime(nyCloseSec(last)) + ')"> &middot; As of ' + localTime(nyCloseSec(last)) + '</span></p>' +
+        (V.ffr ? '<p class="tk-sym">New York Fed: EFFR<span class="tk-upd" title="The effective federal funds rate for ' + fmtDate(last, true) + ', the volume-weighted median of overnight fed funds trades, published by the New York Fed at about 9 AM ET the next business day"> &middot; Rate for ' + fmtDate(last, true) + '</span></p>' :
+        '<p class="tk-sym">U.S. Treasury: ' + X.key + '<span class="tk-upd" title="The Treasury&rsquo;s daily ' + (V.tips ? 'par real yield curve' : 'par yield curve') + ', read from market quotes at about 3:30 PM ET (' + etTime(nyCloseSec(last)) + ')"> &middot; As of ' + localTime(nyCloseSec(last)) + '</span></p>') +
         '<div class="tk-price-row"><span class="tk-price">' + y0.toFixed(2) + '%</span>' +
           '<span class="tk-pill ' + cls(hc) + '">' + (Math.round(hc * 100) > 0 ? '&#9650;' : Math.round(hc * 100) < 0 ? '&#9660;' : '') + ' ' + Math.abs(Math.round(hc * 100)) + ' bps</span>' +
           '<span class="tk-chg ' + cls(hc) + '">' + hl + '</span></div>' +
@@ -1655,7 +1684,9 @@
           yieldRanges().map(function (r) { return '<button type="button" role="tab" data-r="' + r.id + '" aria-selected="' + (r.id === state.range) + '">' + r.id + '</button>'; }).join('') +
         '</div>' +
         '<div class="tk-chart" id="tk-chart"></div>' +
-        '<div class="tk-section"><h2>Key Stats' + explain() + '</h2>' + explainP(EXPLAIN.yield) + '<dl class="tk-stats">' +
+        '<div class="tk-section"><h2>Key Stats' + explain() + '</h2>' + explainP(V.ffr ? EXPLAIN.ffr : EXPLAIN.yield) + '<dl class="tk-stats">' +
+          (V.ffr && X.Yd.target ? stat('Target range', X.Yd.target[0].toFixed(2) + '% to ' + X.Yd.target[1].toFixed(2) + '%<span class="note">set by the FOMC</span>') : '') +
+          (V.ffr && L.US3M && L.US3M[0] >= last ? stat('3M Treasury gap', ((L.US3M[1] - y0) >= 0 ? '+' : '') + (L.US3M[1] - y0).toFixed(2) + ' pts<span class="note">' + (L.US3M[1] < y0 ? 'market sees cuts ahead' : 'market sees no cuts') + '</span>') : '') +
           stat('Previous Close', Vv[n - 2].toFixed(2) + '%<span class="note">' + fmtDate(D[n - 2]) + '</span>') +
           stat('Day Change', '<span class="tk-st-fig ' + (Math.round(d1 * 100) === 0 ? '' : d1 > 0 ? 'r1' : 'g1') + '">' + bps(d1) + '</span>') +
           stat('52-week high', Vv[base + hiI].toFixed(2) + '%<span class="note">' + fmtDate(D[base + hiI], true).replace(/^\w+, /, '') + '</span>') +
@@ -1802,7 +1833,7 @@
      ['^RUT', 'Russell 2000 index', 'RUT'], ['CPI', 'CPI inflation, 12-month (BLS via FRED)', 'CPI|INFLATION|CPIAUCSL'], ['CORE CPI', 'Core CPI inflation, without food and energy', 'CORE CPI|CORECPI|CORE|CORE INFLATION|CPILFESL']
     ].forEach(function (x) { x[2].split(x[2].indexOf('|') >= 0 ? '|' : ' ').forEach(function (k) { MARKET_ALIAS[k] = [x[0], x[1]]; }); });
     Object.keys(MACRO_ALIAS).forEach(function (k) { var v = MACRO_VIEWS[MACRO_ALIAS[k]]; if (v.yield) MARKET_ALIAS[k] = [MACRO_ALIAS[k], v.name]; });
-    function marketTag(t) { return MACRO_VIEWS[t] ? (MACRO_VIEWS[t].yield ? 'Yield' : 'Economy') : t.slice(-4) === '-USD' ? 'Crypto' : t.slice(-2) === '=F' ? 'Futures' : 'Index'; }
+    function marketTag(t) { return MACRO_VIEWS[t] ? (MACRO_VIEWS[t].ffr ? 'Rate' : MACRO_VIEWS[t].yield ? 'Yield' : 'Economy') : t.slice(-4) === '-USD' ? 'Crypto' : t.slice(-2) === '=F' ? 'Futures' : 'Index'; }
     function build(raw) {
       var q = raw.trim().toUpperCase().replace(/\s+/g, ' '); if (!q) return [];
       var out = localMatches(q), seen = {};
@@ -1934,7 +1965,7 @@
       document.documentElement.classList.add('tk-printing');
       var t = state.ticker || '';
       var DISCORD = 'https://discord.com/invite/6bnZFtNd5p', page = 'https://composeratlas.com/ticker?t=' + encodeURIComponent(t);
-      var upd = state.macro ? (state.macro.daily ? localTime(nyCloseSec(state.macro.keys[state.macro.keys.length - 1])) : 'Through ' + monthName(state.macro.months[state.macro.months.length - 1])) : state.series ? updatedLine().replace(/^(As of|Close) /, '') : '';
+      var upd = state.macro ? (state.macro.daily ? state.macro.V.ffr ? 'Rate for ' + fmtDate(state.macro.keys[state.macro.keys.length - 1], true) : localTime(nyCloseSec(state.macro.keys[state.macro.keys.length - 1])) : 'Through ' + monthName(state.macro.months[state.macro.months.length - 1])) : state.series ? updatedLine().replace(/^(As of|Close) /, '') : '';
       document.getElementById('tk-print-head').innerHTML =
         // Every header line is a link, as in the weekly report: the brand to the
         // site, the subtitle to this page, Discord and the price time to Discord.
@@ -1989,6 +2020,7 @@
           '<li><b>Signals</b> score RSI (14), the 52-week range and the 200-day average as Strong, Neutral or Caution, as on the Azqato weekly report.</li>' +
           '<li><b>Inflation</b>: type <a href="?t=CPI" data-macro="CPI">CPI</a> or <a href="?t=CORE%20CPI" data-macro="CORE CPI">core CPI</a> for the 12-month rate since 1948, from BLS via FRED, refreshed daily.</li>' +
           '<li><b>Yields</b>: type <a href="?t=US10Y" data-t="US10Y">10Y</a>, <a href="?t=US2Y" data-t="US2Y">2Y</a>, <a href="?t=US3M" data-t="US3M">3M</a> or <a href="?t=TIPS10Y" data-t="TIPS10Y">10Y TIPS</a> for the daily Treasury and TIPS yields, from the U.S. Treasury since 1990.</li>' +
+          '<li><b>Fed funds rate</b>: type <a href="?t=FEDFUNDS" data-t="FEDFUNDS">fed funds</a> or EFFR for the daily effective federal funds rate and the Fed&rsquo;s target range, since 1954.</li>' +
           '<li><b>Print</b> with Ctrl+P for a one-page Letter summary.</li>' +
         '</ol>' +
         '<div class="tk-chips"><span class="tk-try">Try:</span>' + tryList.map(function (t) {
