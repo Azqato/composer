@@ -10,6 +10,18 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.87.4] - 2026-11-25 - Ticker Lookup: 10-Day RSI panel, RSI bands, clickable cumulative Performance, exchange preference
+
+- **10-Day RSI checkbox** beside the MA overlays. RSI runs 0 to 100, so it draws in its own panel under the price chart (same dates and left gutter, dashed 30 and 70 lines, a solid 50) rather than on a second axis. Each point uses the same trailing ~1-year Wilder window as the Technicals value, so the panel's last point equals RSI (10) there and on the RSI Signals page. Hover shows the RSI in the tooltip and a crosshair in both panels. Daily ranges only; hidden on 1D.
+- **RSI bands in Technicals**, as on the Azqato weekly report: Oversold below 30, Pullback 30 to 45, Neutral 45 to 60, Elevated 60 to 70, Overbought above 70, for both RSI (10) and RSI (14). Before, only Oversold and Overbought were flagged.
+- **Performance is cumulative.** 3Y, 5Y and 10Y now show the total return over the period, not per year, matching the weekly report.
+- **Performance tiles are buttons**: clicking one switches the chart to that range, and the tile for the current range is outlined.
+- A company-name search now opens the best listing by exchange, not just Yahoo's first suggestion: Nasdaq and NYSE (with NYSE American, Arca and Cboe US) first, then London, then other home markets (Paris, Xetra, Tokyo, Hong Kong, Toronto and so on), then regional venues and any exchange not listed, with US OTC last. Within a tier Yahoo's own order is kept. The "also listed as" line follows the same order.
+- Examples on live results: informa plc opens INF.L (not the OTC IFJPY), lvmh MC.PA, nestle NESN.SW, toyota TM, shell SHEL.
+- London's International Orderbook (.IL depositary receipts) is not in the London tier, so samsung opens 005930.KS rather than SMSN.IL.
+
+---
+
 ## [1.87.3] - 2026-11-25 - Ticker Lookup: opens on 1D, remembers the range and the Popular panel
 
 - **Opens on 1D:** a ticker now opens on the 1D chart instead of 1Y.

@@ -92,6 +92,7 @@
     .tk-key { width: 14px; height: 2px; display: inline-block; border-radius: 1px; }
 
     .tk-chart { position: relative; height: 320px; touch-action: pan-y; user-select: none; cursor: crosshair; }
+    .tk-chart.tk-rsi { height: 160px; margin-top: 10px; }
     .tk-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
     .tk-chart .grid line { stroke: var(--color-border); stroke-width: 1; opacity: 0.8; stroke-dasharray: 4 4; }
     .tk-chart .axis text { fill: var(--color-secondary); font-size: 11px; font-variant-numeric: tabular-nums; }
@@ -126,11 +127,16 @@
     .tk-st.n { color: var(--color-primary); }
     .tk-st-why { margin-left: 6px; }
     .tk-flag { font-size: 0.75rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
-    .tk-flag.os { background: rgba(var(--rgb-green), 0.14); color: var(--color-positive); }
-    .tk-flag.ob { background: rgba(var(--rgb-red), 0.14); color: var(--color-negative); }
+    .tk-flag.g3 { background: rgba(var(--rgb-green), 0.16); color: var(--color-positive); }
+    .tk-flag.g1 { color: var(--color-positive); border: 1px solid rgba(var(--rgb-green), 0.35); }
+    .tk-flag.n { color: var(--color-secondary); border: 1px solid var(--color-border); }
+    .tk-flag.r1 { color: var(--color-negative); border: 1px solid rgba(var(--rgb-red), 0.35); }
+    .tk-flag.r3 { background: rgba(var(--rgb-red), 0.16); color: var(--color-negative); }
 
     .tk-perf { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
-    .tk-perf div { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 10px 12px; }
+    .tk-perf button { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 10px 12px; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+    .tk-perf button:hover { border-color: var(--color-border-hover); }
+    .tk-perf button[aria-pressed="true"] { border-color: var(--color-primary); box-shadow: inset 0 0 0 1px var(--color-primary); }
     .tk-perf span { display: block; color: var(--color-secondary); font-size: 0.75rem; margin-bottom: 4px; }
     .tk-perf b { white-space: nowrap; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
     .tk-perf b.up { color: var(--color-positive); } .tk-perf b.down { color: var(--color-negative); } .tk-perf b.na { color: var(--color-disabled); font-weight: 400; }
@@ -186,6 +192,8 @@
        preparePrint) because it is an SVG sized in pixels to its container. */
     .tk-print-head { display: none; }
     html.tk-printing .tk-chart { width: 7.5in; height: 2.8in; }
+    html.tk-printing .tk-chart:has(+ .tk-rsi:not([hidden])) { height: 2.2in; }
+    html.tk-printing .tk-chart.tk-rsi { height: 0.85in; }
     .tk-foot-print, .tk-print-foot { display: none; }
     @page { size: letter; margin: 0.45in 0.5in; }
     @media print {
@@ -223,13 +231,15 @@
       .tk-asof { margin-top: 2px; }
       .tk-overlays { margin: 10px 0 2px; }
       .tk-chart { width: 7.5in; height: 2.8in; break-inside: avoid; }
+      .tk-chart:has(+ .tk-rsi:not([hidden])) { height: 2.2in; }
+      .tk-chart.tk-rsi { height: 0.85in; margin-top: 2px; }
       .tk-tip, #tk-hover, #tk-sel { display: none !important; }
       .tk-section { margin-top: 14px; break-inside: avoid; }
       .tk-section h2 { font-size: 11pt; }
       .tk-section .tk-sub { margin-bottom: 4px; font-size: 8pt; }
       .tk-stat { padding: 4px 0; font-size: 9pt; }
       .tk-perf { grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 4px; }
-      .tk-perf div { padding: 5px 6px; border-radius: 4px; }
+      .tk-perf button { padding: 5px 6px; border-radius: 4px; box-shadow: none !important; border-color: var(--color-border) !important; }
       .tk-perf span { font-size: 7.5pt; margin-bottom: 2px; }
       .tk-perf b { font-size: 9pt; }
       .tk-foot { display: none !important; }
@@ -427,7 +437,7 @@
       { id: '10Y', months: 120 }, { id: 'Max', all: true }
     ];
 
-    var state = { ticker: null, series: null, range: '1D', ma50: false, ma200: false };
+    var state = { ticker: null, series: null, range: '1D', ma50: false, ma200: false, rsi: false };
     var universe = [];
     var root = document.getElementById('tk-root');
 
@@ -489,6 +499,14 @@
     function sma(c, n, end) { // average of the n closes ending at index end
       if (end + 1 < n) return null;
       var s = 0; for (var i = end - n + 1; i <= end; i++) s += c[i]; return s / n;
+    }
+    // RSI (Wilder) for each close from index a to b, each computed exactly as
+    // wilderRsi does (the trailing ~1 trading year), so the panel's last point
+    // equals the RSI (10) in Technicals and on the RSI Signals page.
+    function rsiSeries(c, period, a, b) {
+      var out = [];
+      for (var i = a; i <= b; i++) out.push(wilderRsi(c.slice(Math.max(0, i - 259), i + 1), period));
+      return out;
     }
     function smaSeries(c, n) {
       var out = new Array(c.length), s = 0;
@@ -570,7 +588,14 @@
         var mu = rets.reduce(function (a, b) { return a + b; }, 0) / rets.length;
         v30 = Math.sqrt(rets.reduce(function (a, b) { return a + (b - mu) * (b - mu); }, 0) / (rets.length - 1) * 252);
       }
-      function rsiFlag(r) { return r == null ? '' : r < 30 ? '<span class="tk-flag os">Oversold</span>' : r > 70 ? '<span class="tk-flag ob">Overbought</span>' : ''; }
+      // RSI bands, as on the Azqato weekly report: Oversold below 30, Pullback
+      // 30 to 45 (the method's Strong zone), Neutral 45 to 60, Elevated 60 to
+      // 70, Overbought above 70 (Caution).
+      function rsiFlag(r) {
+        if (r == null) return '';
+        var b = r < 30 ? ['Oversold', 'g3'] : r <= 45 ? ['Pullback', 'g1'] : r < 60 ? ['Neutral', 'n'] : r <= 70 ? ['Elevated', 'r1'] : ['Overbought', 'r3'];
+        return '<span class="tk-flag ' + b[1] + '" title="Oversold below 30, Pullback 30 to 45, Neutral 45 to 60, Elevated 60 to 70, Overbought above 70">' + b[0] + '</span>';
+      }
       function vsMa(m) { return m ? '<span class="tk-chg ' + dir(last / m - 1) + '">' + fmtPct(last / m - 1, true) + '</span><span class="note">' + fmtPxC(m) + '</span>' : '-'; }
       function stat(label, val) { return '<div class="tk-stat"><dt>' + label + '</dt><dd>' + val + '</dd></div>'; }
       var cross = m50 && m200 ? (m50 > m200 ? '50d above 200d' : '50d below 200d') : '-';
@@ -593,8 +618,8 @@
         ' <span class="tk-st-why">' + fmtPct(Math.abs(st[2])) + ' ' + st[3] + '</span></p>' : '';
 
       var perf = [['1W', n > 5 ? last / c[n - 6] - 1 : null], ['1M', trailing(s, 1, false)], ['3M', trailing(s, 3, false)],
-        ['6M', trailing(s, 6, false)], ['YTD', ytd], ['1Y', trailing(s, 12, false)], ['3Y /yr', trailing(s, 36, true)],
-        ['5Y /yr', trailing(s, 60, true)], ['10Y /yr', trailing(s, 120, true)]];
+        ['6M', trailing(s, 6, false)], ['YTD', ytd], ['1Y', trailing(s, 12, false)], ['3Y', trailing(s, 36, false)],
+        ['5Y', trailing(s, 60, false)], ['10Y', trailing(s, 120, false)]];
 
       root.innerHTML =
         '<div>' +
@@ -614,8 +639,10 @@
           '<div class="tk-overlays">' +
             '<label><input type="checkbox" id="tk-ma50"' + (state.ma50 ? ' checked' : '') + '><span class="tk-key" style="background:var(--color-blue)"></span>50-Day MA</label>' +
             '<label><input type="checkbox" id="tk-ma200"' + (state.ma200 ? ' checked' : '') + '><span class="tk-key" style="background:var(--color-purple)"></span>200-Day MA</label>' +
+            '<label><input type="checkbox" id="tk-rsi10"' + (state.rsi ? ' checked' : '') + '><span class="tk-key" style="background:var(--color-teal)"></span>10-Day RSI</label>' +
           '</div>' +
           '<div class="tk-chart" id="tk-chart"></div>' +
+          '<div class="tk-chart tk-rsi" id="tk-rsi" hidden></div>' +
 
           '<div class="tk-section"><h2>Key Stats</h2><dl class="tk-stats">' +
             stat('Previous Close', fmtPxC(prev)) +
@@ -639,16 +666,17 @@
             stat('30-Day Volatility', v30 != null ? fmtPct(v30) + '<span class="note">annualized</span>' : '-') +
           '</dl></div>' +
 
-          '<div class="tk-section"><h2>Performance</h2><p class="tk-sub">Total return; 3Y and longer are per year.</p><div class="tk-perf">' +
-            perf.map(function (p) { var v = p[1]; return '<div><span>' + p[0] + '</span><b class="' + (v == null ? 'na' : dir(v)) + '">' + fmtPct(v, true) + '</b></div>'; }).join('') +
+          '<div class="tk-section"><h2>Performance</h2><p class="tk-sub">Total return over each period, cumulative (not per year).</p><div class="tk-perf">' +
+            perf.map(function (p) { var v = p[1]; return '<button type="button" data-r="' + p[0] + '" aria-pressed="' + (p[0] === state.range) + '" title="Show ' + p[0] + ' on the chart"><span>' + p[0] + '</span><b class="' + (v == null ? 'na' : dir(v)) + '">' + fmtPct(v, true) + '</b></button>'; }).join('') +
           '</div></div>' +
         '</div>';
 
-      root.querySelectorAll('.tk-tabs button').forEach(function (b) {
+      root.querySelectorAll('.tk-tabs button, .tk-perf button').forEach(function (b) {
         b.addEventListener('click', function () { state.range = b.getAttribute('data-r'); savePref(RANGE_KEY, state.range); syncUrl(); render(); });
       });
       document.getElementById('tk-ma50').addEventListener('change', function (e) { state.ma50 = e.target.checked; drawChart(); });
       document.getElementById('tk-ma200').addEventListener('change', function (e) { state.ma200 = e.target.checked; drawChart(); });
+      document.getElementById('tk-rsi10').addEventListener('change', function (e) { state.rsi = e.target.checked; drawChart(); });
       drawChart();
       renderPopular();
       sparkFetch(POPULAR.map(function (x) { return x[0]; }).concat(relatedPeers()));
@@ -674,6 +702,11 @@
       // An MA overlay is offered only when the window holds at least that many
       // trading days; the reader's tick is kept for a longer range.
       function maToggle(n, on) { var cb = document.getElementById('tk-ma' + n); if (cb) cb.closest('label').hidden = !on; return on; }
+      // 10-day RSI: its own panel under the price chart (it is 0-100, so it
+      // never shares the price axis). Daily ranges only.
+      var rsiEl = document.getElementById('tk-rsi'), rsiCb = document.getElementById('tk-rsi10'), rs = null;
+      if (rsiCb) rsiCb.closest('label').hidden = intra;
+      if (rsiEl) { rsiEl.hidden = true; rsiEl.innerHTML = ''; rsiEl.onpointermove = rsiEl.onpointerleave = null; }
       if (intra) {
         maToggle(50, false); maToggle(200, false);
         if (!I || I.t !== state.ticker || I.err) {
@@ -692,6 +725,7 @@
         dates = s.dates.slice(a, b + 1); c = s.closes.slice(a, b + 1);
         ma = { 50: maToggle(50, n >= 50) && state.ma50 ? smaSeries(s.closes, 50).slice(a, b + 1) : null,
                200: maToggle(200, n >= 200) && state.ma200 ? smaSeries(s.closes, 200).slice(a, b + 1) : null };
+        if (state.rsi && rsiEl) rs = rsiSeries(s.closes, 10, a, b);
       }
       var chg = c[c.length - 1] / (prev || c[0]) - 1, up = chg >= 0;
       // The headline pill and amount follow the selected range, as on Google
@@ -814,6 +848,25 @@
             '<circle id="tk-hd" r="5" fill="' + col + '" stroke="var(--color-bg)" stroke-width="2"/></g>' +
         '</svg><div class="tk-tip" id="tk-tip" hidden></div>';
 
+      var rx = null;
+      if (rs) {
+        rsiEl.hidden = false;
+        var RH = rsiEl.clientHeight || 120, rT = 20, rB = 8, RY = function (v) { return rT + (1 - v / 100) * (RH - rT - rB); };
+        var rp = '', pen = false, rg = '', ra = '';
+        rs.forEach(function (v, i) { if (v == null) { pen = false; return; } rp += (pen ? 'L' : 'M') + X(i).toFixed(1) + ' ' + RY(v).toFixed(1); pen = true; });
+        [30, 50, 70].forEach(function (v) {
+          rg += '<line' + (v === 50 ? '' : ' class="hl"') + ' x1="' + padL + '" x2="' + (W - padR) + '" y1="' + RY(v).toFixed(1) + '" y2="' + RY(v).toFixed(1) + '"/>';
+          ra += '<text x="' + (padL - 8) + '" y="' + (RY(v) + 4).toFixed(1) + '" text-anchor="end">' + v + '</text>';
+        });
+        var rl = rs[rs.length - 1];
+        ra += '<text class="lbl" x="' + padL + '" y="12">RSI (10)' + (rl != null ? ' ' + rl.toFixed(2) + (rl < 30 ? ' oversold' : rl > 70 ? ' overbought' : '') : '') + '</text>' +
+              '<text x="' + (W - padR) + '" y="12" text-anchor="end">70 overbought, 30 oversold</text>';
+        rsiEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + RH + '" role="img" aria-label="' + esc(state.ticker) + ' 10-day RSI, ' + r.id + '">' +
+          '<g class="grid">' + rg + '</g><path d="' + rp + '" fill="none" stroke="var(--color-teal)" stroke-width="1.5" stroke-linejoin="round"/>' +
+          '<g class="axis">' + ra + '</g>' +
+          '<line id="tk-rx" y1="' + rT + '" y2="' + (RH - rB) + '" stroke="var(--color-border-strong)" stroke-dasharray="3 3" visibility="hidden"/></svg>';
+        rx = rsiEl.querySelector('#tk-rx');
+      }
       var svg = el.querySelector('svg'), hv = el.querySelector('#tk-hover'), hx = el.querySelector('#tk-hx'), hd = el.querySelector('#tk-hd'), tip = el.querySelector('#tk-tip');
       // Hover shows one day. Press and drag (mouse or finger) to measure the
       // change between two days: the span is shaded and the tooltip gives the
@@ -839,6 +892,7 @@
       function show(clientX) {
         var i = idxAt(clientX), px = X(i), py = Y(c[i]);
         hx.setAttribute('x1', px); hx.setAttribute('x2', px); hd.setAttribute('cx', px); hd.setAttribute('cy', py);
+        if (rx) { rx.setAttribute('x1', px); rx.setAttribute('x2', px); rx.setAttribute('visibility', 'visible'); }
         hv.setAttribute('visibility', 'visible');
         if (anchor !== null && anchor !== i) {
           var a0 = Math.min(anchor, i), a1 = Math.max(anchor, i), d = c[a1] - c[a0], pct = c[a1] / c[a0] - 1;
@@ -856,9 +910,10 @@
         var extra = '';
         if (ma[50] && ma[50][i] != null) extra += ' &middot; 50d ' + fmtPxC(ma[50][i]);
         if (ma[200] && ma[200][i] != null) extra += ' &middot; 200d ' + fmtPxC(ma[200][i]);
+        if (rs && rs[i] != null) extra += ' &middot; RSI ' + rs[i].toFixed(1);
         place('<b>' + fmtPxC(c[i]) + ' ' + esc((state.meta && state.meta.currency) || 'USD') + '</b>' + when(i, days > 300) + extra, px);
       }
-      function hide() { hv.setAttribute('visibility', 'hidden'); sel.setAttribute('visibility', 'hidden'); tip.hidden = true; anchor = null; }
+      function hide() { if (rx) rx.setAttribute('visibility', 'hidden'); hv.setAttribute('visibility', 'hidden'); sel.setAttribute('visibility', 'hidden'); tip.hidden = true; anchor = null; }
       el.onpointermove = function (e) { show(e.clientX); };
       el.onpointerdown = function (e) {
         if (e.button > 0) return;
@@ -872,6 +927,7 @@
         if (e.pointerType === 'mouse') show(e.clientX); else hide();
       };
       el.onpointerleave = function () { if (anchor === null) hide(); };
+      if (rs) { rsiEl.onpointermove = function (e) { anchor = null; show(e.clientX); }; rsiEl.onpointerleave = hide; }
     }
 
     // Popular: a fixed list of broad index funds, as on the owner's watchlist.
@@ -1263,13 +1319,36 @@
     // company (LVMH -> MC.PA Paris, LVMUY US ADR, MOH.DE Xetra...), which is
     // what makes foreign stocks findable when their symbol is not the name.
     var yPending = {};
+    // Which listing a name search opens, and the order of Yahoo's suggestions:
+    // US majors, then London, then other home markets, then regional and
+    // pan-European venues (and any exchange not listed), then US OTC. Codes
+    // are Yahoo's `exchange` field. London's International Orderbook (IOB,
+    // ".IL" depositary receipts) is left out of the London tier on purpose,
+    // so a foreign company opens on its home listing (Samsung: 005930.KS).
+    var EXCH_TIERS = [
+      ['NMS', 'NGM', 'NCM', 'NAS', 'NYQ', 'NYS', 'ASE', 'PCX', 'BTS'],                  // Nasdaq, NYSE, NYSE American/Arca, Cboe US
+      ['LSE'],                                                                           // London
+      ['PAR', 'GER', 'AMS', 'BRU', 'MIL', 'MCE', 'EBS', 'VIE', 'CPH', 'STO', 'HEL', 'OSL', 'LIS', 'ISE',
+       'JPX', 'TYO', 'HKG', 'SHH', 'SHZ', 'KSC', 'KOE', 'TAI', 'TWO', 'ASX', 'NZE', 'TOR', 'VAN', 'CNQ',
+       'NSI', 'BSE', 'SES', 'SAO', 'MEX', 'JNB', 'TLV', 'SAU', 'IST', 'WSE', 'PRA', 'ATH']  // home markets
+    ];
+    var EXCH_OTC = ['PNK', 'OQB', 'OQX', 'OBB', 'OEM', 'OGM'];
+    function exchRank(code) {
+      code = String(code || '').toUpperCase();
+      for (var k = 0; k < EXCH_TIERS.length; k++) if (EXCH_TIERS[k].indexOf(code) >= 0) return k;
+      return EXCH_OTC.indexOf(code) >= 0 ? EXCH_TIERS.length + 1 : EXCH_TIERS.length; // unknown sits above OTC
+    }
     function searchYahoo(q) {
       if (yCache[q]) return Promise.resolve(yCache[q]);
       if (!yPending[q]) yPending[q] = relayJson('https://query1.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(q) + '&quotesCount=8&newsCount=0&listsCount=0')
         .then(function (j) {
-          return (yCache[q] = ((j && j.quotes) || []).filter(function (x) { return x.symbol && x.quoteType !== 'OPTION'; }).map(function (x) {
-            return { t: String(x.symbol).toUpperCase(), name: x.longname || x.shortname || '', exch: x.exchDisp || '', tag: [x.exchDisp, x.typeDisp || x.quoteType].filter(Boolean).join(' · ') };
-          }));
+          var rows = ((j && j.quotes) || []).filter(function (x) { return x.symbol && x.quoteType !== 'OPTION'; }).map(function (x, i) {
+            return { t: String(x.symbol).toUpperCase(), name: x.longname || x.shortname || '', exch: x.exchDisp || '',
+              tag: [x.exchDisp, x.typeDisp || x.quoteType].filter(Boolean).join(' · '), rank: exchRank(x.exchange), i: i };
+          });
+          // Preferred exchanges first (EXCH_TIERS), Yahoo's own order within a tier.
+          rows.sort(function (a, b) { return a.rank - b.rank || a.i - b.i; });
+          return (yCache[q] = rows);
         }).catch(function () { return []; }).then(function (r) { delete yPending[q]; return r; });
       return yPending[q];
     }
