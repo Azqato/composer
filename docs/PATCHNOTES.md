@@ -10,6 +10,15 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.87.5] - 2026-11-25 - Ticker Lookup: Signals scorecard, Explain notes, Recently Viewed
+
+- **Signals** section: the Index & ETF Method's three per-fund timing signals from the weekly report, from the viewed ticker's own prices only (no VIX or AAII): RSI (14) Strong at 45 or below, Caution above 70; 52-Week Range position Strong in the lower 25%, Caution in the top 10% (labels Lower, Middle, Upper, Top); vs 200-Day MA Strong more than 2% above, Caution more than 2% below (Above, Average, Below). A count reads e.g. "1 of 3 Strong, 1 of 3 Caution". The range uses closing prices, where the report uses intraday highs and lows, so positions can differ by a few points.
+- **Explain** buttons on Technicals, Signals and Performance open a plain-language note, written like the weekly report's (what RSI and the averages mean, how each signal and Status are decided, that the signals are for extra cash, that returns are cumulative and include dividends). Hidden in print.
+- **Recently Viewed** table: each ticker opened in this browser (newest 12, `ca-ticker-recent`) with price, day, 1M, YTD and 1Y return, RSI (10), Status and the close date, the current one highlighted; rows open the ticker, Clear empties it. Shown on a ticker page once there are two, and on the landing page. Hidden in print.
+- Landing page instructions mention the RSI panel, drag-to-measure and Signals.
+
+---
+
 ## [1.87.4] - 2026-11-25 - Ticker Lookup: 10-Day RSI panel, RSI bands, clickable cumulative Performance, exchange preference
 
 - **10-Day RSI checkbox** beside the MA overlays. RSI runs 0 to 100, so it draws in its own panel under the price chart (same dates and left gutter, dashed 30 and 70 lines, a solid 50) rather than on a second axis. Each point uses the same trailing ~1-year Wilder window as the Technicals value, so the panel's last point equals RSI (10) there and on the RSI Signals page. Hover shows the RSI in the tooltip and a crosshair in both panels. Daily ranges only; hidden on 1D.

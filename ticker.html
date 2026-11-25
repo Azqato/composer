@@ -109,9 +109,29 @@
 
     .tk-section { margin-top: 28px; }
     .tk-section h2 { color: var(--color-primary); font-size: 1rem; font-weight: 600; margin: 0 0 4px; }
+    .tk-section h2 { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+    .tk-explain { font: inherit; font-size: 0.75rem; font-weight: 500; color: var(--color-secondary); background: none; cursor: pointer; border: 1px solid var(--color-border); border-radius: 999px; padding: 1px 9px; }
+    .tk-explain:hover, .tk-explain[aria-expanded="true"] { color: var(--color-primary); border-color: var(--color-border-hover); }
+    .tk-explain-p { margin: 4px 0 10px; font-size: 0.8125rem; line-height: 1.65; color: var(--color-secondary); max-width: 860px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 10px 14px; }
+    .tk-sig-n { font-weight: 600; margin-left: 4px; } .tk-sig-n.up { color: var(--color-positive); } .tk-sig-n.down { color: var(--color-negative); }
+    .tk-recent-clear { margin-left: auto; font: inherit; font-size: 0.75rem; font-weight: 500; color: var(--color-secondary); background: none; border: 1px solid var(--color-border); border-radius: 999px; padding: 1px 9px; cursor: pointer; }
+    .tk-recent-clear:hover { color: var(--color-primary); }
+    .tk-recent-wrap { overflow-x: auto; }
+    .tk-recent-t { width: 100%; border-collapse: collapse; font-size: 0.8125rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .tk-recent-t th { text-align: right; font-weight: 500; color: var(--color-secondary); padding: 6px 10px; border-bottom: 1px solid var(--color-border-strong); }
+    .tk-recent-t td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--color-border); color: var(--color-primary); }
+    .tk-recent-t th:first-child, .tk-recent-t td:first-child { text-align: left; padding-left: 0; }
+    .tk-recent-t td a { font-weight: 600; color: var(--color-primary); text-decoration: none; }
+    .tk-recent-t td a:hover { text-decoration: underline; }
+    .tk-recent-t .nm { color: var(--color-secondary); margin-left: 8px; font-size: 0.75rem; display: inline-block; max-width: 180px; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+    .tk-recent-t td.up { color: var(--color-positive); } .tk-recent-t td.down { color: var(--color-negative); } .tk-recent-t td.na, .tk-recent-t td.dt { color: var(--color-secondary); }
+    .tk-recent-t tr.cur td { background: var(--color-surface); }
+    .tk-recent-t small { color: var(--color-secondary); font-size: 0.6875rem; }
     .tk-section .tk-sub { color: var(--color-secondary); font-size: 0.8125rem; margin: 0 0 12px; line-height: 1.6; }
     .tk-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; }
-    @media (max-width: 560px) { .tk-stats { grid-template-columns: minmax(0, 1fr); } }
+    .tk-stats.tk-sigs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    @media (max-width: 820px) { .tk-stats.tk-sigs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 560px) { .tk-stats, .tk-stats.tk-sigs { grid-template-columns: minmax(0, 1fr); } }
     .tk-stat { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--color-border); font-size: 0.875rem; }
     .tk-stat dt { color: var(--color-secondary); }
     .tk-stat dd { margin: 0; color: var(--color-primary); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
@@ -207,7 +227,7 @@
       }
       html, body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 10pt; }
       #nav-root, .nav, .ref-banner, #breadcrumb-root, #footer-root, footer, h1, .tk-search,
-      .tk-sidecol, .tk-tabs, .tk-all, .tk-overlays input, .tk-overlays label:not(:has(input:checked)) { display: none !important; }
+      .tk-sidecol, .tk-tabs, .tk-all, .tk-explain, .tk-explain-p, .tk-recent, .tk-overlays input, .tk-overlays label:not(:has(input:checked)) { display: none !important; }
       .page { padding-top: 0 !important; }
       .container { padding: 0 !important; max-width: none !important; }
       .py-12 { padding-top: 0 !important; padding-bottom: 0 !important; }
@@ -569,6 +589,62 @@
     // ---- Render ----
     function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
+    // Plain-language notes behind each section's Explain toggle, written the
+    // way the Azqato weekly report explains its pages.
+    var EXPLAIN = {
+      tech: 'RSI (Relative Strength Index) is a score from 0 to 100 that compares recent up days with recent down days. RSI (10) looks back 10 trading days and RSI (14) looks back 14, both Wilder&rsquo;s method over the past year of closes, the same as Composer&rsquo;s conditions. ' +
+        'Below 30 means the price has fallen hard lately (Oversold), 30 to 45 is a pullback, 45 to 60 is neutral, 60 to 70 is elevated, and above 70 means it has risen fast (Overbought). ' +
+        'A moving average is the average close over the last 20, 50 or 200 trading days; the percentage is how far the last close is above or below it. Drawdown is the distance from the all-time closing high. 30-day volatility is how much the daily price swung over the last 30 days, scaled to a year.',
+      sig: 'The Index &amp; ETF Method uses five timing signals to judge whether a moment is a good one to put extra money into a fund. Two are market-wide (the VIX and the AAII survey, on the weekly report); the three here are about this ticker alone. ' +
+        '<b>RSI (14)</b> is Strong at 45 or below and Caution above 70. <b>52-Week Range</b> shows where the price sits between the past year&rsquo;s lowest close (0%) and highest close (100%): Strong in the lower 25%, Caution in the top 10%. ' +
+        '<b>vs 200-Day MA</b> is Strong more than 2% above the 200-day average (the long-term trend is up) and Caution more than 2% below it. Green labels are Strong, red Caution, grey Neutral; Elevated and Upper fill the gaps between the method&rsquo;s bands. ' +
+        'The strongest setup is when they line up: a low RSI and a price near its 52-week low while it still holds above its 200-day average. One Strong reading on its own means much less. The signals are for extra cash you already have, not a reason to pause regular investing. ' +
+        'Status, under the price, is a different reading: Bear 20% or more below the 52-week closing high, Correction 10% or more below it, Bull 20% or more above the 52-week closing low, otherwise Rising or Falling when the price is more than 5% from its 200-day average, else Steady.',
+      perf: 'Total return over each period, from closing prices adjusted for dividends and splits, so it includes dividends reinvested. Every figure is cumulative: 10Y is the whole gain over ten years, not a yearly rate. YTD runs from the last close of the previous year. Click a tile to show that range on the chart.'
+    };
+    // An Explain button sits in the heading; its note is the paragraph right
+    // after the heading, hidden until clicked (see the click handler at boot).
+    function explain() { return '<button type="button" class="tk-explain" aria-expanded="false">Explain</button>'; }
+    function explainP(txt) { return '<p class="tk-explain-p" hidden>' + txt + '</p>'; }
+
+    // Recently Viewed: a snapshot of each ticker as it was last shown (price,
+    // returns, RSI, Status), newest first, kept in this browser so the tickers
+    // can be compared side by side. Figures are as of each snapshot's date;
+    // opening a ticker again refreshes its row.
+    var RECENT_KEY = 'ca-ticker-recent', RECENT_MAX = 12;
+    function readRecent() { try { var a = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+    function saveRecent(row) {
+      try {
+        var a = readRecent().filter(function (x) { return x && x.t !== row.t; });
+        a.unshift(row);
+        localStorage.setItem(RECENT_KEY, JSON.stringify(a.slice(0, RECENT_MAX)));
+      } catch (e) { /* storage blocked: the table just stays empty */ }
+    }
+    function recentHtml(cur) {
+      var a = readRecent();
+      if (a.length < (cur ? 2 : 1)) return '';
+      function pc(v) { return v == null ? '<td class="na">-</td>' : '<td class="' + dir(v) + '">' + fmtPct(v, true) + '</td>'; }
+      return '<div class="tk-section tk-recent"><h2>Recently Viewed <button type="button" class="tk-recent-clear" id="tk-recent-clear">Clear</button></h2>' +
+        '<p class="tk-sub">The tickers you looked up in this browser, side by side. Each row is as of the close shown; open a ticker to refresh it.</p>' +
+        '<div class="tk-recent-wrap"><table class="tk-recent-t"><thead><tr><th>Ticker</th><th>Price</th><th>Day</th><th>1M</th><th>YTD</th><th>1Y</th><th>RSI (10)</th><th>Status</th><th>As of</th></tr></thead><tbody>' +
+        a.map(function (x) {
+          var px = x.last == null ? '-' : (ZERO_DEC[x.cur] ? Math.round(x.last).toLocaleString('en-US') : fmtPx(x.last)) + (x.cur && x.cur !== 'USD' ? ' <small>' + esc(x.cur) + '</small>' : '');
+          return '<tr' + (x.t === cur ? ' class="cur"' : '') + '><td><a href="?t=' + encodeURIComponent(x.t) + '" data-t="' + esc(x.t) + '">' + esc(x.t) + '</a>' +
+            (x.name ? '<span class="nm">' + esc(x.name) + '</span>' : '') + '</td>' +
+            '<td>' + px + '</td>' + pc(x.day) + pc(x.m1) + pc(x.ytd) + pc(x.y1) +
+            '<td>' + (x.rsi == null ? '-' : Math.round(x.rsi)) + '</td>' +
+            '<td>' + (x.st ? '<span class="tk-st ' + esc(x.st[1]) + '">' + esc(x.st[0]) + '</span>' : '-') + '</td>' +
+            '<td class="dt">' + (x.date ? fmtDate(x.date, false).replace(/^\w+, /, '') : '-') + '</td></tr>';
+        }).join('') + '</tbody></table></div></div>';
+    }
+    function bindRecent() {
+      var b = document.getElementById('tk-recent-clear');
+      if (b) b.addEventListener('click', function () {
+        try { localStorage.removeItem(RECENT_KEY); } catch (e) {}
+        var sec = b.closest('.tk-recent'); if (sec) sec.remove();
+      });
+    }
+
     function render() {
       var t = state.ticker, s = state.series, n = s.closes.length, c = s.closes;
       var last = c[n - 1], prev = n > 1 ? c[n - 2] : null, day = prev ? last / prev - 1 : null;
@@ -594,8 +670,9 @@
       function rsiFlag(r) {
         if (r == null) return '';
         var b = r < 30 ? ['Oversold', 'g3'] : r <= 45 ? ['Pullback', 'g1'] : r < 60 ? ['Neutral', 'n'] : r <= 70 ? ['Elevated', 'r1'] : ['Overbought', 'r3'];
-        return '<span class="tk-flag ' + b[1] + '" title="Oversold below 30, Pullback 30 to 45, Neutral 45 to 60, Elevated 60 to 70, Overbought above 70">' + b[0] + '</span>';
+        return tag(b, 'Oversold below 30, Pullback 30 to 45, Neutral 45 to 60, Elevated 60 to 70, Overbought above 70');
       }
+      function tag(b, tip) { return '<span class="tk-flag ' + b[1] + '"' + (tip ? ' title="' + tip + '"' : '') + '>' + b[0] + '</span>'; }
       function vsMa(m) { return m ? '<span class="tk-chg ' + dir(last / m - 1) + '">' + fmtPct(last / m - 1, true) + '</span><span class="note">' + fmtPxC(m) + '</span>' : '-'; }
       function stat(label, val) { return '<div class="tk-stat"><dt>' + label + '</dt><dd>' + val + '</dd></div>'; }
       var cross = m50 && m200 ? (m50 > m200 ? '50d above 200d' : '50d below 200d') : '-';
@@ -616,6 +693,31 @@
         'Bull 20% or more above the 52-week closing low; otherwise the price against its 200-day average: Rising more than 5% above, Falling more than 5% below, otherwise Steady.';
       var statusHtml = st ? '<p class="tk-status" title="' + STATUS_RULE + '">Status <span class="tk-st ' + st[1] + '">' + st[0] + '</span>' +
         ' <span class="tk-st-why">' + fmtPct(Math.abs(st[2])) + ' ' + st[3] + '</span></p>' : '';
+
+      // Signals: the Index & ETF Method's three per-fund timing signals, as on
+      // the weekly report's Signals page, from this ticker's daily closes only.
+      // Strong: RSI (14) 45 or below, lower 25% of the 52-week range, more than
+      // 2% above the 200-day average. Caution: RSI above 70, top 10% of the
+      // range, more than 2% below the 200-day average. The labels between
+      // (Elevated, Upper, Average) fill the method's gaps, as the report does.
+      // The range here is from closing prices; the report uses intraday highs
+      // and lows, so the position can differ by a few points.
+      var pos = hi52 > lo52 ? (last - lo52) / (hi52 - lo52) : null, vs200 = m200 ? last / m200 - 1 : null;
+      var sigs = [
+        ['RSI (14)', rsi14 == null ? null : rsi14 <= 45 ? 1 : rsi14 > 70 ? -1 : 0,
+          rsi14 == null ? '-' : rsi14.toFixed(2) + rsiFlag(rsi14)],
+        ['52-Week Range', pos == null ? null : pos < 0.25 ? 1 : pos > 0.90 ? -1 : 0,
+          pos == null ? '-' : Math.round(pos * 100) + '%' + tag(pos < 0.25 ? ['Lower', 'g3'] : pos <= 0.75 ? ['Middle', 'n'] : pos <= 0.90 ? ['Upper', 'r1'] : ['Top', 'r3'],
+            '0% is the 52-week closing low, 100% the high. Lower: bottom 25%. Upper: 75 to 90%. Top: top 10%.')],
+        ['vs 200-Day MA', vs200 == null ? null : vs200 > 0.02 ? 1 : vs200 < -0.02 ? -1 : 0,
+          vs200 == null ? '-' : '<span class="tk-chg ' + dir(vs200) + '">' + fmtPct(vs200, true) + '</span>' +
+            tag(vs200 > 0.02 ? ['Above', 'g1'] : vs200 < -0.02 ? ['Below', 'r3'] : ['Average', 'n'], 'Above: more than 2% over the 200-day average. Below: more than 2% under it. Average: within 2%.')]
+      ];
+      var nSig = sigs.filter(function (x) { return x[1] != null; }).length;
+      var nStrong = sigs.filter(function (x) { return x[1] === 1; }).length, nCaution = sigs.filter(function (x) { return x[1] === -1; }).length;
+      saveRecent({ t: t, name: NAMES[t] || (state.meta && state.meta.name) || '', cur: (state.meta && state.meta.currency) || 'USD',
+        last: last, day: day, m1: trailing(s, 1, false), ytd: ytd, y1: trailing(s, 12, false), rsi: rsi10,
+        st: st ? [st[0], st[1]] : null, date: s.dates[n - 1], at: Date.now() });
 
       var perf = [['1W', n > 5 ? last / c[n - 6] - 1 : null], ['1M', trailing(s, 1, false)], ['3M', trailing(s, 3, false)],
         ['6M', trailing(s, 6, false)], ['YTD', ytd], ['1Y', trailing(s, 12, false)], ['3Y', trailing(s, 36, false)],
@@ -653,7 +755,7 @@
             stat('Inception', fmtDate(s.dates[0], true).replace(/^\w+, /, '')) +
           '</dl></div>' +
 
-          '<div class="tk-section"><h2>Technicals</h2>' +
+          '<div class="tk-section"><h2>Technicals' + explain() + '</h2>' + explainP(EXPLAIN.tech) +
             '<p class="tk-sub">The readings Composer conditions test. Percentages are the last close against each moving average.</p>' +
             '<dl class="tk-stats">' +
             stat('RSI (10)', (rsi10 != null ? rsi10.toFixed(2) : '-') + rsiFlag(rsi10)) +
@@ -666,9 +768,16 @@
             stat('30-Day Volatility', v30 != null ? fmtPct(v30) + '<span class="note">annualized</span>' : '-') +
           '</dl></div>' +
 
-          '<div class="tk-section"><h2>Performance</h2><p class="tk-sub">Total return over each period, cumulative (not per year).</p><div class="tk-perf">' +
+          '<div class="tk-section"><h2>Signals' + explain() + '</h2>' + explainP(EXPLAIN.sig) +
+            '<p class="tk-sub">The Index &amp; ETF Method&rsquo;s three timing signals for a single fund, from this ticker&rsquo;s own prices. ' +
+              '<b class="tk-sig-n up">' + nStrong + ' of ' + nSig + ' Strong</b> &middot; <b class="tk-sig-n down">' + nCaution + ' of ' + nSig + ' Caution</b></p>' +
+            '<dl class="tk-stats tk-sigs">' + sigs.map(function (x) { return stat(x[0], x[2]); }).join('') + '</dl>' +
+          '</div>' +
+
+          '<div class="tk-section"><h2>Performance' + explain() + '</h2>' + explainP(EXPLAIN.perf) + '<p class="tk-sub">Total return over each period, cumulative (not per year).</p><div class="tk-perf">' +
             perf.map(function (p) { var v = p[1]; return '<button type="button" data-r="' + p[0] + '" aria-pressed="' + (p[0] === state.range) + '" title="Show ' + p[0] + ' on the chart"><span>' + p[0] + '</span><b class="' + (v == null ? 'na' : dir(v)) + '">' + fmtPct(v, true) + '</b></button>'; }).join('') +
           '</div></div>' +
+          recentHtml(t) +
         '</div>';
 
       root.querySelectorAll('.tk-tabs button, .tk-perf button').forEach(function (b) {
@@ -676,6 +785,7 @@
       });
       document.getElementById('tk-ma50').addEventListener('change', function (e) { state.ma50 = e.target.checked; drawChart(); });
       document.getElementById('tk-ma200').addEventListener('change', function (e) { state.ma200 = e.target.checked; drawChart(); });
+      bindRecent();
       document.getElementById('tk-rsi10').addEventListener('change', function (e) { state.rsi = e.target.checked; drawChart(); });
       drawChart();
       renderPopular();
@@ -1396,6 +1506,12 @@
     }
     window.addEventListener('popstate', function () { route(); });
     document.addEventListener('click', function (e) {
+      var x = e.target.closest('.tk-explain');
+      if (x) {
+        var note = x.closest('h2') && x.closest('h2').nextElementSibling;
+        if (note && note.classList.contains('tk-explain-p')) { note.hidden = !note.hidden; x.setAttribute('aria-expanded', String(!note.hidden)); }
+        return;
+      }
       var a = e.target.closest('a[data-t]'); if (!a) return;
       e.preventDefault(); go(a.getAttribute('data-t'));
     });
@@ -1459,14 +1575,16 @@
           '<li><b>Search</b> by symbol or company name. Stocks, ETFs, funds and indices all work; the ' + universe.length + ' tickers the site tracks load instantly, and anything else comes from Yahoo Finance.</li>' +
           '<li><b>Foreign listings</b> use the exchange suffix, e.g. <code>7203.T</code> Tokyo, <code>MC.PA</code> Paris, <code>NESN.SW</code> Zurich, <code>005930.KS</code> Seoul. Or type the name (LVMH, Toyota) and pick the listing.</li>' +
           '<li><b>Prices</b> are live from Yahoo Finance when the relay answers, otherwise the site&rsquo;s last cached close. The line under the price says which.</li>' +
-          '<li><b>The chart</b> has ranges from 1D (the latest session, in 5-minute steps) to Max and optional 50-Day and 200-Day moving averages. Hover it for the close on any day.</li>' +
+          '<li><b>The chart</b> has ranges from 1D (the latest session, in 5-minute steps) to Max, optional 50-Day and 200-Day moving averages and a 10-Day RSI panel. Hover it for the close on any day; press and drag to measure a change.</li>' +
           '<li><b>Technicals</b> cover RSI (10) and RSI (14), distance from the 20, 50 and 200-Day averages, drawdown from the high and 30-day volatility.</li>' +
+          '<li><b>Signals</b> score RSI (14), the 52-week range and the 200-day average as Strong, Neutral or Caution, as on the Azqato weekly report.</li>' +
           '<li><b>Print</b> with Ctrl+P for a one-page Letter summary.</li>' +
         '</ol>' +
         '<div class="tk-chips"><span class="tk-try">Try:</span>' + tryList.map(function (t) {
           return '<a href="?t=' + encodeURIComponent(t) + '" data-t="' + t + '">' + t + '</a>';
         }).join('') + '</div>' +
-      '</div>';
+      '</div>' + recentHtml(null);
+      bindRecent();
       setPop(true);
       renderPopular();
       sparkFetch(POPULAR.map(function (x) { return x[0]; }));
