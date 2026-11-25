@@ -10,6 +10,16 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.87.1] - 2026-11-24 - Ticker Lookup: search any symbol, saved tickers, Title Case labels
+
+- **Search takes any symbol:** the first suggestion is always the typed text as a symbol, so Enter opens exactly what was typed (GOOG, not the cached GOOGL). Cached matches follow, tagged "Site data", then Yahoo Finance's own symbol search (`/v1/finance/search` through the same relay, debounced 350 ms, cached per query), which also matches company names ("micro" finds MU, AMD, MSFT, SMCI) and tags each result with exchange and type. A symbol that is not found lists Yahoo's matches under "Did you mean".
+- **Saved tickers:** a ticker found on Yahoo that the site does not cache is remembered in this browser (`localStorage` key `ca-ticker-saved`, symbol, name and exchange, newest 200) and appears in the dropdown from then on, tagged "Saved", matched by symbol or name with no relay call.
+- **Labels:** stat labels and headings are Title Case ("Day Change", "52-Week High", "vs 200-Day MA"); "Data since" is now "Inception".
+
+**Files changed:** `ticker.html`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.87.0] - 2026-11-24 - Ticker Lookup page
 
 - **New `/ticker` page (`ticker.html`):** look up any ticker the RSI Backtester caches and see a Google-Finance-style view of it: name, last close, day change pill, year-to-date change, a range-tabbed area chart (1M, 6M, YTD, 1Y, 5Y, Max) with a crosshair tooltip and optional 50-day and 200-day moving-average overlays, key stats (previous close, 52-week high and low, all-time high, data start), technicals (RSI 10 and 14 with oversold/overbought flags, distance from the 20, 50 and 200-day moving averages, 50d vs 200d, drawdown, 30-day volatility), trailing returns from 1W to 10Y, and a Related panel of peer tickers with price and day change. Search matches tickers and fund names; `?t=NVDA&r=5Y` deep-links.

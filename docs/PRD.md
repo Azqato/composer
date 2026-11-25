@@ -1,6 +1,6 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.87.0
+**Version:** 1.87.1
 **Status:** Active
 **Last Updated:** 2026-11-24
 
@@ -553,7 +553,7 @@ Detects GitHub Pages by hostname (`*.github.io`) rather than matching the repo n
 | `/composer/k1.html` | `k1.html` | Tool: type a ticker, get whether it issues a Schedule K-1 or a 1099, plus the structure that decides it. Answers come from `data/k1.json`, shipped with the site, so the lookup is local and works offline. Indexable; in the nav **Tools** dropdown, footer sitemap, and homepage Explore card (v1.27.0) |
 | `/composer/etf-cloner.html` | `etf-cloner.html` | Tool: ETF → Composer holdings-clone generator. Live top-holdings fetch by ticker + full-basket upload of an issuer CSV/xlsx. Indexable; in the footer sitemap + homepage Explore card, but intentionally **not** in the primary nav (v1.16.3) |
 | `/composer/overfit.html` | `overfit.html` | Tool: paste a symphony and read a 0 to 100 **Overfit Score** against the population of 5,228 symphonies whose logic has gone a year unedited. Leads with the score as of v1.76.0. Indexable; in the nav **Tools** dropdown and the footer sitemap (V2.4 Tier 1, v1.75.0; substantially corrected v1.76.0; Tier 2 v1.77.0) |
-| `/composer/ticker.html` | `ticker.html` | Tool: **Ticker Lookup**. Search any ticker in the Backtester price cache (`backtest/price-cache/`, indexed by `_recent.js`) for a daily chart with range tabs and optional 50/200-day MA overlays, key stats, technicals (RSI 10/14, distance from 20/50/200-day MA, drawdown, 30-day volatility), trailing returns and a Related panel. `?t=TICKER&r=RANGE` deep-links. Then tries Yahoo Finance for a newer price through the Backtester's relay (Settings CORS proxy, else r.jina.ai), saves it in localStorage for ten minutes, and falls back to the site's close; uncached tickers are fetched from Yahoo in full. No fundamentals. Indexable; in the nav **Tools** dropdown and the footer sitemap (v1.87.0) |
+| `/composer/ticker.html` | `ticker.html` | Tool: **Ticker Lookup**. Search any ticker in the Backtester price cache (`backtest/price-cache/`, indexed by `_recent.js`) for a daily chart with range tabs and optional 50/200-day MA overlays, key stats, technicals (RSI 10/14, distance from 20/50/200-day MA, drawdown, 30-day volatility), trailing returns and a Related panel. `?t=TICKER&r=RANGE` deep-links. Then tries Yahoo Finance for a newer price through the Backtester's relay (Settings CORS proxy, else r.jina.ai), saves it in localStorage for ten minutes, and falls back to the site's close; uncached tickers are fetched from Yahoo in full. Search accepts any symbol and adds Yahoo's symbol search to the suggestions (v1.87.1). No fundamentals. Indexable; in the nav **Tools** dropdown and the footer sitemap (v1.87.0) |
 | `/composer/about.html` | `about.html` | Static HTML |
 | `/composer/404.html` | `404.html` | GitHub Pages error page |
 

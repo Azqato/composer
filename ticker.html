@@ -43,6 +43,7 @@
     .tk-suggest li { display: flex; gap: 12px; align-items: baseline; padding: 8px 16px; cursor: pointer; }
     .tk-suggest li[aria-selected="true"], .tk-suggest li:hover { background: var(--color-surface); }
     .tk-suggest b { color: var(--color-primary); min-width: 56px; font-family: var(--font-mono); font-size: 0.875rem; }
+    .tk-suggest .tk-tag { font-style: normal; font-size: 0.75rem; color: var(--color-disabled); margin-left: 6px; }
     .tk-suggest span { color: var(--color-secondary); font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .tk-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start; }
@@ -140,7 +141,7 @@
       <h1 style="color:var(--color-primary);margin-bottom:16px">Ticker Lookup</h1>
 
       <form class="tk-search" id="tk-form" role="search" autocomplete="off">
-        <input id="tk-input" type="search" placeholder="Search a ticker or name, e.g. TQQQ or gold"
+        <input id="tk-input" type="search" placeholder="Search any stock, ETF or fund, e.g. TQQQ or Microsoft"
                aria-label="Search a ticker" aria-autocomplete="list" aria-controls="tk-suggest" spellcheck="false">
         <ul class="tk-suggest" id="tk-suggest" role="listbox" hidden></ul>
       </form>
@@ -148,7 +149,7 @@
       <div id="tk-root"><p class="tk-asof">Loading prices...</p></div>
 
       <details class="tk-all" id="tk-all">
-        <summary>Browse every covered ticker</summary>
+        <summary>Browse Every Covered Ticker</summary>
         <div class="tk-chips" id="tk-chips"></div>
       </details>
 
@@ -450,18 +451,18 @@
           '</div>' +
           '<div class="tk-overlays">' +
             '<span id="tk-rchg"></span>' +
-            '<label><input type="checkbox" id="tk-ma50"' + (state.ma50 ? ' checked' : '') + '><span class="tk-key" style="background:var(--color-blue)"></span>50-day MA</label>' +
-            '<label><input type="checkbox" id="tk-ma200"' + (state.ma200 ? ' checked' : '') + '><span class="tk-key" style="background:var(--color-purple)"></span>200-day MA</label>' +
+            '<label><input type="checkbox" id="tk-ma50"' + (state.ma50 ? ' checked' : '') + '><span class="tk-key" style="background:var(--color-blue)"></span>50-Day MA</label>' +
+            '<label><input type="checkbox" id="tk-ma200"' + (state.ma200 ? ' checked' : '') + '><span class="tk-key" style="background:var(--color-purple)"></span>200-Day MA</label>' +
           '</div>' +
           '<div class="tk-chart" id="tk-chart"></div>' +
 
-          '<div class="tk-section"><h2>Key stats</h2><dl class="tk-stats">' +
-            stat('Previous close', fmtPx(prev)) +
-            stat('Day change', day != null ? '<span class="tk-chg ' + dir(day) + '">' + fmtPct(day, true) + '</span>' : '-') +
-            stat('52-wk high', fmtPx(hi52) + '<span class="note">' + fmtPct(last / hi52 - 1, true) + '</span>') +
-            stat('52-wk low', fmtPx(lo52) + '<span class="note">' + fmtPct(last / lo52 - 1, true) + '</span>') +
-            stat('All-time high', fmtPx(ath) + '<span class="note">' + fmtPct(last / ath - 1, true) + '</span>') +
-            stat('Data since', fmtDate(s.dates[0], true).replace(/^\w+, /, '')) +
+          '<div class="tk-section"><h2>Key Stats</h2><dl class="tk-stats">' +
+            stat('Previous Close', fmtPx(prev)) +
+            stat('Day Change', day != null ? '<span class="tk-chg ' + dir(day) + '">' + fmtPct(day, true) + '</span>' : '-') +
+            stat('52-Week High', fmtPx(hi52) + '<span class="note">' + fmtPct(last / hi52 - 1, true) + '</span>') +
+            stat('52-Week Low', fmtPx(lo52) + '<span class="note">' + fmtPct(last / lo52 - 1, true) + '</span>') +
+            stat('All-Time High', fmtPx(ath) + '<span class="note">' + fmtPct(last / ath - 1, true) + '</span>') +
+            stat('Inception', fmtDate(s.dates[0], true).replace(/^\w+, /, '')) +
           '</dl></div>' +
 
           '<div class="tk-section"><h2>Technicals</h2>' +
@@ -469,12 +470,12 @@
             '<dl class="tk-stats">' +
             stat('RSI (10)', (rsi10 != null ? rsi10.toFixed(2) : '-') + rsiFlag(rsi10)) +
             stat('RSI (14)', (rsi14 != null ? rsi14.toFixed(2) : '-') + rsiFlag(rsi14)) +
-            stat('vs 20-day MA', vsMa(m20)) +
-            stat('vs 50-day MA', vsMa(m50)) +
-            stat('vs 200-day MA', vsMa(m200)) +
-            stat('50d vs 200d MA', cross) +
-            stat('Drawdown from high', fmtPct(last / ath - 1, true)) +
-            stat('30-day volatility', v30 != null ? fmtPct(v30) + '<span class="note">annualized</span>' : '-') +
+            stat('vs 20-Day MA', vsMa(m20)) +
+            stat('vs 50-Day MA', vsMa(m50)) +
+            stat('vs 200-Day MA', vsMa(m200)) +
+            stat('50-Day vs 200-Day MA', cross) +
+            stat('Drawdown From High', fmtPct(last / ath - 1, true)) +
+            stat('30-Day Volatility', v30 != null ? fmtPct(v30) + '<span class="note">annualized</span>' : '-') +
           '</dl></div>' +
 
           '<div class="tk-section"><h2>Performance</h2><p class="tk-sub">Total return; 3Y and longer are per year.</p><div class="tk-perf">' +
@@ -687,6 +688,7 @@
       if (site && merged.dates[merged.dates.length - 1] < site.dates[site.dates.length - 1]) return false;
       state.series = merged;
       state.meta = { name: live.name, exch: live.exch, currency: live.currency, mtime: live.mtime, at: live.at, how: how };
+      if (universe.indexOf(t) < 0) rememberTicker(t, live.name, live.exch);
       render(); return true;
     }
     function goLive(t, site) {
@@ -723,7 +725,10 @@
     function notCovered(t) {
       root.innerHTML = '<div class="tk-empty"><b>' + esc(t) + '</b> was not found. It is not in the RSI Backtester\'s price cache ' +
         '(' + universe.length + ' tickers used across Composer strategies, browsable below), and a live lookup on Yahoo Finance ' +
-        'did not return it either. Check the symbol, or try again in a minute if the relay was busy.</div>';
+        'did not return it either. Check the symbol, or try again in a minute if the relay was busy.' +
+        ((yCache[t] || []).length ? '<p style="margin:12px 0 0">Did you mean:</p><div class="tk-chips">' + yCache[t].slice(0, 8).map(function (m) {
+          return '<a href="?t=' + encodeURIComponent(m.t) + '" data-t="' + esc(m.t) + '" title="' + esc(m.name) + '">' + esc(m.t) + ' &middot; ' + esc(m.name) + '</a>';
+        }).join('') + '</div>' : '') + '</div>';
       document.getElementById('tk-all').open = true;
     }
 
@@ -750,23 +755,75 @@
     }
 
     // ---- Search ----
+    // Suggestions, in this order: the typed text itself as a symbol (so Enter
+    // always opens exactly what was typed, e.g. GOOG not GOOGL), then the cached
+    // tickers it matches, then Yahoo Finance's own symbol search, which arrives
+    // a moment later through the same relay and also matches company names.
     var input = document.getElementById('tk-input'), list = document.getElementById('tk-suggest'), sel = -1, matches = [];
-    function search(q) {
-      q = q.trim().toUpperCase(); if (!q) return [];
+    var SYMBOL_RE = /^[A-Z0-9.^=-]{1,15}$/, yCache = {}, yTimer = null, yQuery = '';
+    // Tickers this browser has found on Yahoo that the site does not cache. Kept
+    // in localStorage (newest 200) so they show up in the dropdown afterwards,
+    // with their names, without another relay call. Prices are not kept here;
+    // the 10-minute live copy (LIVE_KEY) covers that.
+    var SAVED_KEY = 'ca-ticker-saved', SAVED_MAX = 200;
+    function savedTickers() { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '{}') || {}; } catch (e) { return {}; } }
+    function rememberTicker(t, name, exch) {
+      try {
+        var all = savedTickers();
+        all[t] = { name: name || (all[t] && all[t].name) || '', exch: exch || '', at: Date.now() };
+        var keys = Object.keys(all);
+        if (keys.length > SAVED_MAX) keys.sort(function (a, b) { return all[a].at - all[b].at; }).slice(0, keys.length - SAVED_MAX).forEach(function (k) { delete all[k]; });
+        localStorage.setItem(SAVED_KEY, JSON.stringify(all));
+      } catch (e) { /* storage blocked: nothing is remembered, the search still works */ }
+    }
+    function localMatches(q) {
+      var saved = savedTickers(), pool = universe.map(function (t) { return { t: t, name: NAMES[t] || '', tag: 'Site data' }; });
+      Object.keys(saved).forEach(function (t) { if (universe.indexOf(t) < 0) pool.push({ t: t, name: saved[t].name, tag: 'Saved' + (saved[t].exch ? ' · ' + saved[t].exch : '') }); });
       var exact = [], pre = [], name = [];
-      universe.forEach(function (t) {
-        var nm = (NAMES[t] || '').toUpperCase();
-        if (t === q) exact.push(t); else if (t.indexOf(q) === 0) pre.push(t); else if (nm.indexOf(q) >= 0) name.push(t);
+      pool.forEach(function (m) {
+        var nm = m.name.toUpperCase();
+        if (m.t === q) exact.push(m); else if (m.t.indexOf(q) === 0) pre.push(m); else if (nm.indexOf(q) >= 0) name.push(m);
       });
-      return exact.concat(pre.sort(), name).slice(0, 8);
+      pre.sort(function (a, b) { return a.t < b.t ? -1 : 1; });
+      return exact.concat(pre, name).slice(0, 6);
+    }
+    function build(raw) {
+      var q = raw.trim().toUpperCase(); if (!q) return [];
+      var out = localMatches(q), seen = {};
+      out.forEach(function (m) { seen[m.t] = 1; });
+      if (SYMBOL_RE.test(q) && !seen[q]) { out.unshift({ t: q, name: 'Look up ' + q, tag: 'Yahoo' }); seen[q] = 1; }
+      (yCache[q] || []).forEach(function (m) { if (!seen[m.t]) { seen[m.t] = 1; out.push(m); } });
+      return out.slice(0, 10);
+    }
+    function yahooSearch(q) {
+      if (yCache[q] || q.length < 2) return;
+      relayJson('https://query1.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(q) + '&quotesCount=8&newsCount=0&listsCount=0')
+        .then(function (j) {
+          yCache[q] = ((j && j.quotes) || []).filter(function (x) { return x.symbol; }).map(function (x) {
+            return { t: String(x.symbol).toUpperCase(), name: x.longname || x.shortname || '', tag: [x.exchDisp, x.typeDisp || x.quoteType].filter(Boolean).join(' · ') };
+          });
+          if (input.value.trim().toUpperCase() === q && document.activeElement === input) refresh(false);
+        }).catch(function () { yCache[q] = []; });
+    }
+    function refresh(fetchToo) {
+      var cur = matches[sel] && matches[sel].t;
+      matches = build(input.value);
+      sel = matches.length ? Math.max(0, matches.map(function (m) { return m.t; }).indexOf(cur)) : -1;
+      paint();
+      if (fetchToo) {
+        clearTimeout(yTimer);
+        var q = input.value.trim().toUpperCase();
+        yTimer = setTimeout(function () { yahooSearch(q); }, 350); // debounced: the free relay is rate-limited
+      }
     }
     function paint() {
       list.hidden = !matches.length;
-      list.innerHTML = matches.map(function (t, i) {
-        return '<li role="option" data-t="' + t + '" aria-selected="' + (i === sel) + '"><b>' + t + '</b><span>' + esc(NAMES[t] || '') + '</span></li>';
+      list.innerHTML = matches.map(function (m, i) {
+        return '<li role="option" data-t="' + esc(m.t) + '" aria-selected="' + (i === sel) + '"><b>' + esc(m.t) + '</b><span>' + esc(m.name) +
+          (m.tag ? ' <em class="tk-tag">' + esc(m.tag) + '</em>' : '') + '</span></li>';
       }).join('');
     }
-    input.addEventListener('input', function () { matches = search(input.value); sel = matches.length ? 0 : -1; paint(); });
+    input.addEventListener('input', function () { refresh(true); });
     input.addEventListener('keydown', function (e) {
       if (e.key === 'ArrowDown' && matches.length) { sel = (sel + 1) % matches.length; paint(); e.preventDefault(); }
       else if (e.key === 'ArrowUp' && matches.length) { sel = (sel - 1 + matches.length) % matches.length; paint(); e.preventDefault(); }
@@ -777,7 +834,7 @@
       var li = e.target.closest('li'); if (li) { e.preventDefault(); go(li.getAttribute('data-t')); }
     });
     document.getElementById('tk-form').addEventListener('submit', function (e) {
-      e.preventDefault(); go(sel >= 0 && matches[sel] ? matches[sel] : input.value);
+      e.preventDefault(); go(sel >= 0 && matches[sel] ? matches[sel].t : input.value);
     });
     function go(t) { input.value = ''; matches = []; paint(); input.blur(); state.range = state.range || '1Y'; open(t); window.scrollTo(0, 0); }
     document.addEventListener('click', function (e) {
