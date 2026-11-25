@@ -82,6 +82,10 @@ DROPPED_FIELDS = {
     "total_costs",
     "annualized_turnover",
     "herfindahl_index",
+    # local refresh-order stamp (stamp_leaderboard_scores.py), never shipped
+    "leaderboard_rank",
+    "leaderboard_score",
+    "leaderboard_scored_at",
 }
 
 
@@ -159,7 +163,9 @@ def build_local():
                 print(f"note: {row.get('symphony_id')} is in database_public.json but not database.json; dropped")
                 continue
             if newer(row, entries[i]):
-                entries[i] = row
+                # The slice never carries the local leaderboard stamp; keep it.
+                keep = {k: entries[i][k] for k in pdb.LEADERBOARD_FIELDS if k in entries[i]}
+                entries[i] = {**row, **keep}
                 merged += 1
     if merged:
         pdb.write_database(FULL_JSON_PATH, entries)
@@ -174,7 +180,8 @@ def build_local():
     # lists it, so the rule is the same here and in CI: public = slice - hidden.
     public_ids = (set(visible) | set(xlsx_ids)) - set(hidden)
     slice_ids = public_ids | set(hidden)
-    slice_rows = [e for e in entries if e.get("symphony_id") in slice_ids]
+    slice_rows = [{k: v for k, v in e.items() if k not in pdb.LEADERBOARD_FIELDS}
+                  for e in entries if e.get("symphony_id") in slice_ids]
     pdb.write_database(pdb.PUBLIC_JSON, slice_rows)
     print(f"Wrote {len(slice_rows)} rows to {pdb.PUBLIC_JSON.name} (+ {pdb.PUBLIC_JS.name}): "
           f"{len(public_ids & set(index))} public, {len(slice_ids - public_ids)} hidden curated")

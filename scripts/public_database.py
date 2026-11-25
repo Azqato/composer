@@ -44,6 +44,12 @@ STRATEGIES = DATA / "strategies.json"
 FULL_JS_GLOBAL = "DATABASE_DATA"
 PUBLIC_JS_GLOBAL = "DATABASE_PUBLIC_DATA"
 
+# Written by scripts/stamp_leaderboard_scores.py, read by
+# `refresh_full_database.py --priority`. Local to database.json only: never in
+# the summaries, never in the committed public slice, and carried across when a
+# CI-refreshed slice row is merged back (export_summary.py).
+LEADERBOARD_FIELDS = ("leaderboard_rank", "leaderboard_score", "leaderboard_scored_at")
+
 
 def has_full():
     """True on the owner's machine, False in CI and in a fresh clone."""

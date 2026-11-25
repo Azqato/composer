@@ -1,8 +1,8 @@
 # Composer Atlas: Master Reference Document
 
-**Version:** 1.83.2
+**Version:** 1.85.0
 **Status:** Active
-**Last Updated:** 2026-10-31
+**Last Updated:** 2026-11-24
 
 This is the single authoritative reference for Composer Atlas. It consolidates product requirements, architecture, operational runbook, data schemas, API reference, roadmap, security posture, project tenets, FAQ, and documentation process.
 
@@ -367,7 +367,8 @@ composer/
 │   └── app.js                   # Shared utilities: format, nav, footer, render helpers, escapeHtml
 ├── scripts/                     # All Python scripts live here, never in the project root
 │   ├── update_metrics.py        # Fetches backtest metrics + logic trees from the Composer API for the curated set
-│   ├── refresh_full_database.py # Resumable, checkpointed API refresh for the community database (v1.9.0)
+│   ├── refresh_full_database.py # Resumable, checkpointed API refresh for the community database (v1.9.0); --priority order (v1.85.0)
+│   ├── stamp_leaderboard_scores.py # Local: writes the live page's leaderboard rank/score onto database.json (v1.85.0)
 │   ├── refresh_prices.py        # Full Yahoo Finance daily-close history for the Signal Miner universe (v1.15.0)
 │   ├── refresh_rsi.py           # Yahoo Finance daily bars → Wilder's RSI(10) (V2.1)
 │   ├── refresh_oos.py           # True out-of-sample statistics for the Leaderboard candidates (V1.18)
@@ -1040,6 +1041,7 @@ To refresh the full database locally (it never needs to be committed):
 ```bash
 python scripts/refresh_full_database.py      # refreshes data/database.json (local master)
 python scripts/export_summary.py             # merges CI rows back, writes public + full summaries
+python scripts/stamp_leaderboard_scores.py   # re-stamps leaderboard_* on database.json (local only)
 python scripts/build_strategy_extras.py
 python scripts/build_overfit.py              # rebuilds the population findings from the full set
 git add data/database_public.json data/database_public.js data/database_summary.json data/database_summary.js data/strategy_extras.json data/strategy_extras.js data/overfit.json data/overfit.js
@@ -1050,6 +1052,42 @@ git push origin main
 Pull before running: the weekly job commits `database_public.json`, and `export_summary.py` merges
 those rows into the local master (newer `refresh_date` wins), so a stale checkout only delays that
 merge, it never loses rows.
+
+**Refresh order (local, `--priority`).** By default rows refresh in `database.json`'s stored order,
+which is add order, not a sort. `python scripts/refresh_full_database.py --priority` instead runs the
+top 10% of the Leaderboard pool by score first, in rank order (`PRIORITY_TOP_SHARE`), then the rest by
+Sharpe, highest first, then never-backtested rows, then `excluded` rows last. Add `--dry-run` to print the queue without calling
+the API. CI never passes it, so the GitHub job keeps file order. Worth using because a cut-short local
+run then leaves the rows people actually look at fresh.
+
+Rank comes from three stored fields on each `database.json` row: `leaderboard_rank`,
+`leaderboard_score`, `leaderboard_scored_at` (null outside the Leaderboard pool). **Numbers only, by
+the owner's choice (2026-11-24):** the letter tier is for public display, the page derives it itself,
+and the database does not store it.
+`scripts/stamp_leaderboard_scores.py` writes them by opening `database.html` in headless Edge and
+reading the page's own `rankBySymphonyId` (canonical model), so **a change to the scoring model in
+`database.html` needs no edit anywhere else**: the next stamp follows it. This deliberately avoids
+`analyze_leaderboard.py`'s hand-kept Python mirror, which had already drifted by one row at the B/C
+boundary when the stamp was first run (2026-11-24; S+/S/A identical, 17 ranks off by the tie). The fields are local only:
+`export_summary.py` drops them from both summaries, strips them from the committed public slice, and
+carries them across when it merges a CI-refreshed slice row back. Scores are pool percentiles, so they
+are a snapshot: re-stamp after each `export_summary.py` (it is in the routine above). `--priority`
+refuses to run if nothing is stamped.
+
+**Pacing: keep the 2-second default, locally too.** The GitHub workflow runs at the script's
+default `API_CALL_DELAY_SECONDS = 2`, and so should the local full run. A `--delay SECONDS` option
+exists for experiments (`python scripts/refresh_full_database.py 100 --delay 1`), and so does
+`--gap SECONDS`, which paces call start to call start so the response time counts toward the gap.
+With either, the run stops itself after 3 consecutive HTTP 429s. Two local tests on 2026-11-24 both
+failed, so neither saves time:
+
+- `--delay 1`: 25 calls OK, then three 429s and the run stopped (the v1.9.5 finding exactly).
+- `--gap 2` (one call every 2.0s, about 30 a minute): 25 OK, two 429s, 25 more OK, then three 429s
+  and the run stopped (50 OK in 55 calls).
+
+The pattern fits a limit of about 25 calls a minute. The default (2s after each response, about
+2.5s per call, about 24 a minute) sits just under it, which is why it runs clean. Running locally
+does not change the limit, Composer enforces it server-side (Section 13, Rate Limits).
 
 **Reminder, scope boundary:** this workflow runs `refresh_full_database.py` only. `scripts/flag_name_noise.py` and `scripts/dedupe_symphonies.py` (V1.14 Part A) remain manual-only and must never be added here or to any other scheduled/CI job, see "Name-Based Noise & De-Duplication" above for why.
 
@@ -2539,6 +2577,8 @@ Composer Atlas uses only the two unauthenticated endpoints listed below. No cred
 | ~2 concurrent req/sec | 25 succeeded, then 429s |
 | ~20 concurrent req/sec | 25 succeeded, then 429s |
 | ~100 concurrent req/sec | 25 succeeded, then 429s |
+| Sequential, 1-second pause after each response, run locally (2026-11-24, `--delay 1`) | 25 succeeded, then 429s; auto-stopped after 3 |
+| Sequential, one call every 2.0s start to start, run locally (2026-11-24, `--gap 2`) | 25 OK, 2 429s, 25 OK, then 429s; auto-stopped (50 of 55) |
 
 **Conclusion: this behaves like a token-bucket limiter, not a flat requests-per-second cap.** Burst capacity is ~25 requests, refilling at roughly the rate already proven safe (~0.5 req/sec, i.e. 1 call per 2 seconds). At 0.5 req/sec, consumption matches the refill rate, so the bucket never empties and the run sustains indefinitely (140/140, zero failures). At every faster rate tested, from 1 req/sec all the way to 100 concurrent req/sec, the initial ~25-request bucket drains and then every subsequent call gets throttled until it refills, regardless of how much faster than 25/window the attempted rate was. Whatever is enforcing it is likely a Cloudflare layer in front of the documented API limit, not the API's own application-layer limit. Failed calls do not corrupt data: `apply_backtest_result()` is never called on failure, and `refresh_date` is only advanced on success, so a 429'd row just stays correctly marked "due" for the next run.
 

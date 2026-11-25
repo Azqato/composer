@@ -45,6 +45,7 @@ Usage:
 """
 
 import json
+import math
 import re
 import sys
 import time
@@ -77,7 +78,12 @@ BODY = {
 }
 
 STALE_AFTER_DAYS = 7
+# The GitHub workflow always runs at this default. A local run may pass
+# `--delay SECONDS` to try a shorter pause (PRD.md Section 13, Rate Limits);
+# with an override, the run stops after MAX_CONSECUTIVE_429 rate-limit
+# failures in a row so a too-fast pace never hammers the API.
 API_CALL_DELAY_SECONDS = 2
+MAX_CONSECUTIVE_429 = 3
 CHECKPOINT_EVERY = 10
 
 # `flag` classification (PRD.md Section 12 / V1.14 Part B). Permanent
@@ -192,10 +198,67 @@ def apply_backtest_result(entry, result):
     entry["oos_date"] = raw_oos.split("T")[0] if raw_oos else None
 
 
+# Share of the Leaderboard pool, by stored score, that `--priority` refreshes
+# first. The owner's chosen cut (2026-11-24); a plain share of the pool, not a
+# tier, because database.json stores numbers only.
+PRIORITY_TOP_SHARE = 0.10
+
+
+def priority_order(due, entries):
+    """Local-only refresh order (`--priority`): the top PRIORITY_TOP_SHARE of the
+    Leaderboard pool first, in rank order, then the rest by Sharpe (highest
+    first), then rows that have never been backtested, then `excluded` rows
+    last. Rank is the stored `leaderboard_rank` that
+    scripts/stamp_leaderboard_scores.py reads off the live page, so a change to
+    the scoring model needs no edit here.
+    Returns (ordered rows, number of rows in the top block)."""
+    stamped = [e.get("leaderboard_scored_at") for e in entries if e.get("leaderboard_scored_at")]
+    if not stamped:
+        raise SystemExit("--priority needs leaderboard scores in database.json. "
+                         "Run scripts/stamp_leaderboard_scores.py first.")
+    pool = sum(1 for e in entries if isinstance(e.get("leaderboard_rank"), int))
+    cut = math.ceil(PRIORITY_TOP_SHARE * pool)
+    print(f"Leaderboard scores stamped {max(stamped)}; top {PRIORITY_TOP_SHARE:.0%} = rank 1 to {cut} of {pool}.")
+
+    def top(e):
+        r = e.get("leaderboard_rank")
+        return isinstance(r, int) and r <= cut
+
+    def key(e):
+        if top(e):
+            return (0, e["leaderboard_rank"])
+        if e.get("flag") == "excluded":
+            return (3, 0)
+        s = e.get("sharpe_ratio")
+        if isinstance(s, (int, float)):
+            return (1, -s)
+        return (2, 0)
+
+    ordered = sorted(due, key=key)  # stable: ties keep file order
+    return ordered, sum(1 for e in ordered if top(e))
+
+
 def main():
     args = sys.argv[1:]
+    priority = "--priority" in args
+    dry_run = "--dry-run" in args
+    args = [a for a in args if a not in ("--priority", "--dry-run")]
     force = "--force" in args
     args = [a for a in args if a != "--force"]
+    delay = API_CALL_DELAY_SECONDS
+    delay_overridden = "--delay" in args
+    if delay_overridden:
+        i = args.index("--delay")
+        delay = float(args[i + 1])
+        del args[i:i + 2]
+    # --gap SECONDS: pace call START to call START (the response time counts
+    # toward the gap) instead of pausing a fixed time after each response.
+    gap = None
+    if "--gap" in args:
+        i = args.index("--gap")
+        gap = float(args[i + 1])
+        del args[i:i + 2]
+        delay_overridden = True
     limit = int(args[0]) if args else None
 
     entries = json.loads(JSON_PATH.read_text(encoding="utf-8"))
@@ -207,16 +270,36 @@ def main():
         if e.get("symphony_id")
         and (force or not e.get("refresh_date") or date.fromisoformat(e["refresh_date"]) <= stale_cutoff)
     ]
+    if priority:
+        due, n_top = priority_order(due, entries)
+        print(f"Priority order: {n_top} due top-ranked rows first, then the rest by Sharpe; excluded last.")
     if limit:
         due = due[:limit]
+    if dry_run:
+        print(f"Dry run: {len(due)} rows due, no API calls made. First and last 5:")
+        for e in due[:5] + due[-5:]:
+            print(f"  {e.get('sharpe_ratio')!s:>8}  {e.get('flag')!s:>8}  {e.get('name')}")
+        return
 
-    print(f"Processing {len(due)} rows...")
+    pace = f"a {gap:g}s start-to-start gap" if gap is not None else f"a {delay:g}s pause"
+    print(f"Processing {len(due)} rows at {pace} between calls...")
     ok = fail = 0
+    streak_429 = 0
+    started = time.time()
+    last_start = None
 
     try:
         for i, entry in enumerate(due):
+            if delay_overridden and streak_429 >= MAX_CONSECUTIVE_429:
+                print(f"\nStopping: {streak_429} consecutive HTTP 429s at {pace}. "
+                      f"Remaining rows stay due for the next run.")
+                break
             if i > 0:
-                time.sleep(API_CALL_DELAY_SECONDS)
+                if gap is not None:
+                    time.sleep(max(0.0, gap - (time.time() - last_start)))
+                else:
+                    time.sleep(delay)
+            last_start = time.time()
 
             name = entry.get("name") or entry["symphony_id"]
             print(f"[{i + 1}/{len(due)}] {name} ({entry['symphony_id']}) ... ", end="", flush=True)
@@ -225,8 +308,10 @@ def main():
                 apply_backtest_result(entry, result)
                 entry["refresh_date"] = today
                 ok += 1
+                streak_429 = 0
                 print("OK")
             except urllib.error.HTTPError as e:
+                streak_429 = streak_429 + 1 if e.code == 429 else 0
                 reason = f"HTTPError {e.code}: {e.reason}"
                 entry["flag"] = classify_error(reason)
                 entry["error"] = reason
@@ -249,7 +334,8 @@ def main():
             json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
         )
         write_js(entries)
-        print(f"\nSaved. OK={ok} FAIL={fail}")
+        mins = (time.time() - started) / 60
+        print(f"\nSaved. OK={ok} FAIL={fail} in {mins:.1f} min")
 
 
 if __name__ == "__main__":

@@ -10,6 +10,19 @@ Format: `[VERSION] - YYYY-MM-DD`
 
 ---
 
+## [1.85.0] - 2026-11-24 - Local full refresh: priority order, stored leaderboard scores, pacing tests
+
+Local tooling only. Nothing on the live site changes, and the GitHub workflows run exactly as before.
+
+- **Priority order:** `refresh_full_database.py --priority` refreshes the top 10% of the Leaderboard pool by score first, in rank order, then the rest by Sharpe, then never-backtested rows, then `excluded` rows last. Without the flag the script keeps file order (add order; nothing sorts `database.json`). `--dry-run` prints the queue without calling the API. The 10% is `PRIORITY_TOP_SHARE`.
+- **Stored scores from the page itself:** new `scripts/stamp_leaderboard_scores.py` opens `database.html` in headless Edge and writes the page's own canonical-model rank and score onto every `database.json` row (`leaderboard_rank`, `leaderboard_score`, `leaderboard_scored_at`; null outside the pool). A change to the scoring model needs no other edit. Numbers only, by owner decision: the letter tier stays a public display the page derives. First stamp: 6,629 rows scored; it also showed `analyze_leaderboard.py`'s Python mirror had drifted by one row at the B/C boundary.
+- **Kept local:** `export_summary.py` drops the three fields from both summaries, strips them from the committed public slice, and carries them across when merging a CI-refreshed slice row back.
+- **Pacing tests:** `--delay SECONDS` and `--gap SECONDS` (start to start) were added for experiments, and with either the run stops after 3 consecutive HTTP 429s. Local tests: `--delay 1` gave 25 OK then 429s; `--gap 2` gave 50 OK of 55 then 429s; the default 2-second pause gave 100 of 100 in 4.7 min. The limit behaves like about 25 calls a minute, so the default stays for CI and local runs. A full local run is about 5.2 hours. Each run now prints its pace and elapsed time.
+
+**Files changed:** `scripts/refresh_full_database.py`, `scripts/stamp_leaderboard_scores.py` (new), `scripts/export_summary.py`, `scripts/public_database.py`, `docs/PRD.md`, `docs/PATCHNOTES.md`
+
+---
+
 ## [1.84.2] - 2026-11-20 - Nav: "Azqato Invests" becomes "Discord"
 
 - The top nav entry that read "Azqato Invests" (linking to `https://azqato.com/invests`) now reads "Discord" and links to the community Discord, `https://discord.com/invite/6bnZFtNd5p`. Same position, still opens in a new tab. Changed in the site nav (`js/app.js`, desktop and mobile) and in the Backtester's own nav copy (`backtest-src/src/ui/AtlasNav.tsx`). The built `backtest/index.html` was patched in place, one string, rather than rebuilt.
